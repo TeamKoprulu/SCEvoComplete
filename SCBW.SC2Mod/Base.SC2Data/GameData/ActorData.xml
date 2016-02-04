@@ -4,6 +4,70 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
+    <CActorUnit id="DragoonSCBW" parent="GenericUnitBase" unitName="DragoonSCBW">
+        <Macros value="TerrainSquibAnimations"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="WeaponStart.Dragoon.AttackStart" Send="TimerKill CoverDelay"/>
+        <On Terms="WeaponStart.Dragoon.AttackStart" Send="AnimClear CoverStand"/>
+        <On Terms="WeaponStart.Dragoon.AttackStart" Send="AnimPlay Cover Cover PlayForever"/>
+        <On Terms="WeaponStop.Dragoon.AttackStop" Send="TimerSet 4.000000 CoverDelay"/>
+        <On Terms="TimerExpired; TimerName CoverDelay" Send="AnimClear Cover"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create Dragoon_Land"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <BuildModel value="DragoonSCBWWarpIn"/>
+        <DeathArray index="Normal" ModelLink="DragoonSCBWDeath" SoundLink="DragoonSCBW_DeathExplosion"/>
+        <DeathCustoms ModelLink="ProtossLargeUnitDeathLow" Name="AntiGravProtoss"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowMedium"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <PlacementModel value="DragoonSCBWPlacement"/>
+        <PlacementSound value="Protoss_BuildingPlacementSmall"/>
+        <PortraitModel value="DragoonSCBWPortrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.600000"/>
+            <RangeDown value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleLarge"/>
+        </TerrainSquibs>
+        <WalkAnimMoveSpeed value="1.25"/>
+        <BarOffset value="80"/>
+        <BarWidth value="90"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-protoss-dragoon-void.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
+        <SoundArray index="Movement" value="DragoonSCBW_MoveStart"/>
+        <UnitIcon value="Assets\Textures\btn-unit-protoss-dragoon-void.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon.dds"/>
+        </Wireframe>
+        <WireframeShield>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon-Shield01.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon-Shield02.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon-Shield03.dds"/>
+        </WireframeShield>
+    </CActorUnit>
+    <CActorAction id="DragoonSCBWAttack" parent="GenericAttack" effectImpact="DragoonDamage" effectLaunch="DragoonSCBWLM">
+        <LaunchAssets Sound="Dragoon_AttackLaunch"/>
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
+        <ImpactMap index="None" Sound="DragoonSCBW_AttackImpact"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactPhysics Name="DragoonPhaseDisruptorImpact" MatchKeys="Basic" Physics="DragoonAttackDeathForce"/>
+    </CActorAction>
+    <CActorMissile id="DragoonSCBWAttackMissile" parent="GenericAttackMissile" unitName="DragoonSCBWWeapon">
+        <On Terms="UnitBirth" Send="AnimSetTimeScaleAbsolute Lifetime 1.000000"/>
+    </CActorMissile>
     <CActorModel id="GatewaySCBWDeath" parent="UnitDeathModel">
         <CopySource value="GatewaySCBW"/>
         <Inherits index="BaseModelScale" value="0"/>
