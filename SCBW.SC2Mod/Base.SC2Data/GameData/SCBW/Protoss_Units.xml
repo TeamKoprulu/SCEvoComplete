@@ -1,10 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CButton id="DragoonSCBWArmor">
+        <Icon value="Assets\Textures\BTN-Ability-Protoss-DragoonChassis.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CButton id="DragoonSCBW">
+        <Icon value="Assets\Textures\btn-unit-protoss-dragoon-void.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-dragoon-void.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Universal value="1"/>
+    </CButton>
     <CButton id="ArbiterSCBW">
         <Icon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
         <HotkeyAlias value="VoidRay"/>
     </CButton>
+    <CActorSound id="DragoonSCBW_Death" parent="SoundOneShot">
+        <On Terms="UnitDeathCustomize.DragoonSCBW; ValidateUnit IsNotHallucination" Send="Create"/>
+    </CActorSound>
+    <CActorUnit id="DragoonSCBW" parent="GenericUnitBase" unitName="DragoonSCBW">
+        <Macros value="TerrainSquibAnimations"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="WeaponStart.DragoonSCBW.AttackStart" Send="TimerKill CoverDelay"/>
+        <On Terms="WeaponStart.DragoonSCBW.AttackStart" Send="AnimClear CoverStand"/>
+        <On Terms="WeaponStart.DragoonSCBW.AttackStart" Send="AnimPlay Cover Cover PlayForever"/>
+        <On Terms="WeaponStop.DragoonSCBW.AttackStop" Send="TimerSet 4.000000 CoverDelay"/>
+        <On Terms="TimerExpired; TimerName CoverDelay" Send="AnimClear Cover"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create Dragoon_Land"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <BuildModel value="DragoonSCBWWarpIn"/>
+        <DeathArray index="Normal" ModelLink="DragoonSCBWDeath" SoundLink="DragoonSCBW_DeathExplosion"/>
+        <DeathCustoms ModelLink="ProtossLargeUnitDeathLow" Name="AntiGravProtoss"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowMedium"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <PlacementModel value="DragoonSCBWPlacement"/>
+        <PlacementSound value="Protoss_BuildingPlacementSmall"/>
+        <PortraitModel value="DragoonSCBWPortrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.600000"/>
+            <RangeDown value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleLarge"/>
+        </TerrainSquibs>
+        <WalkAnimMoveSpeed value="1.25"/>
+        <BarOffset value="80"/>
+        <BarWidth value="90"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-protoss-dragoon-void.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
+        <SoundArray index="Movement" value="DragoonSCBW_MoveStart"/>
+        <UnitIcon value="Assets\Textures\btn-unit-protoss-dragoon-void.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon.dds"/>
+        </Wireframe>
+        <WireframeShield>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon-Shield01.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon-Shield02.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-Dragoon-Shield03.dds"/>
+        </WireframeShield>
+    </CActorUnit>
     <CActorUnit id="ArbiterSCBW" parent="GenericUnitStandard" unitName="ArbiterSCBW">
         <Aliases value="_UnitHuge"/>
         <On Terms="Behavior.WarpInEffect.On" Send="ModelSwap ArbiterSCBWWarpInStargate"/>
@@ -50,6 +117,38 @@
         <On Terms="Behavior.SOASuperChrono.Off" Send="AnimSetTimeScale BSD 1.000000"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
     </CActorModel>
+    <CModel id="DragoonSCBW" parent="Unit" Race="Protoss">
+        <Model value="Assets\Units\Protoss\Dragoon_Void\Dragoon_Void.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraHigh08"/>
+        <Radius value="0.650000"/>
+        <SelectionRadius value="0.650000"/>
+        <ShadowRadius value="0.866400"/>
+        <SquibTypeDefault value="Metal"/>
+        <TechPurchaseCamera value="Star2CameraHigh08"/>
+        <Tipability value="0.750000"/>
+        <TipabilityLength value="0.800000"/>
+        <TipabilityWidth value="0.800000"/>
+        <UnitGlossaryCamera value="Star2CameraHigh08"/>
+    </CModel>
+    <CModel id="DragoonSCBWDeath" parent="UnitDeath" Race="Protoss">
+        <Model value="Assets\Units\Protoss\Dragoon_Void_Death\Dragoon_Void_Death.m3"/>
+    </CModel>
+    <CModel id="DragoonSCBWPlacement" parent="Placement" Race="Protoss">
+        <Model value="Assets\Units\Protoss\Dragoon_Placement\Dragoon_Placement.m3"/>
+    </CModel>
+    <CModel id="DragoonSCBWPortrait" parent="Portrait" Race="Protoss">
+        <Model value="Assets\Portraits\Protoss\Aiur_DragoonEx2_Portrait\Aiur_DragoonEx2_Portrait.m3"/>
+        <Image value="Assets\Textures\aiurdragoonportrait_static.dds"/>
+    </CModel>
+    <CModel id="DragoonSCBWWarpIn" parent="OneShotSpellFX">
+        <Model value="Assets\Units\Protoss\Dragoon_Void_WarpIn\Dragoon_Void_WarpIn.m3"/>
+        <LowQualityModel value="DragoonWarpInLow"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Occlusion value="Show"/>
+        <SelectionRadius value="0.555400"/>
+        <ShadowRadius value="0.555400"/>
+    </CModel>
     <CModel id="ArbiterSCBWWarpInStargate" parent="PersistentSpellFX">
         <Model value="Assets\Units\Protoss\Arbiter_WarpIn_StarGate\Arbiter_WarpIn_StarGate.m3"/>
         <LowQualityModel value="ProtossUnitBirth"/>
@@ -102,6 +201,24 @@
         <Image value="Assets\Textures\arbiterportrait_static.dds"/>
         <Lighting value="PortraitArbiter"/>
     </CModel>
+    <CSound id="DragoonSCBW_DeathExplosion" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <DupeMaximumMethod value="Replace"/>
+        <DupeMuteCount value="5"/>
+        <Pitch value="-1.000000,0.000000"/>
+        <Volume value="-2.000000,0.000000"/>
+    </CSound>
+    <CSound id="DragoonSCBW_MoveStart" parent="Movement">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Dragoon_MoveStart01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Dragoon_MoveStart02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Dragoon_MoveStart03.wav" FacialGroup=""/>
+        <Chance value="0"/>
+        <DupeMuteCount value="1"/>
+        <Pitch value="-1.000000,1.000000"/>
+        <PlayDelay value="500,1000"/>
+        <Volume value="-12.000000,-9.000000"/>
+    </CSound>
     <CSound id="ArbiterSCBW_RecallVO" parent="ProtossAck_Void">
         <AssetArray TemplateParam="Arbiter_Yes00"/>
         <AssetArray TemplateParam="Arbiter_Yes01"/>
@@ -121,6 +238,69 @@
         <AssetArray TemplateParam="Arbiter_Yes05"/>
         <AssetArray TemplateParam="Arbiter_Yes06"/>
         <Chance value="25"/>
+    </CSound>
+    <CSound id="DragoonSCBW_Attack" parent="ProtossAck">
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes00.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes01.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes02.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes03.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes04.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes05.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes06.wav"/>
+        <Flags index="NeedsUpdate" value="1"/>
+        <Flags index="NeedsTTS" value="1"/>
+        <Volume value="-2.000000,-2.000000"/>
+    </CSound>
+    <CSound id="DragoonSCBW_Death" parent="Death">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Death00.wav"/>
+        <Volume value="1.000000,1.000000"/>
+    </CSound>
+    <CSound id="DragoonSCBW_Help" parent="ProtossHelp">
+        <AssetArray TemplateParam="DragoonSCBW_Help00"/>
+        <Flags index="NeedsUpdate" value="1"/>
+        <Flags index="NeedsTTS" value="1"/>
+        <Volume value="0.000000,0.000000"/>
+    </CSound>
+    <CSound id="DragoonSCBW_Pissed" parent="Pissed">
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Pissed00.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Pissed01.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Pissed02.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Pissed03.wav"/>
+        <Flags index="NeedsUpdate" value="1"/>
+        <Flags index="NeedsTTS" value="1"/>
+        <Volume value="-2.000000,-2.000000"/>
+    </CSound>
+    <CSound id="DragoonSCBW_Ready" parent="ProtossReady">
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Ready00.wav"/>
+        <Flags index="NeedsUpdate" value="1"/>
+        <Flags index="NeedsTTS" value="1"/>
+        <Volume value="1.000000,1.000000"/>
+    </CSound>
+    <CSound id="DragoonSCBW_What" parent="ProtossAck">
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What00.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What01.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What02.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What03.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What04.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What05.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What06.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_What07.wav"/>
+        <Flags index="NeedsUpdate" value="1"/>
+        <Flags index="NeedsTTS" value="1"/>
+        <Volume value="-2.000000,-2.000000"/>
+    </CSound>
+    <CSound id="DragoonSCBW_Yes" parent="ProtossAck">
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes00.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes01.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes02.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes03.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes04.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes05.wav"/>
+        <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DragoonSCBW\DragoonSCBW_Yes06.wav"/>
+        <Flags index="NeedsUpdate" value="1"/>
+        <Flags index="NeedsTTS" value="1"/>
+        <Volume value="-2.000000,-2.000000"/>
     </CSound>
     <CSound id="ArbiterSCBW_Death" parent="ProtossDeath">
         <AssetArray File="LocalizedData\Sounds\ProtossVO\CampaignUnits\Arbiter\Arbiter_Death00.wav"/>
@@ -173,10 +353,90 @@
         <AssetArray TemplateParam="Arbiter_Yes05"/>
         <AssetArray TemplateParam="Arbiter_Yes06"/>
     </CSound>
+    <CDataCollectionUnit id="DragoonSCBW" parent="ProtossUnitSCBW">
+        <DataRecord Entry="Button,DragoonSCBWArmor"/>
+        <DataRecord Entry="Actor,DragoonSCBW_Death"/>
+        <DataRecord Entry="Sound,DragoonSCBW_DeathExplosion"/>
+        <DataRecord Entry="Sound,DragoonSCBW_MoveStart"/>
+    </CDataCollectionUnit>
     <CDataCollectionUnit id="ArbiterSCBW" parent="ProtossStargateUnitSCBW">
         <DataRecord Entry="Sound,ArbiterSCBW_RecallVO"/>
         <DataRecord Entry="Sound,ArbiterSCBW_StasisFieldVO"/>
     </CDataCollectionUnit>
+    <CUnit id="DragoonSCBW">
+        <DeathRevealRadius value="3"/>
+        <Race value="Prot"/>
+        <Mob value="Campaign"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Mechanical" value="1"/>
+        <LifeStart value="120"/>
+        <LifeMax value="120"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossPlating"/>
+        <ShieldsStart value="80"/>
+        <ShieldsMax value="80"/>
+        <ShieldRegenDelay value="10"/>
+        <ShieldRegenRate value="2"/>
+        <ShieldArmorName value="Unit/ShieldArmorName/ProtossPlasmaShields"/>
+        <Speed value="2.25"/>
+        <Acceleration value="1000"/>
+        <Sight value="10"/>
+        <Food value="-2"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="125"/>
+        <CostResource index="Vespene" value="50"/>
+        <RepairTime value="50"/>
+        <AttackTargetPriority value="20"/>
+        <DamageDealtXP value="1"/>
+        <DamageTakenXP value="1"/>
+        <KillXP value="35"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="Warpable"/>
+        <AbilArray Link="ProgressRally"/>
+        <BehaviorArray Link="SOAHeroicShieldProcBuff"/>
+        <WeaponArray Link="DragoonSCBW" Turret="DragoonSCBW"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="DragoonSCBWSingularityCharge" Type="Passive" Requirements="HaveDragoonSCBWSingularityCharge" Row="2" Column="0"/>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
+        </CardLayouts>
+        <Radius value="0.625"/>
+        <SeparationRadius value="0.625"/>
+        <InnerRadius value="0.5"/>
+        <CargoSize value="4"/>
+        <ScoreMake value="175"/>
+        <ScoreKill value="175"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="5"/>
+        <MinimapRadius value="0.625"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <GlossaryCategory value="Unit/Category/ProtossUnitsSCBW"/>
+        <GlossaryPriority value="50"/>
+        <GlossaryStrongArray value="SiegeTankSieged"/>
+        <GlossaryStrongArray value="Stalker"/>
+        <GlossaryStrongArray value="Roach"/>
+        <GlossaryWeakArray value="Marine"/>
+        <GlossaryWeakArray value="Zealot"/>
+        <GlossaryWeakArray value="Zergling"/>
+        <HotkeyCategory value="Unit/Category/ProtossUnitsSCBW"/>
+        <Fidget>
+            <ChanceArray index="Anim" value="5"/>
+            <ChanceArray index="Idle" value="90"/>
+        </Fidget>
+    </CUnit>
     <CUnit id="ArbiterSCBW">
         <Description value="Button/Tooltip/Arbiter"/>
         <DeathRevealRadius value="3"/>
