@@ -5,6 +5,11 @@
         <AlertIcon value="Assets\Textures\btn-building-protoss-forge.dds"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
+    <CButton id="GatewaySCBW">
+        <Icon value="Assets\Textures\btn-building-protoss-gateway.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-protoss-gateway.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
     <CButton id="PylonSCBW">
         <Icon value="Assets\Textures\btn-building-protoss-pylon.dds"/>
         <AlertIcon value="Assets\Textures\btn-building-protoss-pylon.dds"/>
@@ -55,6 +60,54 @@
         </WireframeShield>
     </CActorUnit>
     <CActorSplat id="ForgeSCBWSplat" parent="GenericUnitSplat" unitName="ForgeSCBW"/>
+    <CActorUnit id="GatewaySCBW" parent="ProtossBuilding" unitName="GatewaySCBW">
+        <CreepHeightClass value="Small"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove Superior"/>
+        <!-- Morph data -->
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Send="AnimSetPaused Morph"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0" Send="AnimSetPaused Morph 0"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom Gateway; MorphTo WarpGate" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom WarpGate; MorphTo Gateway" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom WarpGate; MorphTo Gateway" Send="AnimPlay Morph Morph,End 0 0.000000"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom WarpGate; MorphTo Gateway" Send="AnimClear Morph"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsTerrazineShadow" Send="DeathCustomize Hallucination"/>
+        <On Terms="Behavior.ProbeGlowingBehavior.On" Send="GlowStart"/>
+        <On Terms="Behavior.ProbeGlowingBehavior.Off" Send="GlowStop"/>
+        <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="Protoss_BuildingWarpIn"/>
+        <DeathArray index="Normal" ModelLink="GatewaySCBWDeath" SoundLink="GatewaySCBW_Explode"/>
+        <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath" SoundLink="GatewaySCBW_Explode"/>
+        <SoundArray index="Construction" value="Protoss_ConstructionWhat"/>
+        <BuildModel value="ProtossGenericWarpInOut"/>
+        <PortraitModel value="AdvisorSCBWPortrait"/>
+        <PlacementModel value="GatewaySCBWPlacement"/>
+        <PlacementSound value="Protoss_BuildingPlacement"/>
+        <ModelFlags index="AutomateGlobalLoops" value="0"/>
+        <Macros value="GlobalLoopMacro"/>
+        <Macros value="QueueAnim"/>
+        <Macros value="UnpoweredAnim"/>
+        <Macros value="BuildingFlattenTerrainMacro"/>
+        <Macros value="ProtossBuildingPowerUp"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+        <BarWidth value="160"/>
+        <BarOffset value="140"/>
+        <NameOffset value="130"/>
+        <UnitIcon value="Assets\Textures\btn-building-protoss-gateway.dds"/>
+        <HeroIcon value="Assets\Textures\btn-building-protoss-gateway.dds"/>
+        <WireframeShield>
+            <Image value="Assets\Textures\Wireframe-Protoss-Gateway-Shield01.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-Gateway-Shield02.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-Gateway-Shield03.dds"/>
+        </WireframeShield>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Protoss-Gateway.dds"/>
+        </GroupIcon>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Protoss-Gateway.dds"/>
+        </Wireframe>
+        <LifeArmorIcon value="Assets\Textures\btn-armor-protoss-buildingplating.dds"/>
+        <DeathActorModel value="GatewaySCBWDeath"/>
+    </CActorUnit>
+    <CActorSplat id="GatewaySCBWSplat" parent="GenericUnitSplat" unitName="GatewaySCBW"/>
     <CActorUnit id="NexusSCBW" parent="ProtossBuilding" unitName="NexusSCBW">
         <DeathArray index="Normal" ModelLink="NexusSCBWDeath" SoundLink=""/>
         <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath" SoundLink="NexusSCBW_Explode"/>
@@ -208,6 +261,64 @@
         <ScaleMax value="0.850000,0.850000,0.850000"/>
         <ScaleMin value="0.850000,0.850000,0.850000"/>
     </CModel>
+    <CModel id="GatewaySCBW" parent="Building" Race="Protoss">
+        <Model value="Assets\Buildings\Protoss\GatewayEx1\GatewayEx1.m3"/>
+        <ScaleMax value="0.800000,0.800000,0.800000"/>
+        <ScaleMin value="0.800000,0.800000,0.800000"/>
+        <SelectionLayer value="2"/>
+        <SelectionRadius value="2.500000"/>
+        <SquibTypeDefault value="Metal"/>
+        <Radius value="2.000000"/>
+        <ShadowRadius value="2.500000"/>
+        <TextureDeclares Prefix="gateway_">
+            <Adaptions TriggerOnSubstring="_Diffuse" Slot="main"/>
+            <Adaptions TriggerOnSubstring="_Specular" Slot="main"/>
+            <Adaptions TriggerOnSubstring="_Emissive" Slot="main"/>
+        </TextureDeclares>
+        <TextureDeclares Prefix="pylon_">
+            <Adaptions TriggerOnSubstring="_Diffuse" Slot="campaign"/>
+            <Adaptions TriggerOnSubstring="_Specular" Slot="campaign"/>
+            <Adaptions TriggerOnSubstring="_Emissive" Slot="campaign"/>
+        </TextureDeclares>
+        <TextureDeclares Prefix="bldg_gateway_">
+            <Adaptions Slot="generic01"/>
+        </TextureDeclares>
+    </CModel>
+    <CModel id="GatewaySCBWBirth" parent="GatewaySCBW">
+        <Model value="Assets\Buildings\Protoss\GatewayWarpIn\GatewayWarpIn.m3"/>
+        <Events>
+            <Anim value="Stand,Build,End"/>
+            <Name value="BuildingWarpIn"/>
+            <Type value="Sound"/>
+            <Time value="1.333300"/>
+        </Events>
+        <TextureDeclares index="1" removed="1"/>
+        <TextureDeclares index="2" removed="1"/>
+    </CModel>
+    <CModel id="GatewaySCBWDeath" parent="BuildingDeath" Race="Protoss">
+        <Model value="Assets\Buildings\Protoss\GatewayDeathEx1\GatewayDeathEx1.m3"/>
+        <LowQualityModel value="ProtossBuildingDeathLow"/>
+        <TextureDeclares Prefix="gateway_">
+            <Adaptions TriggerOnSubstring="_Diffuse" Slot="main"/>
+            <Adaptions TriggerOnSubstring="_Specular" Slot="main"/>
+        </TextureDeclares>
+    </CModel>
+    <CModel id="GatewaySCBWPlacement" parent="Placement" Race="Protoss">
+        <Model value="Assets\Buildings\Protoss\GatewayPlacement\GatewayPlacement.m3"/>
+        <LowQualityModel value="GatewaySCBW"/>
+        <Lighting value="GatewaySCBW"/>
+        <Radius value="-1.000000"/>
+        <ScaleMax value="0.800000,0.800000,0.800000"/>
+        <ScaleMin value="0.800000,0.800000,0.800000"/>
+        <SelectionRadius value="0.000000"/>
+        <ShadowRadius value="0.000000"/>
+    </CModel>
+    <CModel id="GatewaySCBWSplat" parent="Splat">
+        <Model value="Assets\Splats\Splat_Gateway\Splat_Gateway.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.800000,0.800000,0.800000"/>
+        <ScaleMin value="0.800000,0.800000,0.800000"/>
+    </CModel>
     <CModel id="NexusSCBWBirth" parent="Nexus">
         <Model value="Assets\Buildings\Protoss\NexusWarpIn\NexusWarpIn.m3"/>
         <Events>
@@ -346,6 +457,17 @@
         <AssetArray File="Assets\Sounds\Protoss\ForgeSCBW\ForgeSCBW_What00.wav"/>
         <Volume value="-6.000000,-6.000000"/>
     </CSound>
+    <CSound id="GatewaySCBW_Explode" parent="Protoss_ExplosionLarge"/>
+    <CSound id="GatewaySCBW_Ready" parent="Ready">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\GatewaySCBW\GatewaySCBW_What00.wav"/>
+        <Volume value="-4.500000,-4.500000"/>
+    </CSound>
+    <CSound id="GatewaySCBW_What" parent="Voice">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\GatewaySCBW\GatewaySCBW_What00.wav"/>
+        <Volume value="-4.500000,-4.500000"/>
+    </CSound>
     <CSound id="NexusSCBW_Explode" parent="Protoss_ExplosionLarge"/>
     <CSound id="NexusSCBW_Ready" parent="Ready">
         <EditorCategories value="Race:Protoss"/>
@@ -371,6 +493,9 @@
         <Volume value="-3.000000,-3.000000"/>
     </CSound>
     <CDataCollectionUnit id="ForgeSCBW" parent="UnitBaseBuildingSCBW"/>
+    <CDataCollectionUnit id="GatewaySCBW" parent="ProtossBuildingSCBW">
+        <EditorCategories value=""/>
+    </CDataCollectionUnit>
     <CDataCollectionUnit id="NexusSCBW" parent="ProtossBuildingSCBW">
         <EditorCategories value=""/>
     </CDataCollectionUnit>
@@ -454,6 +579,74 @@
             <Charge Link="Forge/Revive"/>
             <Cooldown Link="Forge/Revive"/>
         </ReviveInfoBase>
+    </CUnit>
+    <CUnit id="GatewaySCBW">
+        <DeathRevealRadius value="3"/>
+        <Facing value="315"/>
+        <Race value="Prot"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="PreventDefeat" value="1"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="PenaltyRevealed" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="TownAlert" value="1"/>
+        <FlagArray index="NoPortraitTalk" value="1"/>
+        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
+        <FogVisibility value="Snapshot"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Burrow" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="Structure" value="1"/>
+        <Collide index="RoachBurrow" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Structure" value="1"/>
+        <LifeStart value="500"/>
+        <LifeMax value="500"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossBuildingPlating"/>
+        <ShieldsStart value="500"/>
+        <ShieldsMax value="500"/>
+        <ShieldRegenDelay value="10"/>
+        <ShieldRegenRate value="2"/>
+        <ShieldArmorName value="Unit/ShieldArmorName/ProtossPlasmaShields"/>
+        <StationaryTurningRate value="719.4726"/>
+        <TurningRate value="719.4726"/>
+        <Sight value="9"/>
+        <CostCategory value="Technology"/>
+        <CostResource index="Minerals" value="150"/>
+        <AttackTargetPriority value="11"/>
+        <AbilArray Link="BuildInProgress"/>
+        <AbilArray Link="que5"/>
+        <AbilArray Link="GatewaySCBWTrain"/>
+        <AbilArray Link="Rally"/>
+        <AbilArray Link="CitadelOfAdunSCBWResearch"/>
+        <BehaviorArray Link="PowerUserQueue"/>
+        <CardLayouts>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
+            <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="BuildInProgress,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="UpgradeToWarpGate,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="ZealotSCBW" Type="AbilCmd" AbilCmd="GatewaySCBWTrain,Train1" Row="0" Column="0"/>
+            <LayoutButtons Face="DragoonSCBW" Type="AbilCmd" AbilCmd="GatewaySCBWTrain,Train2" Row="0" Column="1"/>
+            <LayoutButtons Face="ZealotSCBWLegEnhancementsResearch" Type="AbilCmd" AbilCmd="CitadelOfAdunSCBWResearch,Research1" Row="1" Column="0"/>
+            <LayoutButtons Face="DragoonSCBWSingularityChargeResearch" Type="AbilCmd" AbilCmd="CitadelOfAdunSCBWResearch,Research2" Row="1" Column="1"/>
+        </CardLayouts>
+        <Radius value="1.75"/>
+        <SeparationRadius value="1.75"/>
+        <Footprint value="Footprint3x3Contour"/>
+        <PlacementFootprint value="Footprint3x3"/>
+        <ScoreMake value="150"/>
+        <ScoreKill value="150"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="2"/>
+        <MinimapRadius value="1.75"/>
+        <EditorCategories value="ObjectType:Structure,ObjectFamily:Melee"/>
+        <TacticalAIThink value="AIThinkGateway"/>
+        <TechAliasArray value="Alias_Gateway"/>
+        <GlossaryPriority value="22"/>
+        <HotkeyCategory value="Unit/Category/ProtossUnitsSCBW"/>
+        <TechTreeProducedUnitArray value="ZealotSCBW"/>
     </CUnit>
     <CUnit id="PylonSCBW">
         <DeathRevealRadius value="3"/>
