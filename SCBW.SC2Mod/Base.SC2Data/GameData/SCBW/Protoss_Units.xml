@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CButton id="ShuttleSCBW">
+        <Icon value="Assets\Textures\btn-unit-protoss-warpprism.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-warpprism.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
     <CButton id="DarkTemplarSCBW">
         <Icon value="Assets\Textures\btn-unit-protoss-darktemplar.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-protoss-darktemplar.dds"/>
@@ -269,6 +274,22 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
     </CLight>
+    <CLight id="ShuttleSCBWPortrait" parent="default">
+        <ToDInfoArray index="0" AmbientColor="0.176471,0.000000,0.094118">
+            <Param index="HDRExposure" value="1.480000"/>
+            <Param index="HDRBloomThreshold" value="1.950000"/>
+            <Param index="HDRSpecMultiplier" value="15.580000"/>
+            <DirectionalLight index="Key">
+                <Color value="0.956863,0.827451,0.650980"/>
+                <ColorMultiplier value="1.350000"/>
+                <SpecColorMultiplier value="1.000000"/>
+                <Direction value="-0.258168,0.314299,-0.913545"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" ColorMultiplier="0.390000" Direction="-0.314456,0.917928,-0.241922"/>
+            <DirectionalLight index="Back" Color="0.439216,0.070588,0.003922" ColorMultiplier="0.500000" Direction="-0.738852,0.475064,-0.477925"/>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
+    </CLight>
     <CLight id="ZealotSCBWPortrait">
         <ToDInfoArray index="0" Id="ZealotSCBWPortrait" AmbientColor="0.309804,0.152941,0.000000" OperatorHDR="3">
             <Param index="HDRExposure" value="1.475000"/>
@@ -291,6 +312,82 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
     </CLight>
+    <CActorUnit id="ShuttleSCBW" parent="GenericUnitStandard" unitName="ShuttleSCBW">
+        <Aliases value="_UnitLarge"/>
+        <Macros value="PhysicsDeathsSwarmAir"/>
+        <Macros value="PhysicsDeathsVoidAir"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom WarpPrism; MorphTo WarpPrismPhasing" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom WarpPrismPhasing; MorphTo WarpPrism" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom WarpPrismPhasing; MorphTo WarpPrism" Send="AnimPlay Work Work,End 0 0.000000"/>
+        <On Terms="Behavior.Hallucination.On" Send="Create HallucinationBirthSoundMedium"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucination" Send="DeathCustomize Hallucination"/>
+        <On Terms="Behavior.WarpInEffect15.On; !ValidateUnit NoDarkProtoss" Send="ModelSwap WarpPrismWarpIn"/>
+        <On Terms="Behavior.WarpInEffect15.On; !ValidateUnit NoDarkProtoss" Send="$Birth"/>
+        <On Terms="Behavior.WarpInEffect15.Off; !ValidateUnit NoDarkProtoss" Send="ModelSwap WarpPrism"/>
+        <On Terms="Behavior.WarpInEffect15.Off; !ValidateUnit NoDarkProtoss" Send="AnimBaselineStart"/>
+        <On Terms="Upgrade.DarkProtoss.Add" Send="ModelSwap DarkWarpPrism"/>
+        <On Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="ModelSwap DarkWarpPrism"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom WarpPrismPhasing; MorphTo WarpPrism; ValidateUnit NoDarkProtoss" Send="ModelSwap DarkWarpPrism"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit NoDarkProtoss" Send="DeathCustomize DarkProtoss"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create WarpPrism_Land"/>
+        <On Terms="Behavior.WarpInEffect15.On" Send="ModelSwap WarpPrismWarpIn"/>
+        <On Terms="Behavior.WarpInEffect15.On" Send="$Birth"/>
+        <On Terms="Behavior.WarpInEffect15.Off" Send="ModelSwap WarpPrism"/>
+        <On Terms="Behavior.WarpInEffect15.Off" Send="AnimBaselineStart"/>
+        <On Terms="Upgrade.DarkProtoss.Add" Send="DeathCustomsEnablePhysics 0"/>
+        <On Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="DeathCustomsEnablePhysics 0"/>
+        <On Terms="Upgrade.DarkProtoss.Add" Send="DeathCustomsEnablePhysics 0"/>
+        <On Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="DeathCustomsEnablePhysics 0"/>
+        <On Terms="UnitBirth; ValidateUnit HasPurifierProtoss" Send="TextureSelectById PurifierHackDiffuse"/>
+        <On Terms="Upgrade.PurifierProtoss.Add" Send="TextureSelectById PurifierHackDiffuse"/>
+        <On Terms="Signal.*.PurifierHack" Send="TextureSelectById PurifierHackDiffuse"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsTerrazineShadow" Send="DeathCustomize Hallucination"/>
+        <On Terms="Behavior.WarpInEffect15.Off; ValidateUnit NoDarkProtoss" Send="ModelSwap DarkWarpPrism"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <BuildModel value="ShuttleSCBWWarpIn"/>
+        <DeathArray index="Normal" ModelLink="ShuttleSCBWDeath" SoundLink="ShuttleSCBW_Explode"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathMedium" Name="Hallucination"/>
+        <DeathCustoms ModelLink="DarkWarpPrismDeath" Name="DarkProtoss"/>
+        <DeathCustoms>
+            <ActorModel value="WarpPrismDeathRagdoll"/>
+            <ModelLink value="ShuttleSCBWDeathRagdoll"/>
+            <Name value="RagdollBasic"/>
+            <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+            <BodySquibs Name="Basic" Model="ProtossRobotSquibDeathRagdoll"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+        <PortraitModel value="ShuttleSCBWPortrait"/>
+        <BarOffset value="55"/>
+        <BarWidth value="78"/>
+        <GlossaryAnim value="GLstand,A"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Protoss-WarpPrism00.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-protoss-warpprism.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-airarmorlevel0.dds"/>
+        <NameOffset value="60"/>
+        <UnitIcon value="Assets\Textures\btn-unit-protoss-warpprism.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Protoss-WarpPrism00.dds"/>
+        </Wireframe>
+        <WireframeShield>
+            <Image value="Assets\Textures\Wireframe-Protoss-WarpPrism00-Shield01.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-WarpPrism00-Shield02.dds"/>
+            <Image value="Assets\Textures\Wireframe-Protoss-WarpPrism00-Shield03.dds"/>
+        </WireframeShield>
+    </CActorUnit>
     <CActorUnit id="InterceptorSCBW" parent="GenericUnitStandard" unitName="InterceptorSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="PhysicsDeathsSwarmAir"/>
@@ -1229,6 +1326,25 @@
             <Image value="Assets\Textures\Wireframe-Protoss-DarkTemplar01-Shield03.dds"/>
         </WireframeShieldVariations>
     </CActorUnit>
+    <CModel id="ShuttleSCBW" parent="WarpPrismBase">
+        <Model value="Assets\Units\Protoss\WarpPrism\WarpPrism.m3"/>
+        <TextureDeclares Prefix="warpprism_">
+            <Adaptions TriggerOnSubstring="_Diffuse" Slot="main"/>
+        </TextureDeclares>
+    </CModel>
+    <CModel id="ShuttleSCBWDeath" parent="WarpPrismDeathBase">
+        <Model value="Assets\Units\Protoss\WarpPrismDeathEx1\WarpPrismDeathEx1.m3"/>
+    </CModel>
+    <CModel id="ShuttleSCBWDeathRagdoll" parent="WarpPrismDeathRagdollBase">
+        <Model value="Assets\Units\Protoss\WarpPrismDeathRagdoll\WarpPrismDeathRagdoll.m3"/>
+    </CModel>
+    <CModel id="ShuttleSCBWPortrait" parent="WarpPrismPortraitBase">
+        <Model value="Assets\Portraits\Protoss\WarpPrismPortrait\WarpPrismPortrait.m3"/>
+        <Image value="Assets\Textures\WarpPrismPortrait_Static.dds"/>
+    </CModel>
+    <CModel id="ShuttleSCBWWarpIn" parent="WarpPrismWarpInBase">
+        <Model value="Assets\Units\Protoss\WarpPrismWarpIn\WarpPrismWarpIn.m3"/>
+    </CModel>
     <CModel id="DarkTemplarSCBW" parent="DarkTemplarBase">
         <VariationCount value="2"/>
     </CModel>
@@ -1716,6 +1832,61 @@
         <Model value="Assets\Portraits\Protoss\ArbiterEx2Portrait\ArbiterEx2Portrait.m3"/>
         <Image value="Assets\Textures\arbiterportrait_static.dds"/>
     </CModel>
+    <CSound id="ShuttleSCBW_Explode" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge4.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge5.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge6.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge7.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge8.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge9.wav" Pitch="-3.000000,3.000000"/>
+        <DupeDestroyCount value="5"/>
+        <Pitch value="5.000000,7.000000"/>
+        <Volume value="-4.000000,-2.000000"/>
+    </CSound>
+    <CSound id="ShuttleSCBW_Pissed" parent="Pissed">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Pissed00.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Pissed01.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Pissed02.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Pissed03.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Pissed04.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="ShuttleSCBW_Ready" parent="Ready">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Ready00.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Ready01.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Ready02.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Ready03.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="ShuttleSCBW_What" parent="Voice">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_What00.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_What01.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_What02.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_What03.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_What04.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_What05.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="ShuttleSCBW_Yes" parent="Voice">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes01.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes02.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes03.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes04.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes05.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes06.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhasePrism\PhasePrism_Yes07.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
     <CSound id="DarkTemplarSCBW_Attack" parent="ProtossAck">
         <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DarkTemplar\DarkTemplar_Attack00.ogg"/>
         <AssetArray File="LocalizedData\Sounds\ProtossUnitVO\DarkTemplar\DarkTemplar_Attack01.ogg"/>
@@ -2477,6 +2648,18 @@
         <AssetArray TemplateParam="Arbiter_Yes05"/>
         <AssetArray TemplateParam="Arbiter_Yes06"/>
     </CSound>
+    <CDataCollectionUnit id="ShuttleSCBW" parent="ProtossStargateUnitSCBW">
+        <EditorCategories value=""/>
+        <DataRecord index="5" Entry="Model,WarpPrismDeathLow"/>
+        <DataRecord index="21" Entry="Sound,WarpPrism_Death"/>
+        <DataRecord index="23" Entry="Model,WarpPrismDeathAcid"/>
+        <DataRecord index="24" Entry="Model,WarpPrismDeathBlast"/>
+        <DataRecord index="25" Entry="Model,WarpPrismDeathFire"/>
+        <DataRecord index="27" Entry="Model,WarpPrismDeathSilent"/>
+        <DataRecord index="28" Entry="Model,WarpPrismPlacement"/>
+        <DataRecord index="30" Entry="Actor,WarpPrismWarpInStargate"/>
+        <DataRecord index="31" Entry="Model,WarpPrismWarpInStargate"/>
+    </CDataCollectionUnit>
     <CDataCollectionUnit id="DarkTemplarSCBW" parent="ProtossUnitSCBW"/>
     <CDataCollectionUnit id="InterceptorSCBW" parent="ProtossUnitSCBW">
         <DataRecord index="5" Entry="Model,InterceptorDeathLow"/>
@@ -2518,6 +2701,73 @@
         <DataRecord Entry="Sound,ArbiterSCBW_RecallVO"/>
         <DataRecord Entry="Sound,ArbiterSCBW_StasisFieldVO"/>
     </CDataCollectionUnit>
+    <CUnit id="ShuttleSCBW">
+        <DeathRevealRadius value="3"/>
+        <Race value="Prot"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="AISupport" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Air" value="1"/>
+        <Collide index="Flying" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Mechanical" value="1"/>
+        <Attributes index="Psionic" value="1"/>
+        <LifeStart value="100"/>
+        <LifeMax value="100"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossPlating"/>
+        <ShieldsStart value="100"/>
+        <ShieldsMax value="100"/>
+        <ShieldRegenDelay value="10"/>
+        <ShieldRegenRate value="2"/>
+        <ShieldArmorName value="Unit/ShieldArmorName/ProtossPlasmaShields"/>
+        <Mover value="Fly"/>
+        <Speed value="2.5"/>
+        <Acceleration value="2.125"/>
+        <LateralAcceleration value="57"/>
+        <Sight value="10"/>
+        <Height value="3.75"/>
+        <VisionHeight value="4"/>
+        <Food value="-2"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="200"/>
+        <RepairTime value="50"/>
+        <AttackTargetPriority value="20"/>
+        <DamageDealtXP value="1"/>
+        <DamageTakenXP value="1"/>
+        <KillXP value="35"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="PhasingMode"/>
+        <AbilArray Link="WarpPrismTransport"/>
+        <AbilArray Link="Warpable"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
+            <LayoutButtons Face="WarpPrismLoad" Type="AbilCmd" AbilCmd="WarpPrismTransport,Load" Row="2" Column="2"/>
+            <LayoutButtons Face="WarpPrismUnloadAll" Type="AbilCmd" AbilCmd="WarpPrismTransport,UnloadAt" Row="2" Column="3"/>
+            <LayoutButtons Face="PhasingMode" Type="AbilCmd" AbilCmd="PhasingMode,Execute" Row="2" Column="0"/>
+        </CardLayouts>
+        <Radius value="0.875"/>
+        <SeparationRadius value="0.875"/>
+        <ScoreMake value="200"/>
+        <ScoreKill value="200"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="13"/>
+        <MinimapRadius value="0.875"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <TacticalAIThink value="AIThinkWarpPrism"/>
+        <AIEvalFactor value="0"/>
+        <TechAliasArray value="Alias_WarpPrism"/>
+        <GlossaryCategory value="Unit/Category/ProtossUnits"/>
+        <GlossaryPriority value="110"/>
+        <HotkeyCategory value="Unit/Category/ProtossUnits"/>
+    </CUnit>
     <CUnit id="InterceptorSCBW">
         <Description value="Button/Tooltip/InterceptorSCBWUnit"/>
         <DeathRevealRadius value="3"/>
@@ -3516,12 +3766,12 @@
         <Attributes index="Light" value="1"/>
         <Attributes index="Biological" value="1"/>
         <Attributes index="Psionic" value="1"/>
-        <LifeStart value="40"/>
-        <LifeMax value="40"/>
+        <LifeStart value="80"/>
+        <LifeMax value="80"/>
         <LifeArmor value="1"/>
         <LifeArmorName value="Unit/LifeArmorName/ProtossArmor"/>
-        <ShieldsStart value="80"/>
-        <ShieldsMax value="80"/>
+        <ShieldsStart value="40"/>
+        <ShieldsMax value="40"/>
         <ShieldRegenDelay value="10"/>
         <ShieldRegenRate value="2"/>
         <ShieldArmorName value="Unit/ShieldArmorName/ProtossPlasmaShields"/>
