@@ -4,7 +4,49 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
-    <CActorAction id="DragoonSCBWAttack" parent="GenericAttack" effectImpact="DragoonDamage" effectLaunch="DragoonSCBWLM">
+    <CActorSound id="HighTemplarSCBWHallucinationBirthSound" parent="SoundOneShot">
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On" Send="Create"/>
+        <Sound value="HighTemplarSCBW_HallucinationLaunch"/>
+    </CActorSound>
+    <CActorModel id="HighTemplarSCBWHallucinationBirth" parent="ModelAnimationStyleOneShot">
+        <Inherits index="BaseModelScale" value="1"/>
+        <Inherits index="Scale" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; !ValidateUnit CasterIsColossus" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachCenter"/>
+        <AutoScaleFactor value="1.000000"/>
+    </CActorModel>
+    <CActorSimple id="HighTemplarSCBWHallucination">
+        <Aliases value="_HallucinationTinter"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On" Send="Create"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.Off" Send="Destroy"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; ViewerTreatsUnitAs Detected" Send="Signal HallucinationTintOn"/>
+        <On Terms="Signal.*.HallucinationTintOn" Target="_Unit" Send="SetTintColor 108,108,255 1.000000 OneShot Hallucination"/>
+        <On Terms="Signal.*.HallucinationTintOn; !Option Shader Low" Target="_Unit" Send="SetOpacity 0.700000 1.000000 Hallucination"/>
+        <On Terms="Signal.*.HallucinationTintOff" Target="_Unit" Send="ClearTintColor 1.000000 Hallucination"/>
+        <On Terms="Signal.*.HallucinationTintOff; !Option Shader Low" Target="_Unit" Send="ClearOpacity 1.000000 Hallucination"/>
+    </CActorSimple>
+    <CActorSound id="CarrierSCBWInterceptorLaunch" parent="SoundOneShot">
+        <On Terms="Abil.CarrierSCBWHangar.Launch" Send="Create"/>
+        <On Terms="Abil.CarrierHangarVoid.Launch" Send="Create"/>
+        <Sound value="CarrierSCBW_InterceptorLaunch"/>
+    </CActorSound>
+    <CActorAction id="ArchonSCBWAttack" parent="GenericAttack" effectAttack="PsionicShockwaveSCBWDamage">
+        <LaunchAssets Sound="ArchonSCBW_AttackLaunch"/>
+        <BeamScope value="Caster"/>
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeNoVizEnhance VoidRaySOpForwardLaunch"/>
+        <ImpactMap index="None" Model="" Sound="ArchonSCBW_AttackImpact"/>
+        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+    </CActorAction>
+    <CActorBeamSimple id="ArchonSCBWAttackBeam" parent="BeamSimpleAnimationStyleOneShot">
+        <Macros value="ActionTargetTeleportDestroy"/>
+        <On Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="ModelSwap DarkArchonAttackBeam"/>
+        <On Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="AnimBracketStart BSDb Birth Stand Death ContentPlayOnce"/>
+        <On Terms="AnimBracketState.*.AfterClosing; AnimName BSDb" Send="Destroy"/>
+        <Scale value="0.500000"/>
+    </CActorBeamSimple>
+    <CActorAction id="DragoonSCBWAttack" parent="GenericAttack" effectImpact="DragoonSCBWDamage" effectLaunch="DragoonSCBWLM">
         <LaunchAssets Sound="DragoonSCBW_AttackLaunch"/>
         <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
         <ImpactMap index="None" Sound="DragoonSCBW_AttackImpact"/>
@@ -28,6 +70,59 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorSound id="HighTemplarSCBWPsiStormImpactSound" parent="SoundOneShot">
+        <On Terms="Behavior.HighTemplarSCBWPsiStorm.On" Send="Create"/>
+        <Sound value="HighTemplarSCBW_PsionicStormImpact"/>
+    </CActorSound>
+    <CActorModel id="HighTemplarSCBWPsiStormImpact" parent="ModelAnimationStyleContinuous">
+        <Inherits index="BaseModelScale" value="1"/>
+        <Inherits index="Scale" value="1"/>
+        <On Terms="Behavior.HighTemplarSCBWPsiStorm.On" Send="Create"/>
+        <On Terms="Behavior.HighTemplarSCBWPsiStorm.Off" Send="AnimBracketStop BSD"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachCenter"/>
+        <AutoScaleFactor value="0.750000"/>
+    </CActorModel>
+    <CActorSound id="HighTemplarSCBWPsiStormLaunchSound" parent="SoundOneShot">
+        <On Terms="Abil.HighTemplarSCBWPsiStorm.SourcePrepStart" Send="Create"/>
+        <Sound value="HiTePsionicStormCast"/>
+    </CActorSound>
+    <CActorModel id="HighTemplarSCBWPsiStormModel" parent="ModelAnimationStyleContinuous">
+        <On Terms="Effect.HighTemplarSCBWPsiStormPersistent.Start" Send="Create"/>
+        <On Terms="Effect.HighTemplarSCBWPsiStormPersistent.Stop" Send="AnimBracketStop BSD"/>
+        <On Terms="ActorCreation; ValidatePlayer HaveVoidHighTemplarPsiStormFilter" Send="SetTintColor 0,255,0"/>
+        <HostSiteOps Ops="SOpShadow"/>
+        <Scale value="1.300000"/>
+    </CActorModel>
+    <CActorSound id="HighTemplarSCBWPsiStormSound" parent="SoundContinuous">
+        <On Terms="Effect.HighTemplarSCBWPsiStormPersistent.Start" Send="Create"/>
+        <On Terms="Effect.HighTemplarSCBWPsiStormPersistent.Stop" Send="Destroy"/>
+        <HostSiteOps Ops="SOpShadow"/>
+        <Sound value="HighTemplarSCBW_PsionicStormLaunch"/>
+    </CActorSound>
+    <CActorAction id="InterceptorSCBWAttack" parent="GenericAttackBase">
+        <On Terms="Effect.InterceptorSCBWBeamPersistent.Start; At Caster" Send="Create"/>
+        <On Terms="Effect.InterceptorBeamDamage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <On Terms="Signal.*.DarkProtossTest" Send="RefSetFromMsg ::actor.sender ::Sender"/>
+        <On Terms="Signal.*.DarkProtossTest; ValidateUnit NoDarkProtoss" Target="::actor.sender" Send="Signal DarkProtossSwap"/>
+        <On Terms="Effect.InterceptorBeamDamage.Stop; At Caster; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
+        <LaunchAttachQuery Methods="AMFilterWeapon"/>
+        <LaunchAssets Sound="InterceptorSCBW_AttackLaunch"/>
+        <BeamScope value="Caster"/>
+        <ImpactMap index="None" Sound="InterceptorSCBW_AttackImpact"/>
+        <ImpactModel value="DarkInterceptorTestImpact"/>
+        <DamagePhysics Name="InterceptorBeamImpact" MatchKeys="Basic" Physics="InterceptorAttackDeathForce"/>
+        <DamagePhysics Name="InterceptorBeamImpact" MatchKeys="BasicAir" Physics="InterceptorAttackAirDeathForce"/>
+        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+    </CActorAction>
+    <CActorBeamSimple id="InterceptorSCBWAttackBeam">
+        <Macros value="ActionTargetTeleportDestroy"/>
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <On Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death ContentPlayOnce"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="AnimBracketState.*.AfterClosing; AnimName BSD" Send="Destroy"/>
+        <On Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="ModelSwap DarkInterceptorAttackBeam"/>
+    </CActorBeamSimple>
     <CActorForceCylinder id="PhotonCannonSCBWAttackDeathForce">
         <HostSiteOps Ops="SOpIncomingMissileDot25"/>
         <Receiver Subject="::Main"/>
@@ -304,6 +399,35 @@
         </WireframeShield>
     </CActorUnit>
     <CActorSplat id="CitadelOfAdunSCBWSplat" parent="GenericUnitSplat" unitName="CitadelOfAdunSCBW"/>
+    <CActorSplat id="HighTemplarSCBWPsiStormCursorSplat" parent="ProtossCursorSplat" abil="HighTemplarSCBWPsiStorm">
+        <Model value="HighTemplarSCBWPsiStormCursorSplat"/>
+    </CActorSplat>
+    <CActorRange id="HighTemplarSCBWPsiStormRange" parent="RangeAbil" abil="HighTemplarSCBWPsiStorm">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorAction id="ScoutSCBWGroundAttack" parent="GenericAttack" effectLaunch="ScoutSCBWGround">
+        <LaunchAssets Sound="ScoutSCBW_GroundAttackLaunch"/>
+        <LaunchModel value="ScoutSCBWGroundAttackModel"/>
+        <ImpactMap index="None" Sound="ScoutSCBW_GroundAttackImpact"/>
+        <ImpactModel value="ScoutSCBWGroundAttackModel"/>
+    </CActorAction>
+    <CActorModel id="ScoutSCBWGroundAttackModel" parent="ModelAnimationStyleOneShotNoOrphan">
+        <Flags index="SuppressCreationErrors" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <Model value="GenericAttackModel"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+    </CActorModel>
+    <CActorAction id="ScoutSCBWAirLeftAttack" parent="GenericAttack" effectImpact="ScoutSCBWAirU" effectLaunch="ScoutSCBWAirLMLeft">
+        <LaunchAttachQuery Methods="AMFilterWeaponLeft"/>
+        <LaunchAssets Sound="ScoutSCBW_AirAttackLaunch"/>
+        <ImpactMap index="None" Sound="ScoutSCBW_AirAttackImpact"/>
+    </CActorAction>
+    <CActorMissile id="ScoutSCBWAirLeftAttackMissile" parent="GenericAttackMissile" unitName="ScoutSCBWAirWeaponLeft"/>
+    <CActorAction id="ScoutSCBWAirRightAttack" parent="GenericAttack" effectImpact="ScoutSCBWAirU" effectLaunch="ScoutSCBWAirLMRight">
+        <LaunchAttachQuery Methods="AMFilterWeaponRight"/>
+    </CActorAction>
+    <CActorMissile id="ScoutSCBWAirRightAttackMissile" parent="GenericAttackMissile" unitName="ScoutSCBWAirWeaponRight"/>
     <CActorUnit id="StargateSCBW" parent="ProtossBuildingEx" unitName="StargateSCBW">
         <Aliases value="_UnitHuge"/>
         <Macros value="ProtossBuildingPowerUp"/>
