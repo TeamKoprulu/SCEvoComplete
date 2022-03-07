@@ -4,6 +4,149 @@
         <AttributeFactor index="Light" value="-0.33"/>
         <AttributeFactor index="Armored" value="0.33"/>
     </CEffectDamage>
+    <CEffectApplyBehavior id="ArbiterSCBWCloakingFieldApply">
+        <ValidatorArray index="0" value="NotMothership"/>
+        <ValidatorArray value="NotMothershipCore"/>
+        <ValidatorArray value="NotArbiterMP"/>
+        <ValidatorArray value="NotArbiterSCBW"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWCloakFieldEffect"/>
+    </CEffectApplyBehavior>
+    <CEffectEnumArea id="ArbiterSCBWCloakingFieldSearch">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="CasterUnit"/>
+        <SearchFilters value="-;Self,Neutral,Enemy,Structure,Missile,Dead,Hidden"/>
+        <AreaArray Radius="5" Effect="ArbiterSCBWCloakingFieldApply"/>
+        <SearchFlags index="ExtendByUnitRadius" value="1"/>
+    </CEffectEnumArea>
+    <CEffectApplyBehavior id="ArbiterSCBWStasisFieldApply">
+        <ValidatorArray value="NotFrenzied"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWStasisField"/>
+    </CEffectApplyBehavior>
+    <CEffectEnumArea id="ArbiterSCBWStasisFieldSearch">
+        <EditorCategories value="Race:PrimalZerg"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="-;Self,Player,Ally,Neutral,Structure,Missile,Item,Dead,Hidden"/>
+        <AreaArray Radius="5" Effect="ArbiterSCBWStasisFieldSet"/>
+    </CEffectEnumArea>
+    <CEffectSet id="ArbiterSCBWStasisFieldSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWStasisFieldApply"/>
+        <EffectArray value="ArbiterSCBWStasisFieldTimerApply"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="ArbiterSCBWStasisFieldTimerApply">
+        <ValidatorArray value="NotFrenzied"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWStasisFieldTimedLife"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="ArbiterSCBWRecallApplyPostRecallBehavior">
+        <ValidatorArray index="0" value=""/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWRecalled"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="ArbiterSCBWRecallApplyPreRecallBehavior">
+        <ValidatorArray index="0" value="NotLarvaEgg"/>
+        <ValidatorArray value="NotLarva"/>
+        <ValidatorArray value="NotAbducted"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWRecalling"/>
+    </CEffectApplyBehavior>
+    <CEffectCreatePersistent id="ArbiterSCBWRecallFinalDelay">
+        <EditorCategories value="Race:Protoss"/>
+        <ExpireDelay value="2"/>
+        <WhichLocation Value="SourcePoint"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="ArbiterSCBWRecallInitialSet">
+        <ValidatorArray value="NotLarvaEgg"/>
+        <ValidatorArray value="NotLarva"/>
+        <EffectArray value="ArbiterSCBWRecallApplyPreRecallBehavior"/>
+        <EffectArray value="ArbiterSCBWRecallMagazineIterate"/>
+    </CEffectSet>
+    <CEffectEnumMagazine id="ArbiterSCBWRecallMagazineIterate">
+        <EditorCategories value=""/>
+        <EffectExternal value="ArbiterMPRecallApplyPreRecallBehavior"/>
+    </CEffectEnumMagazine>
+    <CEffectCreatePersistent id="ArbiterSCBWRecallInitialDelay">
+        <EditorCategories value="Race:Protoss"/>
+        <ExpireDelay value="2"/>
+        <InitialEffect value="ArbiterSCBWRecallSearch"/>
+        <FinalEffect value="ArbiterSCBWRecallFinalDelay"/>
+    </CEffectCreatePersistent>
+    <CEffectEnumArea id="ArbiterSCBWRecallSearch">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="-;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="3" Effect="ArbiterSCBWRecallInitialSet"/>
+        <MinCount value="1"/>
+    </CEffectEnumArea>
+    <CEffectSet id="ArbiterSCBWRecallSet">
+        <ValidatorArray value="NotLarvaEgg"/>
+        <ValidatorArray value="NotLarva"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecallTeleport"/>
+        <EffectArray value="ArbiterSCBWRecallApplyPostRecallBehavior"/>
+    </CEffectSet>
+    <CEffectTeleport id="ArbiterSCBWRecallTeleport">
+        <EditorCategories value="Race:Protoss"/>
+        <PlacementArc value="360"/>
+        <PlacementAround Effect="ArbiterSCBWRecallSearch" Value="SourcePoint"/>
+        <PlacementRange value="15"/>
+        <SourceLocation Effect="ArbiterSCBWRecallSearch" Value="TargetPoint"/>
+        <TargetLocation Effect="ArbiterSCBWRecallSearch" Value="SourcePoint"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+    </CEffectTeleport>
+    <CEffectDamage id="ArbiterMPWeaponDamage2" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="10"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="ArbiterSCBWWeaponLaunch">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="ArbiterMPWeaponDamage2"/>
+        <AmmoUnit value="ArbiterSCBWWeaponMissile"/>
+        <Movers Link="MissileDefault" IfRangeLTE="1"/>
+        <Movers Link="ArbiterMPWeaponMissile" IfRangeLTE="4"/>
+    </CEffectLaunchMissile>
+    <CEffectApplyBehavior id="DarkArchonSCBWMindControlApply">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="DarkArchonSCBWMindControl"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="DarkArchonSCBWMindControlRemoveTargetLock">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorLink value="ObserverTargetLock"/>
+    </CEffectRemoveBehavior>
+    <CEffectModifyUnit id="DarkArchonSCBWMindControlRemoveShields">
+        <VitalArray index="Shields">
+            <Change value="-500"/>
+        </VitalArray>
+        <ImpactUnit Value="Caster"/>
+    </CEffectModifyUnit>
+    <CEffectSet id="DarkArchonSCBWMindControlSet">
+        <ValidatorArray value="noMarkers"/>
+        <ValidatorArray value="NotWarpingIn"/>
+        <ValidatorArray value="NotFrenzied"/>
+        <ValidatorArray value="HasNoCargo"/>
+        <ValidatorArray value="NotPointDefenseDrone"/>
+        <ValidatorArray value="IsNotEgg"/>
+        <ValidatorArray value="NotLarva"/>
+        <ValidatorArray value="NotInfestedSpire"/>
+        <ValidatorArray value="NoDarkArchonMindControlPrevention"/>
+        <ValidatorArray value="NoVoidShade"/>
+        <ValidatorArray value="NoTerrazineShadow"/>
+        <EditorCategories value=""/>
+        <EffectArray value="DarkArchonSCBWMindControlApply"/>
+        <EffectArray value="DarkArchonSCBWMindControlRemoveTargetLock"/>
+        <EffectArray value="DarkArchonSCBWMindControlRemoveShields"/>
+    </CEffectSet>
+    <CEffectEnumArea id="DarkArchonSCBWMaelstromSearch">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="-;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="2" Effect="DarkArchonSCBWMaelstromApply"/>
+    </CEffectEnumArea>
     <CEffectUseMagazine id="CarrierSCBWInterceptor">
         <EditorCategories value="Race:Protoss"/>
         <AmmoEffect value="CarrierSCBWInterceptorLaunchSet"/>
@@ -13,6 +156,11 @@
         <EffectArray value="CarrierInterceptorLaunchTerrazineShadowAB"/>
         <EffectArray value="CarrierInterceptorLaunchVoidShadeAB"/>
     </CEffectSet>
+    <CEffectApplyBehavior id="DarkArchonSCBWMaelstromApply">
+        <ValidatorArray index="0" value=""/>
+        <EditorCategories value="Race:Terran"/>
+        <Behavior value="DarkArchonSCBWMaelstrom"/>
+    </CEffectApplyBehavior>
     <CEffectDamage id="DragoonSCBWDamage" parent="ExplosiveBaseDamage">
         <EditorCategories value="Race:Protoss"/>
         <Kind value="Ranged"/>
@@ -27,6 +175,33 @@
         <ImpactEffect value="DragoonSCBWDamage"/>
         <AmmoUnit value="DragoonSCBWWeapon"/>
     </CEffectLaunchMissile>
+    <CEffectDamage id="DarkArchonSCBWFeedback">
+        <ValidatorArray value=""/>
+        <EditorCategories value="Race:Protoss"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <ImpactLocation Value="TargetUnit"/>
+        <Flags index="Notification" value="1"/>
+        <VitalFractionCurrent index="Energy" value="1"/>
+        <Death value="Blast"/>
+        <SearchFlags index="CallForHelp" value="1"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectModifyUnit id="DarkArchonSCBWFeedbackEnergyLoss">
+        <ValidatorArray value=""/>
+        <EditorCategories value="Race:Protoss"/>
+        <VitalArray index="Energy">
+            <ChangeFraction value="-1"/>
+        </VitalArray>
+    </CEffectModifyUnit>
+    <CEffectSet id="DarkArchonSCBWFeedbackSet">
+        <ValidatorArray value="NotOrbitalCommand"/>
+        <ValidatorArray value="NotOrbitalCommandFlying"/>
+        <ValidatorArray value="NotNexus"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="DarkArchonSCBWFeedback"/>
+        <EffectArray value="DarkArchonSCBWFeedbackEnergyLoss"/>
+    </CEffectSet>
     <CEffectSet id="HighTemplarSCBWHallucinationBehaviorSet">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="HighTemplarSCBWHallucinationBehavior"/>
@@ -181,6 +356,62 @@
         <SpawnRange value="5"/>
         <SpawnCount value="2"/>
     </CEffectCreateUnit>
+    <CEffectApplyBehavior id="ScarabSCBWApplyReveal">
+        <Behavior value="ScarabSCBWReveal"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="ScarabSCBWExplode">
+        <ValidatorArray value="CasterIsNotHidden"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ScarabSCBWExplodeTargetDamage"/>
+        <EffectArray value="Suicide"/>
+    </CEffectSet>
+    <CEffectDamage id="ScarabSCBWExplodeTargetDamage" parent="DU_WEAP">
+        <AttributeBonus index="Structure" value="50"/>
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="100"/>
+        <Death value="Blast"/>
+        <AreaArray Radius="0.25" Fraction="0.8"/>
+        <AreaArray Radius="0.5" Fraction="0.6"/>
+        <AreaArray Radius="1" Fraction="0.5"/>
+        <AreaArray Radius="1.5" Fraction="0.25"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Ground;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="ScarabSCBWLM">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="ScarabSCBWExplode"/>
+        <AmmoUnit value="ScarabSCBWWeapon"/>
+        <ImpactRange value="1"/>
+    </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="ScarabSCBWLaunchPersistent">
+        <ValidatorArray value="ScarabSCBWNotArmed"/>
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="1"/>
+        <PeriodicValidator value="CasterNotDead"/>
+        <PeriodicEffectArray value="ScarabSCBWLaunchSet"/>
+        <PeriodicPeriodArray value="0.75"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="ScarabSCBWLaunchPersistentInitial">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ScarabSCBWLaunchPersistent"/>
+    </CEffectSet>
+    <CEffectSet id="ScarabSCBWLaunchSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ScarabSCBWApplyReveal"/>
+        <EffectArray value="ScarabSCBWUM"/>
+        <EffectArray value="ScarabSCBWLM"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="ScarabSCBWTimedLife">
+        <EditorCategories value="Race:Protoss"/>
+    </CEffectApplyBehavior>
+    <CEffectUseMagazine id="ScarabSCBWUM">
+        <EditorCategories value="Race:Protoss"/>
+        <AmmoEffect value="ScarabSCBWTimedLife"/>
+    </CEffectUseMagazine>
     <CEffectDamage id="ScoutSCBWGround" parent="DU_WEAP">
         <EditorCategories value="Race:Protoss"/>
         <AttributeBonus index="Light" value="16"/>
@@ -216,5 +447,10 @@
         <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <Amount value="5"/>
+    </CEffectDamage>
+    <CEffectDamage id="DarkTemplarSCBWWarpBlades" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Amount value="45"/>
+        <Death value="Eviscerate"/>
     </CEffectDamage>
 </Catalog>
