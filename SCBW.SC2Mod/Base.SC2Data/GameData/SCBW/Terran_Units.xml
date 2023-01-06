@@ -1,3 +1,436 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CRequirement id="MarineSCBW@Have">
+        <EditorCategories value="Race:Protoss,TechType:Unit"/>
+        <CanBeSuppressed index="Use" value="0"/>
+        <NodeArray index="Use" Link="MarineSCBW@CountUnitCompleteOnlyTechTreeCheat"/>
+    </CRequirement>
+    <CButton id="MarineSCBW">
+        <Icon value="Assets\Textures\btn-unit-terran-marine.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-terran-marine.dds"/>
+        <EditorCategories value="Race:Terran"/>
+    </CButton>
+    <CRequirementCountUnit id="MarineSCBW@CountUnitCompleteOnlyTechTreeCheat">
+        <Count Link="MarineSCBW" State="CompleteOnly"/>
+    </CRequirementCountUnit>
+    <CLight id="MarineSCBWPortrait" parent="default">
+        <ToDInfoArray index="0" AmbientColor="0.219608,0.137255,0.129412">
+            <Param index="HDRExposure" value="1.480000"/>
+            <Param index="HDRBloomThreshold" value="1.950000"/>
+            <Param index="HDRSpecMultiplier" value="0.540000"/>
+            <Param index="HDREmisMultiplier" value="1.900000"/>
+            <Param index="CreepSpecularExp" value="40.000000"/>
+            <DirectionalLight index="Key">
+                <Color value="0.984314,0.937255,0.776471"/>
+                <ColorMultiplier value="0.920000"/>
+                <SpecColorMultiplier value="1.679000"/>
+                <Direction value="0.632074,0.659581,-0.406736"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" Color="0.000000,0.501961,1.000000" ColorMultiplier="0.335000" Direction="-0.781562,-0.180294,-0.597206"/>
+            <DirectionalLight index="Back" Color="0.501961,0.247059,0.247059" ColorMultiplier="0.245000" Direction="0.010646,0.677691,0.735270"/>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
+    </CLight>
+    <CActorSound id="MarineSCBW@DeathNP"/>
+    <CActorSound id="MarineSCBW@Death" parent="SoundOneShot">
+        <On Terms="UnitDeath.MarineSCBW; PassChance 100.000000" Send="Create"/>
+    </CActorSound>
+    <CActorModel id="MarineSCBW@CheerSquib" parent="ModelAdditionNoAnims">
+        <On Terms="ActorCreation" Send="$Stand"/>
+        <On Terms="AnimDone; AnimName Stand" Send="$Stand"/>
+        <On Terms="AnimPlay; AnimName Stand" Send="Create MarineSCBW@CheerSquibSound"/>
+        <HostSiteOps Ops="SOpAttachWeapon"/>
+        <Model value="MarineSCBW@CheerSquibLaunch"/>
+    </CActorModel>
+    <CActorSound id="MarineSCBW@CheerSquibSound" parent="SoundOneShot">
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachWeapon"/>
+    </CActorSound>
+    <CActorSound id="MarineSCBW@Land" parent="SoundOneShot"/>
+    <CActorUnit id="MarineSCBW" parent="GenericUnitBase" unitName="MarineSCBW">
+        <Aliases value="_UnitSmall"/>
+        <Macros value="UnloadDropAnim"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsVoidGround"/>
+        <On Terms="ActorCreation; ValidatePlayer NoMarineShield" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        <!--
+        <On Terms="Upgrade.ShieldWall.Add" Send="AnimClear Cover"/>
+        <On Terms="Upgrade.ShieldWall.Remove" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        -->
+        <On Terms="UnitDeath.MarineSCBW; AnimPlaying Cover" Target="_DeathModel" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
+        <On Terms="ModelEvent; ModelEventName SquibStart" Send="Create MarineSCBW@CheerSquib"/>
+        <On Terms="ModelEvent; ModelEventName SquibStop" Target="MarineSCBW@CheerSquib" Send="Destroy"/>
+        <On Terms="ModelEvent; ModelEventName SquibStop" Target="MarineSCBW@CheerSquibSound" Send="Destroy"/>
+        <On Terms="AnimDone; AnimName Cheer" Target="MarineSCBW@CheerSquib" Send="Destroy"/>
+        <On Terms="AnimDone; AnimName Cheer" Target="MarineSCBW@CheerSquibSound" Send="Destroy"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create MarineSCBW@Land"/>
+        <On Terms="Upgrade.CombatShield.Add" Send="AnimClear Cover"/>
+        <On Terms="Upgrade.CombatShield.Remove" Send="AnimPlay Cover Cover PlayForever"/>
+        <On Terms="UnitDeathCustomize; PassChance 100.000000; ValidateUnit IsNotNeuralParasited" Send="Create MarineSCBW@Death"/>
+        <On Terms="UnitDeathCustomize; PassChance 100.000000; !ValidateUnit IsNotNeuralParasited" Send="Create MarineSCBW@DeathNP"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize Variation14"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize RagdollFire"/>
+        <!--
+        <On Terms="Upgrade.DarkMarineArmor.Add" Send="ModelSwap Shadow_MarineEX2"/>
+        <On Terms="UnitBirth; ValidateUnit HaveDarkMarineArmor" Send="ModelSwap Shadow_MarineEX2"/>
+        -->
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="MarineSCBW@Death" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
+        <DeathArray index="Blast" ModelLink="MarineSCBW@DeathBlast"/>
+        <DeathArray index="Disintegrate" ModelLink="MarineSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eat" AnimProps="Stand" ModelLink="MarineSCBW@DeathEat" SoundLink="MarineSCBW@DeathFXEat"/>
+        <DeathArray index="Eviscerate" ModelLink="MarineSCBW@DeathEviscerate" SoundLink="MarineSCBW@DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="MarineSCBW@DeathFire" SoundLink="MarineSCBW@DeathFXFire"/>
+        <DeathArray index="Silentkill" SoundLink="MarineSCBW@DeathFXSilentKill"/>
+        <DeathArray index="Squish" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
+        <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
+        <DeathCustoms ModelLink="MarineSCBW@DeathRagdoll" Name="RagdollBasic">
+            <BodySquibs Name="None"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms ActorModel="SpineCrawlerHurlDeathRagdollBloodPrevent" ModelLink="MarineSCBW@DeathRagdoll" Name="RagdollSpineCrawlerHurl">
+            <BodySquibs Name="None"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms ModelLink="MarineSCBW@DeathFire" Name="Variation14"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowSmall"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
+        <PortraitModel value="MarineSCBW@Portrait"/>
+        <StandAnimTurnTime value="4"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.600000"/>
+            <RangeDown value="0.600000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
+        </TerrainSquibs>
+        <WalkAnimMoveSpeed value="2.25"/>
+        <AbilSoundArray AbilCmd="Stimpack,Execute" Sound="MarineSCBW@StimPackVO"/>
+        <BarOffset value="40"/>
+        <BarWidth value="36"/>
+        <GlossaryAnim value="Spell"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Marine.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-marine.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <SoundArray index="Ready" value="MarineSCBW@Ready"/>
+        <SoundArray index="Help" value="MarineSCBW@Help"/>
+        <SoundArray index="What" value="MarineSCBW@What"/>
+        <SoundArray index="Yes" value="MarineSCBW@Yes"/>
+        <SoundArray index="Attack" value="MarineSCBW@Attack"/>
+        <SoundArray index="Pissed" value="MarineSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-marine.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Marine.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CModel id="MarineSCBW@DeathEat" parent="UnitDeath" Race="Terran">
+        <Model value="Assets\Units\Terran\MarineDeathEat\MarineDeathEat.m3"/>
+        <LowQualityModel value="TerranBloodDeathLow"/>
+        <Occlusion value="Show"/>
+    </CModel>
+    <CModel id="MarineSCBW@DeathEviscerate" parent="MarineDeathEviscerateBase">
+        <Model value="Assets\Units\Terran\MarineDeathEviscerateEx1\MarineDeathEviscerateEx1.m3"/>
+    </CModel>
+    <CModel id="MarineSCBW@CheerSquibLaunch" parent="LaunchFX">
+        <Model value="Assets\Effects\Terran\MarineWeaponLaunch\MarineWeaponLaunch.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
+    <CModel id="MarineSCBW" parent="MarineBase">
+        <Model value="Assets\Units\Terran\Marine\Marine.m3"/>
+    </CModel>
+    <CModel id="MarineSCBW@Death" parent="MarineDeathBase">
+        <Model value="Assets\Units\Terran\MarineDeathEx1\MarineDeathEx1.m3"/>
+    </CModel>
+    <CModel id="MarineSCBW@DeathAcid" parent="MarineDeathAcidBase">
+        <Model value="Assets\Units\Terran\MarineDeathAcid\MarineDeathAcid.m3"/>
+    </CModel>
+    <CModel id="MarineSCBW@DeathBlast" parent="MarineDeathBlastBase">
+        <Model value="Assets\Units\Terran\MarineDeathBlastEx1\MarineDeathBlastEx1.m3"/>
+    </CModel>
+    <CModel id="MarineSCBW@DeathFire" parent="MarineDeathFireBase">
+        <Model value="Assets\Units\Terran\MarineDeathFire\MarineDeathFire.m3"/>
+    </CModel>
+    <CModel id="MarineSCBW@DeathRagdoll" parent="MarineDeathRagdollBase">
+        <Model value="Assets\Units\Terran\MarineDeathRagdoll\MarineDeathRagdoll.m3"/>
+    </CModel>
+    <CModel id="MarineSCBW@Portrait" parent="MarinePortraitBase">
+        <Model value="Assets\Portraits\Terran\MarinePortrait\MarinePortrait.m3"/>
+        <Image value="Assets\Textures\MarinePortrait_Static.dds"/>
+        <Lighting value="MarineSCBWPortrait"/>
+    </CModel>
+    <CSound id="MarineSCBW@Attack" parent="TerranAckSCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@Yes00"/>
+        <AssetArray TemplateParam="MarineSCBW@Yes01"/>
+        <AssetArray TemplateParam="MarineSCBW@Yes02"/>
+        <AssetArray TemplateParam="MarineSCBW@Yes03"/>
+        <Flags index="Download" value="0"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@Death" parent="TerranDeathSCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@Death00"/>
+        <AssetArray TemplateParam="MarineSCBW@Death01"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@Help" parent="AlertTerranSCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@Help00"/>
+        <Mode value="3DWorld"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@Pissed" parent="TerranAckSCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@Pissed00"/>
+        <AssetArray TemplateParam="MarineSCBW@Pissed01"/>
+        <AssetArray TemplateParam="MarineSCBW@Pissed02"/>
+        <AssetArray TemplateParam="MarineSCBW@Pissed03"/>
+        <AssetArray TemplateParam="MarineSCBW@Pissed04"/>
+        <AssetArray TemplateParam="MarineSCBW@Pissed05"/>
+        <AssetArray TemplateParam="MarineSCBW@Pissed06"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@Ready" parent="TerranReadySCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@Ready00"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@What" parent="TerranAckSCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@What00"/>
+        <AssetArray TemplateParam="MarineSCBW@What01"/>
+        <AssetArray TemplateParam="MarineSCBW@What02"/>
+        <AssetArray TemplateParam="MarineSCBW@What03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@Yes" parent="TerranAckSCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@Yes00"/>
+        <AssetArray TemplateParam="MarineSCBW@Yes01"/>
+        <AssetArray TemplateParam="MarineSCBW@Yes02"/>
+        <AssetArray TemplateParam="MarineSCBW@Yes03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@Land" parent="Spell">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <Category value="Combat"/>
+        <DupeDestroyCount value="5"/>
+        <DupeMaximumMethod value="Replace"/>
+        <DupeMuteCount value="3"/>
+        <DupePrioritization value="Oldest"/>
+        <Pitch value="-4.000000,5.000000"/>
+        <Volume value="-14.000000,-5.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@CheerSquibSound" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch2.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch3.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch4.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch5.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch6.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch7.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch8.wav"/>
+        <DupeDestroyCount value="6"/>
+        <DupeMaximumMethod value="Replace"/>
+        <DupeMuteCount value="6"/>
+        <Pitch value="-0.890000,0.840000"/>
+        <VariationMinimum value="8"/>
+        <Volume value="-9.000000,-6.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@DeathNP" parent="TerranAck">
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\Marine\Marine_NeuralParasiteDeath00.wav"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@DeathFXBlast" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall4.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall5.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall6.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall7.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall8.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall9.wav" Pitch="-3.000000,3.000000"/>
+        <DupeDestroyCount value="5"/>
+    </CSound>
+    <CSound id="MarineSCBW@DeathFXBloodSpray" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@DeathFXEat" parent="Death">
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXEat0.wav"/>
+    </CSound>
+    <CSound id="MarineSCBW@DeathFXEviscerate" parent="Death">
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXEviscerate0.wav"/>
+        <Pitch value="0.000000,2.000000"/>
+        <Volume value="-6.000000,-4.000000"/>
+    </CSound>
+    <CSound id="MarineSCBW@DeathFXFire" parent="Death">
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXFire0.wav"/>
+    </CSound>
+    <CSound id="MarineSCBW@DeathFXSilentKill" parent="Combat">
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXSilentKill0.wav"/>
+    </CSound>
+    <CSound id="MarineSCBW@StimPackVO" parent="TerranAckSCBW" Folder="MarineSCBW">
+        <AssetArray TemplateParam="MarineSCBW@StimPackVO00"/>
+        <AssetArray TemplateParam="MarineSCBW@StimPackVO01"/>
+        <Flags index="Purgable" value="1"/>
+        <Flags index="Stream" value="0"/>
+        <Category value="Spell"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CDataCollectionUnit id="MarineSCBW">
+        <EditorCategories value="DataGroup:Unit,DataFamily:Melee,ObjectType:Unit,Race:Terran"/>
+        <DataRecord Entry="Actor,MarineSCBW"/>
+        <DataRecord Entry="Button,MarineSCBW"/>
+        <DataRecord Entry="Model,MarineSCBW"/>
+        <DataRecord Entry="Unit,MarineSCBW"/>
+        <DataRecord Entry="Model,MarineSCBW@Death"/>
+        <DataRecord Entry="Model,MarineSCBW@Portrait"/>
+        <DataRecord Entry="Light,MarineSCBWPortrait"/>
+        <DataRecord Entry="Sound,MarineSCBW@Ready"/>
+        <DataRecord Entry="Sound,MarineSCBW@Help"/>
+        <DataRecord Entry="Sound,MarineSCBW@What"/>
+        <DataRecord Entry="Sound,MarineSCBW@Yes"/>
+        <DataRecord Entry="Sound,MarineSCBW@Attack"/>
+        <DataRecord Entry="Sound,MarineSCBW@Pissed"/>
+        <DataRecord Entry="Sound,MarineSCBW@Death"/>
+        <DataRecord Entry="Model,MarineSCBW@DeathAcid"/>
+        <DataRecord Entry="Model,MarineSCBW@DeathBlast"/>
+        <DataRecord Entry="Model,MarineSCBW@DeathFire"/>
+        <DataRecord Entry="Model,MarineSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Requirement,MarineSCBW@Have"/>
+        <DataRecord Entry="RequirementNode,MarineSCBW@CountUnitCompleteOnlyTechTreeCheat"/>
+        <DataRecord Entry="Sound,MarineSCBW@Land"/>
+        <DataRecord Entry="Actor,MarineSCBW@Land"/>
+        <DataRecord Entry="Actor,MarineSCBW@CheerSquibSound"/>
+        <DataRecord Entry="Actor,MarineSCBW@CheerSquib"/>
+        <DataRecord Entry="Actor,MarineSCBW@Death"/>
+        <DataRecord Entry="Actor,MarineSCBW@DeathNP"/>
+        <DataRecord Entry="Model,MarineSCBW@CheerSquibLaunch"/>
+        <DataRecord Entry="Model,MarineSCBW@DeathEviscerate"/>
+        <DataRecord Entry="Model,MarineSCBW@DeathEat"/>
+        <DataRecord Entry="Sound,MarineSCBW@CheerSquibSound"/>
+        <DataRecord Entry="Sound,MarineSCBW@DeathNP"/>
+        <DataRecord Entry="Sound,MarineSCBW@DeathFXBlast"/>
+        <DataRecord Entry="Sound,MarineSCBW@DeathFXBloodSpray"/>
+        <DataRecord Entry="Sound,MarineSCBW@DeathFXEat"/>
+        <DataRecord Entry="Sound,MarineSCBW@DeathFXSilentKill"/>
+        <DataRecord Entry="Sound,MarineSCBW@DeathFXFire"/>
+        <DataRecord Entry="Sound,MarineSCBW@DeathFXEviscerate"/>
+        <DataRecord Entry="Sound,MarineSCBW@StimPackVO"/>
+    </CDataCollectionUnit>
+    <CUnit id="MarineSCBW">
+        <DeathRevealRadius value="3"/>
+        <Race value="Terr"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Light" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <LifeStart value="45"/>
+        <LifeMax value="45"/>
+        <LifeArmorName value="Unit/LifeArmorName/TerranInfantryArmor"/>
+        <Speed value="2.25"/>
+        <Acceleration value="1000"/>
+        <LateralAcceleration value="46.0625"/>
+        <StationaryTurningRate value="999.8437"/>
+        <TurningRate value="999.8437"/>
+        <Sight value="9"/>
+        <Food value="-1"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="50"/>
+        <RepairTime value="20"/>
+        <AttackTargetPriority value="20"/>
+        <DamageDealtXP value="1"/>
+        <DamageTakenXP value="1"/>
+        <KillXP value="10"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="Stimpack"/>
+        <WeaponArray Link="GuassRifle"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="Stim" Type="AbilCmd" AbilCmd="Stimpack,Execute" Row="2" Column="0"/>
+        </CardLayouts>
+        <Radius value="0.375"/>
+        <SeparationRadius value="0.375"/>
+        <InnerRadius value="0.375"/>
+        <CargoSize value="1"/>
+        <ScoreMake value="50"/>
+        <ScoreKill value="50"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="15"/>
+        <MinimapRadius value="0.375"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <TacticalAI value="Marine"/>
+        <GlossaryCategory value="Unit/Category/TerranUnits"/>
+        <GlossaryPriority value="21"/>
+        <GlossaryStrongArray value="Marauder"/>
+        <GlossaryStrongArray value="Hydralisk"/>
+        <GlossaryStrongArray value="Immortal"/>
+        <GlossaryWeakArray value="SiegeTankSieged"/>
+        <GlossaryWeakArray value="Baneling"/>
+        <GlossaryWeakArray value="Colossus"/>
+        <HotkeyCategory value="Unit/Category/TerranUnits"/>
+        <Fidget>
+            <ChanceArray index="Anim" value="33"/>
+            <ChanceArray index="Idle" value="33"/>
+            <ChanceArray index="Turn" value="33"/>
+        </Fidget>
+        <TauntDuration index="Cheer" value="5"/>
+        <TauntDuration index="Dance" value="5"/>
+    </CUnit>
 </Catalog>
