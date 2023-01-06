@@ -4,6 +4,23 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
+    <CActorSound id="MarineSCBW@DeathNP"/>
+    <CActorSound id="MarineSCBW@Death" parent="SoundOneShot">
+        <On Terms="UnitDeath.MarineSCBW; PassChance 100.000000" Send="Create"/>
+    </CActorSound>
+    <CActorModel id="MarineSCBW@CheerSquib" parent="ModelAdditionNoAnims">
+        <On Terms="ActorCreation" Send="$Stand"/>
+        <On Terms="AnimDone; AnimName Stand" Send="$Stand"/>
+        <On Terms="AnimPlay; AnimName Stand" Send="Create MarineSCBW@CheerSquibSound"/>
+        <HostSiteOps Ops="SOpAttachWeapon"/>
+        <Model value="MarineSCBW@CheerSquibLaunch"/>
+    </CActorModel>
+    <CActorSound id="MarineSCBW@CheerSquibSound" parent="SoundOneShot">
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachWeapon"/>
+    </CActorSound>
+    <CActorSound id="MarineSCBW@Land" parent="SoundOneShot"/>
     <CActorUnit id="LurkerSCBW" parent="GenericBurrowerStandard" unitName="LurkerSCBW">
         <Aliases value="_UnitLarge"/>
         <Aliases value="_UnitLarge"/>
@@ -512,8 +529,10 @@
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <On Terms="ActorCreation; ValidatePlayer NoMarineShield" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        <!--
         <On Terms="Upgrade.ShieldWall.Add" Send="AnimClear Cover"/>
         <On Terms="Upgrade.ShieldWall.Remove" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        -->
         <On Terms="UnitDeath.MarineSCBW; AnimPlaying Cover" Target="_DeathModel" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
         <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
         <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
@@ -521,33 +540,35 @@
         <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
         <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
-        <On Terms="ModelEvent; ModelEventName SquibStart" Send="Create MarineCheerSquib"/>
-        <On Terms="ModelEvent; ModelEventName SquibStop" Target="MarineCheerSquib" Send="Destroy"/>
-        <On Terms="ModelEvent; ModelEventName SquibStop" Target="MarineCheerSquibSound" Send="Destroy"/>
-        <On Terms="AnimDone; AnimName Cheer" Target="MarineCheerSquib" Send="Destroy"/>
-        <On Terms="AnimDone; AnimName Cheer" Target="MarineCheerSquibSound" Send="Destroy"/>
-        <On Terms="UnitHeightUpdate.*.Land" Send="Create Marine_Land"/>
+        <On Terms="ModelEvent; ModelEventName SquibStart" Send="Create MarineSCBW@CheerSquib"/>
+        <On Terms="ModelEvent; ModelEventName SquibStop" Target="MarineSCBW@CheerSquib" Send="Destroy"/>
+        <On Terms="ModelEvent; ModelEventName SquibStop" Target="MarineSCBW@CheerSquibSound" Send="Destroy"/>
+        <On Terms="AnimDone; AnimName Cheer" Target="MarineSCBW@CheerSquib" Send="Destroy"/>
+        <On Terms="AnimDone; AnimName Cheer" Target="MarineSCBW@CheerSquibSound" Send="Destroy"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create MarineSCBW@Land"/>
         <On Terms="Upgrade.CombatShield.Add" Send="AnimClear Cover"/>
         <On Terms="Upgrade.CombatShield.Remove" Send="AnimPlay Cover Cover PlayForever"/>
-        <On Terms="UnitDeathCustomize; PassChance 100.000000; ValidateUnit IsNotNeuralParasited" Send="Create Marine_Death"/>
-        <On Terms="UnitDeathCustomize; PassChance 100.000000; !ValidateUnit IsNotNeuralParasited" Send="Create Marine_Death_NP"/>
+        <On Terms="UnitDeathCustomize; PassChance 100.000000; ValidateUnit IsNotNeuralParasited" Send="Create MarineSCBW@Death"/>
+        <On Terms="UnitDeathCustomize; PassChance 100.000000; !ValidateUnit IsNotNeuralParasited" Send="Create MarineSCBW@DeathNP"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize Variation14"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize RagdollFire"/>
+        <!--
         <On Terms="Upgrade.DarkMarineArmor.Add" Send="ModelSwap Shadow_MarineEX2"/>
         <On Terms="UnitBirth; ValidateUnit HaveDarkMarineArmor" Send="ModelSwap Shadow_MarineEX2"/>
+        -->
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="MarineSCBWDeath" SoundLink="Marine_DeathFXBloodSpray"/>
-        <DeathArray index="Blast" ModelLink="MarineSCBWDeathBlast"/>
-        <DeathArray index="Disintegrate" ModelLink="MarineSCBWDeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Eat" AnimProps="Stand" ModelLink="MarineDeathEat" SoundLink="Marine_DeathFXEat"/>
-        <DeathArray index="Eviscerate" ModelLink="MarineDeathEviscerate" SoundLink="Marine_DeathFXEviscerate"/>
-        <DeathArray index="Fire" ModelLink="MarineSCBWDeathFire" SoundLink="Marine_DeathFXFire"/>
-        <DeathArray index="Silentkill" SoundLink="Uni_DeathFXSilentKill"/>
-        <DeathArray index="Squish" SoundLink="Marine_DeathFXBloodSpray"/>
+        <DeathArray index="Normal" ModelLink="MarineSCBW@Death" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
+        <DeathArray index="Blast" ModelLink="MarineSCBW@DeathBlast"/>
+        <DeathArray index="Disintegrate" ModelLink="MarineSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eat" AnimProps="Stand" ModelLink="MarineSCBW@DeathEat" SoundLink="MarineSCBW@DeathFXEat"/>
+        <DeathArray index="Eviscerate" ModelLink="MarineSCBW@DeathEviscerate" SoundLink="MarineSCBW@DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="MarineSCBW@DeathFire" SoundLink="MarineSCBW@DeathFXFire"/>
+        <DeathArray index="Silentkill" SoundLink="MarineSCBW@DeathFXSilentKill"/>
+        <DeathArray index="Squish" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
         <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
-        <DeathCustoms ModelLink="MarineSCBWDeathRagdoll" Name="RagdollBasic">
+        <DeathCustoms ModelLink="MarineSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="None"/>
         </DeathCustoms>
         <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
@@ -564,13 +585,13 @@
             <BodySquibs Name="Acid"/>
         </DeathCustoms>
         <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms ActorModel="SpineCrawlerHurlDeathRagdollBloodPrevent" ModelLink="MarineSCBWDeathRagdoll" Name="RagdollSpineCrawlerHurl">
+        <DeathCustoms ActorModel="SpineCrawlerHurlDeathRagdollBloodPrevent" ModelLink="MarineSCBW@DeathRagdoll" Name="RagdollSpineCrawlerHurl">
             <BodySquibs Name="None"/>
         </DeathCustoms>
         <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms ModelLink="MarineSCBWDeathFire" Name="Variation14"/>
+        <DeathCustoms ModelLink="MarineSCBW@DeathFire" Name="Variation14"/>
         <DeathCustoms>
             <ModelLink value="DeathVoidShadowSmall"/>
             <SoundLink value="ShadowUnit_DeathFX"/>
@@ -578,7 +599,7 @@
             <Name value="Shadow"/>
         </DeathCustoms>
         <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
-        <PortraitModel value="MarineSCBWPortrait"/>
+        <PortraitModel value="MarineSCBW@Portrait"/>
         <StandAnimTurnTime value="4"/>
         <TerrainSquibs>
             <MovementDistance value="0.150000,0.150000"/>
@@ -589,7 +610,7 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
         </TerrainSquibs>
         <WalkAnimMoveSpeed value="2.25"/>
-        <AbilSoundArray AbilCmd="Stimpack,Execute" Sound="Marine_StimPackVO"/>
+        <AbilSoundArray AbilCmd="Stimpack,Execute" Sound="MarineSCBW@StimPackVO"/>
         <BarOffset value="40"/>
         <BarWidth value="36"/>
         <GlossaryAnim value="Spell"/>
