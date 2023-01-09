@@ -4,40 +4,6 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
-    <CActorUnit id="FirebatSCBW" parent="GenericUnitStandard" unitName="FirebatSCBW">
-        <Aliases value="_UnitMedium"/>
-        <Macros value="UnloadDropAnim"/>
-        <On Terms="Abil.attack.ReadyStop" Target="FirebatAttackModel" Send="SetOpacity 0.000000 0.250000"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="FirebatSCBW@Death" SoundLink="FirebatSCBW@Explode"/>
-        <DeathCustoms>
-            <ModelLink value="DeathVoidShadowMedium"/>
-            <SoundLink value="ShadowUnit_DeathFX"/>
-            <VoiceLink value="ShadowUnit_DeathVox"/>
-            <Name value="Shadow"/>
-        </DeathCustoms>
-        <PortraitModel value="FirebatSCBW@Portrait"/>
-        <WalkAnimMoveSpeed value="1.875"/>
-        <BarOffset value="77"/>
-        <BarWidth value="45"/>
-        <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Terran-firebat.dds"/>
-        </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-terran-firebat.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
-        <SoundArray index="Ready" value="FirebatSCBW@Ready"/>
-        <SoundArray index="Help" value="FirebatSCBW@Help"/>
-        <SoundArray index="What" value="FirebatSCBW@What"/>
-        <SoundArray index="Yes" value="FirebatSCBW@Yes"/>
-        <SoundArray index="Attack" value="FirebatSCBW@Attack"/>
-        <SoundArray index="Pissed" value="FirebatSCBW@Pissed"/>
-        <UnitIcon value="Assets\Textures\btn-unit-terran-firebat.dds"/>
-        <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Terran-firebat.dds"/>
-        </Wireframe>
-    </CActorUnit>
     <CActorSplat id="CorsairSCBWDisruptionWebCursorSplat" parent="ProtossCursorSplat" abil="CorsairSCBWDisruptionWeb"/>
     <CActorModel id="CorsairSCBWDisruptionWebImpact" parent="ModelAnimationStyleContinuous">
         <On Terms="Effect.CorsairSCBWDisruptionWebCreatePersistent.Start" Send="Create"/>
@@ -257,6 +223,128 @@
     <CActorMissile id="ArbiterSCBWWeaponMissile" parent="GenericAttackMissile" unitName="ArbiterSCBWWeaponMissile">
         <On Terms="ActorCreation" Send="Create ArbiterSCBW_AttackLaunch"/>
     </CActorMissile>
+    <CActorUnit id="GhostSCBW" parent="GenericUnitBase" unitName="GhostSCBW">
+        <Aliases value="_UnitSmall"/>
+        <Macros value="UnloadDropAnim"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="PhysicsDeathsVoidGround"/>
+        <On Terms="Abil.TacNukeStrike.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
+        <On Terms="Abil.TacNukeStrike.SourceCastStop" Send="AnimClear SpellA"/>
+        <On Terms="Abil.TacNukeStrike.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
+        <On Terms="Abil.TacNukeStrike.SourceChannelStop" Send="AnimClear SpellB"/>
+        <On Terms="Abil.TacNukeStrike.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
+        <On Terms="Abil.TacNukeStrike.SourceFinishStop" Send="AnimClear SpellC"/>
+        <On Terms="Abil.Snipe.SourceCastStart" Send="AnimBaselineStop"/>
+        <On Terms="Abil.Snipe.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
+        <On Terms="Abil.Snipe.SourceCastStop" Send="AnimClear SpellA"/>
+        <On Terms="Abil.Snipe.SourceCastStop" Send="AnimBaselineStart"/>
+        <On Terms="Abil.Snipe.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
+        <On Terms="Abil.Snipe.SourceChannelStop" Send="AnimClear SpellB"/>
+        <On Terms="Abil.Snipe.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
+        <On Terms="UnitMovementUpdate.*.Walk; AnimPlaying SpellC" Send="AnimClear SpellC"/>
+        <On Terms="Abil.EMP.SourceCastStart" Send="AnimPlay SpellC Spell,C 0 0.000000 0.300000"/>
+        <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
+        <On Terms="Behavior.GhostHoldFireB.On" Send="AnimGroupApply Cover"/>
+        <On Terms="Behavior.GhostHoldFireB.On" Send="AnimPlay MorphStart Cover,Start"/>
+        <On Terms="Behavior.GhostHoldFireB.On" Send="AnimClear MorphEnd"/>
+        <On Terms="Behavior.GhostHoldFireB.On" Send="Create Ghost_HoldFire_Sound"/>
+        <On Terms="Behavior.GhostHoldFireB.Off" Send="AnimPlay MorphEnd Cover,End"/>
+        <On Terms="Behavior.GhostHoldFireB.Off" Send="AnimClear MorphStart"/>
+        <On Terms="Behavior.GhostHoldFireB.Off" Send="AnimGroupRemove Cover"/>
+        <On Terms="Behavior.GhostHoldFireB.Off" Send="Create Ghost_WeaponsFree_Sound"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GhostAlternate" Send="Destroy"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create Ghost@Land"/>
+        <On Terms="Abil.PenetratingShot.SourceCastStart" Send="AnimBaselineStop"/>
+        <On Terms="Abil.PenetratingShot.SourceCastStart" Send="AnimBaselineStop"/>
+        <On Terms="Abil.PenetratingShot.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
+        <On Terms="Abil.PenetratingShot.SourceCastStop" Send="AnimClear SpellA"/>
+        <On Terms="Abil.PenetratingShot.SourceCastStop" Send="AnimBaselineStart"/>
+        <On Terms="Abil.PenetratingShot.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
+        <On Terms="Abil.PenetratingShot.SourceChannelStop" Send="AnimClear SpellB"/>
+        <On Terms="Abil.PenetratingShot.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
+        <On Terms="Signal.*.PenetratingShotGuideCreate" Send="Create PenetratingShotVisualQuad"/>
+        <On Terms="Signal.*.PenetratingShotGuideDestroy" Target="PenetratingShotVisualQuad" Send="Destroy"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize Variation17"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize RagdollFire"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
+        <AnimBlendTime value="-0.800000"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="GhostSCBW@Death" SoundLink="GhostSCBW@Explode"/>
+        <DeathArray index="Blast" ModelLink="GhostSCB@WDeathBlast"/>
+        <DeathArray index="Disintegrate" ModelLink="GhostSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eviscerate" ModelLink="GhostSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="GhostSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
+        <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
+        <DeathCustoms ActorModel="UnitDeathRagdollBloodPrevent" ModelLink="GhostSCBW@DeathRagdoll" Name="RagdollBasic">
+            <BodySquibs Name="None"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms ActorModel="SpineCrawlerHurlDeathRagdollBloodPrevent" ModelLink="GhostSCBW@DeathRagdoll" Name="RagdollSpineCrawlerHurl">
+            <BodySquibs Name="None"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms ModelLink="GhostSCBW@DeathFire" Name="Variation17"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowSmall"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
+        <PortraitModel value="GhostSCBW@Portrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.400000"/>
+            <RangeDown value="0.400000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
+        </TerrainSquibs>
+        <WalkAnimMoveSpeed value="2.25"/>
+        <AbilSoundArray AbilCmd="GhostCloak,On" Sound="Ghost_CloakOnVO"/>
+        <AbilSoundArray AbilCmd="EMP,Execute" Sound="Ghost_EmpVO"/>
+        <AbilSoundArray AbilCmd="TacNukeStrike,Execute" Sound="Ghost_NuclearStrikeVO"/>
+        <BarOffset value="50"/>
+        <BarWidth value="42"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Ghost.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <SelectAbilCmd value="EMP,Execute"/>
+        <SoundArray index="Ready" value="GhostSCBW@Ready"/>
+        <SoundArray index="Help" value="GhostSCBW@Help"/>
+        <SoundArray index="What" value="GhostSCBW@What"/>
+        <SoundArray index="Yes" value="GhostSCBW@Yes"/>
+        <SoundArray index="Attack" value="GhostSCBW@Attack"/>
+        <SoundArray index="Pissed" value="GhostSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Ghost.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorSound id="GhostSCBW@Land" parent="SoundOneShot"/>
     <CActorSound id="ReaverSCBW_Land" parent="SoundOneShot"/>
     <CActorSound id="ArchonSCBW_Land" parent="SoundOneShot"/>
     <CActorSound id="CarrierSCBW_Land" parent="SoundOneShot"/>
