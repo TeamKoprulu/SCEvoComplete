@@ -4,6 +4,47 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
+    <CActorAction id="SiegeTankSCBWTankWeapon@Attack" parent="GenericAttack" effectAttack="SiegeTankSCBWTankWeapon@Damage">
+        <LaunchAttachQuery Methods="AMPatternRollingStripe"/>
+        <LaunchAssets Model="SiegeTankSCBWTankWeapon@Launch" Sound="SiegeTankSCBWTankWeapon@Launch"/>
+        <ImpactMap index="None" Model="SiegeTankSCBWTankWeapon@Impact" Sound="SiegeTankSCBWTankWeapon@Impact"/>
+        <ImpactPhysics Name="90mmCannonImpact" MatchKeys="Basic" Physics="SiegeTankAttackForce"/>
+    </CActorAction>
+    <CActorModel id="SiegeTankSCBWSiegedWeapon@DamageModel" parent="ModelAnimationStyleOneShotNoOrphan">
+        <Flags index="SuppressCreationErrors" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <Supporter Subject="_Selectable"/>
+        <On Terms="SupporterDestruction" Send="AnimBracketStop BSD"/>
+        <Model value="GenericAttackModel"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+    </CActorModel>
+    <CActorAction id="SiegeTankSCBWSiegedWeapon@Attack" parent="GenericAttack" effectAttack="SiegeTankSCBWSiegedWeapon@Blast">
+        <LaunchAssets Model="SiegeTankSCBWSiegedWeapon@Launch" Sound="SiegeTankSCBWSiegedWeapon@Launch"/>
+        <ImpactSiteOps Ops="SOpActionCenter SOpTargetUnitZ" HoldPosition="1"/>
+        <ImpactMap index="None" Model="SiegeTankSCBWSiegedWeapon@Impact" Sound="SiegeTankSCBWSiegedWeapon@Impact"/>
+        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="SiegeTankSiegedForce"/>
+        <DamageSiteOps Ops="SOpAttachHarness"/>
+        <DamageMap index="None" Model="SiegeTankSCBWSiegedWeapon@Damage"/>
+        <DamageModel value="SiegeTankSCBWSiegedWeapon@DamageModel"/>
+        <ShieldFlashType value="Full"/>
+    </CActorAction>
+    <CActorAction id="SiegeTankSCBWSiegedWeapon@AttackDirected" parent="GenericAttack" effectAttack="SiegeTankSCBWSiegedWeapon@DirectedBlast">
+        <LaunchAssets Model="SiegeTankSCBWSiegedWeapon@DirectedLaunch" Sound="SiegeTankSCBWSiegedWeapon@Launch"/>
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
+        <ImpactMap index="None" Model="SiegeTankSCBWSiegedWeapon@DirectedImpact" Sound="SiegeTankSCBWSiegedWeapon@Impact"/>
+        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="SiegeTankSiegedForce"/>
+        <DamageMap index="None" Model="SiegeTankSCBWSiegedWeapon@DirectedDamage"/>
+        <DamageModel value="SiegeTankSCBWSiegedWeapon@DamageModel"/>
+        <ShieldFlashType value="Header"/>
+    </CActorAction>
+    <CActorTurret id="SiegeTankSCBW@SiegedTurret">
+        <On Terms="TurretEnable.SiegeTankSCBW@Sieged" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom SiegeTankSCBW@Sieged" Send="Destroy"/>
+    </CActorTurret>
+    <CActorTurret id="SiegeTankSCBW@Turret">
+        <On Terms="TurretEnable.SiegeTankSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom SiegeTankSCBW" Send="Destroy"/>
+    </CActorTurret>
     <CActorSound id="SpiderMineSCBW@PlaceSound" parent="SoundOneShot">
         <On Terms="AbilMorph.SpiderMineSCBW@Unburrow.Start" Send="Create"/>
         <Sound value="SpiderMineSCBW@Place"/>
