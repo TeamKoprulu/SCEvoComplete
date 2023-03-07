@@ -4,6 +4,73 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
+    <CActorAction id="FirebatSCBWWeapon@Attack" parent="GenericAttackBase" effectAttack="FirebatSCBWWeapon@Persistent">
+        <On Terms="Effect.FirebatSCBWWeapon@Set.Start; At Caster" Send="Create"/>
+        <On Terms="Effect.FirebatSCBWWeapon@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <LaunchAssets Model="FirebatSCBWWeapon@Launch" Sound="FirebatSCBWWeapon@Launch"/>
+        <LaunchModel value="FirebatSCBWWeapon@Model"/>
+        <ContainerAssets Model="FirebatSCBWWeapon@BunkerLaunch" Sound="FirebatSCBWWeapon@BunkerLaunch"/>
+        <ImpactMap index="None" Sound="FirebatSCBWWeapon@Impact"/>
+    </CActorAction>
+    <CActorModel id="FirebatSCBWWeapon@Model" parent="ModelAnimationStyleOneShotNoOrphan">
+        <Flags index="SuppressCreationErrors" value="1"/>
+    </CActorModel>
+    <CActorFoliageFXSpawner id="FirebatSCBWWeapon@FoliageFXSpawner" parent="FoliageFXSpawnerFire">
+        <On Terms="Effect.FirebatSCBWWeapon@Enum.Start" Send="Create"/>
+        <Radius value="0.600000"/>
+    </CActorFoliageFXSpawner>
+    <CActorModel id="FirebatSCBWStimpack@EndImpact" parent="ModelAnimationStyleOneShot">
+        <Inherits index="CloakEffect" value="1"/>
+        <On Terms="Behavior.FirebatSCBWStimpack.Off; ValidateUnit NotDead" Send="Create"/>
+        <On Terms="Behavior.StimpackMarauder.Off; ValidateUnit NotDead" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOverhead"/>
+    </CActorModel>
+    <CActorSound id="FirebatSCBWStimpack@Launch" parent="SoundOneShot">
+        <On Terms="Abil.FirebatSCBWStimpack.SourceCastStart" Send="Create"/>
+    </CActorSound>
+    <CActorRegionCircle id="FirebatSCBWWeapon@TreeKiller">
+        <On Terms="Effect.FirebatSCBWWeapon@Enum.Start; At Effect" Send="Create"/>
+        <On Terms="ActorCreation" Send="QueryRegion ::Self TreeBurnQuery AgainstCenter"/>
+        <On Terms="Effect.FirebatSCBWWeapon@Enum.Start; At Effect" Send="Destroy"/>
+        <Radius value="0.400000"/>
+    </CActorRegionCircle>
+    <CActorModel id="FirebatSCBWWeapon@Impact" parent="ModelAnimationStyleOneShot">
+        <Terms value="Cap 1"/>
+        <On Terms="Effect.FirebatSCBWWeapon@Damage.Start; At Target" Send="Create"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachRandomDamage"/>
+    </CActorModel>
+    <CActorAction id="MarineSCBWWeapon@Attack" parent="GenericAttack" effectAttack="MarineSCBWWeapon@Damage">
+        <LaunchAssets Model="MarineSCBWWeapon@Launch" Sound="MarineSCBWWeapon@Launch"/>
+        <ContainerAssets Model="MarineSCBWWeapon@BunkerLaunch" Sound="MarineSCBWWeapon@BunkerLaunch"/>
+        <ImpactMap index="None" Model="MarineSCBWWeapon@Impact" Sound="MarineSCBWWeapon@Impact"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactPhysics Name="BulletImpact" MatchKeys="Basic" Physics="MarineAttackDeathForce"/>
+        <DamageMap index="None" Sound=""/>
+        <AcquisitionYawHalfArc value="10.000000"/>
+        <AcquisitionPitchHalfArc value="15.000000"/>
+        <AccuracyHalfArc value="5.000000"/>
+    </CActorAction>
+    <CActorSound id="MarineSCBWStimpack@Launch" parent="SoundOneShot">
+        <On Terms="Abil.MarineSCBWStimpack.SourceCastStart" Send="Create"/>
+    </CActorSound>
+    <CActorModel id="MarineSCBWStimpack@EndImpact" parent="ModelAnimationStyleOneShot">
+        <Inherits index="CloakEffect" value="1"/>
+        <On Terms="Behavior.MarineSCBWStimpack.Off; ValidateUnit NotDead" Send="Create"/>
+        <On Terms="Behavior.StimpackMarauder.Off; ValidateUnit NotDead" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOverhead"/>
+    </CActorModel>
+    <CActorModel id="StimpackStartImpact2" parent="ModelAnimationStyleOneShot">
+        <Inherits index="CloakEffect" value="1"/>
+        <On Terms="Abil.MarineSCBWStimpack.SourceCastStart" Send="Create"/>
+        <On Terms="Abil.StimpackMarauder.SourceCastStart" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOverhead"/>
+        <Model value="MarineSCBWStimpack@StartImpact"/>
+    </CActorModel>
     <CActorAction id="SiegeTankSCBWTankWeapon@Attack" parent="GenericAttack" effectAttack="SiegeTankSCBWTankWeapon@Damage">
         <LaunchAttachQuery Methods="AMPatternRollingStripe"/>
         <LaunchAssets Model="SiegeTankSCBWTankWeapon@Launch" Sound="SiegeTankSCBWTankWeapon@Launch"/>
