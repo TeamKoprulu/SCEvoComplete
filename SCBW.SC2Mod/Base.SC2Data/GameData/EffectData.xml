@@ -4,6 +4,19 @@
         <AttributeFactor index="Light" value="-0.33"/>
         <AttributeFactor index="Armored" value="0.33"/>
     </CEffectDamage>
+    <CEffectEnumArea default="1" id="FirebatSCBWWeapon@EnumBase" parent="EA_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <DebugTrace value="1"/>
+        <ImpactLocation Value="SourceUnitOrPoint"/>
+        <SearchFilters value="Ground;Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray RectangleWidth="1" RectangleHeight="3" Effect="FirebatSCBWWeapon@Damage"/>
+        <!--<AreaRelativeOffset value="0,-1.5"/>-->
+    </CEffectEnumArea>
+    <CEffectApplyBehavior id="MedicSCBWOpticFlare@ABBlind">
+        <!--<ValidatorArray index="0" value="BlindingCloudABTargetFilters"/>-->
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="MedicSCBWOpticFlare@Blind"/>
+    </CEffectApplyBehavior>
     <CEffectCreatePersistent id="FirebatSCBWWeapon@Persistent">
         <EditorCategories value="Race:Terran"/>
         <WhichLocation Value="SourceUnitOrPoint"/>
@@ -23,28 +36,13 @@
         <PeriodicPeriodArray value="0.022"/>
         -->
     </CEffectCreatePersistent>
-    <CEffectEnumArea id="FirebatSCBWWeapon@Enum" parent="EA_WEAP">
-        <EditorCategories value="Race:Terran"/>
-        <SearchFilters value="Ground;Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
-        <AreaArray RectangleWidth="1.5" RectangleHeight="2.5" Effect="FirebatSCBWWeapon@DamageSet"/>
-        <DebugTrace value="1"/>
-        <!--<AreaRelativeOffset value="0,-1.5"/>-->
+    <CEffectEnumArea id="FirebatSCBWWeapon@EnumLeft" parent="FirebatSCBWWeapon@EnumBase">
+        <AreaArray index="0" RectangleWidth="1" RectangleHeight="3" Effect="FirebatSCBWWeapon@DamageLeft"/>
+        <AreaRelativeOffset value="0.45,-1.75"/>
     </CEffectEnumArea>
-    <CEffectEnumArea id="FirebatSCBWWeapon@EnumLeft" parent="EA_WEAP">
-        <EditorCategories value="Race:Terran"/>
-        <DebugTrace value="1"/>
-        <ImpactLocation Value="SourceUnitOrPoint"/>
-        <SearchFilters value="Ground;Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
-        <AreaArray RectangleWidth="0.75" RectangleHeight="2.5" Effect="FirebatSCBWWeapon@DamageLeft"/>
-        <AreaRelativeOffset value="0.5,-1.5"/>
-    </CEffectEnumArea>
-    <CEffectEnumArea id="FirebatSCBWWeapon@EnumRight" parent="EA_WEAP">
-        <EditorCategories value="Race:Terran"/>
-        <DebugTrace value="1"/>
-        <ImpactLocation Value="SourceUnitOrPoint"/>
-        <SearchFilters value="Ground;Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
-        <AreaArray RectangleWidth="0.75" RectangleHeight="2.5" Effect="FirebatSCBWWeapon@DamageRight"/>
-        <AreaRelativeOffset value="-0.5,-1.5"/>
+    <CEffectEnumArea id="FirebatSCBWWeapon@EnumRight" parent="FirebatSCBWWeapon@EnumBase">
+        <AreaArray index="0" RectangleWidth="1" RectangleHeight="3" Effect="FirebatSCBWWeapon@DamageRight"/>
+        <AreaRelativeOffset value="-0.45,-1.75"/>
     </CEffectEnumArea>
     <CEffectApplyBehavior id="FirebatSCBWStimpack@AB">
         <EditorCategories value="Race:Terran"/>
@@ -86,6 +84,21 @@
         <Kind value="Ranged"/>
         <Amount value="6"/>
     </CEffectDamage>
+    <CEffectDestroyPersistent id="MedicSCBWHeal@DummyDP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="SourceUnit"/>
+        <Effect value="MedicSCBWHeal@DummyCP"/>
+    </CEffectDestroyPersistent>
+    <CEffectLaunchMissile id="MedicSCBWOpticFlare@LM">
+        <EditorCategories value=""/>
+        <ImpactEffect value="MedicSCBWOpticFlare@Set"/>
+        <AmmoUnit value="MedicSCBWOpticFlare@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectSet id="MedicSCBWOpticFlare@Set">
+        <ValidatorArray value=""/>
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="MedicSCBWOpticFlare@ABBlind"/>
+    </CEffectSet>
     <CEffectDamage id="SiegeTankSCBWTankWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Terran"/>
         <AttributeBonus index="Armored" value="10"/>
@@ -644,4 +657,26 @@
         <EditorCategories value="Race:Terran"/>
         <Behavior value="MarineSCBWStimpack"/>
     </CEffectApplyBehavior>
+    <CEffectSet id="MedicSCBWHeal@Dummy"/>
+    <CEffectCreatePersistent id="MedicSCBWHeal@DummyCP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="SourceUnit"/>
+        <!--<Flags index="Channeled" value="1"/>-->
+        <Flags index="PersistUntilDestroyed" value="1"/>
+        <PeriodicPeriodArray value="0.5"/>
+        <PeriodicEffectArray value="MedicSCBWHeal@Dummy"/>
+    </CEffectCreatePersistent>
+    <CEffectCreateHealer id="MedicSCBWHeal@Healer">
+        <ValidatorArray value="noMarkers"/>
+        <ValidatorArray value="NotWarpingIn"/>
+        <ValidatorArray value="HiddenCompareAB"/>
+        <ValidatorArray value="HiddenCompareBA"/>
+        <ValidatorArray value="NotVortexd"/>
+        <ValidatorArray value="DisableMedicHealing"/>
+        <DrainVital value="Energy"/>
+        <DrainVitalCostFactor value="0.33"/>
+        <RechargeVitalRate value="9"/>
+        <InitialEffect value="MedicSCBWHeal@DummyCP"/>
+        <FinalEffect value="MedicSCBWHeal@DummyDP"/>
+    </CEffectCreateHealer>
 </Catalog>

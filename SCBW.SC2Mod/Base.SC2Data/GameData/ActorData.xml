@@ -4,6 +4,20 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
+    <CActorAction id="MedicSCBWOpticFlare@Attack" parent="GenericAttack" effectImpact="MedicSCBWOpticFlare@Set" effectLaunch="MedicSCBWOpticFlare@LM">
+        <LaunchAssets Sound="MedicSCBWOpticFlare@Launch"/>
+        <Missile value="MedicSCBWOpticFlare@Missile"/>
+        <ImpactSiteOps Ops="SOpAttachCenter"/>
+        <ImpactMap index="None" Sound="MedicSCBWOpticFlare@Impact"/>
+        <ShieldFlashType value="None"/>
+    </CActorAction>
+    <CActorMissile id="MedicSCBWOpticFlare@Missile" parent="GenericUnitMinimal" unitName="MedicSCBWOpticFlare@Missile">
+        <PreHost value="_ActorAction"/>
+    </CActorMissile>
+    <CActorRange id="MedicSCBWOpticFlare@Range" parent="RangeAbil" abil="MedicSCBWOpticFlare">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
     <CActorAction id="FirebatSCBWWeapon@Attack" parent="GenericAttackBase" effectAttack="FirebatSCBWWeapon@Enum">
         <On Terms="Effect.FirebatSCBWWeapon@Set.Start; At Caster" Send="Create"/>
         <On Terms="Effect.FirebatSCBWWeapon@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
@@ -73,6 +87,48 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOverhead"/>
     </CActorModel>
+    <CActorSound id="MedicSCBWHeal@SoundStop" parent="SoundOneShot">
+        <Sound value="MedicSCBWHeal@Stop"/>
+    </CActorSound>
+    <CActorSound id="MedicSCBWHeal@SoundStart" parent="SoundOneShot">
+        <Sound value="MedicSCBWHeal@Start"/>
+    </CActorSound>
+    <CActorBeamSimple id="MedicSCBWHeal@Beam" parent="BeamSimpleAnimationStyleContinuous">
+        <Inherits index="Visibility" value="1"/>
+        <On Terms="Effect.MedicSCBWHeal@Healer.TargetStart" Send="Create"/>
+        <On Terms="Effect.MedicSCBWHeal@Healer.TargetStop" Send="Destroy"/>
+        <HostForProps Subject="_Unit" Scope="Caster" Actor="Find"/>
+        <HostLaunch Subject="_Unit" Scope="Caster" Actor="Find"/>
+        <HostLaunchSiteOps Ops="SOpAttachWeapon"/>
+        <HostImpact Subject="_Unit" Scope="Target" Actor="Find"/>
+        <HostImpactSiteOps Ops="SOpAttachCenter"/>
+    </CActorBeamSimple>
+    <CActorModel id="MedicSCBWHeal@Model" parent="ModelAnimationStyleContinuous">
+        <On Terms="ActorCreation" Send="$Birth PlayForever"/>
+        <On Terms="Effect.MedicSCBWHeal@Healer.TargetStart; At Target" Send="Create"/>
+        <On Terms="Effect.MedicSCBWHeal@Healer.TargetStop; At Target" Send="Destroy"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOverhead"/>
+    </CActorModel>
+    <CActorSound id="MedicSCBWHeal@Sound" parent="SoundOneShot">
+        <On Terms="Effect.MedicSCBWHeal@Dummy.Start" Send="Create"/>
+        <Sound value="MedicSCBWHeal@Loop"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOverhead"/>
+    </CActorSound>
+    <CActorSound id="MedicSCBWHeal@SoundLoop" parent="SoundContinuous">
+        <!--<On Terms="Abil.MedicSCBWHeal.TargetChannelStart" Send="Create"/>
+        <On Terms="Abil.MedicSCBWHeal.TargetChannelStop" Send="Destroy"/>
+        <On Terms="Effect.MedicSCBWHeal@DummyCP.Start" Send="Create"/>
+        <On Terms="Effect.MedicSCBWHeal@DummyCP.Stop" Send="Destroy"/>-->
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <!--<On Terms="ActorCreation" Send="Create MedicSCBWHeal@SoundStart"/>
+        <On Terms="ActorDestruction" Send="Create MedicSCBWHeal@SoundStop"/>-->
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOverhead"/>
+        <Sound value="MedicSCBWHeal@Loop"/>
+    </CActorSound>
     <CActorAction id="SiegeTankSCBWTankWeapon@Attack" parent="GenericAttack" effectAttack="SiegeTankSCBWTankWeapon@Damage">
         <LaunchAttachQuery Methods="AMPatternRollingStripe"/>
         <LaunchAssets Model="SiegeTankSCBWTankWeapon@Launch" Sound="SiegeTankSCBWTankWeapon@Launch"/>
@@ -515,7 +571,7 @@
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="MedicSCBW@Death" SoundLink="MedicSCBW@Explode"/>
+        <DeathArray index="Normal" ModelLink="MedicSCBW@Death" SoundLink="MedicSCBW@Death"/>
         <DeathArray index="Blast" ModelLink="MedicSCBW@Death"/>
         <DeathCustoms ModelLink="MedicKillSquadDeath" SoundLink="MedicSCBW@Death" Name="Variation2"/>
         <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollBasic"/>
