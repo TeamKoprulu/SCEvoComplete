@@ -4,6 +4,30 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
     </CActorModel>
+    <CActorModel default="1" id="TerranBuildingSCBW@BuildBasis" parent="TerranModelConstruction">
+        <Aliases value="_TerranBuildModel"/>
+        <On Terms="ActorCreation" Send="Create TerranConstructionSCBW@Attached"/>
+        <HostSiteOps Ops="SOpShadow TerranBuildingFacing"/>
+        <ModelFlags index="OutlineOccluder" value="1"/>
+        <CreepHeightClass value="Default"/>
+    </CActorModel>
+    <CActorModel default="1" id="TerranBuildingSCBW@Build" parent="TerranBuildingSCBW@BuildBasis"/>
+    <CActorModel default="1" id="TerranBuildingSCBW@BuildRefinery" parent="TerranBuildingSCBW@BuildBasis"/>
+    <CActorModel default="1" id="TerranBuildingSCBW@BuildSmall" parent="TerranBuildingSCBW@BuildBasis">
+        <Aliases index="1" value="_TerranBuildModelSmall"/>
+        <Remove Terms="ActorCreation" Send="Create TerranConstructionSCBW@Attached"/>
+        <On Terms="ActorCreation" Send="Create TerranConstructionSCBW@AttachedSmall"/>
+        <CreepHeightClass value="Small"/>
+    </CActorModel>
+    <CActorSound default="1" id="TerranBuildingSCBW@LiftOff" parent="SoundOneShot">
+        <?token id="unitName"?>
+        <On Terms="AbilMorph.*.Start; MorphFrom ##unitName##; MorphTo ##unitName##@Flying" Send="Create"/>
+        <!--<On Terms="AbilMorph.*.Start; MorphTo ##unitName##@Flying MorphFrom ##unitName##" Send="Create"/>-->
+    </CActorSound>
+    <CActorSound default="1" id="TerranBuildingSCBW@Land" parent="SoundOneShot">
+        <?token id="unitName"?>
+        <On Terms="AbilMorph.*.Start; MorphTo ##unitName##; MorphFrom ##unitName##@Flying" Send="Create"/>
+    </CActorSound>
     <CActorUnit default="1" id="TerranBuildingSCBW" parent="GenericUnitStandard">
         <Aliases value="_CreepEngulfable"/>
         <Macros value="SnowVisualUnitMacroMP"/>
@@ -48,7 +72,7 @@
         <GroupSoundArray index="Attack" value="##unitName##@GroupAttack"/>
         <GroupSoundArray index="Board" value="##unitName##@GroupBoard"/>
     </CActorUnit>
-    <CActorUnit default="1" id="TerranBuildingFlyerSCBW" parent="TerranBuildingSCBW">
+    <CActorUnit default="1" id="TerranBuildingSCBW@Flyer" parent="TerranBuildingSCBW">
         <Aliases value="_UnitHuge"/>
         <Macros index="1" value="QueueAnim"/>
         <Macros value="BuildAnim"/>
@@ -80,7 +104,130 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive3"/>
         </TerrainSquibs>
     </CActorUnit>
-    <CActorUnit id="BarracksSCBW" parent="TerranBuildingFlyerSCBW" unitName="BarracksSCBW">
+    <CActorModel id="CommandCenterSCBW@Build" parent="TerranBuildingSCBW@Build"/>
+    <CActorSound id="CommandCenterSCBW@Land" parent="TerranBuildingSCBW@Land" unitName="CommandCenterSCBW"/>
+    <CActorSound id="CommandCenterSCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff" unitName="CommandCenterSCBW"/>
+    <CActorUnit id="CommandCenterSCBW" parent="TerranBuildingSCBW@Flyer" unitName="CommandCenterSCBW">
+        <Macros value="MacroTownhallDeco_Terran"/>
+        <Macros value="TerranCommandCenterPlayerDecalMacro"/>
+        <AcceptedHostedPropTransfers index="Decal" value="0"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove A"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove B"/>
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever"/>
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC"/>
+        <On Terms="UnitDeathCustomize; AnimPlaying Morph" Send="DeathCustomize Variation2"/>
+        <On Terms="Abil.CommandCenterSCBW@LiftOff.Start" Send="StatusSet FlyDeathAnim 1"/>
+        <On Terms="Abil.CommandCenterSCBW@LiftOff.Start" Send="TimerSet 1.100000 FlyDeathAnimChange"/>
+        <On Terms="TimerExpired; TimerName FlyDeathAnimChange" Send="StatusSet FlyDeathAnim 2"/>
+        <On Terms="UnitBirth.CommandCenterFlying" Send="StatusSet FlyDeathAnim 2"/>
+        <On Terms="Abil.CommandCenterSCBW@Land.Start" Send="TimerSet 0.700000 LandDeathAnimChange"/>
+        <On Terms="Abil.CommandCenterSCBW@Land.Start" Send="TimerSet 1.100000 LandDeathAnimChangeB"/>
+        <On Terms="TimerExpired; TimerName LandDeathAnimChange" Send="StatusSet FlyDeathAnim 1"/>
+        <On Terms="TimerExpired; TimerName LandDeathAnimChangeB" Send="StatusSet FlyDeathAnim 0"/>
+        <On Terms="UnitDeathCustomize; IsStatus FlyDeathAnim 1" Send="DeathCustomize Variation3"/>
+        <On Terms="UnitDeathCustomize; IsStatus FlyDeathAnim 2" Send="DeathCustomize Flying"/>
+        <On Terms="UnitBirth.CommandCenterFlying" Send="HideWorkerCount 1"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW@Flying; MorphTo CommandCenterSCBW" Send="HideWorkerCount"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Send="HideWorkerCount 1"/>
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="CommandCenterSCBW@Explode"/>
+        <DeathCustoms index="5" ModelLink="CommandCenterSCBW@Death" SoundLink="CommandCenterSCBW@Explode" Name="Variation2"/>
+        <DeathCustoms ModelLink="CommandCenterSCBW@FlyDeath" SoundLink="CommandCenterSCBW@Explode" Name="Flying"/>
+        <DeathCustoms ModelLink="CommandCenterSCBW@DeathLow" Name="Variation3"/>
+        <BarOffset value="165"/>
+        <BarWidth value="200"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-CommandCenter.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-CommandCenter.dds"/>
+        <NameOffset value="150"/>
+        <StatusHarvesterData Text="UI/HarvesterCountMinerals" SearchFilters="HarvestableResource;Player,Ally,Enemy" SearchRadius="8"/>
+        <UnitIcon value="Assets\Textures\btn-building-terran-CommandCenter.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-CommandCenter.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorSplat id="CommandCenterSCBW@Splat" parent="GenericUnitSplat" unitName="CommandCenterSCBW">
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo PlanetaryFortress" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo OrbitalCommand" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphTo CommandCenter; MorphFrom CommandCenterFlying" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CommandCenter; MorphTo CommandCenterFlying" Send="Destroy"/>
+    </CActorSplat>
+    <CActorProgress id="TerranConstructionSCBW">
+        <On Terms="Abil.SCVSCBW@Build.BuiltStart" Send="Create"/>
+        <!--<On Terms="Abil.BarracksAddOns.BuiltStart" Send="Create"/>-->
+        <On Terms="ProgressLevel.TerranConstructionSCBW.Start; Level 0" Send="SetTransferOverrideAnim Build,A,Stand"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW.Stop; Level 0" Send="SetTransferOverrideAnim"/>
+        <StageArray AnimProps="Build,A,Start" BlendTime="0.000000"/>
+        <StageArray AnimProps="Build,A,Stand"/>
+        <StageArray AnimProps="Build,B,Start"/>
+        <StageArray AnimProps="Build,B,Stand"/>
+        <StageArray AnimProps="Build,C,Start"/>
+        <StageArray AnimProps="Build,C,Stand"/>
+        <StageArray AnimProps="Build,D"/>
+    </CActorProgress>
+    <CActorProgress id="TerranConstructionSCBW@Attached">
+        <Supporter Subject="_TerranBuildModel"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Start; Level 0" Send="SetTransferOverrideAnim Birth,A,Stand"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Stop; Level 0" Send="SetTransferOverrideAnim"/>
+        <StageArray AnimProps="Birth,A,Start" BlendTime="0.000000"/>
+        <StageArray AnimProps="Birth,A,Stand"/>
+        <StageArray AnimProps="Birth,B,Start"/>
+        <StageArray AnimProps="Birth,B,Stand"/>
+        <StageArray AnimProps="Birth,C,Start"/>
+        <StageArray AnimProps="Birth,C,Stand"/>
+    </CActorProgress>
+    <CActorProgress id="TerranConstructionSCBW@AttachedSmall">
+        <Supporter Subject="_TerranBuildModelSmall"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Start; Level 0" Send="SetTransferOverrideAnim Birth,A,Stand"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Stop; Level 0" Send="SetTransferOverrideAnim"/>
+        <StageArray AnimProps="Birth,A,Start" BlendTime="0.000000"/>
+        <StageArray AnimProps="Birth,A,Stand"/>
+        <StageArray AnimProps="Birth,B,Start"/>
+        <StageArray AnimProps="Birth,B,Stand"/>
+        <StageArray AnimProps="Birth,C,Start"/>
+        <StageArray AnimProps="Birth,C,Stand"/>
+    </CActorProgress>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel0" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Start; Level 0" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Stop; Level 0" Send="Destroy"/>
+        <Sound value="Terran_ConstructionStart"/>
+    </CActorSound>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel0Small" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Start; Level 0" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Stop; Level 0" Send="Destroy"/>
+        <Sound value="Terran_ConstructionStartSmall"/>
+    </CActorSound>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel2" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Start; Level 2" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Stop; Level 2" Send="Destroy"/>
+        <Sound value="Terran_ConstructionStage1"/>
+    </CActorSound>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel2Small" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Start; Level 2" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Stop; Level 2" Send="Destroy"/>
+        <Sound value="Terran_ConstructionStage1Small"/>
+    </CActorSound>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel4" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Start; Level 4" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Stop; Level 4" Send="Destroy"/>
+        <Sound value="Terran_ConstructionStage2"/>
+    </CActorSound>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel4Small" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Start; Level 4" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Stop; Level 4" Send="Destroy"/>
+        <Sound value="Terran_ConstructionStage2Small"/>
+    </CActorSound>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel6" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Start; Level 6" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@Attached.Stop; Level 6" Send="Destroy"/>
+        <Sound value="Terran_ConstructionEnd"/>
+    </CActorSound>
+    <CActorSound id="TerranConstructionSCBW@SoundLevel6Small" parent="ProgressSound">
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Start; Level 6" Send="Create"/>
+        <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Stop; Level 6" Send="Destroy"/>
+        <Sound value="Terran_ConstructionEndSmall"/>
+    </CActorSound>
+    <CActorUnit id="BarracksSCBW" parent="TerranBuildingSCBW@Flyer" unitName="BarracksSCBW">
         <On Terms="UnitDeathCustomize.BarracksFlying" Send="DeathCustomize Flying"/>
         <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="BarracksSCBW@Explode"/>
         <BarOffset value="155"/>
@@ -95,6 +242,9 @@
             <Image value="Assets\Textures\Wireframe-Terran-Barracks.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CActorSound id="BarracksSCBW@Land" parent="TerranBuildingSCBW@Land" unitName="BarracksSCBW"/>
+    <CActorSound id="BarracksSCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff" unitName="BarracksSCBW"/>
+    <CActorModel id="BarracksSCBW@Build" parent="TerranBuildingSCBW@Build"/>
     <CActorSplat id="BarracksSCBW@Splat" parent="TerranBuildingMorphSplat" unitName="BarracksSCBW"/>
     <CActorAction id="GhostSCBWWeapon@Attack" parent="GenericAttack" effectAttack="GhostSCBWWeapon@Damage">
         <LaunchAssets Model="GhostSCBWWeapon@Launch" Sound="GhostSCBWWeapon@Launch"/>
@@ -355,7 +505,7 @@
         <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
-        <PortraitModel value="SCVPortrait"/>
+        <PortraitModel value="SCVSCBW@Portrait"/>
         <TerrainSquibs>
             <MovementDistance value="0.150000,0.150000"/>
             <IdlePeriod value="0.100000,0.250000"/>
