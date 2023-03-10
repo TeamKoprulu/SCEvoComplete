@@ -10,6 +10,12 @@
         <CanBeSuppressed index="Use" value="0"/>
         <NodeArray index="Use" Link="MarineSCBW@CountUnitCompleteOnlyTechTreeCheat"/>
     </CRequirement>
+    <CButton id="KerriganSCBW">
+        <Icon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <DefaultButtonLayout Column="2"/>
+    </CButton>
     <CButton id="GhostSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
@@ -33,6 +39,20 @@
     <CRequirementCountUnit id="FirebatSCBW@CountUnitCompleteOnlyTechTreeCheat">
         <Count Link="FirebatSCBW" State="CompleteOnly"/>
     </CRequirementCountUnit>
+    <CLight id="KerriganSCBW@Portrait" parent="default">
+        <ToDInfoArray index="0" AmbientColor="0.000000,0.000000,0.000000" OperatorHDR="3">
+            <Param index="HDRExposure" value="1.475000"/>
+            <DirectionalLight index="Key">
+                <Color value="0.713726,0.062745,0.062745"/>
+                <ColorMultiplier value="0.733000"/>
+                <SpecColorMultiplier value="1.000000"/>
+                <Direction value="0.339453,0.158434,-0.927184"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" Color="0.937255,0.054902,0.054902" ColorMultiplier="0.537000" Direction="0.787751,-0.488998,-0.374607"/>
+            <DirectionalLight index="Back" Color="0.313726,0.874510,0.992157" ColorMultiplier="0.832000" Direction="-0.851308,0.505872,0.139173"/>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
+    </CLight>
     <CLight id="GhostSCBW@Portrait" parent="default">
         <ToDInfoArray index="0" AmbientColor="0.000000,0.000000,0.000000" OperatorHDR="3">
             <Param index="HDRExposure" value="1.475000"/>
@@ -84,6 +104,120 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
+    <CActorUnit id="KerriganSCBW" parent="GenericUnitBase" unitName="KerriganSCBW">
+        <Aliases value="_UnitSmall"/>
+        <Macros value="UnloadDropAnim"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="PhysicsDeathsVoidGround"/>
+        <On Terms="Abil.TacNukeStrike.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
+        <On Terms="Abil.TacNukeStrike.SourceCastStop" Send="AnimClear SpellA"/>
+        <On Terms="Abil.TacNukeStrike.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
+        <On Terms="Abil.TacNukeStrike.SourceChannelStop" Send="AnimClear SpellB"/>
+        <On Terms="Abil.TacNukeStrike.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
+        <On Terms="Abil.TacNukeStrike.SourceFinishStop" Send="AnimClear SpellC"/>
+        <On Terms="Abil.Snipe.SourceCastStart" Send="AnimBaselineStop"/>
+        <On Terms="Abil.Snipe.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
+        <On Terms="Abil.Snipe.SourceCastStop" Send="AnimClear SpellA"/>
+        <On Terms="Abil.Snipe.SourceCastStop" Send="AnimBaselineStart"/>
+        <On Terms="Abil.Snipe.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
+        <On Terms="Abil.Snipe.SourceChannelStop" Send="AnimClear SpellB"/>
+        <On Terms="Abil.Snipe.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
+        <On Terms="UnitMovementUpdate.*.Walk; AnimPlaying SpellC" Send="AnimClear SpellC"/>
+        <On Terms="Abil.GhostSCBWLockdown.SourceCastStart" Send="AnimPlay SpellC Spell,C 0 0.000000 0.300000"/>
+        <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="AnimGroupApply Cover"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="AnimPlay MorphStart Cover,Start"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="AnimClear MorphEnd"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="Create Ghost_HoldFire_Sound"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="AnimPlay MorphEnd Cover,End"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="AnimClear MorphStart"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="AnimGroupRemove Cover"/>
+        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="Create Ghost_WeaponsFree_Sound"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GhostAlternate" Send="Destroy"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create Ghost@Land"/>
+        <On Terms="Signal.*.PenetratingShotGuideCreate" Send="Create PenetratingShotVisualQuad"/>
+        <On Terms="Signal.*.PenetratingShotGuideDestroy" Target="PenetratingShotVisualQuad" Send="Destroy"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize Variation17"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize RagdollFire"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
+        <AnimBlendTime value="-0.800000"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="KerriganSCBW@Death" SoundLink="KerriganSCBW@Death"/>
+        <DeathArray index="Blast" ModelLink="GhostSCB@WDeathBlast"/>
+        <DeathArray index="Disintegrate" ModelLink="KerriganSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eviscerate" ModelLink="KerriganSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="KerriganSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
+        <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
+        <DeathCustoms ActorModel="UnitDeathRagdollBloodPrevent" ModelLink="KerriganSCBW@DeathRagdoll" Name="RagdollBasic">
+            <BodySquibs Name="None"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms ActorModel="SpineCrawlerHurlDeathRagdollBloodPrevent" ModelLink="KerriganSCBW@DeathRagdoll" Name="RagdollSpineCrawlerHurl">
+            <BodySquibs Name="None"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms ModelLink="KerriganSCBW@DeathFire" Name="Variation17"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowSmall"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
+        <PortraitModel value="KerriganSCBW@Portrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.400000"/>
+            <RangeDown value="0.400000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
+        </TerrainSquibs>
+        <WalkAnimMoveSpeed value="2.25"/>
+        <AbilSoundArray AbilCmd="GhostCloak,On" Sound="Ghost_CloakOnVO"/>
+        <AbilSoundArray AbilCmd="EMP,Execute" Sound="Ghost_EmpVO"/>
+        <AbilSoundArray AbilCmd="TacNukeStrike,Execute" Sound="Ghost_NuclearStrikeVO"/>
+        <BarOffset value="50"/>
+        <BarWidth value="42"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Ghost.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <SelectAbilCmd value="EMP,Execute"/>
+        <SoundArray index="Ready" value="KerriganSCBW@Ready"/>
+        <SoundArray index="Help" value="KerriganSCBW@Help"/>
+        <SoundArray index="What" value="KerriganSCBW@What"/>
+        <SoundArray index="Yes" value="KerriganSCBW@Yes"/>
+        <SoundArray index="Attack" value="KerriganSCBW@Attack"/>
+        <SoundArray index="Pissed" value="KerriganSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Ghost.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorSound id="KerriganSCBW@Land" parent="SoundOneShot"/>
     <CActorUnit id="GhostSCBW" parent="GenericUnitBase" unitName="GhostSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
@@ -357,6 +491,29 @@
             <Image value="Assets\Textures\Wireframe-Terran-Marine.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CModel id="KerriganSCBW" parent="GhostBase">
+        <Model value="Assets\Units\Terran\GhostFemaleNova\GhostFemaleNova.m3"/>
+        <RequiredAnims index="0" value="Assets\Units\Terran\GhostFemale_RequiredAnims\GhostFemale_RequiredAnims.m3a"/>
+    </CModel>
+    <CModel id="KerriganSCBW@Death" parent="GhostDeathBase">
+        <Model value="Assets\Units\Terran\GhostFemaleNova_Death\GhostFemaleNova_Death.m3"/>
+    </CModel>
+    <CModel id="KerriganSCBW@DeathAcid" parent="GhostDeathAcidBase">
+        <Model value="Assets\Units\Terran\GhostFemaleNova_DeathAcid\GhostFemaleNova_DeathAcid.m3"/>
+    </CModel>
+    <CModel id="KerriganSCBW@DeathFire" parent="GhostDeathFireBase">
+        <Model value="Assets\Units\Terran\GhostFemaleNova_DeathFire\GhostFemaleNova_DeathFire.m3"/>
+    </CModel>
+    <CModel id="KerriganSCBW@DeathRagdoll" parent="GhostDeathRagdollBase">
+        <Model value="Assets\Units\Terran\Ghost_Alternate_DeathRagdoll\Ghost_Alternate_DeathRagdoll.m3"/>
+    </CModel>
+    <CModel id="KerriganSCBW@Portrait" parent="GhostPortraitBase">
+        <Model value="Assets\Portraits\Terran\NovaPortrait\NovaPortrait.m3"/>
+        <Flags index="Download" value="1"/>
+        <Flags index="VariationFallback" value="0"/>
+        <Image value="Assets\Textures\ghostportraitex3_static.dds"/>
+        <RequiredAnims value="Assets\Portraits\Terran\NovaPortrait_RequiredAnims\NovaPortrait_RequiredAnims.m3a"/>
+    </CModel>
     <CModel id="GhostSCBW" parent="GhostBase">
         <Model value="Assets\Units\Terran\GhostEx3\GhostEx3.m3"/>
     </CModel>
@@ -433,6 +590,64 @@
         <Model value="Assets\Portraits\Terran\MarinePortrait\MarinePortrait.m3"/>
         <Image value="Assets\Textures\MarinePortrait_Static.dds"/>
     </CModel>
+    <CSound id="KerriganSCBW@Explode" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+    </CSound>
+    <CSound id="KerriganSCBW@Land" parent="Spell">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <Flags index="VariationFallback" value="0"/>
+        <Category value="Combat"/>
+        <Pitch value="1.000000,4.000000"/>
+        <Volume value="-13.000000,-11.000000"/>
+    </CSound>
+    <CSound id="KerriganSCBW@Attack" parent="TerranAckSCBW" Folder="KerriganSCBW">
+        <AssetArray TemplateParam="KerriganSCBW@Yes00"/>
+        <AssetArray TemplateParam="KerriganSCBW@Yes01"/>
+        <AssetArray TemplateParam="KerriganSCBW@Yes02"/>
+        <AssetArray TemplateParam="KerriganSCBW@Yes03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="KerriganSCBW@Death" parent="TerranDeathSCBW" Folder="KerriganSCBW">
+        <AssetArray TemplateParam="KerriganSCBW@Death00"/>
+        <AssetArray TemplateParam="KerriganSCBW@Death01"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="KerriganSCBW@Help" parent="AlertTerranSCBW" Folder="KerriganSCBW">
+        <AssetArray TemplateParam="KerriganSCBW@Help00"/>
+        <Mode value="3DWorld"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="KerriganSCBW@Pissed" parent="TerranAckSCBW" Folder="KerriganSCBW">
+        <AssetArray TemplateParam="KerriganSCBW@Pissed00"/>
+        <AssetArray TemplateParam="KerriganSCBW@Pissed01"/>
+        <AssetArray TemplateParam="KerriganSCBW@Pissed02"/>
+        <AssetArray TemplateParam="KerriganSCBW@Pissed03"/>
+        <AssetArray TemplateParam="KerriganSCBW@Pissed04"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="KerriganSCBW@Ready" parent="TerranReadySCBW" Folder="GhostSCBW">
+        <AssetArray TemplateParam="GhostSCBW@Ready00"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="KerriganSCBW@What" parent="TerranAckSCBW" Folder="KerriganSCBW">
+        <AssetArray TemplateParam="KerriganSCBW@What00"/>
+        <AssetArray TemplateParam="KerriganSCBW@What01"/>
+        <AssetArray TemplateParam="KerriganSCBW@What02"/>
+        <AssetArray TemplateParam="KerriganSCBW@What03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
     <CSound id="GhostSCBW@Attack" parent="TerranAckSCBW" Folder="GhostSCBW">
         <AssetArray TemplateParam="GhostSCBW@Yes00"/>
         <AssetArray TemplateParam="GhostSCBW@Yes01"/>
@@ -674,6 +889,31 @@
         <Category value="Spell"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
+    <CDataCollectionUnit id="KerriganSCBW" parent="UnitBaseEmptySCBW">
+        <EditorCategories value="Race:Terran,DataGroup:Unit,DataFamily:Melee,ObjectType:Unit"/>
+        <DataRecord Entry="Actor,KerriganSCBW"/>
+        <DataRecord Entry="Actor,KerriganSCBW@Land"/>
+        <DataRecord Entry="Button,KerriganSCBW"/>
+        <DataRecord Entry="Light,KerriganSCBW@Portrait"/>
+        <DataRecord Entry="Model,KerriganSCBW@DeathEviscerate"/>
+        <DataRecord Entry="Model,KerriganSCBW@Death"/>
+        <DataRecord Entry="Model,KerriganSCBW@DeathAcid"/>
+        <DataRecord Entry="Model,KerriganSCBW@DeathFire"/>
+        <DataRecord Entry="Model,KerriganSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,KerriganSCBW@Portrait"/>
+        <DataRecord Entry="Model,KerriganSCBW"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Explode"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Ready"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Help"/>
+        <DataRecord Entry="Sound,KerriganSCBW@What"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Yes"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Attack"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Pissed"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Land"/>
+        <DataRecord Entry="Sound,KerriganSCBW@Death"/>
+        <DataRecord Entry="Unit,KerriganSCBW"/>
+        <DataRecord Entry="RequirementNode,KerriganSCBW@AllowUnit"/>
+    </CDataCollectionUnit>
     <CDataCollectionUnit id="GhostSCBW" parent="UnitBaseEmptySCBW">
         <EditorCategories value="Race:Terran,DataGroup:Unit,DataFamily:Melee,ObjectType:Unit"/>
         <DataRecord Entry="Actor,GhostSCBW"/>
@@ -761,6 +1001,90 @@
         <DataRecord Entry="RequirementNode,FirebatSCBW@CountUnitCompleteOnlyTechTreeCheat"/>
         <DataRecord Entry="RequirementNode,FirebatSCBW@AllowUnit"/>
     </CDataCollectionUnit>
+    <CUnit id="KerriganSCBW">
+        <DeathRevealRadius value="3"/>
+        <Race value="Terr"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <Attributes index="Psionic" value="1"/>
+        <LifeStart value="100"/>
+        <LifeMax value="100"/>
+        <LifeArmorName value="Unit/LifeArmorName/TerranInfantryArmor"/>
+        <EnergyStart value="50"/>
+        <EnergyMax value="200"/>
+        <EnergyRegenRate value="0.5625"/>
+        <Speed value="2.25"/>
+        <Acceleration value="1000"/>
+        <LateralAcceleration value="46.0625"/>
+        <StationaryTurningRate value="999.8437"/>
+        <TurningRate value="999.8437"/>
+        <Sight value="11"/>
+        <Food value="-1"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="200"/>
+        <CostResource index="Vespene" value="100"/>
+        <RepairTime value="40"/>
+        <AttackTargetPriority value="20"/>
+        <DamageDealtXP value="1"/>
+        <DamageTakenXP value="1"/>
+        <KillXP value="30"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="GhostSCBWCloak"/>
+        <AbilArray Link="GhostSCBWLockdown"/>
+        <AbilArray Link="GhostSCBWHoldFire"/>
+        <AbilArray Link="GhostSCBWWeaponsFree"/>
+        <WeaponArray Link="GhostSCBWWeapon"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="TacNukeStrike,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="AttackGhost" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="GhostSCBWCloak" Type="AbilCmd" AbilCmd="GhostSCBWCloak,On" Row="2" Column="2"/>
+            <LayoutButtons Face="GhostSCBWCloak@Decloak" Type="AbilCmd" AbilCmd="GhostSCBWCloak,Off" Row="2" Column="3"/>
+            <LayoutButtons Face="GhostSCBWLockdown" Type="AbilCmd" AbilCmd="GhostSCBWLockdown,Execute" Row="2" Column="1"/>
+            <LayoutButtons Face="GhostSCBWHoldFire" Type="AbilCmd" AbilCmd="GhostSCBWHoldFire,Execute" Row="1" Column="2"/>
+            <LayoutButtons Face="GhostSCBWWeaponsFree" Type="AbilCmd" AbilCmd="GhostSCBWWeaponsFree,Execute" Row="1" Column="3"/>
+        </CardLayouts>
+        <Radius value="0.375"/>
+        <SeparationRadius value="0.375"/>
+        <InnerRadius value="0.375"/>
+        <CargoSize value="2"/>
+        <ScoreMake value="300"/>
+        <ScoreKill value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="19"/>
+        <MinimapRadius value="0.375"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <TacticalAI value="Ghost"/>
+        <TacticalAIThink value="AIThinkGhost"/>
+        <AIEvalFactor value="1.2"/>
+        <GlossaryCategory value="Unit/Category/TerranUnits"/>
+        <GlossaryPriority value="70"/>
+        <GlossaryStrongArray value="Raven"/>
+        <GlossaryStrongArray value="Infestor"/>
+        <GlossaryStrongArray value="HighTemplar"/>
+        <GlossaryWeakArray value="Marauder"/>
+        <GlossaryWeakArray value="Zergling"/>
+        <GlossaryWeakArray value="Stalker"/>
+        <HotkeyCategory value="Unit/Category/TerranUnits"/>
+        <Fidget>
+            <ChanceArray index="Anim" value="33"/>
+            <ChanceArray index="Idle" value="33"/>
+            <ChanceArray index="Turn" value="33"/>
+        </Fidget>
+    </CUnit>
     <CUnit id="GhostSCBW">
         <DeathRevealRadius value="3"/>
         <Race value="Terr"/>
