@@ -104,6 +104,31 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive3"/>
         </TerrainSquibs>
     </CActorUnit>
+    <CActorAction id="SCVSCBWWeapon@Action" parent="GenericAttack" effectAttack="SCVSCBWWeapon@Damage">
+        <LaunchAssets Model="SCVSCBWWeapon@Launch"/>
+        <ShieldFlashType value="Header"/>
+    </CActorAction>
+    <CActorSound id="SCVSCBWWeapon@Launch" parent="SoundOneShot">
+        <On Terms="WeaponStart.SCVSCBWWeapon.AttackStart" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="SCVSCBW@Repair" parent="SoundOneShot"/>
+    <CActorSound id="SCVSCBW@Build" parent="SoundOneShot"/>
+    <CActorSound id="SCVSCBW@Harvest" parent="SoundOneShot"/>
+    <CActorUnit id="FactorySCBW" parent="TerranBuildingSCBW@Flyer" unitName="FactorySCBW">
+        <On Terms="UnitDeathCustomize.FactoryFlying" Send="DeathCustomize Flying"/>
+        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="FactorySCBW@Explode"/>
+        <BarOffset value="150"/>
+        <BarWidth value="160"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Factory.dds"/>
+        </GroupIcon>
+        <UnitIcon value="Assets\Textures\btn-building-terran-Factory.dds"/>
+        <NameOffset value="110"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Factory.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorModel id="FactorySCBW@Build" parent="TerranBuildingSCBW@Build"/>
     <CActorUnit id="AcademySCBW" parent="TerranBuildingSCBW" unitName="AcademySCBW">
         <Aliases value="_UnitHuge"/>
         <Macros value="QueueAnim"/>
@@ -124,6 +149,9 @@
     </CActorUnit>
     <CActorSplat id="AcademySCBW@Splat" parent="GenericUnitSplat" unitName="AcademySCBW"/>
     <CActorModel id="AcademySCBW@Build" parent="TerranBuildingSCBW@Build"/>
+    <CActorSound id="FactorySCBW@Land" parent="TerranBuildingSCBW@Land" unitName="FactorySCBW"/>
+    <CActorSound id="FactorySCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff" unitName="FactorySCBW"/>
+    <CActorSplat id="FactorySCBW@Splat" parent="TerranBuildingMorphSplat" unitName="FactorySCBW"/>
     <CActorModel id="RefinerySCBW@RichBuild" parent="TerranBuildingSCBW@BuildRefinery">
         <Model value="RefinerySCBW@Build"/>
     </CActorModel>
@@ -677,50 +705,45 @@
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <Macros value="TerrainSquibAnimations"/>
-        <On Terms="Abil.SCVHarvest.Start" Send="TimerSet 0.000000,0.300000 Gather"/>
-        <On Terms="Abil.SCVHarvest.Stop" Send="AnimClear Gather"/>
-        <On Terms="Abil.SCVHarvest.Stop" Send="TimerKill Gather"/>
-        <On Terms="AnimDone.*.Complete; AnimName Gather" Send="TimerSet 0.000000,0.300000 Gather"/>
-        <On Terms="TimerExpired; TimerName Gather" Send="AnimPlay Gather Work NonLooping"/>
-        <On Terms="TimerExpired; TimerName Gather" Send="Create SCVGatherSound"/>
-        <On Terms="Abil.Repair.SourceChannelStart" Send="TimerSet 0.000000,0.300000 Repair"/>
-        <On Terms="Abil.Repair.SourceChannelStop" Send="TimerKill Repair"/>
-        <On Terms="Abil.Repair.SourceChannelStop" Send="AnimClear Repair"/>
-        <On Terms="AnimDone.*.Complete; AnimName Repair" Send="TimerSet 0.000000,0.300000 Repair"/>
-        <On Terms="TimerExpired; TimerName Repair" Send="AnimPlay Repair Work NonLooping"/>
-        <On Terms="TimerExpired; TimerName Repair" Send="Create SCVRepairSound"/>
-        <On Terms="Abil.*.WorkerStart" Send="TimerSet 0.000000,0.300000 Build"/>
-        <On Terms="Abil.*.WorkerStop" Send="TimerKill Build"/>
-        <On Terms="Abil.*.WorkerStop" Send="AnimClear Build"/>
-        <On Terms="Abil.*.WorkerCancel" Send="TimerKill Build"/>
         <On Terms="Abil.*.WorkerCancel" Send="AnimClear Build"/>
-        <On Terms="AnimDone.*.Complete; AnimName Build" Send="TimerSet 0.000000,0.300000 Build"/>
-        <On Terms="TimerExpired; TimerName Build" Send="AnimPlay Build Work NonLooping"/>
-        <On Terms="TimerExpired; TimerName Build" Send="Create SCVBuildSound"/>
-        <On Terms="Abil.SCVHarvest.Start" Send="StatusSet CloakSound 1"/>
-        <On Terms="Behavior.CarryHarvestableVespeneGeyserGas.Create" Send="StatusSet CloakSound 1"/>
-        <On Terms="Confirmation.SCV.Start" Send="StatusSet CloakSound 0"/>
-        <On Terms="Behavior.CloakFieldEffect.Create; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOn"/>
-        <On Terms="Behavior.CloakFieldEffect.Destroy; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOff"/>
-        <On Terms="Abil.GatherSpecialObject.SourcePrepStart" Send="TimerSet 0.000000,0.300000 Gather"/>
+        <On Terms="Abil.*.WorkerCancel" Send="TimerKill Build"/>
+        <On Terms="Abil.*.WorkerStart" Send="TimerSet 0.000000,0.300000 Build"/>
+        <On Terms="Abil.*.WorkerStop" Send="AnimClear Build"/>
+        <On Terms="Abil.*.WorkerStop" Send="TimerKill Build"/>
         <On Terms="Abil.GatherSpecialObject.SourceCastStop" Send="AnimClear Gather"/>
         <On Terms="Abil.GatherSpecialObject.SourceCastStop" Send="TimerKill Gather"/>
-        <On Terms="AnimDone.*.Complete; AnimName Gather" Send="TimerSet 0.000000,0.300000 Gather"/>
-        <On Terms="TimerExpired; TimerName Gather" Send="AnimPlay Gather Work NonLooping"/>
-        <On Terms="TimerExpired; TimerName Gather" Send="Create SCVGatherSound"/>
-        <On Terms="Behavior.CarryChrysalisEgg.Create" Send="AnimGroupApply Gather"/>
-        <On Terms="Behavior.CarryChrysalisEgg.Destroy" Send="AnimGroupRemove Gather"/>
-        <On Terms="ActorCreation; ValidateUnit SCVUpgraded" Send="ModelSwap SCVFusionWelder"/>
-        <On Terms="Upgrade.FusionWelder.Add" Send="ModelSwap SCVFusionWelder"/>
-        <On Terms="Upgrade.DualFusionWelders.Add" Send="ModelSwap SCVFusionWelder"/>
-        <On Terms="Behavior.OracleCloakFieldEffect.Create; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOn"/>
-        <On Terms="Behavior.OracleCloakFieldEffect.Destroy; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOff"/>
-        <On Terms="UnitHeightUpdate.*.Land" Send="Create SCV_Land"/>
-        <On Terms="Behavior.SCVFakeRepair.On" Send="AnimPlay Work,A Work,A"/>
+        <On Terms="Abil.GatherSpecialObject.SourcePrepStart" Send="TimerSet 0.000000,0.300000 Gather"/>
+        <On Terms="Abil.Repair.SourceChannelStart" Send="TimerSet 0.000000,0.300000 Repair"/>
+        <On Terms="Abil.Repair.SourceChannelStop" Send="AnimClear Repair"/>
+        <On Terms="Abil.Repair.SourceChannelStop" Send="TimerKill Repair"/>
+        <On Terms="Abil.SCVSCBW@Harvest.Start" Send="StatusSet CloakSound 1"/>
+        <On Terms="Abil.SCVSCBW@Harvest.Start" Send="TimerSet 0.000000,0.300000 Gather"/>
+        <On Terms="Abil.SCVSCBW@Harvest.Stop" Send="AnimClear Gather"/>
+        <On Terms="Abil.SCVSCBW@Harvest.Stop" Send="TimerKill Gather"/>
         <On Terms="AnimDone; AnimName Work,A; ValidateUnit HaveSCVFakeRepair" Send="AnimPlay Work,B Work,B"/>
         <On Terms="AnimDone; AnimName Work,B; ValidateUnit HaveSCVFakeRepair" Send="AnimPlay Work,A Work,A"/>
+        <On Terms="AnimDone.*.Complete; AnimName Build" Send="TimerSet 0.000000,0.300000 Build"/>
+        <On Terms="AnimDone.*.Complete; AnimName Gather" Send="TimerSet 0.000000,0.300000 Gather"/>
+        <On Terms="AnimDone.*.Complete; AnimName Gather" Send="TimerSet 0.000000,0.300000 Gather"/>
+        <On Terms="AnimDone.*.Complete; AnimName Repair" Send="TimerSet 0.000000,0.300000 Repair"/>
+        <On Terms="Behavior.CarryChrysalisEgg.Create" Send="AnimGroupApply Gather"/>
+        <On Terms="Behavior.CarryChrysalisEgg.Destroy" Send="AnimGroupRemove Gather"/>
+        <On Terms="Behavior.CarryHarvestableVespeneGeyserGas.Create" Send="StatusSet CloakSound 1"/>
+        <On Terms="Behavior.CloakFieldEffect.Create; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOn"/>
+        <On Terms="Behavior.CloakFieldEffect.Destroy; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOff"/>
+        <On Terms="Behavior.OracleCloakFieldEffect.Create; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOn"/>
+        <On Terms="Behavior.OracleCloakFieldEffect.Destroy; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOff"/>
         <On Terms="Behavior.SCVFakeRepair.Off" Send="AnimClear Work,A"/>
         <On Terms="Behavior.SCVFakeRepair.Off" Send="AnimClear Work,B"/>
+        <On Terms="Behavior.SCVFakeRepair.On" Send="AnimPlay Work,A Work,A"/>
+        <On Terms="Confirmation.SCV.Start" Send="StatusSet CloakSound 0"/>
+        <On Terms="TimerExpired; TimerName Build" Send="AnimPlay Build Work NonLooping"/>
+        <On Terms="TimerExpired; TimerName Build" Send="Create SCVSCBW@Build"/>
+        <On Terms="TimerExpired; TimerName Gather" Send="AnimPlay Gather Work NonLooping"/>
+        <On Terms="TimerExpired; TimerName Gather" Send="Create SCVSCBW@Harvest"/>
+        <On Terms="TimerExpired; TimerName Repair" Send="AnimPlay Repair Work NonLooping"/>
+        <On Terms="TimerExpired; TimerName Repair" Send="Create SCVSCBW@Repair"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create SCV_Land"/>
         <AnimBlendTime value="0.500000"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="SCVSCBW@Death" SoundLink="SCVSCBW@Explode"/>

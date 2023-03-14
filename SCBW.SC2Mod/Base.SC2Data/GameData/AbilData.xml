@@ -5,8 +5,9 @@
         <AbilSetId value="build"/>
         <AbilityCategories index="CanBeDisabled" value="1"/>
         <AbilityCategories index="CanBeIllusionDisabled" value="1"/>
-        <DefaultButtonCardId value="Buil"/>
-        <HaltCmdButton DefaultButtonFace="CmdCancel"/>
+        <!--<DefaultButtonCardId value="Bld1"/>-->
+        <DefaultButtonCardId value="Bld1"/>
+        <HaltCmdButton DefaultButtonFace="Halt"/>
         <FlagArray index="IgnoreUnitBuildTime" value="0"/>
         <FlagArray index="Interruptible" value="1"/>
         <FlagArray index="PeonDisableCollision" value="1"/>
@@ -804,6 +805,41 @@
         <AINotifyEffect value=""/>
         <CmdButtonArray index="Execute" DefaultButtonFace="DarkArchonSCBWFeedback"/>
     </CAbilEffectTarget>
+    <CAbilBuild id="FactorySCBW@AddOns" parent="TerranAddOns">
+        <Name value="Abil/Name/FactorySCBW@AddOns"/>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <BuildMorphAbil value="FactorySCBW@LiftOff"/>
+        <InfoArray index="Build1" Unit="FactoryTechLab" Time="25">
+            <Button DefaultButtonFace="BuildTechLabFactory" Requirements="UseTechReactorHide"/>
+        </InfoArray>
+    </CAbilBuild>
+    <CAbilMorphPlacement id="FactorySCBW@Land" parent="TerranBuildingLand" unit="FactorySCBW">
+        <Name value="Abil/Name/FactorySCBW@Land"/>
+        <InfoArray index="0" Unit="FactorySCBW" CollideRange="0">
+            <SectionArray index="Abils">
+                <DurationArray index="Delay" value="2"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorphPlacement>
+    <CAbilMorph id="FactorySCBW@LiftOff" parent="TerranBuildingLiftOff" unit="FactorySCBW@Flying">
+        <Name value="Abil/Name/FactorySCBW@LiftOff"/>
+    </CAbilMorph>
+    <CAbilTrain id="FactorySCBW@Train" parent="SCBW_Train">
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <Activity value="UI/Building"/>
+        <InfoArray index="Train1" Time="25">
+            <Button DefaultButtonFace="VultureSCBW"/>
+            <Unit value="VultureSCBW"/>
+        </InfoArray>
+        <InfoArray index="Train2" Time="45">
+            <Button DefaultButtonFace="SiegeTankSCBW" Requirements="HaveAttachedTechLab"/>
+            <Unit value="SiegeTankSCBW"/>
+        </InfoArray>
+        <InfoArray index="Train3" Time="40">
+            <Button DefaultButtonFace="GoliathSCBW" Requirements="HaveAttachedTechLab"/>
+            <Unit value="VultureSCBW"/>
+        </InfoArray>
+    </CAbilTrain>
     <CAbilEffectInstant id="FirebatSCBWStimpack">
         <AbilSetId value="Stimpack"/>
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
@@ -1111,6 +1147,38 @@
         <Alert value="TrainComplete"/>
         <MaxCount value="5"/>
     </CAbilArmMagazine>
+    <CAbilEffectTarget id="SCVSCBW@Repair">
+        <Alignment value="Positive"/>
+        <AbilSetId value="Repair"/>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
+        <Flags index="AutoCast" value="1"/>
+        <Flags index="AutoCastOffOwnerLeave" value="1"/>
+        <Flags index="AutoCastOn" value="1"/>
+        <Flags index="BestUnit" value="0"/>
+        <Flags index="ReExecutable" value="1"/>
+        <Flags index="Smart" value="1"/>
+        <Flags index="PassengerAcquirePassengers" value="1"/>
+        <TargetFilters value="Mechanical,Visible;Self,Enemy,Missile,Stasis,UnderConstruction,Dead,Hidden"/>
+        <RangeSlop value="0.2"/>
+        <AutoCastAcquireLevel value="Defensive"/>
+        <AutoCastFilters value="Visible;Neutral,Enemy"/>
+        <AutoCastRange value="7"/>
+        <Marker>
+            <MatchFlags index="Link" value="0"/>
+            <MismatchFlags index="Id" value="0"/>
+        </Marker>
+        <UseMarkerArray index="Approach" value="0"/>
+        <UseMarkerArray index="Prep" value="0"/>
+        <UseMarkerArray index="Cast" value="0"/>
+        <UseMarkerArray index="Channel" value="0"/>
+        <InheritAttackPriorityArray index="Prep" value="1"/>
+        <InheritAttackPriorityArray index="Cast" value="1"/>
+        <InheritAttackPriorityArray index="Channel" value="1"/>
+        <DefaultError value="RequiresRepairTarget"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="SCVSCBW@Repair">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+    </CAbilEffectTarget>
     <CAbilResearch id="RoboticsBaySCBWResearch" parent="RoboticsBayResearch">
         <Name value="Abil/Name/RoboticsBaySCBWResearch"/>
         <InfoArray index="Research1">
@@ -1252,6 +1320,14 @@
     </CAbilTrain>
     <CAbilHarvest id="SCVSCBW@Harvest">
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
+        <CmdButtonArray index="Gather" DefaultButtonFace="SCVSCBW@Harvest">
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="Return" DefaultButtonFace="SCVSCBW@ReturnCargo">
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
     </CAbilHarvest>
     <CAbilMorph id="SiegeTankSCBW@Siege">
         <OrderArray index="0">
@@ -1465,28 +1541,21 @@
             <Button DefaultButtonFace="MissileTurretSCBW" State="Restricted" Requirements="HaveEngineeringBay"/>
         </InfoArray>
         <InfoArray index="Build7" Unit="BunkerSCBW" Time="40">
-            <Button DefaultButtonFace="BunkerSCBW" State="Restricted" Requirements="HideFortifiedBunker"/>
+            <Button DefaultButtonFace="BunkerSCBW" Requirements="HideFortifiedBunker"/>
         </InfoArray>
         <InfoArray index="Build8" Unit="RefinerySCBW@Rich" Time="30">
-            <Button DefaultButtonFace="RefinerySCBW"/>
-            <ValidatorArray value="HasVespene"/>
+            <Button DefaultButtonFace="RefinerySCBW" Requirements="HasVespene"/>
         </InfoArray>
-        <InfoArray index="Build9" Unit="SensorTower" Time="25">
-            <Button DefaultButtonFace="SensorTower" State="Restricted" Requirements="HaveEngineeringBay"/>
-        </InfoArray>
-        <InfoArray index="Build10" Unit="AcademySCBW" Time="40">
+        <InfoArray index="Build9" Unit="AcademySCBW" Time="40">
             <Button DefaultButtonFace="AcademySCBW" Requirements="HaveBarracks"/>
         </InfoArray>
-        <InfoArray index="Build11" Unit="FactorySCBW" Time="60">
+        <InfoArray index="Build10" Unit="FactorySCBW" Time="60">
             <Button DefaultButtonFace="FactorySCBW" Requirements="HaveBarracks"/>
         </InfoArray>
-        <InfoArray index="Build12" Unit="StarportSCBW" Time="50">
+        <InfoArray index="Build11" Unit="StarportSCBW" Time="50">
             <Button DefaultButtonFace="StarportSCBW" Requirements="HaveFactory"/>
         </InfoArray>
-        <InfoArray index="Build13" Unit="MercCompound" Time="50">
-            <Button DefaultButtonFace="MercCompound" Requirements="HaveBarracks"/>
-        </InfoArray>
-        <InfoArray index="Build14" Unit="ArmorySCBW" Time="65">
+        <InfoArray index="Build12" Unit="ArmorySCBW" Time="65">
             <Button DefaultButtonFace="ArmorySCBW" Requirements="HaveFactory"/>
         </InfoArray>
         <FidgetDelayMin value="5"/>
