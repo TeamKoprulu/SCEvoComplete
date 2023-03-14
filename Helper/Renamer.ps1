@@ -17,7 +17,7 @@ Get-ChildItem "$path/*.wav" | %{
         if($Matches.2){$Num = [int]$Matches.2}
         else{$Num = 0}
     }
-    $NewName = ("$($id)_$($suffix){0:d2}$($_.Extension)" -f ($Num))
+    $NewName = ("$($id)@$($suffix){0:d2}$($_.Extension)" -f ($Num))
     [pscustomobject]@{
         "old"=$_.name;
         "new"=$NewName
