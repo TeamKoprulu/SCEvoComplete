@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CActorProgress default="1" id="BuildAbilSCBW@Progress">
+        <?token id="Abil" value="##id##"?>
+        <On Terms="Abil.##Abil##.BuiltStart" Send="Create"/>
+        <!--<On Terms="Abil.BarracksAddOns.BuiltStart" Send="Create"/>-->
+        <On Terms="ProgressLevel.##id##.Start; Level 0" Send="SetTransferOverrideAnim Build,A,Stand"/>
+        <On Terms="ProgressLevel.##id##.Stop; Level 0" Send="SetTransferOverrideAnim"/>
+        <StageArray AnimProps="Build,A,Start" BlendTime="0.000000"/>
+        <StageArray AnimProps="Build,A,Stand"/>
+        <StageArray AnimProps="Build,B,Start"/>
+        <StageArray AnimProps="Build,B,Stand"/>
+        <StageArray AnimProps="Build,C,Start"/>
+        <StageArray AnimProps="Build,C,Stand"/>
+        <StageArray AnimProps="Build,D"/>
+    </CActorProgress>
     <CActorModel default="1" id="ProtossBuildingBirthSCBWAddition" parent="ModelConstruction">
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossConstructionAttached"/>
@@ -104,6 +118,7 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive3"/>
         </TerrainSquibs>
     </CActorUnit>
+    <CActorSound id="SCVSCBW@Land" parent="SoundOneShot"/>
     <CActorAction id="SCVSCBWWeapon@Action" parent="GenericAttack" effectAttack="SCVSCBWWeapon@Damage">
         <LaunchAssets Model="SCVSCBWWeapon@Launch"/>
         <ShieldFlashType value="Header"/>
@@ -111,9 +126,17 @@
     <CActorSound id="SCVSCBWWeapon@Launch" parent="SoundOneShot">
         <On Terms="WeaponStart.SCVSCBWWeapon.AttackStart" Send="Create"/>
     </CActorSound>
-    <CActorSound id="SCVSCBW@Repair" parent="SoundOneShot"/>
-    <CActorSound id="SCVSCBW@Build" parent="SoundOneShot"/>
-    <CActorSound id="SCVSCBW@Harvest" parent="SoundOneShot"/>
+    <CActorSound id="SCVSCBW@RepairSound" parent="SoundOneShot">
+        <Sound value="SCVSCBW@Repair"/>
+    </CActorSound>
+    <CActorSound id="SCVSCBW@BuildSound" parent="SoundOneShot">
+        <Sound value="SCVSCBW@Build"/>
+    </CActorSound>
+    <CActorSound id="SCVSCBW@HarvestSound" parent="SoundOneShot">
+        <Sound value="SCVSCBW@Harvest"/>
+    </CActorSound>
+    <CActorProgress id="SCVSCBW@Build" parent="BuildAbilSCBW@Progress"/>
+    <CActorProgress id="SCVSCBW@BuildAdv" parent="BuildAbilSCBW@Progress"/>
     <CActorUnit id="FactorySCBW" parent="TerranBuildingSCBW@Flyer" unitName="FactorySCBW">
         <On Terms="UnitDeathCustomize.FactoryFlying" Send="DeathCustomize Flying"/>
         <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="FactorySCBW@Explode"/>
@@ -423,7 +446,8 @@
         <On Terms="AbilMorph.*.Start; MorphFrom CommandCenter; MorphTo CommandCenterFlying" Send="Destroy"/>
     </CActorSplat>
     <CActorProgress id="TerranConstructionSCBW">
-        <On Terms="Abil.SCVSCBW@Build.BuiltStart" Send="Create"/>
+        <!--<On Terms="Abil.SCVSCBW@Build.BuiltStart" Send="Create"/>-->
+        <!--<On Terms="Abil.SCVSCBW@BuildAdv.BuiltStart" Send="Create"/>-->
         <!--<On Terms="Abil.BarracksAddOns.BuiltStart" Send="Create"/>-->
         <On Terms="ProgressLevel.TerranConstructionSCBW.Start; Level 0" Send="SetTransferOverrideAnim Build,A,Stand"/>
         <On Terms="ProgressLevel.TerranConstructionSCBW.Stop; Level 0" Send="SetTransferOverrideAnim"/>
@@ -713,9 +737,9 @@
         <On Terms="Abil.GatherSpecialObject.SourceCastStop" Send="AnimClear Gather"/>
         <On Terms="Abil.GatherSpecialObject.SourceCastStop" Send="TimerKill Gather"/>
         <On Terms="Abil.GatherSpecialObject.SourcePrepStart" Send="TimerSet 0.000000,0.300000 Gather"/>
-        <On Terms="Abil.Repair.SourceChannelStart" Send="TimerSet 0.000000,0.300000 Repair"/>
-        <On Terms="Abil.Repair.SourceChannelStop" Send="AnimClear Repair"/>
-        <On Terms="Abil.Repair.SourceChannelStop" Send="TimerKill Repair"/>
+        <On Terms="Abil.SCVSCBW@Repair.SourceChannelStart" Send="TimerSet 0.000000,0.300000 Repair"/>
+        <On Terms="Abil.SCVSCBW@Repair.SourceChannelStop" Send="AnimClear Repair"/>
+        <On Terms="Abil.SCVSCBW@Repair.SourceChannelStop" Send="TimerKill Repair"/>
         <On Terms="Abil.SCVSCBW@Harvest.Start" Send="StatusSet CloakSound 1"/>
         <On Terms="Abil.SCVSCBW@Harvest.Start" Send="TimerSet 0.000000,0.300000 Gather"/>
         <On Terms="Abil.SCVSCBW@Harvest.Stop" Send="AnimClear Gather"/>
@@ -738,12 +762,12 @@
         <On Terms="Behavior.SCVFakeRepair.On" Send="AnimPlay Work,A Work,A"/>
         <On Terms="Confirmation.SCV.Start" Send="StatusSet CloakSound 0"/>
         <On Terms="TimerExpired; TimerName Build" Send="AnimPlay Build Work NonLooping"/>
-        <On Terms="TimerExpired; TimerName Build" Send="Create SCVSCBW@Build"/>
+        <On Terms="TimerExpired; TimerName Build" Send="Create SCVSCBW@BuildSound"/>
         <On Terms="TimerExpired; TimerName Gather" Send="AnimPlay Gather Work NonLooping"/>
-        <On Terms="TimerExpired; TimerName Gather" Send="Create SCVSCBW@Harvest"/>
+        <On Terms="TimerExpired; TimerName Gather" Send="Create SCVSCBW@HarvestSound"/>
         <On Terms="TimerExpired; TimerName Repair" Send="AnimPlay Repair Work NonLooping"/>
-        <On Terms="TimerExpired; TimerName Repair" Send="Create SCVSCBW@Repair"/>
-        <On Terms="UnitHeightUpdate.*.Land" Send="Create SCV_Land"/>
+        <On Terms="TimerExpired; TimerName Repair" Send="Create SCVSCBW@RepairSound"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create SCVSCBW@Land"/>
         <AnimBlendTime value="0.500000"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="SCVSCBW@Death" SoundLink="SCVSCBW@Explode"/>
