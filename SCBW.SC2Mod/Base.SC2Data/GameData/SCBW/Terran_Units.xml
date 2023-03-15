@@ -10,6 +10,12 @@
         <CanBeSuppressed index="Use" value="0"/>
         <NodeArray index="Use" Link="MarineSCBW@CountUnitCompleteOnlyTechTreeCheat"/>
     </CRequirement>
+    <CButton id="MedicSCBW">
+        <Icon value="Assets\Textures\btn-unit-terran-medic.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-terran-medic.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <DefaultButtonLayout Column="3"/>
+    </CButton>
     <CButton id="KerriganSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
@@ -33,12 +39,33 @@
         <AlertIcon value="Assets\Textures\btn-unit-terran-marine.dds"/>
         <EditorCategories value="Race:Terran"/>
     </CButton>
+    <CRequirementAllowUnit id="MedicSCBW@AllowUnit">
+        <Link value="MedicSCBW"/>
+    </CRequirementAllowUnit>
+    <CRequirementAllowUnit id="GhostSCBW@AllowUnit">
+        <Link value="MedicSCBW"/>
+    </CRequirementAllowUnit>
     <CRequirementCountUnit id="MarineSCBW@CountUnitCompleteOnlyTechTreeCheat">
         <Count Link="MarineSCBW" State="CompleteOnly"/>
     </CRequirementCountUnit>
     <CRequirementCountUnit id="FirebatSCBW@CountUnitCompleteOnlyTechTreeCheat">
         <Count Link="FirebatSCBW" State="CompleteOnly"/>
     </CRequirementCountUnit>
+    <CLight id="MedicSCBW@Portrait" parent="default">
+        <ToDInfoArray index="0" AmbientColor="0.113725,0.062745,0.000000">
+            <Param index="HDRExposure" value="1.480000"/>
+            <Param index="HDRBloomThreshold" value="1.950000"/>
+            <DirectionalLight index="Key">
+                <Color value="0.419608,0.647059,0.988235"/>
+                <ColorMultiplier value="1.970000"/>
+                <SpecColorMultiplier value="1.698000"/>
+                <Direction value="-0.020512,-0.061553,-0.997893"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" Color="0.992157,0.819608,0.666667" ColorMultiplier="0.569000" Direction="-0.399916,0.547217,0.735270"/>
+            <DirectionalLight index="Back" Color="0.086275,0.121569,0.552941" ColorMultiplier="0.871000" Direction="0.672465,0.588492,-0.448851"/>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
+    </CLight>
     <CLight id="KerriganSCBW@Portrait" parent="default">
         <ToDInfoArray index="0" AmbientColor="0.000000,0.000000,0.000000" OperatorHDR="3">
             <Param index="HDRExposure" value="1.475000"/>
@@ -104,6 +131,62 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
+    <CActorUnit id="MedicSCBW" parent="GenericUnitStandard" unitName="MedicSCBW">
+        <Aliases value="_UnitSmall"/>
+        <Macros value="UnloadDropAnim"/>
+        <Macros value="DropshipSCBW@UnloadDropAnim"/>
+        <Macros value="BunkerSCBW@UnloadDropAnim"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <On Terms="Abil.heal.SourceChannelStart" Send="$Spell PlayForever"/>
+        <On Terms="Abil.heal.SourceChannelStop" Send="AnimClear Spell"/>
+        <On Terms="Behavior.KillSquad.On" Send="ModelSwap MedicKillSquad"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsKillSquad" Send="DeathCustomize Variation2"/>
+        <On Terms="UnitDeathCustomize; CanApplyActionPhysics RagdollBasic" Send="DeathCustomize RagdollBasic"/>
+        <On Terms="UnitDeathCustomize; CanApplyActionPhysics RagdollSiegeTank" Send="DeathCustomize RagdollSiegeTank"/>
+        <On Terms="UnitDeathCustomize; CanApplyActionPhysics RagdollUltraUnburrow" Send="DeathCustomize RagdollUltraUnburrow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="MedicSCBW@Death" SoundLink="MedicSCBW@Death"/>
+        <DeathArray index="Blast" ModelLink="MedicSCBW@Death"/>
+        <DeathCustoms ModelLink="MedicKillSquadDeath" SoundLink="MedicSCBW@Death" Name="Variation2"/>
+        <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollBasic"/>
+        <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollSiegeTank"/>
+        <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollUltraUnburrow"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowSmall"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <PortraitModel value="MedicSCBW@Portrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.400000"/>
+            <RangeDown value="0.400000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMedium"/>
+        </TerrainSquibs>
+        <WalkAnimMoveSpeed value="2.25"/>
+        <BarOffset value="20"/>
+        <BarWidth value="36"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-medic.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\BTN-Unit-Terran-Medic.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <SoundArray index="Ready" value="MedicSCBW@Ready"/>
+        <SoundArray index="Help" value="MedicSCBW@Help"/>
+        <SoundArray index="What" value="MedicSCBW@What"/>
+        <SoundArray index="Yes" value="MedicSCBW@Yes"/>
+        <SoundArray index="Attack" value="MedicSCBW@Attack"/>
+        <SoundArray index="Pissed" value="MedicSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\BTN-Unit-Terran-Medic.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-medic.dds"/>
+        </Wireframe>
+    </CActorUnit>
     <CActorUnit id="KerriganSCBW" parent="GenericUnitBase" unitName="KerriganSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
@@ -499,6 +582,33 @@
             <Image value="Assets\Textures\Wireframe-Terran-Marine.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CModel id="GhostSCBW@DeathEviscerate" parent="GhostDeathEviscerateBase">
+        <Model value="Assets\Units\Terran\GhostDeathEviscerateEx1\GhostDeathEviscerateEx1.m3"/>
+    </CModel>
+    <CModel id="MedicSCBW" parent="Unit" Race="Terran">
+        <Model value="Assets\Units\Terran\Medic\Medic.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraMid03"/>
+        <Radius value="0.375000"/>
+        <SelectionRadius value="0.375000"/>
+        <ShadowRadius value="0.375000"/>
+        <SquibTypeDefault value="Flesh"/>
+        <TechPurchaseCamera value="TechPurchaseInfantry"/>
+        <UnitGlossaryCamera value="Star2CameraMid03"/>
+    </CModel>
+    <CModel id="MedicSCBW@Death" parent="UnitDeath" Race="Terran">
+        <Model value="Assets\Units\Terran\MedicDeath\MedicDeath.m3"/>
+        <LowQualityModel value="TerranBloodDeathLow"/>
+        <Occlusion value="Show"/>
+    </CModel>
+    <CModel id="MedicSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Terran">
+        <Model value="Assets\Units\Terran\MedicDeathRagdoll\MedicDeathRagdoll.m3"/>
+    </CModel>
+    <CModel id="MedicSCBW@Portrait" parent="FXAPortrait" Race="Terran">
+        <Model value="Assets\Portraits\Terran\MedicPortrait\MedicPortrait.m3"/>
+        <FacialController value="LocalizedData\Facial\MedicPortrait.fxa"/>
+        <Image value="Assets\Textures\MedicPortrait_Static.dds"/>
+    </CModel>
     <CModel id="KerriganSCBW" parent="GhostBase">
         <Model value="Assets\Units\Terran\GhostFemaleNova\GhostFemaleNova.m3"/>
         <RequiredAnims index="0" value="Assets\Units\Terran\GhostFemale_RequiredAnims\GhostFemale_RequiredAnims.m3a"/>
@@ -598,6 +708,62 @@
         <Model value="Assets\Portraits\Terran\MarinePortrait\MarinePortrait.m3"/>
         <Image value="Assets\Textures\MarinePortrait_Static.dds"/>
     </CModel>
+    <CSound id="MedicSCBW@Attack" parent="TerranAckSCBW" Folder="MedicSCBW">
+        <AssetArray TemplateParam="MedicSCBW@Yes00"/>
+        <AssetArray TemplateParam="MedicSCBW@Yes01"/>
+        <AssetArray TemplateParam="MedicSCBW@Yes02"/>
+        <AssetArray TemplateParam="MedicSCBW@Yes03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MedicSCBW@Death" parent="TerranDeathSCBW" Folder="MedicSCBW">
+        <AssetArray TemplateParam="MedicSCBW@Death00"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MedicSCBW@Explode" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+    </CSound>
+    <CSound id="MedicSCBW@Help" parent="AlertTerranSCBW" Folder="MedicSCBW">
+        <AssetArray TemplateParam="MedicSCBW@Help00"/>
+        <Mode value="3DWorld"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MedicSCBW@Pissed" parent="TerranAckSCBW" Folder="MedicSCBW">
+        <AssetArray TemplateParam="MedicSCBW@Pissed00"/>
+        <AssetArray TemplateParam="MedicSCBW@Pissed01"/>
+        <AssetArray TemplateParam="MedicSCBW@Pissed02"/>
+        <AssetArray TemplateParam="MedicSCBW@Pissed03"/>
+        <AssetArray TemplateParam="MedicSCBW@Pissed04"/>
+        <AssetArray TemplateParam="MedicSCBW@Pissed05"/>
+        <AssetArray TemplateParam="MedicSCBW@Pissed06"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MedicSCBW@Ready" parent="TerranReadySCBW" Folder="MedicSCBW">
+        <AssetArray TemplateParam="MedicSCBW@Ready00"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MedicSCBW@What" parent="TerranAckSCBW" Folder="MedicSCBW">
+        <AssetArray TemplateParam="MedicSCBW@What00"/>
+        <AssetArray TemplateParam="MedicSCBW@What01"/>
+        <AssetArray TemplateParam="MedicSCBW@What02"/>
+        <AssetArray TemplateParam="MedicSCBW@What03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="MedicSCBW@Yes" parent="TerranAckSCBW" Folder="MedicSCBW">
+        <AssetArray TemplateParam="MedicSCBW@Yes00"/>
+        <AssetArray TemplateParam="MedicSCBW@Yes01"/>
+        <AssetArray TemplateParam="MedicSCBW@Yes02"/>
+        <AssetArray TemplateParam="MedicSCBW@Yes03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
     <CSound id="KerriganSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
@@ -897,6 +1063,42 @@
         <Category value="Spell"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
+    <CDataCollectionUnit id="MedicSCBW" parent="UnitBaseEmptySCBW">
+        <EditorCategories value="DataGroup:Unit,DataFamily:Melee,Race:Terran,ObjectType:Unit"/>
+        <DataRecord Entry="Actor,MedicSCBW"/>
+        <DataRecord Entry="Button,MedicSCBW"/>
+        <DataRecord Entry="Model,MedicSCBW"/>
+        <DataRecord Entry="Unit,MedicSCBW"/>
+        <DataRecord Entry="Model,MedicSCBW@Death"/>
+        <DataRecord Entry="Model,MedicDeathLow"/>
+        <DataRecord Entry="Model,MedicSCBW@Portrait"/>
+        <DataRecord Entry="Light,MedicSCBW@Portrait"/>
+        <DataRecord Entry="Sound,MedicSCBW_Birth"/>
+        <DataRecord Entry="Sound,MedicSCBW@Ready"/>
+        <DataRecord Entry="Sound,MedicSCBW@Help"/>
+        <DataRecord Entry="Sound,MedicSCBW@What"/>
+        <DataRecord Entry="Sound,MedicSCBW@Yes"/>
+        <DataRecord Entry="Sound,MedicSCBW@Attack"/>
+        <DataRecord Entry="Sound,MedicSCBW@Pissed"/>
+        <DataRecord Entry="Sound,MedicSCBW_Movement"/>
+        <DataRecord Entry="Sound,MedicSCBW_Turning"/>
+        <DataRecord Entry="Sound,MedicSCBW_Board"/>
+        <DataRecord Entry="Sound,MedicSCBW_Click"/>
+        <DataRecord Entry="Sound,MedicSCBW_ClickError"/>
+        <DataRecord Entry="Sound,MedicSCBW_Highlight"/>
+        <DataRecord Entry="Sound,MedicSCBW@Death"/>
+        <DataRecord Entry="Sound,MedicSCBW@Explode"/>
+        <DataRecord Entry="Model,MedicDeathAcid"/>
+        <DataRecord Entry="Model,MedicDeathBlast"/>
+        <DataRecord Entry="Model,MedicDeathFire"/>
+        <DataRecord Entry="Model,MedicSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,MedicDeathSilent"/>
+        <DataRecord Entry="Model,MedicPlacement"/>
+        <DataRecord Entry="Actor,Medic_Land"/>
+        <DataRecord Entry="Sound,Medic_Land"/>
+        <DataRecord Entry="Model,MedicWarpIn"/>
+        <DataRecord Entry="RequirementNode,MedicSCBW@AllowUnit"/>
+    </CDataCollectionUnit>
     <CDataCollectionUnit id="KerriganSCBW" parent="UnitBaseEmptySCBW">
         <EditorCategories value="Race:Terran,DataGroup:Unit,DataFamily:Melee,ObjectType:Unit"/>
         <DataRecord Entry="Actor,KerriganSCBW"/>
@@ -1009,6 +1211,75 @@
         <DataRecord Entry="RequirementNode,FirebatSCBW@CountUnitCompleteOnlyTechTreeCheat"/>
         <DataRecord Entry="RequirementNode,FirebatSCBW@AllowUnit"/>
     </CDataCollectionUnit>
+    <CUnit id="MedicSCBW">
+        <DeathRevealRadius value="3"/>
+        <Race value="Terr"/>
+        <Mob value="Campaign"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="AlwaysThreatens" value="1"/>
+        <FlagArray index="AISupport" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Light" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <LifeStart value="60"/>
+        <LifeMax value="60"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/TerranInfantryArmor"/>
+        <EnergyStart value="50"/>
+        <EnergyMax value="200"/>
+        <EnergyRegenRate value="0.5625"/>
+        <Speed value="2.25"/>
+        <Acceleration value="1000"/>
+        <LateralAcceleration value="46.0625"/>
+        <Sight value="10"/>
+        <Food value="-2"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="75"/>
+        <CostResource index="Vespene" value="50"/>
+        <RepairTime value="25"/>
+        <AttackTargetPriority value="20"/>
+        <DamageDealtXP value="1"/>
+        <DamageTakenXP value="1"/>
+        <KillXP value="15"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="MedicSCBWHeal"/>
+        <AbilArray Link="MedicSCBWOpticFlare"/>
+        <AbilArray Link="MedicSCBWRestoration"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="MedicSCBWHeal" Type="AbilCmd" AbilCmd="MedicSCBWHeal,Execute" Row="2" Column="0"/>
+            <LayoutButtons Face="MedicSCBWOpticFlare" Type="AbilCmd" AbilCmd="MedicSCBWOpticFlare,Execute" Row="2" Column="1"/>
+            <LayoutButtons Face="MedicSCBWRestoration" Type="AbilCmd" AbilCmd="MedicSCBWRestoration,Execute" Row="2" Column="2"/>
+        </CardLayouts>
+        <Radius value="0.375"/>
+        <SeparationRadius value="0.375"/>
+        <InnerRadius value="0.375"/>
+        <CargoSize value="1"/>
+        <ScoreMake value="125"/>
+        <ScoreKill value="250"/>
+        <SubgroupPriority value="4"/>
+        <MinimapRadius value="0.375"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <GlossaryCategory value="Unit/Category/TerranUnits"/>
+        <GlossaryPriority value="30"/>
+        <HotkeyCategory value="Unit/Category/TerranStory"/>
+        <Fidget>
+            <ChanceArray index="Anim" value="33"/>
+            <ChanceArray index="Idle" value="33"/>
+            <ChanceArray index="Turn" value="33"/>
+        </Fidget>
+    </CUnit>
     <CUnit id="KerriganSCBW">
         <DeathRevealRadius value="3"/>
         <Race value="Terr"/>
