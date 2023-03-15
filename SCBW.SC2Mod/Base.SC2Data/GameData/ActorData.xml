@@ -160,6 +160,131 @@
         <PortraitModel value="ReactorPortrait"/>
         <GlossaryAnim value="Stand,Attached"/>
     </CActorUnit>
+    <CActorEventMacro id="BunkerSCBW@UnloadDropAnim">
+        <On Terms="AbilTransport.BunkerSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload Instant"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="DropshipSCBW@UnloadDropAnim">
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End DontResetOnUnhide"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoLoadSuppressed" Send="AnimBracketStart Unload IGNORE Unload Unload,End DontResetOnUnhide"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="BunkerSCBW@TransportAnim">
+        <On Terms="Abil.BunkerSCBW@Transport.TransportOccupy" Send="AnimGroupApply Work Work,Start Work,End"/>
+        <On Terms="Abil.BunkerSCBW@Transport.TransportEmpty" Send="AnimGroupRemove Work"/>
+    </CActorEventMacro>
+    <CActorSound id="BunkerSCBW@LoadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.BunkerSCBW@Transport.TransportLoad" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="BunkerSCBW@Load"/>
+    </CActorSound>
+    <CActorSound id="BunkerSCBW@UnloadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.BunkerSCBW@Transport.TransportUnload" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="BunkerSCBW@Unload"/>
+    </CActorSound>
+    <CActorSiteOpBankerUnit id="DropshipSCBW@SOpBanker">
+        <RollMax value="40.000000"/>
+        <RollInActivationAngle value="20.000000"/>
+        <RollInArc value="140.000000"/>
+        <RollOutDuration value="1.200000"/>
+    </CActorSiteOpBankerUnit>
+    <CActorEventMacro id="DropshipSCBW@TransportAnim">
+        <On Terms="Abil.DropshipSCBW@Transport.TransportUnloadStart" Send="AnimBracketStart Unload Work,Start Work Work,End"/>
+        <On Terms="Abil.DropshipSCBW@Transport.TransportUnloadStop" Send="AnimBracketStop Unload"/>
+    </CActorEventMacro>
+    <CActorUnit id="DropshipSCBW" parent="GenericUnitStandard" unitName="DropshipSCBW">
+        <Aliases value="_UnitLarge"/>
+        <Macros value="DropshipSCBW@TransportAnim"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmAir"/>
+        <Macros value="PhysicsDeathsVoidAir"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad; AbilTransport Thor" Send="Create ThorTransit"/>
+        <On Terms="Signal.*.ThorTransit" Send="RefSetFromMsg ::actor.Thor ::Sender"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.PassengerKilled; AbilTransport Thor" Target="::actor.Thor" Send="Signal Dead"/>
+        <On Terms="UnitDeath" Target="::actor.Thor" Send="Signal Dead"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create Medivac_Land"/>
+        <On Terms="UnitMovementUpdate.*.Walk; IsStatus Turbo 1" Send="Create Medivac_MovementAfterburner"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad; AbilTransport ThorAP" Send="Create ThorTransit"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.PassengerKilled; AbilTransport ThorAP" Target="::actor.Thor" Send="Signal Dead"/>
+        <HostSiteOps Ops="DropshipSCBW@SOpBanker"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <Baselines index="Walk" BlendIn="1.500000" BlendOut="2.000000"/>
+        <DeathArray index="Normal" ModelLink="DropshipSCBW@Death" SoundLink="DropshipSCBW@Explode"/>
+        <DeathCustoms>
+            <ActorModel value="MedivacDeathRagdoll"/>
+            <ModelLink value="DropshipSCBW@DeathRagdoll"/>
+            <Name value="RagdollBasic"/>
+            <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+            <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowMedium"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
+        <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+        <PortraitModel value="DropshipSCBW@Portrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.250000,0.500000"/>
+            <RangeDown value="5.000000"/>
+            <RangeDownFade value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive15"/>
+        </TerrainSquibs>
+        <!--
+        <AbilSoundArray AbilCmd="DropshipSCBW@Transport,Load" Sound="Medivac_LoadVO"/>
+        <AbilSoundArray AbilCmd="DropshipSCBW@Transport,UnloadAt" Sound="Medivac_UnloadVO"/>
+        -->
+        <BarOffset value="50"/>
+        <BarWidth value="80"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Medivac.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-medivac.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel0.dds"/>
+        <NameOffset value="50"/>
+        <SoundArray index="Ready" value="DropshipSCBW@Ready"/>
+        <SoundArray index="Help" value="DropshipSCBW@Help"/>
+        <SoundArray index="What" value="DropshipSCBW@What"/>
+        <SoundArray index="Yes" value="DropshipSCBW@Yes"/>
+        <SoundArray index="Attack" value="DropshipSCBW@Attack"/>
+        <SoundArray index="Pissed" value="DropshipSCBW@Pissed"/>
+        <SoundArray index="Movement" value="DropshipSCBW@Movement"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-medivac.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Medivac.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorSound id="DropshipSCBW@Land" parent="SoundOneShot"/>
+    <CActorSound id="DropshipSCBW@LoadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="DropshipSCBW@Load"/>
+    </CActorSound>
+    <CActorSound id="DropshipSCBW@UnloadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportUnload" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="DropshipSCBW@Unload"/>
+    </CActorSound>
     <CActorSplat id="StarportSCBW@Splat" parent="TerranBuildingMorphSplat" unitName="StarportSCBW"/>
     <CActorSplat id="ScienceFacilitySCBW@Splat" parent="TerranBuildingMorphSplat" unitName="ScienceFacilitySCBW"/>
     <CActorUnit id="ScienceFacilitySCBW" parent="TerranBuildingSCBW@Flyer" unitName="ScienceFacilitySCBW">
@@ -244,6 +369,8 @@
     <CActorUnit id="GoliathSCBW" parent="GenericUnitBase" unitName="GoliathSCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="UnloadDropAnim"/>
+        <Macros value="DropshipSCBW@UnloadDropAnim"/>
+        <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <On Terms="WeaponStart.GoliathSCBWWeaponGround.AttackStart" Send="AnimBracketStart Attack Attack"/>
@@ -429,7 +556,7 @@
     <CActorModel id="BunkerSCBW@Build" parent="TerranBuildingSCBW@Build"/>
     <CActorUnit id="BunkerSCBW" parent="TerranBuildingSCBW" unitName="BunkerSCBW">
         <Aliases value="_UnitHuge"/>
-        <Macros value="BunkerTransportAnim"/>
+        <Macros value="BunkerSCBW@TransportAnim"/>
         <On Terms="UnitDeathCustomize; ValidateUnit BunkerIsEmpty" Send="DeathCustomize Empty"/>
         <On Terms="UnitDeathCustomize; ValidateUnit NeosteelFramePurchasedNoConstruction" Send="DeathCustomize Upgrade"/>
         <On Terms="Upgrade.NeosteelFrame.Add; ValidateUnit HasCargo" Send="AnimGroupApply Stand,Work Stand,Work,Start Stand,Work,End"/>
@@ -932,6 +1059,8 @@
         <Aliases value="_UnitSmall"/>
         <Macros value="CarryAnim"/>
         <Macros value="UnloadDropAnim"/>
+        <Macros value="DropshipSCBW@UnloadDropAnim"/>
+        <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="MacroWorkerHat"/>
         <Macros value="CarryTerrazineNodeAnim"/>
         <Macros value="CarryAnimCampaign"/>
@@ -1462,6 +1591,8 @@
     <CActorUnit id="MedicSCBW" parent="GenericUnitStandard" unitName="MedicSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
+        <Macros value="DropshipSCBW@UnloadDropAnim"/>
+        <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="TerrainSquibAnimations"/>
         <On Terms="Abil.heal.SourceChannelStart" Send="$Spell PlayForever"/>
         <On Terms="Abil.heal.SourceChannelStop" Send="AnimClear Spell"/>
@@ -2024,6 +2155,8 @@
     <CActorUnit id="SiegeTankSCBW" parent="GenericUnitMorph" unitName="SiegeTankSCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="UnloadDropAnim"/>
+        <Macros value="DropshipSCBW@UnloadDropAnim"/>
+        <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
@@ -2103,6 +2236,8 @@
         <Aliases value="_CreepEngulfable"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="UnloadDropAnim"/>
+        <Macros value="DropshipSCBW@UnloadDropAnim"/>
+        <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <Inherits index="ModelMaterials" value="1"/>
         <AcceptedTransfers index="ModelMaterials" value="1"/>
