@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CActorLookAt default="1" id="BattlecruiserSCBW@LookAtBase" parent="UnitTurret">
+        <On Terms="SupporterDestruction.*.UnitDeathModel" Send="Destroy"/>
+        <Type value="BattlecruiserSCBW@Turret"/>
+    </CActorLookAt>
+    <CActorLookAt default="1" id="BattlecruiserSCBW@LookAtATS" parent="BattlecruiserSCBW@LookAtBase">
+        <?token id="TurretGroup" value="Turret_00"?>
+        <Aliases value="_BattlecruiserTurretATS"/>
+        <Types Id="BattlecruiserSCBW@Turret">
+            <Start Group="##TurretGroup##" Weight="1" Time="125"/>
+            <Stop Group="##TurretGroup##" Weight="1" Time="125"/>
+        </Types>
+    </CActorLookAt>
+    <CActorLookAt default="1" id="BattlecruiserSCBW@LookAtATA" parent="BattlecruiserSCBW@LookAtBase">
+        <?token id="TurretGroup" value="Turret_00"?>
+        <Aliases value="_BattlecruiserTurretATA"/>
+        <Types Id="BattlecruiserSCBW@Turret">
+            <Start Group="##TurretGroup##" Weight="1" Time="125"/>
+            <Stop Group="##TurretGroup##" Weight="1" Time="125"/>
+        </Types>
+    </CActorLookAt>
     <CActorProgress default="1" id="BuildAbilSCBW@Progress">
         <?token id="Abil" value="##id##"?>
         <On Terms="Abil.##Abil##.BuiltStart" Send="Create"/>
@@ -159,6 +179,156 @@
         <CreepHeightClass value="Small"/>
         <PortraitModel value="ReactorPortrait"/>
         <GlossaryAnim value="Stand,Attached"/>
+    </CActorUnit>
+    <CActorModel id="BattlecruiserSCBW@DeathRagdoll">
+        <Aliases value="_Main"/>
+        <Aliases value="_Unit"/>
+        <Aliases value="_DeathModel"/>
+        <Macros value="DeadAnimationMacro"/>
+        <Macros value="DeadAnimationRemoveMacro"/>
+        <Macros value="UnitDeathRagdollTerminateExtrasMacro"/>
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <Inherits index="BaseModelScale" value="1"/>
+        <Inherits index="CastShadows" value="1"/>
+        <Inherits index="Scale" value="1"/>
+        <Inherits index="TeamColor" value="1"/>
+        <Inherits index="TintColor" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <AcceptedHostedPropTransfers index="TimeScale" value="0"/>
+        <On Terms="ActorCreation" Send="RefClear ::Host"/>
+        <On Terms="ActorCreation" Send="SetTintColor 255,255,255 0.600000"/>
+        <On Terms="ActorCreation" Send="SetTeamColor {0,0,0 0.000000} {0,0,0 0.000000}"/>
+        <On Terms="ActorCreation" Target="ModelPretargetGround" Send="Destroy"/>
+        <On Terms="ActorCreation" Target="GroundPreSelection" Send="Destroy"/>
+        <On Terms="Signal.*.ClearDeathModel" Send="Destroy"/>
+        <On Terms="TimerExpired; TimerName TerminateExtras" Send="Signal TerminateExtras"/>
+        <On Terms="Signal.*.TerminateExtras" Send="PhysicsImpactsEnable"/>
+        <On Terms="Signal.*.TerminateExtras" Target="_BodySquib" Send="Signal Terminate"/>
+        <On Terms="AnimDone; AnimName Death" Send="PhysicsTerminate"/>
+        <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@DeathRagdollDetonationForce"/>
+        <Host Subject="::Creator"/>
+        <HostSiteOps Ops="SOpDeathMotionFlier"/>
+        <Model value="UnitDeathModelNoTeamColor"/>
+        <ModelFlags index="UpdateVisibility" value="0"/>
+        <ModelFlags index="UseSyncSeed" value="1"/>
+        <EventDataSound Name="NydusCanalThud" Actor="UnitSound" Sound="NydusWorm_DeathThud"/>
+        <EventDataSound Name="ZergExplosionSlime" Actor="UnitSound" Sound="Zerg_ExplosionSlime"/>
+        <EventDataSound Name="ZergPreExplosionSmall" Actor="UnitSound" Sound="Zerg_PreExplosionSmall"/>
+        <EventDataSound Name="ZergExplosionTiny" Actor="UnitSound" Sound="Zerg_ExplosionTiny"/>
+        <EventDataSound Name="ZergExplosionSmall" Actor="UnitSound" Sound="Zerg_ExplosionSmall"/>
+        <EventDataSound Name="ZergExplosionMedium" Actor="UnitSound" Sound="Zerg_ExplosionMedium"/>
+        <EventDataSound Name="ZergExplosionLarge" Actor="UnitSound" Sound="Zerg_ExplosionLarge"/>
+        <EventDataSound Name="ProtossPreExplosionSmall" Actor="UnitSound" Sound="Protoss_PreExplosionSmall"/>
+        <EventDataSound Name="ProtossExplosionSmall" Actor="UnitSound" Sound="Protoss_ExplosionSmall"/>
+        <EventDataSound Name="ProtossExplosionMedium" Actor="UnitSound" Sound="Protoss_ExplosionMedium"/>
+        <EventDataSound Name="ProtossExplosionLarge" Actor="UnitSound" Sound="Protoss_ExplosionLarge"/>
+        <EventDataSound Name="TerranPreExplosionSmall" Actor="UnitSound" Sound="Terran_PreExplosionSmall"/>
+        <EventDataSound Name="TerranExplosionSmall" Actor="UnitSound" Sound="Terran_ExplosionSmall"/>
+        <EventDataSound Name="TerranExplosionMedium" Actor="UnitSound" Sound="Terran_ExplosionMedium"/>
+        <EventDataSound Name="TerranExplosionLarge" Actor="UnitSound" Sound="Terran_ExplosionLarge"/>
+        <PhysicsImpactDefault ActorModel="PhysicsImpactHarness" ActorSound="PhysicsImpactSound" OccuranceThrottlingDistance="0.500000,0.500000"/>
+    </CActorModel>
+    <CActorForceSphere id="BattlecruiserSCBW@DeathRagdollDetonationForce" parent="DeathRagdollDetonationForce">
+        <Magnitude value="12.000000,3.000000"/>
+        <ForceFlags index="FallOff" value="0"/>
+        <Radius value="2.000000,1.000000"/>
+    </CActorForceSphere>
+    <CActorSiteOpBankerUnit id="BattlecruiserSCBW@SOpBanker">
+        <RollMax value="30.000000,10.000000"/>
+        <RollInActivationAngle value="5.000000"/>
+        <RollInArc value="105.000000,30.000000"/>
+        <RollOutDuration value="1.100000,0.400000"/>
+    </CActorSiteOpBankerUnit>
+    <CActorSound id="BattlecruiserSCBW@Land" parent="SoundOneShot"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt00" parent="BattlecruiserSCBW@LookAtATS"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt01" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_01"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt02" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_02"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt03" parent="BattlecruiserSCBW@LookAtATA" TurretGroup="Turret_03"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt04" parent="BattlecruiserSCBW@LookAtATA" TurretGroup="Turret_04"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt05" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_05"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt06" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_06"/>
+    <CActorLookAt id="BattlecruiserSCBW@LookAt07" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_07"/>
+    <CActorUnit id="BattlecruiserSCBW" parent="GenericUnitStandard" unitName="BattlecruiserSCBW">
+        <Aliases value="_UnitHuge"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmAir"/>
+        <Macros value="PhysicsDeathsVoidAir"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit BattlecruiserUpgraded" Send="DeathCustomize Upgrade"/>
+        <On Terms="Abil.Yamato.SourcePrepStart" Send="$Spell 0 -1.000000 -1.000000 3.500000 AsDuration"/>
+        <On Terms="Abil.Yamato.SourcePrepStop" Send="AnimClear Spell"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create BattlecruiserSCBW@Land"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt00"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt01"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt02"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt03"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt04"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt05"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt06"/>
+        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt07"/>
+        <On Terms="WeaponStart.ATSLaserBattery.AttackStart" Target="_BattlecruiserTurretATS" Send="LookAtEngage Continue"/>
+        <On Terms="WeaponStart.ATALaserBattery.AttackStart" Target="_BattlecruiserTurretATA" Send="LookAtEngage Continue"/>
+        <On Terms="Abil.attack.ReadyStop" Target="_BattlecruiserTurretATS" Send="LookAtDisengage"/>
+        <On Terms="Abil.attack.ReadyStop" Target="_BattlecruiserTurretATA" Send="LookAtDisengage"/>
+        <HostSiteOps Ops="BattlecruiserSCBW@SOpBanker"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="BattlecruiserSCBW@Death" SoundLink=""/>
+        <DeathCustoms ModelLink="BattlecruiserSCBW@DeathA" Name="Upgrade"/>
+        <DeathCustoms>
+            <ActorModel value="BattlecruiserDeathRagdoll"/>
+            <ModelLink value="BattlecruiserSCBW@DeathRagdoll"/>
+            <Name value="RagdollBasic"/>
+            <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+            <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="FireHeavy"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="FireHeavy"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowLarge"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
+        <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+        <PortraitModel value="BattlecruiserSCBW@Portrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.250000,0.500000"/>
+            <RangeDown value="5.000000"/>
+            <RangeDownFade value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive2"/>
+        </TerrainSquibs>
+        <BarOffset value="75"/>
+        <BarWidth value="130"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Battlecruiser.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-battlecruiser.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel0.dds"/>
+        <NameOffset value="110"/>
+        <SoundArray index="Ready" value="BattlecruiserSCBW@Ready"/>
+        <SoundArray index="Help" value="BattlecruiserSCBW@Help"/>
+        <SoundArray index="What" value="BattlecruiserSCBW@What"/>
+        <SoundArray index="Yes" value="BattlecruiserSCBW@Yes"/>
+        <SoundArray index="Attack" value="BattlecruiserSCBW@Attack"/>
+        <SoundArray index="Pissed" value="BattlecruiserSCBW@Pissed"/>
+        <SoundArray index="Movement" value="BattlecruiserSCBW@Movement"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-battlecruiser.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Battlecruiser.dds"/>
+        </Wireframe>
     </CActorUnit>
     <CActorSiteOpForward id="ScienceVesselSCBW@SOpDeath">
         <HostForward Subject="ScienceVesselSCBW@Turret" Actor="Find"/>
@@ -788,11 +958,6 @@
         <GroupIcon>
             <Image value="Assets\Textures\btn-ability-terran-liberator-aamode.dds"/>
         </GroupIcon>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel0.dds"/>
-        <UnitIcon value="Assets\Textures\btn-ability-terran-liberator-aamode.dds"/>
-        <Wireframe>
-            <Image value="Assets\Textures\wireframe-terran-liberator-aamode.dds"/>
-        </Wireframe>
         <GroupSoundArray index="Birth" value="Wraith_Birth"/>
         <GroupSoundArray index="Ready" value="ValkyrieSCBW@Ready"/>
         <GroupSoundArray index="Help" value="ValkyrieSCBW@Help"/>
@@ -801,6 +966,7 @@
         <GroupSoundArray index="Attack" value="ValkyrieSCBW@Attack"/>
         <GroupSoundArray index="Pissed" value="ValkyrieSCBW@Pissed"/>
         <HeroIcon value="Assets\Textures\btn-unit-terran-wraith.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel0.dds"/>
         <SoundArray index="Ready" value="ValkyrieSCBW@Ready"/>
         <SoundArray index="Help" value="ValkyrieSCBW@Help"/>
         <SoundArray index="What" value="ValkyrieSCBW@What"/>
@@ -808,6 +974,10 @@
         <SoundArray index="Attack" value="ValkyrieSCBW@Attack"/>
         <SoundArray index="Pissed" value="ValkyrieSCBW@Pissed"/>
         <SoundArray index="Movement" value="ValkyrieSCBW@Movement"/>
+        <UnitIcon value="Assets\Textures\btn-ability-terran-liberator-aamode.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-liberator-aamode.dds"/>
+        </Wireframe>
     </CActorUnit>
     <CActorModel id="CommandCenterSCBW@Build" parent="TerranBuildingSCBW@Build"/>
     <CActorSound id="CommandCenterSCBW@Land" parent="TerranBuildingSCBW@Land" unitName="CommandCenterSCBW"/>
