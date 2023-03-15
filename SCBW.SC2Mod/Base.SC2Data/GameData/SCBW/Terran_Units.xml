@@ -14,6 +14,35 @@
         <RechargeVitalRate value="1"/>
         <TimeFactor value="1"/>
     </CEffectCreateHealer>
+    <CAbilTransport id="DropshipSCBW@Transport">
+        <AbilSetId value="ULdM"/>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
+        <CmdButtonArray index="Load" DefaultButtonFace="DropshipSCBW@Load">
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="UnloadAll">
+            <Flags index="Hidden" value="1"/>
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="UnloadAt" DefaultButtonFace="DropshipSCBW@UnloadAll">
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="UnloadUnit">
+            <Flags index="Hidden" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="LoadAll">
+            <Flags index="Hidden" value="1"/>
+        </CmdButtonArray>
+        <Flags index="CargoDeath" value="1"/>
+        <MaxCargoCount value="8"/>
+        <MaxCargoSize value="8"/>
+        <TotalCargoSpace value="8"/>
+        <UnloadPeriod value="1"/>
+        <TargetFilters value="Visible;Ally,Neutral,Enemy,Buried,UnderConstruction,Dead,Hidden"/>
+        <LoadValidatorArray value="NotWidowMineTarget"/>
+    </CAbilTransport>
     <CAbilBuild id="SCVSCBW@BuildAdv" parent="SCBW_Build">
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
         <DefaultButtonCardId value="Bld2"/>
@@ -181,6 +210,30 @@
         <EditorCategories value="Race:Terran"/>
         <DefaultButtonLayout Column="3"/>
     </CButton>
+    <CButton id="DropshipSCBW">
+        <Icon value="Assets\Textures\btn-unit-terran-medivac.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-terran-medivac.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <DefaultButtonLayout Column="1"/>
+    </CButton>
+    <CButton id="DropshipSCBW@Load">
+        <Icon value="Assets\Textures\btn-ability-terran-load.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-load.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+        <HotkeyAlias value="BunkerLoad"/>
+        <Universal value="1"/>
+        <DefaultButtonLayout Row="2"/>
+    </CButton>
+    <CButton id="DropshipSCBW@UnloadAll">
+        <Icon value="Assets\Textures\btn-ability-terran-unloadall.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-unloadall.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+        <HotkeyAlias value="BunkerUnloadAll"/>
+        <Universal value="1"/>
+        <DefaultButtonLayout Row="2" Column="1"/>
+    </CButton>
     <CButton id="GoliathSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-goliath.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-terran-goliath.dds"/>
@@ -300,6 +353,25 @@
             </DirectionalLight>
             <DirectionalLight index="Fill" Color="0.992157,0.819608,0.666667" ColorMultiplier="0.569000" Direction="-0.399916,0.547217,0.735270"/>
             <DirectionalLight index="Back" Color="0.086275,0.121569,0.552941" ColorMultiplier="0.871000" Direction="0.672465,0.588492,-0.448851"/>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
+    </CLight>
+    <CLight id="DropshipSCBW@Portrait" parent="default">
+        <ToDInfoArray index="0" AmbientColor="0.227451,0.137255,0.156863">
+            <Param index="HDRExposure" value="1.600000"/>
+            <Param index="HDRBloomThreshold" value="1.500000"/>
+            <Param index="HDREmisMultiplier" value="2.000000"/>
+            <Param index="CreepSpecularExp" value="40.000000"/>
+            <Param index="CreepHDRSpecMultiplier" value="5.900000"/>
+            <DirectionalLight index="Key">
+                <Color value="0.992157,0.866667,0.784314"/>
+                <ColorMultiplier value="1.120000"/>
+                <SpecularColor value="0.796078,0.960784,0.996078"/>
+                <SpecColorMultiplier value="1.161000"/>
+                <Direction value="-0.054711,0.666890,0.743145"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" Color="0.792157,0.329412,0.215686" ColorMultiplier="0.260000" Direction="-0.888682,-0.329086,0.319290"/>
+            <DirectionalLight index="Back" Color="0.807843,0.200000,0.184314" ColorMultiplier="1.445000" Direction="0.381720,-0.754369,-0.534057"/>
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
@@ -484,6 +556,107 @@
             <Image value="Assets\Textures\Wireframe-Terran-sciencevessel.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CActorSiteOpBankerUnit id="DropshipSCBW@SOpBanker">
+        <RollMax value="40.000000"/>
+        <RollInActivationAngle value="20.000000"/>
+        <RollInArc value="140.000000"/>
+        <RollOutDuration value="1.200000"/>
+    </CActorSiteOpBankerUnit>
+    <CActorEventMacro id="DropshipSCBW@TransportAnim">
+        <On Terms="Abil.DropshipSCBW@Transport.TransportUnloadStart" Send="AnimBracketStart Unload Work,Start Work Work,End"/>
+        <On Terms="Abil.DropshipSCBW@Transport.TransportUnloadStop" Send="AnimBracketStop Unload"/>
+    </CActorEventMacro>
+    <CActorUnit id="DropshipSCBW" parent="GenericUnitStandard" unitName="DropshipSCBW">
+        <Aliases value="_UnitLarge"/>
+        <Macros value="DropshipSCBW@TransportAnim"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmAir"/>
+        <Macros value="PhysicsDeathsVoidAir"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad; AbilTransport Thor" Send="Create ThorTransit"/>
+        <On Terms="Signal.*.ThorTransit" Send="RefSetFromMsg ::actor.Thor ::Sender"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.PassengerKilled; AbilTransport Thor" Target="::actor.Thor" Send="Signal Dead"/>
+        <On Terms="UnitDeath" Target="::actor.Thor" Send="Signal Dead"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create Medivac_Land"/>
+        <On Terms="UnitMovementUpdate.*.Walk; IsStatus Turbo 1" Send="Create Medivac_MovementAfterburner"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad; AbilTransport ThorAP" Send="Create ThorTransit"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.PassengerKilled; AbilTransport ThorAP" Target="::actor.Thor" Send="Signal Dead"/>
+        <HostSiteOps Ops="DropshipSCBW@SOpBanker"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <Baselines index="Walk" BlendIn="1.500000" BlendOut="2.000000"/>
+        <DeathArray index="Normal" ModelLink="DropshipSCBW@Death" SoundLink="DropshipSCBW@Explode"/>
+        <DeathCustoms>
+            <ActorModel value="MedivacDeathRagdoll"/>
+            <ModelLink value="DropshipSCBW@DeathRagdoll"/>
+            <Name value="RagdollBasic"/>
+            <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+            <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowMedium"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
+        <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+        <PortraitModel value="DropshipSCBW@Portrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.250000,0.500000"/>
+            <RangeDown value="5.000000"/>
+            <RangeDownFade value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive15"/>
+        </TerrainSquibs>
+        <!--
+        <AbilSoundArray AbilCmd="DropshipSCBW@Transport,Load" Sound="Medivac_LoadVO"/>
+        <AbilSoundArray AbilCmd="DropshipSCBW@Transport,UnloadAt" Sound="Medivac_UnloadVO"/>
+        -->
+        <BarOffset value="50"/>
+        <BarWidth value="80"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Medivac.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-medivac.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel0.dds"/>
+        <NameOffset value="50"/>
+        <SoundArray index="Ready" value="DropshipSCBW@Ready"/>
+        <SoundArray index="Help" value="DropshipSCBW@Help"/>
+        <SoundArray index="What" value="DropshipSCBW@What"/>
+        <SoundArray index="Yes" value="DropshipSCBW@Yes"/>
+        <SoundArray index="Attack" value="DropshipSCBW@Attack"/>
+        <SoundArray index="Pissed" value="DropshipSCBW@Pissed"/>
+        <SoundArray index="Movement" value="DropshipSCBW@Movement"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-medivac.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Medivac.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorSound id="DropshipSCBW@Land" parent="SoundOneShot"/>
+    <CActorSound id="DropshipSCBW@LoadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="DropshipSCBW@Load"/>
+    </CActorSound>
+    <CActorSound id="DropshipSCBW@UnloadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportUnload" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="DropshipSCBW@Unload"/>
+    </CActorSound>
     <CActorUnit id="GoliathSCBW" parent="GenericUnitBase" unitName="GoliathSCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="UnloadDropAnim"/>
@@ -1474,6 +1647,19 @@
         <FacialController value="LocalizedData\Facial\ScienceVesselPortrait.fxa"/>
         <Image value="Assets\Textures\ScienceVesselPortrait_Static.dds"/>
     </CModel>
+    <CModel id="DropshipSCBW" parent="MedivacBase">
+        <Model value="Assets\Units\Terran\MedivacEX1\MedivacEX1.m3"/>
+    </CModel>
+    <CModel id="DropshipSCBW@Death" parent="MedivacDeathBase">
+        <Model value="Assets\Units\Terran\MedivacDeathEx1\MedivacDeathEx1.m3"/>
+    </CModel>
+    <CModel id="DropshipSCBW@DeathRagdoll" parent="MedivacDeathRagdollBase">
+        <Model value="Assets\Units\Terran\MedivacDeathRagdoll\MedivacDeathRagdoll.m3"/>
+    </CModel>
+    <CModel id="DropshipSCBW@Portrait" parent="MedivacPortraitBase">
+        <Model value="Assets\Portraits\Terran\MedivacPortrait\MedivacPortrait.m3"/>
+        <Image value="Assets\Textures\MedivacPortrait_Static.dds"/>
+    </CModel>
     <CModel id="GoliathSCBW" parent="Unit" Race="Terran">
         <Model value="Assets\Units\Terran\Goliath\Goliath.m3"/>
         <AttachProps Id="Ref_TurretZ">
@@ -1793,6 +1979,87 @@
     </CSound>
     <CSound id="ScienceVesselSCBW@Death" parent="TerranDeathSCBW" Folder="ScienceVesselSCBW">
         <AssetArray TemplateParam="ScienceVesselSCBW@Death00"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Land" parent="FlyingUnit_Land">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_05.wav" FacialGroup=""/>
+        <Pitch value="-3.000000,-1.000000"/>
+        <Volume value="-8.000000,-6.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Load" parent="Spell">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffectsSCBW\TerranTransportSCBW@Load00.wav"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Unload" parent="Spell">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffectsSCBW\TerranTransportSCBW@Unload00.wav"/>
+        <Category value="Combat"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Attack" parent="TerranAckSCBW" Folder="DropshipSCBW">
+        <AssetArray TemplateParam="DropshipSCBW@Yes00"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes01"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes02"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Explode" parent="TerranDeathSCBW" Folder="DropshipSCBW">
+        <AssetArray TemplateParam="DropshipSCBW@Death00"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Help" parent="AlertTerranSCBW" Folder="DropshipSCBW">
+        <AssetArray TemplateParam="DropshipSCBW@Help00"/>
+        <Mode value="3DWorld"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Movement" parent="Movement">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement1.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement2.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement3.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement4.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement5.wav"/>
+        <DupeDestroyCount value="4"/>
+        <Pitch value="-1.000000,1.000000"/>
+        <SustainFade/>
+        <SustainFade Time="400" Volume="-96.000000"/>
+        <Volume value="-10.480000,-9.160000"/>
+        <VolumeRolloffFadeBlend value="Logarithmic"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Pissed" parent="TerranAckSCBW" Folder="DropshipSCBW">
+        <AssetArray TemplateParam="DropshipSCBW@Pissed00"/>
+        <AssetArray TemplateParam="DropshipSCBW@Pissed01"/>
+        <AssetArray TemplateParam="DropshipSCBW@Pissed02"/>
+        <AssetArray TemplateParam="DropshipSCBW@Pissed03"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Ready" parent="TerranReadySCBW" Folder="DropshipSCBW">
+        <AssetArray TemplateParam="DropshipSCBW@Ready00"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@What" parent="TerranAckSCBW" Folder="DropshipSCBW">
+        <AssetArray TemplateParam="DropshipSCBW@What00"/>
+        <AssetArray TemplateParam="DropshipSCBW@What01"/>
+        <AssetArray TemplateParam="DropshipSCBW@What02"/>
+        <AssetArray TemplateParam="DropshipSCBW@What03"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="DropshipSCBW@Yes" parent="TerranAckSCBW" Folder="DropshipSCBW">
+        <AssetArray TemplateParam="DropshipSCBW@Yes00"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes01"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes02"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes03"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes04"/>
+        <AssetArray TemplateParam="DropshipSCBW@Yes05"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
     <CSound id="GoliathSCBW@Attack" parent="TerranAckSCBW" Folder="GoliathSCBW">
@@ -2353,6 +2620,36 @@
         <Category value="Spell"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
+    <CDataCollectionUnit id="DropshipSCBW" parent="UnitBaseEmptySCBW">
+        <EditorCategories value="DataGroup:Unit,Race:Terran,DataFamily:Melee,ObjectType:Unit"/>
+        <DataRecord Entry="Abil,DropshipSCBW@Transport"/>
+        <DataRecord Entry="Actor,DropshipSCBW"/>
+        <DataRecord Entry="Actor,DropshipSCBW@Land"/>
+        <DataRecord Entry="Actor,DropshipSCBW@LoadSound"/>
+        <DataRecord Entry="Actor,DropshipSCBW@UnloadSound"/>
+        <DataRecord Entry="Actor,DropshipSCBW@TransportAnim"/>
+        <DataRecord Entry="Actor,DropshipSCBW@SOpBanker"/>
+        <DataRecord Entry="Button,DropshipSCBW"/>
+        <DataRecord Entry="Button,DropshipSCBW@Load"/>
+        <DataRecord Entry="Button,DropshipSCBW@UnloadAll"/>
+        <DataRecord Entry="Light,DropshipSCBW@Portrait"/>
+        <DataRecord Entry="Model,DropshipSCBW"/>
+        <DataRecord Entry="Model,DropshipSCBW@Death"/>
+        <DataRecord Entry="Model,DropshipSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,DropshipSCBW@Portrait"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Attack"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Explode"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Help"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Movement"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Pissed"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Ready"/>
+        <DataRecord Entry="Sound,DropshipSCBW@What"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Yes"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Land"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Unload"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Load"/>
+        <DataRecord Entry="Unit,DropshipSCBW"/>
+    </CDataCollectionUnit>
     <CDataCollectionUnit id="GoliathSCBW" parent="UnitBaseEmptySCBW">
         <EditorCategories value="DataGroup:Unit,Race:Terran,DataFamily:Melee,ObjectType:Unit"/>
         <DataRecord Entry="Unit,GoliathSCBW"/>
@@ -2718,6 +3015,70 @@
             <ChanceArray index="Anim" value="33"/>
             <ChanceArray index="Idle" value="33"/>
         </Fidget>
+    </CUnit>
+    <CUnit id="DropshipSCBW">
+        <DeathRevealRadius value="3"/>
+        <Race value="Terr"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="AIThreatGround" value="1"/>
+        <FlagArray index="AIThreatAir" value="1"/>
+        <FlagArray index="AISupport" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Air" value="1"/>
+        <Collide index="Flying" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Mechanical" value="1"/>
+        <LifeStart value="150"/>
+        <LifeMax value="150"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/TerranShipPlating"/>
+        <EnergyStart value="50"/>
+        <EnergyMax value="200"/>
+        <EnergyRegenRate value="0.5625"/>
+        <Mover value="Fly"/>
+        <Speed value="2.5"/>
+        <Acceleration value="2.25"/>
+        <LateralAcceleration value="1000"/>
+        <StationaryTurningRate value="999.8437"/>
+        <TurningRate value="999.8437"/>
+        <Sight value="11"/>
+        <Height value="3.75"/>
+        <VisionHeight value="4"/>
+        <Food value="-2"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="100"/>
+        <CostResource index="Vespene" value="100"/>
+        <RepairTime value="41.6667"/>
+        <AttackTargetPriority value="20"/>
+        <DamageDealtXP value="1"/>
+        <DamageTakenXP value="1"/>
+        <KillXP value="40"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="DropshipSCBW@Transport"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
+        </CardLayouts>
+        <Radius value="0.75"/>
+        <SeparationRadius value="0.75"/>
+        <ScoreMake value="200"/>
+        <ScoreKill value="200"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="9"/>
+        <MinimapRadius value="0.75"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <TacticalAIThink value="AIThinkMedivac"/>
+        <AIEvalFactor value="0.2"/>
+        <GlossaryCategory value="Unit/Category/TerranUnits"/>
+        <GlossaryPriority value="185"/>
+        <HotkeyCategory value="Unit/Category/TerranUnits"/>
     </CUnit>
     <CUnit id="GoliathSCBW">
         <DeathRevealRadius value="3"/>
