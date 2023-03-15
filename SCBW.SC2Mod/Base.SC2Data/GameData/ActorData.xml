@@ -123,12 +123,10 @@
         <Macros value="TerranAttachmentAnims"/>
         <Macros value="QueueAnimAddon"/>
         <On Terms="UnitDeathCustomize; ValidateUnit TechLabIsDetached" Send="DeathCustomize Detached"/>
-        <Model value="TechLab"/>
-        <DeathArray index="Normal" ModelLink="TechLabDeath" SoundLink="TechLab_Explode"/>
-        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="TechLab_Explode"/>
-        <DeathCustoms ModelLink="TechLabDeathDetached" Name="Detached"/>
-        <PlacementModel value="TechLabPlacement"/>
-        <AddonIndicator value="Actor/AddonIndicator/TechLab"/>
+        <DeathArray index="Normal" SoundLink="##unitName##@Explode"/>
+        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="##unitName##@Explode"/>
+        <DeathCustoms ModelLink="##unitName##@DeathDetached" Name="Detached"/>
+        <AddonIndicator value="Actor/AddonIndicator/##unitName##"/>
         <BarOffset value="80"/>
         <BarWidth value="75"/>
         <GroupIcon>
@@ -162,16 +160,149 @@
         <PortraitModel value="ReactorPortrait"/>
         <GlossaryAnim value="Stand,Attached"/>
     </CActorUnit>
-    <CActorUnit id="MachineShopSCBW" parent="TerranBuildingSCBW@AddOn" unitName="MachineShopSCBW">
-        <On Terms="AbilMorph.*.Finish; MorphTo TechReactor" Target="TechLabSplat" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo TechReactor" Send="Destroy"/>
-        <Model value="MachineShopSCBW"/>
-        <DeathArray index="Normal" ModelLink="MachineShopSCBW@Death" SoundLink="MachineShopSCBW@Explode"/>
-        <DeathArray index="UnderConstruction" SoundLink="MachineShopSCBW@Explode"/>
-        <DeathCustoms index="5" ModelLink="MachineShopSCBW@DeathDetached" Name="Detached"/>
-        <PlacementModel value="MachineShopSCBW@Placement"/>
-        <AddonIndicator value="Actor/AddonIndicator/MachineShopSCBW"/>
+    <CActorSplat id="ScienceFacilitySCBW@Splat" parent="TerranBuildingMorphSplat" unitName="ScienceFacilitySCBW"/>
+    <CActorUnit id="ScienceFacilitySCBW" parent="TerranBuildingSCBW@Flyer" unitName="ScienceFacilitySCBW">
+        <On Terms="UnitDeathCustomize.FactoryFlying" Send="DeathCustomize Flying"/>
+        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="ScienceFacilitySCBW@Explode"/>
+        <BarOffset value="150"/>
+        <BarWidth value="160"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Factory.dds"/>
+        </GroupIcon>
+        <NameOffset value="110"/>
+        <UnitIcon value="Assets\Textures\btn-building-terran-Factory.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Factory.dds"/>
+        </Wireframe>
     </CActorUnit>
+    <CActorProgress id="ScienceFacilitySCBW@AddOns" parent="BuildAbilSCBW@Progress"/>
+    <CActorModel id="ScienceFacilitySCBW@Build" parent="TerranBuildingSCBW@Build"/>
+    <CActorSound id="ScienceFacilitySCBW@Land" parent="TerranBuildingSCBW@Land" unitName="ScienceFacilitySCBW"/>
+    <CActorSound id="ScienceFacilitySCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff" unitName="ScienceFacilitySCBW"/>
+    <CActorAction id="GoliathSCBWWeaponAir@Action" parent="GenericAttack" effectImpact="GoliathSCBWWeaponAir@Damage" effectLaunch="GoliathSCBWWeaponAir@LM">
+        <LaunchAttachQuery Methods="AMPatternGoliath"/>
+        <LaunchAssets Model="GoliathSCBWWeaponAir@Launch" Sound="GoliathSCBWWeaponAir@Launch"/>
+        <Missile value="GoliathSCBWWeaponAir@Missile"/>
+        <ImpactMap index="None" Model="GoliathSCBWWeaponAir@Impact" Sound="GoliathSCBWWeaponAir@Impact"/>
+        <ImpactPhysics Name="JavelinImpact" MatchKeys="Basic" Physics="ThorAAAttackForce"/>
+    </CActorAction>
+    <CActorMissile id="GoliathSCBWWeaponAir@Missile" parent="GenericAttackMissile" unitName="GoliathSCBWWeaponAir@Missile"/>
+    <CActorModel id="GoliathSCBW@Death">
+        <CopySource value="GoliathSCBW"/>
+        <Aliases value="_Main"/>
+        <Aliases value="_Unit"/>
+        <Aliases value="_DeathModel"/>
+        <Macros value="DeadAnimationMacro"/>
+        <Inherits index="CastShadows" value="1"/>
+        <Inherits index="CreepEngulfment" value="1"/>
+        <Inherits index="Scale" value="1"/>
+        <Inherits index="TeamColor" value="1"/>
+        <Inherits index="TintColor" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <AcceptedHostedPropTransfers index="TimeScale" value="0"/>
+        <On Terms="ActorCreation" Send="RefClear ::Host"/>
+        <On Terms="ActorCreation" Send="SetTintColor 255,255,255 0.600000"/>
+        <On Terms="ActorCreation" Target="ModelPretargetGround" Send="Destroy"/>
+        <On Terms="ActorCreation" Target="GroundPreSelection" Send="Destroy"/>
+        <On Terms="ActorCreation; ScopeContains _RedTintDeath" Send="SetTintColor 255,0,0"/>
+        <On Terms="ActorCreation; ScopeContains _GreenTintDeath" Send="SetTintColor 0,255,0"/>
+        <On Terms="ActorCreation; ScopeContains _BlueTintDeath" Send="SetTintColor 0,0,255"/>
+        <On Terms="ActorCreation; ScopeContains _YellowTintDeath" Send="SetTintColor 255,255,0"/>
+        <On Terms="ActorCreation; ScopeContains _CyanTintDeath" Send="SetTintColor 0,255,255"/>
+        <On Terms="ActorCreation; ScopeContains _PurpleTintDeath" Send="SetTintColor 255,0,255"/>
+        <On Terms="Signal.*.ClearDeathModel" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+        <Model value="UnitDeathModel"/>
+        <ModelFlags index="SuppressMissingAttachErrors" value="1"/>
+        <ModelFlags index="UpdateVisibility" value="0"/>
+        <ModelFlags index="UseSyncSeed" value="1"/>
+        <EventDataSound Name="NydusCanalThud" Actor="UnitSound" Sound="NydusWorm_DeathThud"/>
+        <EventDataSound Name="ZergExplosionSlime" Actor="UnitSound" Sound="Zerg_ExplosionSlime"/>
+        <EventDataSound Name="ZergPreExplosionSmall" Actor="UnitSound" Sound="Zerg_PreExplosionSmall"/>
+        <EventDataSound Name="ZergExplosionTiny" Actor="UnitSound" Sound="Zerg_ExplosionTiny"/>
+        <EventDataSound Name="ZergExplosionSmall" Actor="UnitSound" Sound="Zerg_ExplosionSmall"/>
+        <EventDataSound Name="ZergExplosionMedium" Actor="UnitSound" Sound="Zerg_ExplosionMedium"/>
+        <EventDataSound Name="ZergExplosionLarge" Actor="UnitSound" Sound="Zerg_ExplosionLarge"/>
+        <EventDataSound Name="ProtossPreExplosionSmall" Actor="UnitSound" Sound="Protoss_PreExplosionSmall"/>
+        <EventDataSound Name="ProtossExplosionSmall" Actor="UnitSound" Sound="Protoss_ExplosionSmall"/>
+        <EventDataSound Name="ProtossExplosionMedium" Actor="UnitSound" Sound="Protoss_ExplosionMedium"/>
+        <EventDataSound Name="ProtossExplosionLarge" Actor="UnitSound" Sound="Protoss_ExplosionLarge"/>
+        <EventDataSound Name="TerranPreExplosionSmall" Actor="UnitSound" Sound="Terran_PreExplosionSmall"/>
+        <EventDataSound Name="TerranExplosionSmall" Actor="UnitSound" Sound="Terran_ExplosionSmall"/>
+        <EventDataSound Name="TerranExplosionMedium" Actor="UnitSound" Sound="Terran_ExplosionMedium"/>
+        <EventDataSound Name="TerranExplosionLarge" Actor="UnitSound" Sound="Terran_ExplosionLarge"/>
+    </CActorModel>
+    <CActorAction id="GoliathSCBWWeaponGround@Action" parent="GenericAttack" effectAttack="GoliathSCBWWeaponGround@Damage">
+        <LaunchAttachQuery Methods="AMFilterWeaponSetA0"/>
+        <LaunchAssets Model="GoliathSCBWWeaponGround@Launch" Sound="GoliathSCBWWeaponGround@Launch"/>
+        <ImpactMap index="None" Model="GoliathSCBWWeaponGround@Impact" Sound="GoliathSCBWWeaponGround@Impact"/>
+        <ImpactPhysics Name="GatlingCannonImpact" MatchKeys="Basic" Physics="VikingAssaultAttackForce"/>
+    </CActorAction>
+    <CActorUnit id="GoliathSCBW" parent="GenericUnitBase" unitName="GoliathSCBW">
+        <Aliases value="_UnitLarge"/>
+        <Macros value="UnloadDropAnim"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <On Terms="WeaponStart.GoliathSCBWWeaponGround.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.GoliathSCBWWeaponGround.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="WeaponStart.GoliathSCBWWeaponAir.AttackStart" Send="AnimBracketStart Spell Spell"/>
+        <On Terms="WeaponStop.GoliathSCBWWeaponAir.AttackStop" Send="AnimBracketStop Spell"/>
+        <On Terms="ActorCreation" Send="TextureSelectBySlot main {RequireAll diffuse}"/>
+        <On Terms="ActorCreation" Send="TextureSelectByMatch main.specular main"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
+        <On Terms="UnitBirth.GoliathSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="GoliathSCBW@Death" SoundLink="GoliathSCBW@Explode"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowMedium"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="GoliathSCBW@Death"/>
+        <PortraitModel value="GoliathSCBW@Portrait"/>
+        <StandAnimTurnTime value="4"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="1.000000"/>
+            <RangeDown value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive2"/>
+        </TerrainSquibs>
+        <WalkAnimMoveSpeed value="3.6093"/>
+        <BarOffset value="75"/>
+        <BarWidth value="66"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-goliath.dds"/>
+        </GroupIcon>
+        <GroupSoundArray index="Ready" value="GoliathSCBW@Ready"/>
+        <GroupSoundArray index="Help" value="GoliathSCBW@Help"/>
+        <GroupSoundArray index="What" value="GoliathSCBW@What"/>
+        <GroupSoundArray index="Yes" value="GoliathSCBW@Yes"/>
+        <GroupSoundArray index="Attack" value="GoliathSCBW@Attack"/>
+        <GroupSoundArray index="Pissed" value="GoliathSCBW@Pissed"/>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-goliath.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel0.dds"/>
+        <SoundArray index="Ready" value="GoliathSCBW@Ready"/>
+        <SoundArray index="Help" value="GoliathSCBW@Help"/>
+        <SoundArray index="What" value="GoliathSCBW@What"/>
+        <SoundArray index="Yes" value="GoliathSCBW@Yes"/>
+        <SoundArray index="Attack" value="GoliathSCBW@Attack"/>
+        <SoundArray index="Pissed" value="GoliathSCBW@Pissed"/>
+        <SoundArray index="Movement" value="GoliathSCBW@Movement"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-goliath.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-goliath.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorTurret id="GoliathSCBW@Turret">
+        <On Terms="TurretEnable.GoliathSCBW@Turret" Send="Create"/>
+    </CActorTurret>
+    <CActorUnit id="MachineShopSCBW" parent="TerranBuildingSCBW@AddOn" unitName="MachineShopSCBW"/>
     <CActorSplat id="MachineShopSCBW@Splat" parent="GenericUnitSplat" unitName="MachineShopSCBW"/>
     <CActorModel id="MachineShopSCBW@Build" parent="TerranBuildingSCBW@BuildSmall">
         <!--<On Terms="ActorCreation" Send="SetScale 1.350000"/>-->
