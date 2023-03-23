@@ -180,6 +180,13 @@
             <Image value="Assets\Textures\Wireframe-Terran-TechLab.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CActorForceSphere id="MissileTurretSCBWWeapon@Force">
+        <Host Subject="_ImpactGuide"/>
+        <HostSiteOps Ops="SOpRandomPointInSphereDot25"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="23.000000,12.000000"/>
+        <Radius value="1.400000,0.250000"/>
+    </CActorForceSphere>
     <CActorSiteBillboard id="GhostSCBWNuclearStrike@TargetBillboard">
         <Host Subject="GhostSCBWNuclearStrike@TargetBillboardBase" Actor="Create"/>
     </CActorSiteBillboard>
@@ -284,31 +291,24 @@
         <On Terms="Effect.GhostSCBWNuclearStrike@CP.Start" Send="Create"/>
         <HostSiteOps Ops="SOpSourcePointSationary"/>
     </CActorSquib>
+    <CActorSound id="GhostSCBWNuclearStrike@Target" parent="SoundOneShot">
+        <On Terms="Effect.GhostSCBWNuclearStrike@CP.Start" Send="Create"/>
+        <On Terms="Effect.GhostSCBWNuclearStrike@CP.Stop" Send="Destroy"/>
+    </CActorSound>
     <CActorSound id="GhostSCBWNuclearStrike@Seek" parent="SoundContinuous">
         <On Terms="Effect.GhostSCBWNuclearStrike@CP.Initial" Send="Create"/>
         <On Terms="Effect.GhostSCBWNuclearStrike@CP.Stop; At Effect" Send="Destroy"/>
         <On Terms="ActorCreation" Send="SoundSetPitch Inverse 10.000000@0.000000,0.000000@8750.000000"/>
     </CActorSound>
     <CActorAction id="GhostSCBWNuclearStrike@ShieldHitter" parent="AoESplashShieldHitter" effectHit="GhostSCBWNuclearStrike@Damage"/>
-    <CActorModel id="GhostSCBWNuclearStrike@Target" parent="ModelAnimationStyleOneShot">
-        <Flags index="SuppressSaveLoad" value="0"/>
-        <Filter index="Self" value="1"/>
-        <Filter index="Ally" value="1"/>
-        <Inherits index="Scale" value="1"/>
-        <FogVisibility value="Visible"/>
-        <On Terms="Effect.GhostSCBWNuclearStrike@CP.Start" Send="Create"/>
-        <On Terms="Effect.GhostSCBWNuclearStrike@CP.Stop" Send="AnimBracketStop BSD"/>
-        <On Terms="ActorCreation; !ValidatePlayer HaveUnfriendlyNukeIndicator" Send="SetFilter Enemy"/>
-        <Host Subject="GhostSCBWNuclearStrike@TargetBillboard" Actor="Create"/>
-    </CActorModel>
     <CActorAction id="MissileTurretSCBWWeapon@Action" parent="GenericAttack" effectImpact="MissileTurretSCBWWeapon@Damage" effectLaunch="MissileTurretSCBWWeapon@LM">
-        <LaunchAttachQuery Methods="AMPatternMissileTurret"/>
+        <LaunchAttachQuery Methods="MissileTurretSCBWWeapon@AMPattern"/>
         <LaunchAssets Sound="MissileTurretSCBWWeapon@Launch"/>
         <Missile value="MissileTurretSCBWWeapon@Missile"/>
         <ImpactAttachQuery Methods="AMFilterTarget AMRandomUniform"/>
         <ImpactMap index="None" Model="MissileTurretSCBWWeapon@Impact" Sound="MissileTurretSCBWWeapon@Impact"/>
         <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
-        <ImpactPhysics Name="LongboltMissileImpact" MatchKeys="BasicAir" Physics="MissileAttackForce"/>
+        <ImpactPhysics Name="MissileTurretSCBWWeapon@Impact" MatchKeys="BasicAir" Physics="MissileTurretSCBWWeapon@Force"/>
     </CActorAction>
     <CActorMissile id="MissileTurretSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="MissileTurretSCBWWeapon@Missile">
         <On Terms="ActorCreation" Send="AnimPlay Phase1 Stand PlayForever"/>
