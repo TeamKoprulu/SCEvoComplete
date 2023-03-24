@@ -255,7 +255,7 @@
     </CActorUnit>
     <CActorModel id="CovertOpsSCBW@Build" parent="TerranBuildingSCBW@BuildSmall"/>
     <CActorSplat id="CovertOpsSCBW@Splat" parent="GenericUnitSplat" unitName="CovertOpsSCBW"/>
-    <CActorModel id="GhostSCBWNuclearStrike@CollateralFire">
+    <CActorModel id="GhostSCBWNuclearStrike@CollateralFire" parent="ModelAnimationStyleOneShot">
         <On Terms="Effect.GhostSCBWNuclearStrike@Damage.Start; At Target" Send="Create"/>
         <HostSiteOps Ops="SOpShadow"/>
     </CActorModel>
@@ -274,6 +274,15 @@
         <On Terms="Effect.GhostSCBWNuclearStrike@Damage.Start; At Effect" Send="Create"/>
         <HostSiteOps Ops="SOpTargetPointStationary SOpShadow"/>
     </CActorSquib>
+    <CActorSimple id="GhostSCBWNuclearStrike@AdditionalExplosionCounter">
+        <On Terms="Effect.GhostSCBWNuclearStrike@Damage.Start; At Effect" Send="Create"/>
+        <On Terms="ActorCreation" Send="StatusSet AdditionalExplosionCounter 1"/>
+        <On Terms="ActorCreation" Send="TimerSet 0.500000 AdditionalExplosionSound"/>
+        <On Terms="TimerExpired; TimerName AdditionalExplosionSound; HasStatus AdditionalExplosionCounter" Send="Create GhostSCBWNuclearStrike@Impact"/>
+        <On Terms="TimerExpired; TimerName AdditionalExplosionSound; HasStatus AdditionalExplosionCounter" Send="StatusIncrement AdditionalExplosionCounter"/>
+        <On Terms="TimerExpired; TimerName AdditionalExplosionSound; HasStatus AdditionalExplosionCounter" Send="TimerSet 0.625000 AdditionalExplosionSound"/>
+        <On Terms="TimerExpired; TimerName AdditionalExplosionSound; IsStatus AdditionalExplosionCounter 4" Send="Destroy"/>
+    </CActorSimple>
     <CActorFoliageFXSpawner id="GhostSCBWNuclearStrike@FoliageFXSpawner" parent="FoliageFXSpawnerFire">
         <On Terms="Effect.GhostSCBWNuclearStrike@Damage.Start" Send="Create"/>
         <Radius value="5.000000"/>
@@ -295,6 +304,7 @@
         <On Terms="Effect.GhostSCBWNuclearStrike@CP.Start" Send="Create"/>
         <On Terms="Effect.GhostSCBWNuclearStrike@CP.Stop" Send="Destroy"/>
     </CActorSound>
+    <CActorSound id="GhostSCBWNuclearStrike@Impact" parent="SoundOneShot"/>
     <CActorSound id="GhostSCBWNuclearStrike@Seek" parent="SoundContinuous">
         <On Terms="Effect.GhostSCBWNuclearStrike@CP.Initial" Send="Create"/>
         <On Terms="Effect.GhostSCBWNuclearStrike@CP.Stop; At Effect" Send="Destroy"/>
