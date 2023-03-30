@@ -1,5 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CActorUnit default="1" id="ProtossBuildingSCBW" parent="GenericUnitStandard">
+        <Aliases value="_CreepEngulfable"/>
+        <Macros value="BuildingFlattenTerrainMacro"/>
+        <Macros value="SnowVisualBuildingMacroMP"/>
+        <On Terms="UnitDeathCustomize; CreepEngulfs" Send="CreepEngulfmentStopTransition"/>
+        <On Terms="ActorCreation; CreepIntersects" Send="CreepEngulfmentStartTransition"/>
+        <On Terms="UnitConstruction.##unitName##.Start" Send="Create ##unitName##@Build"/>
+        <ModelFlags index="OutlineOccluder" value="1"/>
+        <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="Protoss_BuildingWarpIn"/>
+        <CreepHeightClass value="Medium"/>
+        <CreepRateGrow value="Grow"/>
+        <CreepRateShrink value="Shrink"/>
+        <BuildModel value="##unitName##@Birth"/>
+        <DeathArray index="Normal" ModelLink="##unitName##@Death" SoundLink="##unitName##@Explode"/>
+        <DeathArray index="UnderConstruction" ModelLink="##unitName##@DeathUnderConstruction" SoundLink="##unitName##@Explode"/>
+        <PlacementModel value="##unitName##@Placement"/>
+        <PlacementSound value="Protoss_BuildingPlacement"/>
+        <PortraitModel value="##unitName##Portrait"/>
+        <HeroIcon value="Assets\Textures\btn-building-protoss-##unitName##.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-armor-protoss-buildingplating.dds"/>
+        <SoundArray index="Birth" value="##unitName##@Birth"/>
+        <SoundArray index="Ready" value="##unitName##@Ready"/>
+        <SoundArray index="Help" value="##unitName##@Help"/>
+        <SoundArray index="What" value="##unitName##@What"/>
+        <SoundArray index="Yes" value="##unitName##@Yes"/>
+        <SoundArray index="Attack" value="##unitName##@Attack"/>
+        <SoundArray index="Pissed" value="##unitName##@Pissed"/>
+        <SoundArray index="Movement" value="##unitName##@Movement"/>
+        <SoundArray index="Turning" value="##unitName##@Turning"/>
+        <SoundArray index="Board" value="##unitName##@Board"/>
+        <SoundArray index="Construction" value="Protoss_ConstructionWhat"/>
+        <SoundArray index="Click" value="##unitName##@Click"/>
+        <SoundArray index="ClickError" value="##unitName##@ClickError"/>
+        <SoundArray index="Highlight" value="##unitName##@Highlight"/>
+        <UnitIcon value="Assets\Textures\btn-building-protoss-##unitName##.dds"/>
+        <GroupSoundArray index="What" value="##unitName##@GroupWhat"/>
+        <GroupSoundArray index="Yes" value="##unitName##@GroupYes"/>
+        <GroupSoundArray index="Attack" value="##unitName##@GroupAttack"/>
+        <GroupSoundArray index="Board" value="##unitName##@GroupBoard"/>
+    </CActorUnit>
     <CActorLookAt default="1" id="BattlecruiserSCBW@LookAtBase" parent="UnitTurret">
         <On Terms="SupporterDestruction.*.UnitDeathModel" Send="Destroy"/>
         <Type value="BattlecruiserSCBW@Turret"/>
@@ -201,6 +241,31 @@
         <StateArray Name="Fire" Terms="ValidateUnit BurnDownFire"/>
         <StateThinkInterval value="0.5"/>
     </CActorStateMonitor>
+    <CActorSound id="ArbiterSCBW@LandSoundSweetener" parent="SoundOneShot"/>
+    <CActorSound id="ArchonSCBW@LandSweetener" parent="SoundOneShot"/>
+    <CActorModel id="DarkArchonSCBWMaelstrom@CastModel" parent="ModelAnimationStyleOneShot">
+        <HostSiteOps Ops="SOpAttachWeapon"/>
+    </CActorModel>
+    <CActorSound id="HighTemplarSCBW@LandSweetener" parent="SoundOneShot"/>
+    <CActorModel id="HighTemplarSCBW@Shadow" parent="ModelAnimationStyleOneShotNoOrphan">
+        <Inherits index="CloakEffect" value="1"/>
+        <On Terms="ActorCreation" Send="TimerSet 0.400000 ShadowFade"/>
+        <On Terms="ActorCreation" Send="SetTintColor 0,0,128 0.800000"/>
+        <On Terms="ActorCreation" Send="SetOpacity"/>
+        <On Terms="ActorCreation" Send="SetOpacity 0.500000 0.400000"/>
+        <On Terms="TimerExpired; TimerName ShadowFade" Send="SetOpacity 0.000000 0.400000"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOp2DRotation"/>
+    </CActorModel>
+    <CActorSound id="ArbiterSCBW@Land" parent="SoundOneShot"/>
+    <CActorSound id="DarkTemplarSCBW@LandSweetener" parent="SoundOneShot"/>
+    <CActorModel id="ArbiterTribunalSCBW@Death" parent="UnitDeathModel">
+        <AcceptedTransfers index="Textures" value="1"/>
+        <CopySource value="ArbiterTribunalSCBW"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
     <CActorForceConeRoundedEnd id="GoliathSCBWWeaponAir@Force">
         <On Terms="ActorCreation" Send="Create GoliathSCBWWeaponAir@SprayForce"/>
         <HostSiteOps Ops="SOpIncomingMissileDot5"/>
@@ -1605,7 +1670,7 @@
         <ImpactMap index="None" Model="ArbiterSCBWWeapon@Impact" Sound="ArbiterSCBWWeapon@Impact"/>
     </CActorAction>
     <CActorMissile id="ArbiterSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="ArbiterSCBWWeapon@Missile">
-        <On Terms="ActorCreation" Send="Create ArbiterSCBW_AttackLaunch"/>
+        <On Terms="ActorCreation" Send="Create ArbiterSCBWWeapon@Launch"/>
     </CActorMissile>
     <CActorSound id="ReaverSCBW@Land" parent="SoundOneShot"/>
     <CActorSound id="ArchonSCBW@Land" parent="SoundOneShot"/>
@@ -1686,10 +1751,8 @@
         <On Terms="Signal.*.HallucinationTintOff" Target="_Unit" Send="ClearTintColor 1.000000 Hallucination"/>
         <On Terms="Signal.*.HallucinationTintOff; !Option Shader Low" Target="_Unit" Send="ClearOpacity 1.000000 Hallucination"/>
     </CActorSimple>
-    <CActorSound id="CarrierSCBWInterceptorLaunch" parent="SoundOneShot">
+    <CActorSound id="CarrierSCBWWeapon@Launch" parent="SoundOneShot">
         <On Terms="Abil.CarrierSCBW@Hangar.Launch" Send="Create"/>
-        <On Terms="Abil.CarrierHangarVoid.Launch" Send="Create"/>
-        <Sound value="CarrierSCBW_InterceptorLaunch"/>
     </CActorSound>
     <CActorAction id="ArchonSCBWWeapon@Action" parent="GenericAttack" effectAttack="ArchonSCBWWeapon@Damage">
         <LaunchAssets Sound="ArchonSCBWWeapon@Launch"/>
@@ -1813,7 +1876,7 @@
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
-    <CActorUnit id="PhotonCannonSCBW" parent="ProtossBuilding" unitName="PhotonCannonSCBW">
+    <CActorUnit id="PhotonCannonSCBW" parent="ProtossBuildingSCBW" unitName="PhotonCannonSCBW">
         <Macros value="UnpoweredAnim"/>
         <Macros value="BuildingFlattenTerrainMacro"/>
         <Macros value="ProtossBuildingPowerUp"/>
@@ -1835,8 +1898,6 @@
         <On Terms="AnimDone; AnimPlaying Birth" Send="AnimSetTimeScale Creation 2.000000"/>
         <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="Protoss_BuildingWarpIn"/>
         <CreepHeightClass value="Tiny"/>
-        <BuildModel value="PhotonCannonSCBW@Birth"/>
-        <DeathArray index="Normal" ModelLink="PhotonCannonSCBW@Death" SoundLink="PhotonCannonSCBW@Explode"/>
         <DeathArray index="Timeout" AnimProps="Birth" ModelLink="PhaseCannonWarpOut"/>
         <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath" SoundLink="PhotonCannon_Explode"/>
         <DeathCustoms ModelLink="PhotonCannonDeathUnpowered" SoundLink="PhotonCannon_Explode" Name="Variation2"/>
@@ -1852,10 +1913,6 @@
             <Image value="Assets\Textures\Wireframe-Protoss-PhotonCannon.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-building-protoss-photoncannon.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-armor-protoss-buildingplating.dds"/>
-        <SoundArray index="Ready" value="PhotonCannonSCBW@Ready"/>
-        <SoundArray index="What" value="PhotonCannonSCBW@What"/>
-        <SoundArray index="Construction" value="Protoss_ConstructionWhat"/>
         <UnitFlags index="ShowBlobShadow" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-protoss-photoncannon.dds"/>
         <Wireframe>
@@ -2029,7 +2086,23 @@
         <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; ValidateUnit NotDeadOrConstruction; IsStatus Created 0" Send="Create"/>
         <Sound value="Protoss_PowerUpLarge"/>
     </CActorSound>
-    <CActorUnit id="CitadelOfAdunSCBW" parent="ProtossBuilding" unitName="CitadelOfAdunSCBW">
+    <CActorModel id="AssimilatorSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="ArbiterTribunalSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="CitadelOfAdunSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="CyberneticsCoreSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="FleetBeaconSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="ForgeSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="GatewaySCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="NexusSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="ObservatorySCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="PhotonCannonSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="PylonSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="RoboticsBaySCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="RoboticsFacilitySCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="ShieldBatterySCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="StargateSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorModel id="TemplarArchiveSCBW@Build" parent="ProtossBuildingBuild"/>
+    <CActorUnit id="CitadelOfAdunSCBW" parent="ProtossBuildingSCBW" unitName="CitadelOfAdunSCBW">
         <Macros value="UnpoweredAnim"/>
         <Macros value="QueueAnim"/>
         <Macros value="BuildingFlattenTerrainMacro"/>
@@ -2037,13 +2110,9 @@
         <On Terms="UnitDeathCustomize; ValidateUnit NoDarkProtoss" Send="DeathCustomize DarkProtoss"/>
         <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="Protoss_BuildingWarpIn"/>
         <CreepHeightClass value="Small"/>
-        <BuildModel value="CitadelOfAdunSCBW@Birth"/>
-        <DeathArray index="Normal" ModelLink="CitadelOfAdunSCBW@Death" SoundLink="CitadelOfAdunSCBW@Explode"/>
-        <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath" SoundLink="CitadelOfAdunSCBW@Explode"/>
+        <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath"/>
         <DeathCustoms ModelLink="TwilightCouncilTaldarimDeath" Name="DarkProtoss"/>
         <DeathActorModel value="CitadelOfAdunSCBWDeath"/>
-        <PlacementModel value="CitadelOfAdunSCBW@Placement"/>
-        <PlacementSound value="Protoss_BuildingPlacement"/>
         <PortraitModel value="ProtAdvisorSCBW@Portrait"/>
         <BarOffset value="135"/>
         <BarWidth value="135"/>
@@ -2051,11 +2120,7 @@
             <Image value="Assets\Textures\Wireframe-Protoss-TwilightCouncil.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-building-protoss-twilightcouncil.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-armor-protoss-buildingplating.dds"/>
         <NameOffset value="110"/>
-        <SoundArray index="Ready" value="CitadelOfAdunSCBW@Ready"/>
-        <SoundArray index="What" value="CitadelOfAdunSCBW@What"/>
-        <SoundArray index="Construction" value="Protoss_ConstructionWhat"/>
         <UnitFlags index="ShowBlobShadow" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-protoss-twilightcouncil.dds"/>
         <Wireframe>
@@ -2077,18 +2142,19 @@
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
-    <CActorAction id="ScarabSCBWAttack" parent="GenericAttack" effectImpact="ScarabSCBWWeapon@Damage" effectLaunch="ReaverSCBWWeapon@LM">
-        <LaunchAssets Sound="ReaverSCBW_AttackLaunch"/>
+    <CActorAction id="ReaverSCBWWeapon@Action" parent="GenericAttack" effectImpact="ReaverSCBWWeapon@Damage" effectLaunch="ReaverSCBWWeapon@LM">
+        <LaunchAssets Sound="ReaverSCBWWeapon@Launch"/>
+        <Missile value="ReaverSCBWWeapon@Missile"/>
         <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
-        <ImpactMap index="None" Sound="ReaverSCBW_ScarabExplode"/>
+        <ImpactMap index="None" Model="ReaverSCBWWeapon@Impact" Sound="ReaverSCBWWeapon@Explode"/>
         <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="ScarabExplosionForce"/>
         <ShieldFlashType value="Header"/>
     </CActorAction>
-    <CActorMissile id="ScarabSCBWAttackMissile" parent="GenericAttackMissileWithDeathAnim" unitName="ScarabSCBWWeapon">
+    <CActorMissile id="ReaverSCBWWeapon@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="ReaverSCBWWeapon@Missile">
         <Macros value="GlobalLoopMacro"/>
     </CActorMissile>
     <CActorUnit id="ScarabSCBW" parent="GenericUnitStandard" unitName="ScarabSCBW">
-        <DeathArray index="Normal" ModelLink="ScarabSCBWAttackImpact" SoundLink=""/>
+        <DeathArray index="Normal" ModelLink="ReaverSCBWWeapon@Impact" SoundLink=""/>
         <BarOffset value="25"/>
         <BarWidth value="36"/>
         <HeroIcon value="Assets\Textures\btn-unit-protoss-interceptor.dds"/>
@@ -2152,165 +2218,46 @@
         </Wireframe>
         <SoundArray index="Movement" value="SpiderMineSCBW@Seek"/>
     </CActorUnit>
-    <CActorUnit id="StargateSCBW" parent="ProtossBuildingEx" unitName="StargateSCBW">
+    <CActorUnit id="StargateSCBW" parent="ProtossBuildingSCBW" unitName="StargateSCBW">
         <Aliases value="_UnitHuge"/>
         <Macros value="ProtossBuildingPowerUp"/>
         <Macros value="VoidMPUnpoweredAnim"/>
         <Macros value="QueueAnim"/>
         <Macros value="GlobalLoopMacro"/>
-        <Remove Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById StargateDarkDiffuse"/>
-        <Remove Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById StargateDarkSpecular"/>
-        <Remove Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById StargateDarkEmissive"/>
-        <Remove Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById PulseGreen"/>
-        <Remove Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById GradRaysGreen"/>
-        <Remove Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById TronSquareGreen"/>
-        <Remove Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="TextureSelectById StargateDarkDiffuse"/>
-        <Remove Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="TextureSelectById StargateDarkSpecular"/>
-        <Remove Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="TextureSelectById StargateDarkEmissive"/>
-        <Remove Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="TextureSelectById PulseGreen"/>
-        <Remove Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="TextureSelectById GradRaysGreen"/>
-        <Remove Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="TextureSelectById TronSquareGreen"/>
         <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstruction" Send="DeathCustomize Variation2"/>
         <On Terms="ActorCreation" Send="StatusSet WarpingIn 0"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Phoenix; !ValidateUnit HasNoPower" Send="Create PhoenixWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Phoenix" Send="StatusSet WarpingIn 1"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 1" Send="Create PhoenixWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="PhoenixWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="PhoenixWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="PhoenixWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRay; !ValidateUnit HasNoPower" Send="Create VoidRayWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRay" Send="StatusSet WarpingIn 2"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 2" Send="Create VoidRayWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="VoidRayWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="VoidRayWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="VoidRayWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Carrier; !ValidateUnit HasNoPower" Send="Create CarrierWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Carrier" Send="StatusSet WarpingIn 3"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 3" Send="Create CarrierWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="CarrierWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="CarrierWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="CarrierWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Send="StatusSet WarpingIn 0"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Send="StatusSet WarpingIn 0"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Oracle; !ValidateUnit HasNoPower" Send="Create OracleWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Oracle" Send="StatusSet WarpingIn 5"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 5" Send="Create OracleWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="OracleWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="OracleWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="OracleWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Tempest; !ValidateUnit HasNoPower" Send="Create TempestWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Tempest" Send="StatusSet WarpingIn 6"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 6" Send="Create TempestWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="TempestWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="TempestWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="TempestWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Scout; !ValidateUnit HasNoPower" Send="Create ScoutWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced Scout" Send="StatusSet WarpingIn 4"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 4" Send="Create ScoutWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="ScoutWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="ScoutWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="ScoutWarpInStargate" Send="Destroy"/>
-        <On Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById StargateDarkDiffuse"/>
-        <On Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById StargateDarkSpecular"/>
-        <On Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById StargateDarkEmissive"/>
-        <On Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById PulseGreen"/>
-        <On Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById GradRaysGreen"/>
-        <On Terms="Upgrade.DarkProtoss.Add" Send="TextureSelectById TronSquareGreen"/>
-        <On Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="TextureSelectById StargateDarkDiffuse"/>
-        <On Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="TextureSelectById StargateDarkSpecular"/>
-        <On Terms="ActorCreation; ValidateUnit NoDarkProtoss" Send="TextureSelectById StargateDarkEmissive"/>
-        <On Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="TextureSelectById PulseGreen"/>
-        <On Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="TextureSelectById GradRaysGreen"/>
-        <On Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="TextureSelectById TronSquareGreen"/>
-        <On Terms="UnitBirth; ValidateUnit HasPurifierProtoss" Send="TextureSelectById PurifierHackDiffuse"/>
-        <On Terms="Upgrade.PurifierProtoss.Add" Send="TextureSelectById PurifierHackDiffuse"/>
-        <On Terms="Signal.*.PurifierHack" Send="TextureSelectById PurifierHackDiffuse"/>
-        <On Terms="AbilMorph.*.Start; MorphFrom Stargate; MorphTo StargateWarp" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Finish; MorphFrom StargateWarp; MorphTo Stargate" Send="Create"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced ScoutSCBW; !ValidateUnit HasNoPower" Send="Create ScoutSCBW@WarpInStargate"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced ScoutSCBW" Send="StatusSet WarpingIn 1"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 1" Send="Create ScoutSCBW@WarpInStargate"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="ScoutSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Cancel" Target="ScoutSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Finish" Target="ScoutSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced ArbiterSCBW; !ValidateUnit HasNoPower" Send="Create ArbiterSCBW@WarpInStargate"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced ArbiterSCBW" Send="StatusSet WarpingIn 2"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 2" Send="Create ArbiterSCBW@WarpInStargate"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="ArbiterSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Cancel" Target="ArbiterSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Finish" Target="ArbiterSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced CarrierSCBW; !ValidateUnit HasNoPower" Send="Create CarrierSCBW@WarpInStargate"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced CarrierSCBW" Send="StatusSet WarpingIn 3"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 3" Send="Create CarrierSCBW@WarpInStargate"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="CarrierSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Cancel" Target="CarrierSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Finish" Target="CarrierSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced CorsairSCBW; !ValidateUnit HasNoPower" Send="Create CorsairSCBW@WarpInStargate"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced CorsairSCBW" Send="StatusSet WarpingIn 4"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 4" Send="Create CorsairSCBW@WarpInStargate"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="CorsairSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Cancel" Target="CorsairSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Finish" Target="CorsairSCBW@WarpInStargate" Send="Destroy"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Cancel" Send="StatusSet WarpingIn 0"/>
+        <On Terms="AbilTrain.StargateSCBW@Train.Finish" Send="StatusSet WarpingIn 0"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom Stargate" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo Stargate" Send="Create"/>
         <On Terms="ActorCreation" Send="AnimGroupRemove Work"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced PhoenixAiur; !ValidateUnit HasNoPower" Send="Create PhoenixAiurWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced PhoenixAiur" Send="StatusSet WarpingIn 8"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 8" Send="Create PhoenixAiurWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="PhoenixAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="PhoenixAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="PhoenixAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced CorsairMP; !ValidateUnit HasNoPower" Send="Create CorsairMPWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced CorsairMP" Send="StatusSet WarpingIn 9"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 9" Send="Create CorsairMPWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="CorsairMPWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="CorsairMPWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="CorsairMPWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRayShakuras; !ValidateUnit HasNoPower" Send="Create VoidRayShakurasWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRayShakuras" Send="StatusSet WarpingIn 10"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 10" Send="Create VoidRayShakurasWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="VoidRayShakurasWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="VoidRayShakurasWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="VoidRayShakurasWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRayTaldarim; !ValidateUnit HasNoPower" Send="Create VoidRayTaldarimWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRayTaldarim" Send="StatusSet WarpingIn 10"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 10" Send="Create VoidRayTaldarimWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="VoidRayTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="VoidRayTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="VoidRayTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced SOAMothershipv4; !ValidateUnit HasNoPower" Send="Create MothershipTaldarimWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced SOAMothershipv4" Send="StatusSet WarpingIn 10"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 10" Send="Create MothershipTaldarimWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="MothershipTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="MothershipTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="MothershipTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRayAiur; !ValidateUnit HasNoPower" Send="Create VoidRayAiurWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced VoidRayAiur" Send="StatusSet WarpingIn 11"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 11" Send="Create VoidRayAiurWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="VoidRayAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="VoidRayAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="VoidRayAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced ArbiterMP; !ValidateUnit HasNoPower" Send="Create ArbiterMPWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced ArbiterMP" Send="StatusSet WarpingIn 12"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 12" Send="Create ArbiterMPWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="ArbiterMPWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="ArbiterMPWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="ArbiterMPWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced CarrierAiur; !ValidateUnit HasNoPower" Send="Create CarrierAiurWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced CarrierAiur" Send="StatusSet WarpingIn 13"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 13" Send="Create CarrierAiurWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="CarrierAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="CarrierAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="CarrierAiurWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced CarrierTaldarim; !ValidateUnit HasNoPower" Send="Create CarrierTaldarimWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced CarrierTaldarim" Send="StatusSet WarpingIn 14"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 14" Send="Create CarrierTaldarimWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="CarrierTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="CarrierTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="CarrierTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced TempestPurifier; !ValidateUnit HasNoPower" Send="Create TempestPurifierWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced TempestPurifier" Send="StatusSet WarpingIn 13"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 13" Send="Create TempestPurifierWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="CarrierTaldarimWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="TempestPurifierWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="TempestPurifierWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced PhoenixPurifier; !ValidateUnit HasNoPower" Send="Create PhoenixPurifierWarpInStargate"/>
-        <On Terms="AbilTrain.StargateTrain.Start; AbilTrainProduced PhoenixPurifier" Send="StatusSet WarpingIn 8"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 8" Send="Create PhoenixPurifierWarpInStargate"/>
-        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="PhoenixPurifierWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Cancel" Target="PhoenixPurifierWarpInStargate" Send="Destroy"/>
-        <On Terms="AbilTrain.StargateTrain.Finish" Target="PhoenixPurifierWarpInStargate" Send="Destroy"/>
-        <On Terms="Upgrade.DarkProtoss.Add" Send="ModelSwap StargateTaldarim 255 PreventAllDynamicTextureTransfers"/>
-        <On Terms="UnitBirth; ValidateUnit NoDarkProtoss" Send="ModelSwap StargateTaldarim 255 PreventAllDynamicTextureTransfers"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit NoDarkProtoss" Send="DeathCustomize DarkProtoss"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstructionAndHasDarkProtoss" Send="DeathCustomize Variation3"/>
-        <On Terms="Behavior.ProdigalEngineerProductionTarget.On" Send="AnimSetTimeScale ::Baseline 0.200000"/>
-        <On Terms="Behavior.ProdigalEngineerProductionTarget.Off" Send="AnimSetTimeScale ::Baseline 1.000000"/>
-        <On Terms="Behavior.ProdigalEngineerProductionTarget.On" Send="AnimSetTimeScale GL_BSD 0.200000"/>
-        <On Terms="Behavior.ProdigalEngineerProductionTarget.Off" Send="AnimSetTimeScale GL_BSD 1.000000"/>
         <ModelFlags index="AutomateGlobalLoops" value="0"/>
-        <BuildModel value="StargateSCBW@Birth"/>
-        <DeathArray index="Normal" ModelLink="StargateSCBW@Death" SoundLink="StargateSCBW@Explode"/>
-        <DeathArray index="UnderConstruction" ModelLink="StargateSCBW@DeathUnderConstruction" SoundLink="StargateSCBW@Explode"/>
         <DeathCustoms ModelLink="StargateDeathUnpowered" SoundLink="StargateSCBW@Explode" Name="Variation2"/>
-        <DeathCustoms ModelLink="StargateTaldarimDeath" Name="DarkProtoss"/>
-        <DeathCustoms ModelLink="StargateTaldarimDeathUnpowered" Name="Variation3"/>
         <DeathActorModel value="StargateDeath"/>
-        <PlacementModel value="StargateSCBW@Placement"/>
         <PortraitModel value="StargateSCBW@Portrait"/>
         <BarOffset value="170"/>
         <BarWidth value="160"/>
@@ -2318,8 +2265,6 @@
             <Image value="Assets\Textures\Wireframe-Protoss-Stargate.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-building-protoss-Stargate.dds"/>
-        <SoundArray index="Ready" value="StargateSCBW@Ready"/>
-        <SoundArray index="What" value="StargateSCBW@What"/>
         <UnitIcon value="Assets\Textures\btn-building-protoss-Stargate.dds"/>
         <Wireframe>
             <Image value="Assets\Textures\Wireframe-Protoss-Stargate.dds"/>
