@@ -5,10 +5,1255 @@
 // Name:   Just Another StarCraft II Map
 // 
 //==================================================================================================
-include "TriggerLibs/natives"
+include "TriggerLibs/NativeLib"
+include "Lib1926661B"
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+void InitLibs () {
+    libNtve_InitLib();
+    lib1926661B_InitLib();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Constants
+//--------------------------------------------------------------------------------------------------
+const int gv_pLAYER_01_USER = 1;
+const int gv_pLAYER_02_USER = 2;
+const int gv_pLAYER_03_ZERG = 3;
+
+//--------------------------------------------------------------------------------------------------
+// Global Variables
+//--------------------------------------------------------------------------------------------------
+unit gv_heroUnit;
+bool gv_gameOver;
+bool gv_inCinematic;
+string gv_mapMusicTrack;
+int gv_gatheredVespene;
+int gv_builtDepots;
+int gv_objectiveDepots;
+int gv_objectiveRefinery;
+int gv_objectiveVespene;
+unitgroup gv_cinematicHiddenUnits;
+unitgroup gv_cinematicPausedUnits;
+unitgroup gv_cinematicTempUnits;
+bool gv_cinematicCompleted;
+
+void InitGlobals () {
+    gv_objectiveDepots = c_invalidObjectiveId;
+    gv_objectiveRefinery = c_invalidObjectiveId;
+    gv_objectiveVespene = c_invalidObjectiveId;
+    gv_cinematicHiddenUnits = UnitGroupEmpty();
+    gv_cinematicPausedUnits = UnitGroupEmpty();
+    gv_cinematicTempUnits = UnitGroupEmpty();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Variables
+//--------------------------------------------------------------------------------------------------
+trigger gt_Initialization;
+trigger gt_Init01Technology;
+trigger gt_Init02Players;
+trigger gt_Init03Units;
+trigger gt_Init04MusicSound;
+trigger gt_Init05Environment;
+trigger gt_Init06Difficulties;
+trigger gt_Init07Help;
+trigger gt_StartGameQ;
+trigger gt_DepotsBuilt;
+trigger gt_DefeatBaseDead;
+trigger gt_DefeatPrimaryObjectiveFailed;
+trigger gt_VictoryHiveCompleted;
+trigger gt_VictorySequence;
+trigger gt_Victory;
+trigger gt_Defeat;
+trigger gt_VictoryCheat;
+trigger gt_DefeatCheat;
+trigger gt_TipSampleTipQ;
+trigger gt_StartAI;
+trigger gt_AIGiveMinerals;
+trigger gt_AIGiveGas;
+trigger gt_ObjectiveDepotsCreate;
+trigger gt_ObjectiveDepotsComplete;
+trigger gt_ObjectiveDepotsUpdate;
+trigger gt_ObjectiveRefineryCreate;
+trigger gt_ObjectiveRefineryComplete;
+trigger gt_ObjectiveVespeneCreate;
+trigger gt_ObjectiveVespeneComplete;
+trigger gt_ObjectiveVespeneUpdate;
+trigger gt_IntroQ;
+trigger gt_IntroSetup;
+trigger gt_IntroCinematic;
+trigger gt_IntroCinematicEnd;
+trigger gt_IntroCleanup;
+trigger gt_VictoryQ;
+trigger gt_VictorySetup;
+trigger gt_VictoryCinematic;
+trigger gt_VictoryCinematicEnd;
+trigger gt_VictoryCleanup;
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Initialization
+//--------------------------------------------------------------------------------------------------
+bool gt_Initialization_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lib1926661B_gf_ULoadCampaignData("UEDFL_EP01M01");
+    TriggerExecute(gt_Init01Technology, true, true);
+    TriggerExecute(gt_Init02Players, true, true);
+    TriggerExecute(gt_Init03Units, true, true);
+    TriggerExecute(gt_Init04MusicSound, true, true);
+    TriggerExecute(gt_Init05Environment, true, true);
+    TriggerExecute(gt_Init06Difficulties, true, true);
+    TriggerExecute(gt_Init07Help, true, true);
+    TriggerExecute(gt_IntroQ, true, true);
+    TriggerExecute(gt_StartGameQ, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Initialization_Init () {
+    gt_Initialization = TriggerCreate("gt_Initialization_Func");
+    TriggerAddEventMapInit(gt_Initialization);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init 01 Technology
+//--------------------------------------------------------------------------------------------------
+bool gt_Init01Technology_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init01Technology_Init () {
+    gt_Init01Technology = TriggerCreate("gt_Init01Technology_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init 02 Players
+//--------------------------------------------------------------------------------------------------
+bool gt_Init02Players_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libNtve_gf_SetAlliance(gv_pLAYER_01_USER, gv_pLAYER_02_USER, libNtve_ge_AllianceSetting_Ally);
+    libNtve_gf_SetAlliance(gv_pLAYER_01_USER, gv_pLAYER_03_ZERG, libNtve_ge_AllianceSetting_Enemy);
+    libNtve_gf_SetAlliance(gv_pLAYER_02_USER, gv_pLAYER_03_ZERG, libNtve_ge_AllianceSetting_Enemy);
+    PlayerModifyPropertyInt(gv_pLAYER_02_USER, c_playerPropSuppliesLimit, c_playerPropOperSetTo, 200);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init02Players_Init () {
+    gt_Init02Players = TriggerCreate("gt_Init02Players_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init 03 Units
+//--------------------------------------------------------------------------------------------------
+bool gt_Init03Units_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init03Units_Init () {
+    gt_Init03Units = TriggerCreate("gt_Init03Units_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init 04 Music/Sound
+//--------------------------------------------------------------------------------------------------
+bool gt_Init04MusicSound_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gv_mapMusicTrack = "Music_TerrLow_SCI";
+    SoundtrackPlay(PlayerGroupAll(), c_soundtrackCategoryMusic, gv_mapMusicTrack, c_soundtrackCueAny, c_soundtrackIndexAny, true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init04MusicSound_Init () {
+    gt_Init04MusicSound = TriggerCreate("gt_Init04MusicSound_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init 05 Environment
+//--------------------------------------------------------------------------------------------------
+bool gt_Init05Environment_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    GameTimeOfDaySet("08:00:00");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init05Environment_Init () {
+    gt_Init05Environment = TriggerCreate("gt_Init05Environment_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init 06 Difficulties
+//--------------------------------------------------------------------------------------------------
+bool gt_Init06Difficulties_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init06Difficulties_Init () {
+    gt_Init06Difficulties = TriggerCreate("gt_Init06Difficulties_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init 07 Help
+//--------------------------------------------------------------------------------------------------
+bool gt_Init07Help_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init07Help_Init () {
+    gt_Init07Help = TriggerCreate("gt_Init07Help_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Start Game Q
+//--------------------------------------------------------------------------------------------------
+bool gt_StartGameQ_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(3.0, c_timeReal);
+    TriggerQueueEnter();
+    TriggerQueueExit();
+    Wait(20.0, c_timeReal);
+    TriggerExecute(gt_TipSampleTipQ, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_StartGameQ_Init () {
+    gt_StartGameQ = TriggerCreate("gt_StartGameQ_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Depots Built
+//--------------------------------------------------------------------------------------------------
+bool gt_DepotsBuilt_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((gv_gameOver == false))) {
+            return false;
+        }
+
+        if (!((gv_inCinematic == false))) {
+            return false;
+        }
+
+        if (!((UnitGetType(EventUnitProgressUnit()) == "SupplyDepotSCBW"))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gv_builtDepots += 1;
+    TriggerExecute(gt_ObjectiveDepotsUpdate, true, false);
+    if ((gv_builtDepots == 3)) {
+        TriggerEnable(TriggerGetCurrent(), false);
+        TriggerExecute(gt_ObjectiveDepotsComplete, true, false);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DepotsBuilt_Init () {
+    gt_DepotsBuilt = TriggerCreate("gt_DepotsBuilt_Func");
+    TriggerAddEventUnitConstructProgress(gt_DepotsBuilt, null, c_unitProgressStageComplete);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Defeat Base Dead
+//--------------------------------------------------------------------------------------------------
+bool gt_DefeatBaseDead_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((gv_gameOver == false))) {
+            return false;
+        }
+
+        if (!((gv_inCinematic == false))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, gv_pLAYER_01_USER, null, UnitFilter((1 << c_targetFilterPreventDefeat), 0, 0, (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 1), c_unitCountAlive) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    gv_gameOver = true;
+    TriggerQueuePause(true);
+    TriggerQueueClear(c_triggerQueueRemove);
+    Wait(2.0, c_timeReal);
+    lib1926661B_gf_CampaignDirective(lib1926661B_ge_DirectiveType_Hint, null);
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    TriggerExecute(gt_Defeat, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DefeatBaseDead_Init () {
+    gt_DefeatBaseDead = TriggerCreate("gt_DefeatBaseDead_Func");
+    TriggerAddEventTimePeriodic(gt_DefeatBaseDead, 1.0, c_timeGame);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Defeat Primary Objective Failed
+//--------------------------------------------------------------------------------------------------
+bool gt_DefeatPrimaryObjectiveFailed_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((gv_gameOver == false))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    gv_gameOver = true;
+    TriggerQueuePause(true);
+    TriggerQueueClear(c_triggerQueueRemove);
+    Wait(2.0, c_timeReal);
+    lib1926661B_gf_CampaignDirective(lib1926661B_ge_DirectiveType_Warning, null);
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    TriggerExecute(gt_Defeat, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DefeatPrimaryObjectiveFailed_Init () {
+    gt_DefeatPrimaryObjectiveFailed = TriggerCreate("gt_DefeatPrimaryObjectiveFailed_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory {Hive} Completed
+//--------------------------------------------------------------------------------------------------
+bool gt_VictoryHiveCompleted_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((gv_gameOver == false))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    TriggerExecute(gt_VictorySequence, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictoryHiveCompleted_Init () {
+    gt_VictoryHiveCompleted = TriggerCreate("gt_VictoryHiveCompleted_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory Sequence
+//--------------------------------------------------------------------------------------------------
+bool gt_VictorySequence_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gv_gameOver = true;
+    Wait(2.0, c_timeReal);
+    lib1926661B_gf_RunMissionVictorySequence(gt_VictoryQ);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictorySequence_Init () {
+    gt_VictorySequence = TriggerCreate("gt_VictorySequence_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory
+//--------------------------------------------------------------------------------------------------
+bool gt_Victory_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    if (true) {
+    }
+
+    lib1926661B_gf_AddVictoryPanelStatistic("UnitsTotalCount");
+    lib1926661B_gf_AddVictoryPanelStatistic("UnitsKilledCount");
+    lib1926661B_gf_AddVictoryPanelStatistic("ResourceLostArmy");
+    lib1926661B_gf_AddVictoryPanelStatistic("StructuresKilledCount");
+    lib1926661B_gf_AddVictoryPanelStatistic("StructuresLostCount");
+    lib1926661B_gf_AddVictoryPanelCustomStatistic("Days taken to Complete", (IntToString(2) + " Days"));
+    lib1926661B_gf_AddVictoryPanelCustomStatistic("Unit Type with the Most Kills", ("Hellion (26 Days)" + " Days"));
+    lib1926661B_gf_EndCampaignMission(gv_pLAYER_01_USER, c_gameOverVictory);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Victory_Init () {
+    gt_Victory = TriggerCreate("gt_Victory_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Defeat
+//--------------------------------------------------------------------------------------------------
+bool gt_Defeat_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    lib1926661B_gf_EndCampaignMission(gv_pLAYER_01_USER, c_gameOverDefeat);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Defeat_Init () {
+    gt_Defeat = TriggerCreate("gt_Defeat_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory Cheat
+//--------------------------------------------------------------------------------------------------
+bool gt_VictoryCheat_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(gt_VictoryCheat, false);
+    TriggerEnable(gt_DefeatCheat, false);
+    TriggerEnable(gt_Defeat, false);
+    gv_gameOver = true;
+    lib1926661B_gf_RunMissionVictorySequence(gt_Victory);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictoryCheat_Init () {
+    gt_VictoryCheat = TriggerCreate("gt_VictoryCheat_Func");
+    TriggerAddEventPlayerLeft(gt_VictoryCheat, gv_pLAYER_01_USER, c_gameResultVictory);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Defeat Cheat
+//--------------------------------------------------------------------------------------------------
+bool gt_DefeatCheat_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(gt_VictoryCheat, false);
+    TriggerEnable(gt_DefeatCheat, false);
+    TriggerEnable(gt_Victory, false);
+    gv_gameOver = true;
+    TriggerExecute(gt_Defeat, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DefeatCheat_Init () {
+    gt_DefeatCheat = TriggerCreate("gt_DefeatCheat_Func");
+    TriggerAddEventPlayerLeft(gt_DefeatCheat, gv_pLAYER_01_USER, c_gameResultDefeat);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Tip {Sample Tip} Q
+//--------------------------------------------------------------------------------------------------
+bool gt_TipSampleTipQ_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerQueueEnter();
+    HelpPanelAddTip(PlayerGroupAll(), libNtve_gf_FormatTipTitle(StringExternal("Param/Value/491927CB"), libNtve_ge_TipType_NormalTip), StringExternal("Param/Value/AA4C7996"), StringExternal("Param/Value/F1BBD03A"), "Assets\\Textures\\ui_tip_questionmark.dds");
+    Wait(lib1926661B_gv_campaignTipDelay, c_timeReal);
+    TriggerQueueExit();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_TipSampleTipQ_Init () {
+    gt_TipSampleTipQ = TriggerCreate("gt_TipSampleTipQ_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Start AI
+//--------------------------------------------------------------------------------------------------
+bool gt_StartAI_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    CampaignInitAI();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_StartAI_Init () {
+    gt_StartAI = TriggerCreate("gt_StartAI_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: AI Give Minerals
+//--------------------------------------------------------------------------------------------------
+bool gt_AIGiveMinerals_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((PlayerGetPropertyInt(EventPlayer(), c_playerPropMinerals) < 1000))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_AIGiveMinerals_Init () {
+    gt_AIGiveMinerals = TriggerCreate("gt_AIGiveMinerals_Func");
+    TriggerAddEventPlayerPropChange(gt_AIGiveMinerals, gv_pLAYER_02_USER, c_playerPropMinerals);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: AI Give Gas
+//--------------------------------------------------------------------------------------------------
+bool gt_AIGiveGas_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((PlayerGetPropertyInt(EventPlayer(), c_playerPropVespene) < 1000))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_AIGiveGas_Init () {
+    gt_AIGiveGas = TriggerCreate("gt_AIGiveGas_Func");
+    TriggerAddEventPlayerPropChange(gt_AIGiveGas, gv_pLAYER_02_USER, c_playerPropVespene);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Depots Create
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveDepotsCreate_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    lib1926661B_gf_CreateObjectiveCampaign("M00Main01");
+    gv_objectiveDepots = ObjectiveLastCreated();
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveDepotsCreate_Init () {
+    gt_ObjectiveDepotsCreate = TriggerCreate("gt_ObjectiveDepotsCreate_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Depots Complete
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveDepotsComplete_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    TriggerExecute(gt_ObjectiveDepotsCreate, true, false);
+    lib1926661B_gf_SetObjectiveStateCampaign("M00Main01", lib1926661B_ge_MissionObjectiveState_Completed);
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveDepotsComplete_Init () {
+    gt_ObjectiveDepotsComplete = TriggerCreate("gt_ObjectiveDepotsComplete_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Depots Update
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveDepotsUpdate_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    TriggerExecute(gt_ObjectiveDepotsCreate, true, false);
+    lib1926661B_gf_SetMissionObjectiveProgress2("M00Main01", gv_builtDepots, true, null, true);
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveDepotsUpdate_Init () {
+    gt_ObjectiveDepotsUpdate = TriggerCreate("gt_ObjectiveDepotsUpdate_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Refinery Create
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveRefineryCreate_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    lib1926661B_gf_CreateObjectiveCampaign("M00Main02");
+    gv_objectiveRefinery = ObjectiveLastCreated();
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveRefineryCreate_Init () {
+    gt_ObjectiveRefineryCreate = TriggerCreate("gt_ObjectiveRefineryCreate_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Refinery Complete
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveRefineryComplete_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    TriggerExecute(gt_ObjectiveRefineryCreate, true, false);
+    lib1926661B_gf_SetObjectiveStateCampaign("M00Main02", lib1926661B_ge_MissionObjectiveState_Completed);
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveRefineryComplete_Init () {
+    gt_ObjectiveRefineryComplete = TriggerCreate("gt_ObjectiveRefineryComplete_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Vespene Create
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveVespeneCreate_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    lib1926661B_gf_CreateObjectiveCampaign("M00Main03");
+    gv_objectiveVespene = ObjectiveLastCreated();
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveVespeneCreate_Init () {
+    gt_ObjectiveVespeneCreate = TriggerCreate("gt_ObjectiveVespeneCreate_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Vespene Complete
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveVespeneComplete_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    TriggerExecute(gt_ObjectiveVespeneCreate, true, false);
+    lib1926661B_gf_SetObjectiveStateCampaign("M00Main03", lib1926661B_ge_MissionObjectiveState_Completed);
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveVespeneComplete_Init () {
+    gt_ObjectiveVespeneComplete = TriggerCreate("gt_ObjectiveVespeneComplete_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Objective Vespene Update
+//--------------------------------------------------------------------------------------------------
+bool gt_ObjectiveVespeneUpdate_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    TriggerExecute(gt_ObjectiveVespeneCreate, true, false);
+    lib1926661B_gf_SetMissionObjectiveProgress2("M00Main03", PlayerGetPropertyInt(gv_pLAYER_01_USER, c_playerPropVespeneCollected), true, null, true);
+    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ObjectiveVespeneUpdate_Init () {
+    gt_ObjectiveVespeneUpdate = TriggerCreate("gt_ObjectiveVespeneUpdate_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Intro Q
+//--------------------------------------------------------------------------------------------------
+bool gt_IntroQ_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerQueueEnter();
+    TriggerExecute(gt_IntroSetup, true, true);
+    TriggerExecute(gt_IntroCinematic, true, true);
+    TriggerExecute(gt_IntroCinematicEnd, true, true);
+    TriggerExecute(gt_IntroCleanup, true, true);
+    TriggerQueueExit();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_IntroQ_Init () {
+    gt_IntroQ = TriggerCreate("gt_IntroQ_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Intro Setup
+//--------------------------------------------------------------------------------------------------
+bool gt_IntroSetup_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    unitgroup auto4E15BE1B_g;
+    int auto4E15BE1B_u;
+    unit auto4E15BE1B_var;
+    unitgroup auto9C200E0D_g;
+    int auto9C200E0D_u;
+    unit auto9C200E0D_var;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    CinematicFade(false, 0.0, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, false);
+    gv_inCinematic = true;
+    libNtve_gf_CinematicMode(true, PlayerGroupAll(), 0.0);
+    libNtve_gf_GlobalCinematicSetting(true);
+    PlayerSetState(gv_pLAYER_01_USER, c_playerStateXPGain, false);
+    GameTimeOfDayPause(true);
+    auto4E15BE1B_g = UnitGroup(null, c_playerAny, null, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+    auto4E15BE1B_u = UnitGroupCount(auto4E15BE1B_g, c_unitCountAll);
+    for (;; auto4E15BE1B_u -= 1) {
+        auto4E15BE1B_var = UnitGroupUnitFromEnd(auto4E15BE1B_g, auto4E15BE1B_u);
+        if (auto4E15BE1B_var == null) { break; }
+        if ((libNtve_gf_UnitIsPaused(auto4E15BE1B_var) == false)) {
+            UnitGroupAdd(gv_cinematicPausedUnits, auto4E15BE1B_var);
+            libNtve_gf_PauseUnit(auto4E15BE1B_var, true);
+        }
+
+    }
+    gv_cinematicHiddenUnits = UnitGroupEmpty();
+    gv_cinematicTempUnits = UnitGroupEmpty();
+    libNtve_gf_AddUnitGroupToUnitGroup(UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), gv_cinematicHiddenUnits);
+    auto9C200E0D_g = gv_cinematicHiddenUnits;
+    auto9C200E0D_u = UnitGroupCount(auto9C200E0D_g, c_unitCountAll);
+    for (;; auto9C200E0D_u -= 1) {
+        auto9C200E0D_var = UnitGroupUnitFromEnd(auto9C200E0D_g, auto9C200E0D_u);
+        if (auto9C200E0D_var == null) { break; }
+        libNtve_gf_ShowHideUnit(auto9C200E0D_var, false);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_IntroSetup_Init () {
+    gt_IntroSetup = TriggerCreate("gt_IntroSetup_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Intro Cinematic
+//--------------------------------------------------------------------------------------------------
+bool gt_IntroCinematic_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerSkippableBegin(PlayerGroupAll(), 0, null, true, false);
+    gv_cinematicCompleted = false;
+    CinematicFade(true, 2.0, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    lib1926661B_gf_SendTransmissionKL(true, c_invalidPortraitId, "EP01M08|Line00001", null, true, null, false);
+    gv_cinematicCompleted = true;
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_IntroCinematic_Init () {
+    gt_IntroCinematic = TriggerCreate("gt_IntroCinematic_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Intro Cinematic End
+//--------------------------------------------------------------------------------------------------
+bool gt_IntroCinematicEnd_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    fixed lv_fadeDuration;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((gv_cinematicCompleted == true)) {
+        lv_fadeDuration = 2.0;
+    }
+    else {
+        lv_fadeDuration = 0.5;
+    }
+    CinematicFade(false, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_IntroCinematicEnd_Init () {
+    gt_IntroCinematicEnd = TriggerCreate("gt_IntroCinematicEnd_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Intro Cleanup
+//--------------------------------------------------------------------------------------------------
+bool gt_IntroCleanup_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    fixed lv_fadeDuration;
+
+    // Automatic Variable Declarations
+    unitgroup autoEB2EA07D_g;
+    int autoEB2EA07D_u;
+    unit autoEB2EA07D_var;
+    unitgroup auto674CF4B5_g;
+    int auto674CF4B5_u;
+    unit auto674CF4B5_var;
+    unitgroup autoCC9E3842_g;
+    int autoCC9E3842_u;
+    unit autoCC9E3842_var;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    autoEB2EA07D_g = gv_cinematicTempUnits;
+    autoEB2EA07D_u = UnitGroupCount(autoEB2EA07D_g, c_unitCountAll);
+    for (;; autoEB2EA07D_u -= 1) {
+        autoEB2EA07D_var = UnitGroupUnitFromEnd(autoEB2EA07D_g, autoEB2EA07D_u);
+        if (autoEB2EA07D_var == null) { break; }
+        UnitRemove(autoEB2EA07D_var);
+    }
+    auto674CF4B5_g = gv_cinematicHiddenUnits;
+    auto674CF4B5_u = UnitGroupCount(auto674CF4B5_g, c_unitCountAll);
+    for (;; auto674CF4B5_u -= 1) {
+        auto674CF4B5_var = UnitGroupUnitFromEnd(auto674CF4B5_g, auto674CF4B5_u);
+        if (auto674CF4B5_var == null) { break; }
+        libNtve_gf_ShowHideUnit(auto674CF4B5_var, true);
+    }
+    autoCC9E3842_g = gv_cinematicPausedUnits;
+    autoCC9E3842_u = UnitGroupCount(autoCC9E3842_g, c_unitCountAll);
+    for (;; autoCC9E3842_u -= 1) {
+        autoCC9E3842_var = UnitGroupUnitFromEnd(autoCC9E3842_g, autoCC9E3842_u);
+        if (autoCC9E3842_var == null) { break; }
+        libNtve_gf_PauseUnit(autoCC9E3842_var, false);
+    }
+    GameTimeOfDayPause(false);
+    PlayerSetState(gv_pLAYER_01_USER, c_playerStateXPGain, true);
+    CameraApplyInfo(gv_pLAYER_01_USER, CameraInfoDefault(), 0.0, -1, 10, false);
+    VisExploreArea(gv_pLAYER_01_USER, RegionEntireMap(), false, false);
+    TriggerExecute(gt_StartAI, true, false);
+    Wait(0.5, c_timeReal);
+    if ((gv_cinematicCompleted == true)) {
+        lv_fadeDuration = 1.5;
+    }
+    else {
+        lv_fadeDuration = 1.0;
+    }
+    libNtve_gf_CinematicMode(false, PlayerGroupAll(), lv_fadeDuration);
+    libNtve_gf_GlobalCinematicSetting(false);
+    gv_inCinematic = false;
+    libNtve_gf_SwooshCamera(gv_pLAYER_01_USER, ((CameraInfoGetValue(CameraInfoDefault(), c_cameraValueDistance)) + 8.0), CameraInfoGetValue(CameraInfoDefault(), c_cameraValueDistance), PlayerStartLocation(gv_pLAYER_01_USER), lv_fadeDuration);
+    CinematicFade(true, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_IntroCleanup_Init () {
+    gt_IntroCleanup = TriggerCreate("gt_IntroCleanup_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory Q
+//--------------------------------------------------------------------------------------------------
+bool gt_VictoryQ_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gv_gameOver = true;
+    TriggerQueueEnter();
+    TriggerExecute(gt_VictorySetup, true, true);
+    TriggerExecute(gt_VictoryCinematic, true, true);
+    TriggerExecute(gt_VictoryCinematicEnd, true, true);
+    TriggerExecute(gt_VictoryCleanup, true, true);
+    TriggerQueueExit();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictoryQ_Init () {
+    gt_VictoryQ = TriggerCreate("gt_VictoryQ_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory Setup
+//--------------------------------------------------------------------------------------------------
+bool gt_VictorySetup_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    unitgroup autoAAA71561_g;
+    int autoAAA71561_u;
+    unit autoAAA71561_var;
+    unitgroup auto20839222_g;
+    int auto20839222_u;
+    unit auto20839222_var;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    CinematicFade(false, 1.0, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, false);
+    UISetMode(PlayerGroupAll(), c_uiModeFullscreen, 1.0);
+    Wait(1.0, c_timeReal);
+    gv_inCinematic = true;
+    libNtve_gf_CinematicMode(true, PlayerGroupAll(), 0.0);
+    libNtve_gf_GlobalCinematicSetting(true);
+    UnitClearSelection(gv_pLAYER_01_USER);
+    PlayerSetState(gv_pLAYER_01_USER, c_playerStateXPGain, false);
+    GameTimeOfDayPause(true);
+    autoAAA71561_g = UnitGroup(null, c_playerAny, null, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+    autoAAA71561_u = UnitGroupCount(autoAAA71561_g, c_unitCountAll);
+    for (;; autoAAA71561_u -= 1) {
+        autoAAA71561_var = UnitGroupUnitFromEnd(autoAAA71561_g, autoAAA71561_u);
+        if (autoAAA71561_var == null) { break; }
+        if ((libNtve_gf_UnitIsPaused(autoAAA71561_var) == false)) {
+            UnitGroupAdd(gv_cinematicPausedUnits, autoAAA71561_var);
+            libNtve_gf_PauseUnit(autoAAA71561_var, true);
+        }
+
+    }
+    AITimePause(true);
+    gv_cinematicHiddenUnits = UnitGroupEmpty();
+    gv_cinematicTempUnits = UnitGroupEmpty();
+    libNtve_gf_AddUnitGroupToUnitGroup(UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), gv_cinematicHiddenUnits);
+    auto20839222_g = gv_cinematicHiddenUnits;
+    auto20839222_u = UnitGroupCount(auto20839222_g, c_unitCountAll);
+    for (;; auto20839222_u -= 1) {
+        auto20839222_var = UnitGroupUnitFromEnd(auto20839222_g, auto20839222_u);
+        if (auto20839222_var == null) { break; }
+        libNtve_gf_ShowHideUnit(auto20839222_var, false);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictorySetup_Init () {
+    gt_VictorySetup = TriggerCreate("gt_VictorySetup_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory Cinematic
+//--------------------------------------------------------------------------------------------------
+bool gt_VictoryCinematic_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerSkippableBegin(PlayerGroupAll(), 0, null, true, false);
+    gv_cinematicCompleted = false;
+    CinematicFade(true, 1.0, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    lib1926661B_gf_SendTransmissionKL(true, c_invalidPortraitId, "EP01M08|Line00001", null, true, null, false);
+    gv_cinematicCompleted = true;
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictoryCinematic_Init () {
+    gt_VictoryCinematic = TriggerCreate("gt_VictoryCinematic_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory Cinematic End
+//--------------------------------------------------------------------------------------------------
+bool gt_VictoryCinematicEnd_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    fixed lv_fadeDuration;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((gv_cinematicCompleted == true)) {
+        lv_fadeDuration = 2.0;
+    }
+    else {
+        lv_fadeDuration = 0.5;
+    }
+    CinematicFade(false, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictoryCinematicEnd_Init () {
+    gt_VictoryCinematicEnd = TriggerCreate("gt_VictoryCinematicEnd_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory Cleanup
+//--------------------------------------------------------------------------------------------------
+bool gt_VictoryCleanup_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libNtve_gf_CinematicMode(false, PlayerGroupAll(), 0.0);
+    libNtve_gf_GlobalCinematicSetting(false);
+    TriggerExecute(gt_Victory, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_VictoryCleanup_Init () {
+    gt_VictoryCleanup = TriggerCreate("gt_VictoryCleanup_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Initialization
+//--------------------------------------------------------------------------------------------------
+void InitTriggers () {
+    gt_Initialization_Init();
+    gt_Init01Technology_Init();
+    gt_Init02Players_Init();
+    gt_Init03Units_Init();
+    gt_Init04MusicSound_Init();
+    gt_Init05Environment_Init();
+    gt_Init06Difficulties_Init();
+    gt_Init07Help_Init();
+    gt_StartGameQ_Init();
+    gt_DepotsBuilt_Init();
+    gt_DefeatBaseDead_Init();
+    gt_DefeatPrimaryObjectiveFailed_Init();
+    gt_VictoryHiveCompleted_Init();
+    gt_VictorySequence_Init();
+    gt_Victory_Init();
+    gt_Defeat_Init();
+    gt_VictoryCheat_Init();
+    gt_DefeatCheat_Init();
+    gt_TipSampleTipQ_Init();
+    gt_StartAI_Init();
+    gt_AIGiveMinerals_Init();
+    gt_AIGiveGas_Init();
+    gt_ObjectiveDepotsCreate_Init();
+    gt_ObjectiveDepotsComplete_Init();
+    gt_ObjectiveDepotsUpdate_Init();
+    gt_ObjectiveRefineryCreate_Init();
+    gt_ObjectiveRefineryComplete_Init();
+    gt_ObjectiveVespeneCreate_Init();
+    gt_ObjectiveVespeneComplete_Init();
+    gt_ObjectiveVespeneUpdate_Init();
+    gt_IntroQ_Init();
+    gt_IntroSetup_Init();
+    gt_IntroCinematic_Init();
+    gt_IntroCinematicEnd_Init();
+    gt_IntroCleanup_Init();
+    gt_VictoryQ_Init();
+    gt_VictorySetup_Init();
+    gt_VictoryCinematic_Init();
+    gt_VictoryCinematicEnd_Init();
+    gt_VictoryCleanup_Init();
+}
 
 //--------------------------------------------------------------------------------------------------
 // Map Initialization
 //--------------------------------------------------------------------------------------------------
 void InitMap () {
+    InitLibs();
+    InitGlobals();
+    InitTriggers();
 }
