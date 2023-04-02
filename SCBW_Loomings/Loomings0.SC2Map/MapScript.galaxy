@@ -22,7 +22,7 @@ void InitLibs () {
 // Constants
 //--------------------------------------------------------------------------------------------------
 const int gv_pLAYER_01_USER = 1;
-const int gv_pLAYER_02_USER = 2;
+const int gv_pLAYER_02_ALPHASQUADRON = 2;
 const int gv_pLAYER_03_ZERG = 3;
 
 //--------------------------------------------------------------------------------------------------
@@ -43,6 +43,8 @@ unitgroup gv_cinematicHiddenUnits;
 unitgroup gv_cinematicPausedUnits;
 unitgroup gv_cinematicTempUnits;
 bool gv_cinematicCompleted;
+unit gv_intro_CC;
+unit[4] gv_intro_Dropships;
 
 void InitGlobals () {
     gv_commandCenter_TextTag = c_textTagNone;
@@ -127,7 +129,7 @@ bool gt_Initialization_Func (bool testConds, bool runActions) {
     TriggerExecute(gt_Init05Environment, true, true);
     TriggerExecute(gt_Init06Difficulties, true, true);
     TriggerExecute(gt_Init07Help, true, true);
-    lib1926661B_gf_MissionLaunchDisplay(null);
+    lib1926661B_gf_MissionLaunchDisplay("LT00");
     return true;
 }
 
@@ -171,9 +173,9 @@ bool gt_Init02Players_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    libNtve_gf_SetAlliance(gv_pLAYER_01_USER, gv_pLAYER_02_USER, libNtve_ge_AllianceSetting_Ally);
+    libNtve_gf_SetAlliance(gv_pLAYER_01_USER, gv_pLAYER_02_ALPHASQUADRON, libNtve_ge_AllianceSetting_Ally);
     libNtve_gf_SetAlliance(gv_pLAYER_01_USER, gv_pLAYER_03_ZERG, libNtve_ge_AllianceSetting_Enemy);
-    libNtve_gf_SetAlliance(gv_pLAYER_02_USER, gv_pLAYER_03_ZERG, libNtve_ge_AllianceSetting_Enemy);
+    libNtve_gf_SetAlliance(gv_pLAYER_02_ALPHASQUADRON, gv_pLAYER_03_ZERG, libNtve_ge_AllianceSetting_Enemy);
     PlayerModifyPropertyInt(gv_pLAYER_01_USER, c_playerPropMinerals, c_playerPropOperSetTo, 150);
     PlayerModifyPropertyInt(gv_pLAYER_03_ZERG, c_playerPropSuppliesLimit, c_playerPropOperSetTo, 200);
     return true;
@@ -310,6 +312,7 @@ bool gt_StartGameQ_Func (bool testConds, bool runActions) {
     TriggerExecute(gt_ObjectiveRefineryCreate, true, true);
     TriggerQueueExit();
     TriggerExecute(gt_TipSCVQ, true, false);
+    GameSetLighting("AntigaPrimeSunset", 160.0);
     TriggerQueueEnter();
     lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00001", "SCBWAdjutant", false, null, true);
     TransmissionWait(TransmissionLastSent(), 4.0);
@@ -1405,6 +1408,9 @@ bool gt_IntroSetup_Func (bool testConds, bool runActions) {
     unitgroup auto9C200E0D_g;
     int auto9C200E0D_u;
     unit auto9C200E0D_var;
+    unitgroup auto8D72E7F8_g;
+    int auto8D72E7F8_u;
+    unit auto8D72E7F8_var;
 
     // Actions
     if (!runActions) {
@@ -1438,6 +1444,18 @@ bool gt_IntroSetup_Func (bool testConds, bool runActions) {
         if (auto9C200E0D_var == null) { break; }
         libNtve_gf_ShowHideUnit(auto9C200E0D_var, false);
     }
+    auto8D72E7F8_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+    auto8D72E7F8_u = UnitGroupCount(auto8D72E7F8_g, c_unitCountAll);
+    for (;; auto8D72E7F8_u -= 1) {
+        auto8D72E7F8_var = UnitGroupUnitFromEnd(auto8D72E7F8_g, auto8D72E7F8_u);
+        if (auto8D72E7F8_var == null) { break; }
+        libNtve_gf_ShowHideUnit(auto8D72E7F8_var, true);
+    }
+    libNtve_gf_ShowHideUnit(UnitFromId(1782982479), true);
+    libNtve_gf_CreateUnitsWithDefaultFacing(1, "CommandCenterSCBW@Flying", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(914504972));
+    libNtve_gf_CreateUnitsWithDefaultFacing(1, "DropshipSCBW", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(1003564758));
+    libNtve_gf_CreateUnitsWithDefaultFacing(1, "DropshipSCBW", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(815157055));
+    libNtve_gf_CreateUnitsWithDefaultFacing(1, "DropshipSCBW", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(1363624239));
     return true;
 }
 
