@@ -5,16 +5,24 @@ include "TriggerLibs/natives"
 //--------------------------------------------------------------------------------------------------
 // Preset Declarations
 const int lib1926661B_ge_SpeakerDefault_Speaker = 0;
-const int lib1926661B_ge_DirectiveType_Hint = 0;
-const int lib1926661B_ge_DirectiveType_Warning = 1;
-const int lib1926661B_ge_DirectiveType_Chip = 2;
+const int lib1926661B_ge_ObjectiveMessageType_ObjectiveDiscovered = 0;
+const int lib1926661B_ge_ObjectiveMessageType_ObjectiveUpdate = 1;
+const int lib1926661B_ge_ObjectiveMessageType_ObjectiveCompleted = 2;
+const int lib1926661B_ge_ObjectiveMessageType_ObjectiveFailed = 3;
+const int lib1926661B_ge_CampaignMessageType_MissionFailed = 0;
+const int lib1926661B_ge_CampaignMessageType_Hint = 1;
+const int lib1926661B_ge_CampaignMessageType_SimpleHint = 2;
+const int lib1926661B_ge_CampaignMessageType_Secret = 3;
+const int lib1926661B_ge_CampaignMessageType_Warning = 4;
+const int lib1926661B_ge_CampaignMessageType_NewUnitAcquired = 5;
+const int lib1926661B_ge_CampaignMessageType_NewUnitAvailable = 6;
+const int lib1926661B_ge_CampaignMessageType_NewTechAvailable = 7;
+const int lib1926661B_ge_CampaignMessageType_NewUnitAvailable2 = 8;
+const int lib1926661B_ge_CampaignMessageFormatNotFormat_FormatMessage = 0;
+const int lib1926661B_ge_CampaignMessageFormatNotFormat_NotFormatMessage = 1;
 const int lib1926661B_ge_TimerWindowPosition_TopRight = 0;
 const int lib1926661B_ge_TimerWindowPosition_TopCenter = 1;
 const int lib1926661B_ge_TimerWindowPosition_BottomRight = 2;
-const int lib1926661B_ge_ForceType_Tank = 0;
-const int lib1926661B_ge_ForceType_Infantry = 1;
-const int lib1926661B_ge_ForceType_Air = 2;
-const int lib1926661B_ge_ForceType_AA = 3;
 const int lib1926661B_ge_VolumeChannelModeCampaign_CinematicInTransmission = 0;
 const int lib1926661B_ge_VolumeChannelModeCampaign_Speech = 1;
 const int lib1926661B_ge_VolumeChannelModeCampaign_Game = 2;
@@ -71,12 +79,8 @@ const fixed lib1926661B_gv_kL_CheckPointFlashDuration = 5.8;
 const int lib1926661B_gv_kL_MaxActiveTimerWindows = 3;
 const fixed lib1926661B_gv_kL_HighlightDuration = 6.0;
 const fixed lib1926661B_gv_kC_HeroUIUpdateFrequency = 0.25;
-const fixed lib1926661B_gv_kC_ForceTimerTime = 60.0;
-const fixed lib1926661B_gv_kC_ForceCondorHeight = 35.0;
-const fixed lib1926661B_gv_kC_ForceCondorHeightBase = 4.0;
 const int lib1926661B_gv_kCC_DifficultyCount = 2;
 const int lib1926661B_gv_UEDFL_MapCount = 16;
-const int lib1926661B_gv_pLAYER_03_ZERG = 3;
 
 // Structures
 struct lib1926661B_gs_KL_BossBar {
@@ -116,18 +120,6 @@ struct lib1926661B_gs_KC_HeroPanel {
     int lv_nameLabel;
     int lv_button;
     fixed lv_damageTimer;
-};
-
-struct lib1926661B_gs_KC_ForcePanel {
-    int lv_panel;
-    int lv_titleLabel;
-    int[5] lv_button;
-    int[5] lv_buttonCooldown;
-    bool lv_forceOnCooldown;
-    timer lv_forceTimer;
-    unit lv_forceCondor;
-    unitgroup lv_forceGroup;
-    int lv_type;
 };
 
 struct lib1926661B_gs_KC_VictoryScreen {
@@ -221,15 +213,6 @@ int lib1926661B_gv_pPC_ProgressBarHeight;
 lib1926661B_gs_KC_HeroPanel[4] lib1926661B_gv_kC_HeroPanel;
 bool[4] lib1926661B_gv_kC_HeroPanelHidden;
 fixed lib1926661B_gv_kC_HeroUIDamage;
-lib1926661B_gs_KC_ForcePanel lib1926661B_gv_kC_ForcePanel;
-text lib1926661B_gv_kC_ForceNameCD;
-text lib1926661B_gv_kC_ForceNameDeploying;
-text lib1926661B_gv_kC_ForceNameReady;
-text lib1926661B_gv_kC_ForceNameSupplies;
-int lib1926661B_gv_kC_ForcePlayerOwner;
-point lib1926661B_gv_kC_ForceLandPoint;
-region lib1926661B_gv_kC_ForceSpawnRegion;
-bool lib1926661B_gv_kC_ForcePanelUsed;
 bool lib1926661B_gv_kC_VolumeChannelModeInSpeech;
 bool lib1926661B_gv_kC_VolumeChannelModeInLowHP;
 int lib1926661B_gv_kCX_CampaignDifficulty;
@@ -295,7 +278,6 @@ void lib1926661B_gf_SendTransmissionKL (bool lp_showPortrait, int lp_portrait, s
 void lib1926661B_gf_SendTransmissionPlaceholderKL (string lp_line, bool lp_waitDontWait, unit lp_unit, fixed lp_duration);
 void lib1926661B_gf_playTalkingTransmission (string lp_conversation, string lp_model, unit lp_unit, int lp_portrait, string lp_actor, string lp_speaker);
 int lib1926661B_gf_GetLastTalkingTransmission ();
-void lib1926661B_gf_CampaignDirective (int lp_type, text lp_message);
 void lib1926661B_gf_AddRemoveObjectiveRePing (int lp_ping, bool lp_addRemove, fixed lp_wait, fixed lp_interval);
 void lib1926661B_gf_ObjectiveRePing (int lp_ping);
 void lib1926661B_gf_KC_PostMissionVictoryUpdate ();
@@ -325,6 +307,7 @@ void lib1926661B_gf_DifficultySetting (int lp_difficulty);
 void lib1926661B_gf_KC_UpdateObjectivePanelMask ();
 void lib1926661B_gf_KC_UpdateErrorPanelMask ();
 void lib1926661B_gf_KC_UpdateErrorPanelMaskSingle ();
+void lib1926661B_gf_DisplayCampaignMessage (playergroup lp_toPlayerGroup, int lp_messageType, text lp_message, int lp_formatOrNot);
 void lib1926661B_gf_KC_HookAchiRedirect (string lp_map);
 void lib1926661B_gf_KC_HookSave ();
 void lib1926661B_gf_KL_HookupBossBar (int lp_index);
@@ -364,14 +347,6 @@ void lib1926661B_gf_KC_CreateHeroPanel (int lp_index);
 void lib1926661B_gf_KC_UpdateHeroPanel (int lp_index);
 void lib1926661B_gf_CreateObjectivePing (bool lp_objectiveType, point lp_position, text lp_tooltip);
 void lib1926661B_gf_PingMinimapCampaign (playergroup lp_players, point lp_pos, fixed lp_dur, color lp_color);
-void lib1926661B_gf_KC_CreateForcePanel ();
-int lib1926661B_gf_KC_ReturnUnitSupplyCost (int lp_amount, string lp_unitType);
-int lib1926661B_gf_KC_SuppliesAvailable (int lp_player);
-void lib1926661B_gf_ShowHideForcePanel (int lp_playerOwner, bool lp_showHide, region lp_spawnRegion, point lp_landPoint);
-void lib1926661B_gf_FlashForcePanel ();
-void lib1926661B_gf_KC_CreateForceCondor (int lp_type);
-void lib1926661B_gf_KC_CreateForceUnits (int lp_type);
-void lib1926661B_gf_KC_UnloadForceUnits (point lp_point);
 void lib1926661B_gf_CreateTipCampaign (string lp_tipData, int lp_tipType, playergroup lp_players);
 void lib1926661B_gf_SetAllSoundChannelVolumesCampaign (int lp_mode);
 void lib1926661B_gf_MuteUnmuteAllSoundChannels (bool lp_muteUnmute, int lp_ignoredChannel, playergroup lp_players);
@@ -545,6 +520,7 @@ void lib1926661B_gf_KC_SaveTransitionVarInteger (bank lp_bank, string lp_section
 void lib1926661B_gf_KC_SaveTransitionVarBoolean (bank lp_bank, string lp_section, string lp_key, bool lp_value, bool lp_default);
 void lib1926661B_gf_KC_SaveTransitionVarString (bank lp_bank, string lp_section, string lp_key, string lp_value, string lp_default);
 string lib1926661B_gf_KC_BankMIssionDifficultyKey (string lp_mission, int lp_difficulty);
+void lib1926661B_gf_MissionLaunchDisplay (string lp_mission);
 void lib1926661B_gf_KC_MissionLaunchClose ();
 void lib1926661B_gf_KC_MissionLaunchPlayPitch ();
 int lib1926661B_gf_KC_MissionLaunchSelectedDifficulty ();
@@ -600,9 +576,6 @@ trigger lib1926661B_gt_KC_HeroUnitDead;
 trigger lib1926661B_gt_KC_HeroPanelCineShow;
 trigger lib1926661B_gt_KC_HeroPanelCineHide;
 trigger lib1926661B_gt_KopruluCampaignPingSound;
-trigger lib1926661B_gt_KC_ForceButtonPressed;
-trigger lib1926661B_gt_KC_ForceTimersUpdate;
-trigger lib1926661B_gt_KC_ForceTimerEnd;
 trigger lib1926661B_gt_KC_SetCasualRallyPoints;
 trigger lib1926661B_gt_DisplayTimestamp;
 trigger lib1926661B_gt_DisplayTimestampSkippable;

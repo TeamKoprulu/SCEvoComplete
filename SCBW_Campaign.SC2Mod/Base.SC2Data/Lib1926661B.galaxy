@@ -88,20 +88,6 @@ void lib1926661B_InitVariables () {
         lib1926661B_gv_kC_HeroPanel[init_i].lv_nameLabel = c_invalidDialogControlId;
         lib1926661B_gv_kC_HeroPanel[init_i].lv_button = c_invalidDialogControlId;
     }
-    lib1926661B_gv_kC_ForcePanel.lv_panel = c_invalidDialogControlId;
-    lib1926661B_gv_kC_ForcePanel.lv_titleLabel = c_invalidDialogControlId;
-    for (init_i1 = 0; init_i1 <= 4; init_i1 += 1) {
-        lib1926661B_gv_kC_ForcePanel.lv_button[init_i1] = c_invalidDialogControlId;
-    }
-    for (init_i1 = 0; init_i1 <= 4; init_i1 += 1) {
-        lib1926661B_gv_kC_ForcePanel.lv_buttonCooldown[init_i1] = c_invalidDialogControlId;
-    }
-    lib1926661B_gv_kC_ForcePanel.lv_forceTimer = TimerCreate();
-    lib1926661B_gv_kC_ForcePanel.lv_forceGroup = UnitGroupEmpty();
-    lib1926661B_gv_kC_ForceNameCD = StringExternal("Param/Value/lib_1926661B_5183E82B");
-    lib1926661B_gv_kC_ForceNameDeploying = StringExternal("Param/Value/lib_1926661B_1F03A357");
-    lib1926661B_gv_kC_ForceNameReady = StringExternal("Param/Value/lib_1926661B_B1FB8E97");
-    lib1926661B_gv_kC_ForceNameSupplies = StringExternal("Param/Value/lib_1926661B_0329F5F8");
     lib1926661B_gv_kCX_CampaignDifficulty = 3;
     lib1926661B_gv_kC_CurrentCampaignCutscene = c_cutsceneNone;
     lib1926661B_gv_kC_CampaignCutsceneDialog = c_invalidDialogId;
@@ -226,6 +212,7 @@ void lib1926661B_gf_KC_MissionInit () {
     // Variable Declarations
     fixed lv_achievementTotalPercent;
     unit lv_indexUnit;
+    string lv_playerRace;
 
     // Automatic Variable Declarations
     int auto32E424C2_val;
@@ -233,8 +220,14 @@ void lib1926661B_gf_KC_MissionInit () {
     int autoE66D2854_u;
 
     // Variable Initialization
+    lv_playerRace = PlayerRace(1);
 
     // Implementation
+    lv_playerRace = PlayerRace(1);
+    PlayerSetRace(1, null);
+    libNtve_gf_HideGameUI(false, PlayerGroupAll());
+    PlayerSetRace(1, lv_playerRace);
+    libNtve_gf_HideGameUI(true, PlayerGroupAll());
     lib1926661B_gf_KC_HookSave();
     if ((lib1926661B_gf_StoryMapTypeCheck(lib1926661B_gf_CurrentMap(), c_mapKindStory) == true)) {
         return ;
@@ -429,31 +422,6 @@ int lib1926661B_gf_GetLastTalkingTransmission () {
     // Automatic Variable Declarations
     // Implementation
     return lib1926661B_gv_talkingTransmission;
-}
-
-void lib1926661B_gf_CampaignDirective (int lp_type, text lp_message) {
-    // Automatic Variable Declarations
-    int auto926D8FBC_val;
-
-    // Implementation
-    auto926D8FBC_val = lp_type;
-    if (auto926D8FBC_val == lib1926661B_ge_DirectiveType_Hint) {
-        TextExpressionSetToken("Param/Expression/lib_1926661B_3EC26E8D", "A", lp_message);
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_3EC26E8D"));
-        SoundPlayForPlayer(SoundLink("SoundDirective", -1), c_maxPlayers, PlayerGroupAll(), 100.0, 0.0);
-    }
-    else if (auto926D8FBC_val == lib1926661B_ge_DirectiveType_Warning) {
-        TextExpressionSetToken("Param/Expression/lib_1926661B_49F215B9", "A", lp_message);
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_49F215B9"));
-        SoundPlayForPlayer(SoundLink("SoundWarning", -1), c_maxPlayers, PlayerGroupAll(), 100.0, 0.0);
-    }
-    else if (auto926D8FBC_val == lib1926661B_ge_DirectiveType_Chip) {
-        TextExpressionSetToken("Param/Expression/lib_1926661B_0F6E09FC", "A", lp_message);
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_0F6E09FC"));
-        SoundPlayForPlayer(SoundLink("Alert_UniObjectiveCompleted", -1), c_maxPlayers, PlayerGroupAll(), 100.0, 0.0);
-    }
-    else {
-    }
 }
 
 trigger auto_lib1926661B_gf_AddRemoveObjectiveRePing_Trigger = null;
@@ -1147,6 +1115,65 @@ void lib1926661B_gf_KC_UpdateErrorPanelMaskSingle () {
         }
     }
 
+}
+
+void lib1926661B_gf_DisplayCampaignMessage (playergroup lp_toPlayerGroup, int lp_messageType, text lp_message, int lp_formatOrNot) {
+    // Automatic Variable Declarations
+    int autoA533D3AA_val;
+
+    // Implementation
+    if ((lp_formatOrNot == lib1926661B_ge_CampaignMessageFormatNotFormat_FormatMessage)) {
+        autoA533D3AA_val = lp_messageType;
+        if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_Hint) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_7605C705", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_7605C705"));
+            SoundPlay(SoundLink("UI_TerranHint", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_SimpleHint) {
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, lp_message);
+            SoundPlay(SoundLink("UI_TerranHint", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_Secret) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_19525E0F", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_19525E0F"));
+            SoundPlay(SoundLink("TUISecret", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_NewUnitAcquired) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_0EA0AFD5", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_0EA0AFD5"));
+            SoundPlay(SoundLink("UI_TerranNewUnitAcquired", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_NewUnitAvailable) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_394E7251", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_394E7251"));
+            SoundPlay(SoundLink("UI_TerranNewUnitAvailable", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_NewTechAvailable) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_F9390BC4", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_F9390BC4"));
+            SoundPlay(SoundLink("UI_TerranNewTechAvailable", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_NewUnitAvailable2) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_6F17E482", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_6F17E482"));
+            SoundPlay(SoundLink("UI_TerranNewTechAvailable", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_Warning) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_19BF3FF8", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_19BF3FF8"));
+            SoundPlay(SoundLink("UI_ZergWarning", 0), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else if (autoA533D3AA_val == lib1926661B_ge_CampaignMessageType_MissionFailed) {
+            TextExpressionSetToken("Param/Expression/lib_1926661B_D16E0721", "A", lp_message);
+            UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_1926661B_D16E0721"));
+            SoundPlay(SoundLink("UI_TerranMissionFailed", 1), lp_toPlayerGroup, 100.0, 0.0);
+        }
+        else {
+        }
+    }
+    else {
+        UIDisplayMessage(lp_toPlayerGroup, c_messageAreaSubtitle, lp_message);
+    }
 }
 
 void lib1926661B_gf_KC_HookAchiRedirect (string lp_map) {
@@ -2247,305 +2274,6 @@ bool auto_lib1926661B_gf_PingMinimapCampaign_TriggerFunc (bool testConds, bool r
     Wait(lp_dur, c_timeGame);
     PingDestroy(PingLastCreated());
     return true;
-}
-
-void lib1926661B_gf_KC_CreateForcePanel () {
-    // Variable Declarations
-    int lv_index;
-
-    // Automatic Variable Declarations
-    const int autoFCAF5B7C_ae = 4;
-    const int autoFCAF5B7C_ai = 1;
-
-    // Variable Initialization
-
-    // Implementation
-    if ((lib1926661B_gv_kC_ForcePanel.lv_panel != c_invalidDialogControlId)) {
-        return ;
-    }
-
-    DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer/ConsoleUIContainer");
-    DialogControlHookup(DialogControlLastCreated(), c_triggerControlTypePanel, libNtve_gf_ConvertStringToUILayoutFrameName("ForceCard"));
-    lib1926661B_gv_kC_ForcePanel.lv_panel = DialogControlLastCreated();
-    DialogControlHookup(lib1926661B_gv_kC_ForcePanel.lv_panel, c_triggerControlTypeLabel, libNtve_gf_ConvertStringToUILayoutFrameName("TitleLabel"));
-    lib1926661B_gv_kC_ForcePanel.lv_titleLabel = DialogControlLastCreated();
-    lv_index = 1;
-    for ( ; ( (autoFCAF5B7C_ai >= 0 && lv_index <= autoFCAF5B7C_ae) || (autoFCAF5B7C_ai < 0 && lv_index >= autoFCAF5B7C_ae) ) ; lv_index += autoFCAF5B7C_ai ) {
-        DialogControlHookup(lib1926661B_gv_kC_ForcePanel.lv_panel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName(("ForceButton" + IntToString(lv_index))));
-        lib1926661B_gv_kC_ForcePanel.lv_button[lv_index] = DialogControlLastCreated();
-        DialogControlHookup(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], c_triggerControlTypeImage, libNtve_gf_ConvertStringToUILayoutFrameName("CooldownImage"));
-        lib1926661B_gv_kC_ForcePanel.lv_buttonCooldown[lv_index] = DialogControlLastCreated();
-        libNtve_gf_SetDialogItemAnimationDuration(lib1926661B_gv_kC_ForcePanel.lv_buttonCooldown[lv_index], 60.0, PlayerGroupAll());
-    }
-    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[1], StringExternal("Param/Value/lib_1926661B_05D81D22"), PlayerGroupAll());
-    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[2], StringExternal("Param/Value/lib_1926661B_12910BFE"), PlayerGroupAll());
-    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[3], StringExternal("Param/Value/lib_1926661B_49A335AD"), PlayerGroupAll());
-    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[4], StringExternal("Param/Value/lib_1926661B_B4D1363F"), PlayerGroupAll());
-}
-
-int lib1926661B_gf_KC_ReturnUnitSupplyCost (int lp_amount, string lp_unitType) {
-    // Variable Declarations
-    int lv_index;
-    int lv_cost;
-
-    // Automatic Variable Declarations
-    int autoFEDF0D5E_ae;
-    const int autoFEDF0D5E_ai = 1;
-
-    // Variable Initialization
-
-    // Implementation
-    autoFEDF0D5E_ae = lp_amount;
-    lv_index = 1;
-    for ( ; ( (autoFEDF0D5E_ai >= 0 && lv_index <= autoFEDF0D5E_ae) || (autoFEDF0D5E_ai < 0 && lv_index >= autoFEDF0D5E_ae) ) ; lv_index += autoFEDF0D5E_ai ) {
-        lv_cost += CatalogFieldValueGetAsInt(c_gameCatalogUnit, lp_unitType, "Food", c_playerAny);
-    }
-    return lv_cost;
-}
-
-int lib1926661B_gf_KC_SuppliesAvailable (int lp_player) {
-    // Variable Declarations
-    int lv_suppliesRemaining;
-
-    // Automatic Variable Declarations
-    // Variable Initialization
-
-    // Implementation
-    lv_suppliesRemaining = (PlayerGetPropertyInt(lp_player, c_playerPropSuppliesUsed) - PlayerGetPropertyInt(lp_player, c_playerPropSuppliesMade));
-    return lv_suppliesRemaining;
-}
-
-void lib1926661B_gf_ShowHideForcePanel (int lp_playerOwner, bool lp_showHide, region lp_spawnRegion, point lp_landPoint) {
-    // Variable Declarations
-    int lv_index;
-
-    // Automatic Variable Declarations
-    bool autoB6CE5479_val;
-    const int auto3F15CDB5_ae = 4;
-    const int auto3F15CDB5_ai = 1;
-
-    // Variable Initialization
-
-    // Implementation
-    if ((lib1926661B_gv_kC_ForcePanel.lv_panel == c_invalidDialogControlId)) {
-        lib1926661B_gf_KC_CreateForcePanel();
-    }
-
-    autoB6CE5479_val = lp_showHide;
-    if (autoB6CE5479_val == true) {
-        lv_index = 1;
-        for ( ; ( (auto3F15CDB5_ai >= 0 && lv_index <= auto3F15CDB5_ae) || (auto3F15CDB5_ai < 0 && lv_index >= auto3F15CDB5_ae) ) ; lv_index += auto3F15CDB5_ai ) {
-            DialogControlSetVisible(lib1926661B_gv_kC_ForcePanel.lv_buttonCooldown[lv_index], PlayerGroupAll(), false);
-            DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-        }
-        lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown = false;
-        lib1926661B_gv_kC_ForcePanel.lv_forceCondor = null;
-        libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_ForcePanel.lv_titleLabel, lib1926661B_gv_kC_ForceNameReady, PlayerGroupAll());
-        lib1926661B_gv_kC_ForcePlayerOwner = lp_playerOwner;
-        lib1926661B_gv_kC_ForceSpawnRegion = lp_spawnRegion;
-        lib1926661B_gv_kC_ForceLandPoint = lp_landPoint;
-        DialogControlSetVisible(lib1926661B_gv_kC_ForcePanel.lv_panel, PlayerGroupAll(), true);
-        TriggerEnable(lib1926661B_gt_KC_ForceTimersUpdate, true);
-    }
-    else if (autoB6CE5479_val == false) {
-        DialogControlSetVisible(lib1926661B_gv_kC_ForcePanel.lv_panel, PlayerGroupAll(), false);
-        TriggerEnable(lib1926661B_gt_KC_ForceTimersUpdate, false);
-    }
-    else {
-    }
-}
-
-void lib1926661B_gf_FlashForcePanel () {
-    // Variable Declarations
-    int lv_index;
-
-    // Automatic Variable Declarations
-    // Variable Initialization
-
-    // Implementation
-    DialogControlSendAnimationEvent(lib1926661B_gv_kC_ForcePanel.lv_panel, PlayerGroupAll(), "Suggest");
-}
-
-void lib1926661B_gf_KC_CreateForceCondor (int lp_type) {
-    // Variable Declarations
-    point lv_airUnitSpawn;
-    int lv_index;
-
-    // Automatic Variable Declarations
-    unitgroup autoC2A13E82_g;
-    int autoC2A13E82_u;
-    unit autoC2A13E82_var;
-    unitgroup auto739AFB21_g;
-    int auto739AFB21_u;
-    unit auto739AFB21_var;
-    const int auto40262DB0_ae = 4;
-    const int auto40262DB0_ai = 1;
-    unitgroup autoF370BC14_g;
-    int autoF370BC14_u;
-    unit autoF370BC14_var;
-
-    // Variable Initialization
-
-    // Implementation
-    if ((lp_type == lib1926661B_ge_ForceType_Air)) {
-        lv_airUnitSpawn = RegionRandomPoint(lib1926661B_gv_kC_ForceSpawnRegion);
-        libNtve_gf_CreateUnitsWithDefaultFacing(3, "Osprey", 0, lib1926661B_gv_kC_ForcePlayerOwner, lv_airUnitSpawn);
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        libNtve_gf_CreateUnitsWithDefaultFacing(1, "RaptorJet", 0, lib1926661B_gv_kC_ForcePlayerOwner, lv_airUnitSpawn);
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        autoC2A13E82_g = lib1926661B_gv_kC_ForcePanel.lv_forceGroup;
-        autoC2A13E82_u = UnitGroupCount(autoC2A13E82_g, c_unitCountAll);
-        for (;; autoC2A13E82_u -= 1) {
-            autoC2A13E82_var = UnitGroupUnitFromEnd(autoC2A13E82_g, autoC2A13E82_u);
-            if (autoC2A13E82_var == null) { break; }
-            UnitSetHeight(autoC2A13E82_var, lib1926661B_gv_kC_ForceCondorHeight, 0.0);
-        }
-    }
-    else {
-        libNtve_gf_CreateUnitsWithDefaultFacing(1, "Condor", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionRandomPoint(lib1926661B_gv_kC_ForceSpawnRegion));
-        lib1926661B_gv_kC_ForcePanel.lv_forceCondor = UnitLastCreated();
-        UnitSetHeight(lib1926661B_gv_kC_ForcePanel.lv_forceCondor, lib1926661B_gv_kC_ForceCondorHeight, 0.0);
-    }
-    lib1926661B_gv_kC_ForcePanel.lv_type = lp_type;
-    if ((lp_type == lib1926661B_ge_ForceType_Air)) {
-        auto739AFB21_g = lib1926661B_gv_kC_ForcePanel.lv_forceGroup;
-        auto739AFB21_u = UnitGroupCount(auto739AFB21_g, c_unitCountAll);
-        for (;; auto739AFB21_u -= 1) {
-            auto739AFB21_var = UnitGroupUnitFromEnd(auto739AFB21_g, auto739AFB21_u);
-            if (auto739AFB21_var == null) { break; }
-            libNtve_gf_ShowHideUnit(auto739AFB21_var, false);
-            libNtve_gf_PauseUnit(auto739AFB21_var, true);
-        }
-    }
-
-    UnitGroupRemove(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, lib1926661B_gv_kC_ForcePanel.lv_forceCondor);
-    libNtve_gf_ShowHideUnit(lib1926661B_gv_kC_ForcePanel.lv_forceCondor, false);
-    libNtve_gf_PauseUnit(lib1926661B_gv_kC_ForcePanel.lv_forceCondor, true);
-    libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_ForcePanel.lv_titleLabel, lib1926661B_gv_kC_ForceNameDeploying, PlayerGroupAll());
-    TimerStart(lib1926661B_gv_kC_ForcePanel.lv_forceTimer, lib1926661B_gv_kC_ForceTimerTime, false, c_timeReal);
-    lv_index = 1;
-    for ( ; ( (auto40262DB0_ai >= 0 && lv_index <= auto40262DB0_ae) || (auto40262DB0_ai < 0 && lv_index >= auto40262DB0_ae) ) ; lv_index += auto40262DB0_ai ) {
-        DialogControlSetVisible(lib1926661B_gv_kC_ForcePanel.lv_buttonCooldown[lv_index], PlayerGroupAll(), true);
-        DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-    }
-    lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown = true;
-    while (!((TimerGetRemaining(lib1926661B_gv_kC_ForcePanel.lv_forceTimer) <= 50.0))) {
-        Wait(0.5, c_timeReal);
-    }
-    libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_ForcePanel.lv_titleLabel, lib1926661B_gv_kC_ForceNameCD, PlayerGroupAll());
-    if ((lp_type == lib1926661B_ge_ForceType_Air)) {
-        autoF370BC14_g = lib1926661B_gv_kC_ForcePanel.lv_forceGroup;
-        autoF370BC14_u = UnitGroupCount(autoF370BC14_g, c_unitCountAll);
-        for (;; autoF370BC14_u -= 1) {
-            autoF370BC14_var = UnitGroupUnitFromEnd(autoF370BC14_g, autoF370BC14_u);
-            if (autoF370BC14_var == null) { break; }
-            libNtve_gf_ShowHideUnit(autoF370BC14_var, true);
-            libNtve_gf_PauseUnit(autoF370BC14_var, false);
-            UnitIssueOrder(autoF370BC14_var, OrderTargetingPoint(AbilityCommand("move", 0), lib1926661B_gv_kC_ForceLandPoint), c_orderQueueReplace);
-            UnitSetHeight(autoF370BC14_var, lib1926661B_gv_kC_ForceCondorHeightBase, 18.0);
-        }
-    }
-
-    libNtve_gf_ShowHideUnit(lib1926661B_gv_kC_ForcePanel.lv_forceCondor, true);
-    libNtve_gf_PauseUnit(lib1926661B_gv_kC_ForcePanel.lv_forceCondor, false);
-    UnitIssueOrder(lib1926661B_gv_kC_ForcePanel.lv_forceCondor, OrderTargetingPoint(AbilityCommand("move", 0), lib1926661B_gv_kC_ForceLandPoint), c_orderQueueReplace);
-    UnitSetHeight(lib1926661B_gv_kC_ForcePanel.lv_forceCondor, 0.0, 18.0);
-}
-
-void lib1926661B_gf_KC_CreateForceUnits (int lp_type) {
-    // Variable Declarations
-    int lv_activeInfantryOfficers;
-
-    // Automatic Variable Declarations
-    int autoCDC18384_val;
-    unitgroup auto977FC55F_g;
-    int auto977FC55F_u;
-    unit auto977FC55F_var;
-    unitgroup autoFEE9CC4E_g;
-    int autoFEE9CC4E_u;
-    unit autoFEE9CC4E_var;
-
-    // Variable Initialization
-
-    // Implementation
-    autoCDC18384_val = lib1926661B_gv_kC_ForcePanel.lv_type;
-    if (autoCDC18384_val == lib1926661B_ge_ForceType_Infantry) {
-        libNtve_gf_CreateUnitsWithDefaultFacing(3, "InfantryRocket", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        libNtve_gf_CreateUnitsWithDefaultFacing(4, "InfantryMortar", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        libNtve_gf_CreateUnitsWithDefaultFacing(3, "InfantryHeavy", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        libNtve_gf_CreateUnitsWithDefaultFacing(3, "InfantryRifle", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        auto977FC55F_g = UnitGroup(null, 1, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-        auto977FC55F_u = UnitGroupCount(auto977FC55F_g, c_unitCountAll);
-        for (;; auto977FC55F_u -= 1) {
-            auto977FC55F_var = UnitGroupUnitFromEnd(auto977FC55F_g, auto977FC55F_u);
-            if (auto977FC55F_var == null) { break; }
-            if ((UnitGetType(auto977FC55F_var) == "InfantryOfficer")) {
-                lv_activeInfantryOfficers += 1;
-            }
-        }
-        if ((lv_activeInfantryOfficers < 3)) {
-            libNtve_gf_CreateUnitsWithDefaultFacing(1, "InfantryOfficer", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-            UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        }
-    }
-    else if (autoCDC18384_val == lib1926661B_ge_ForceType_AA) {
-        libNtve_gf_CreateUnitsWithDefaultFacing(2, "A6", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        libNtve_gf_CreateUnitsWithDefaultFacing(2, "InfantryRifle", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        libNtve_gf_CreateUnitsWithDefaultFacing(2, "Z1", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-    }
-    else if (autoCDC18384_val == lib1926661B_ge_ForceType_Tank) {
-        libNtve_gf_CreateUnitsWithDefaultFacing(2, "TR17", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-        libNtve_gf_CreateUnitsWithDefaultFacing(1, "RoutheTank", 0, lib1926661B_gv_kC_ForcePlayerOwner, RegionGetCenter(RegionEntireMap()));
-        UnitGroupAddUnitGroup(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, UnitLastCreatedGroup());
-    }
-    else {
-    }
-    autoFEE9CC4E_g = lib1926661B_gv_kC_ForcePanel.lv_forceGroup;
-    autoFEE9CC4E_u = UnitGroupCount(autoFEE9CC4E_g, c_unitCountAll);
-    for (;; autoFEE9CC4E_u -= 1) {
-        autoFEE9CC4E_var = UnitGroupUnitFromEnd(autoFEE9CC4E_g, autoFEE9CC4E_u);
-        if (autoFEE9CC4E_var == null) { break; }
-        libNtve_gf_ShowHideUnit(autoFEE9CC4E_var, false);
-        libNtve_gf_PauseUnit(autoFEE9CC4E_var, true);
-    }
-}
-
-void lib1926661B_gf_KC_UnloadForceUnits (point lp_point) {
-    // Automatic Variable Declarations
-    unitgroup auto1E283258_g;
-    int auto1E283258_u;
-    unit auto1E283258_var;
-
-    // Implementation
-    auto1E283258_g = lib1926661B_gv_kC_ForcePanel.lv_forceGroup;
-    auto1E283258_u = UnitGroupCount(auto1E283258_g, c_unitCountAll);
-    for (;; auto1E283258_u -= 1) {
-        auto1E283258_var = UnitGroupUnitFromEnd(auto1E283258_g, auto1E283258_u);
-        if (auto1E283258_var == null) { break; }
-        libNtve_gf_ShowHideUnit(auto1E283258_var, true);
-        libNtve_gf_PauseUnit(auto1E283258_var, false);
-        UnitSetPosition(auto1E283258_var, lp_point, false);
-        if (((UnitGetType(auto1E283258_var) == "InfantryOfficer") || (UnitGetType(auto1E283258_var) == "InfantryRifle") || (UnitGetType(auto1E283258_var) == "InfantryHeavy") || (UnitGetType(auto1E283258_var) == "InfantryMortar") || (UnitGetType(auto1E283258_var) == "InfantryRocket"))) {
-            SoundPlayAtPointForPlayer(SoundLink("Condor_UnloadInfantry", -1), c_maxPlayers, PlayerGroupAll(), UnitGetPosition(lib1926661B_gv_kC_ForcePanel.lv_forceCondor), 0.0, 100.0, 0.0);
-        }
-        else if (((UnitGetType(auto1E283258_var) == "A6") || (UnitGetType(auto1E283258_var) == "TR17"))) {
-            SoundPlayAtPointForPlayer(SoundLink("Condor_UnloadVehicle_Cinematic", -1), c_maxPlayers, PlayerGroupAll(), UnitGetPosition(lib1926661B_gv_kC_ForcePanel.lv_forceCondor), 0.0, 100.0, 0.0);
-        }
-        else if (((UnitGetType(auto1E283258_var) == "Z1") || (UnitGetType(auto1E283258_var) == "TR17"))) {
-            SoundPlayAtPointForPlayer(SoundLink("Condor_UnloadVehicle_Cinematic", -1), c_maxPlayers, PlayerGroupAll(), UnitGetPosition(lib1926661B_gv_kC_ForcePanel.lv_forceCondor), 0.0, 100.0, 0.0);
-        }
-        Wait(0.125, c_timeReal);
-        libNtve_gf_RescueUnit(auto1E283258_var, 1, true);
-        UnitGroupRemove(lib1926661B_gv_kC_ForcePanel.lv_forceGroup, auto1E283258_var);
-    }
 }
 
 void lib1926661B_gf_CreateTipCampaign (string lp_tipData, int lp_tipType, playergroup lp_players) {
@@ -3656,7 +3384,7 @@ string lib1926661B_gf_StoryMapLoadingScreenVictoryImage (string lp_map) {
         return "Assets\\Textures\\blank.dds";
     }
 
-    lv_victoryImage = UserDataGetImagePath("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "LoadingScreenVictoryImage", 1);
+    lv_victoryImage = UserDataGetImagePath("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "LoadingScreenVictoryImage", 1);
     if ((lv_victoryImage == null)) {
         lv_victoryImage = lib1926661B_gf_StoryMapLoadingScreenImage(lib1926661B_gf_PP_NextMission(lp_map, lib1926661B_gv_kCX_IsSimulation, c_gameOverVictory));
     }
@@ -3667,13 +3395,13 @@ string lib1926661B_gf_StoryMapLoadingScreenVictoryImage (string lp_map) {
 string lib1926661B_gf_StoryMapMissionArchiveBackgroundImage (string lp_map) {
     // Automatic Variable Declarations
     // Implementation
-    return UserDataGetImagePath("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "UI_MissionArchive_Background", 1);
+    return UserDataGetImagePath("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "UI_MissionArchive_Background", 1);
 }
 
 string lib1926661B_gf_StoryMapMissionArchiveIconImage (string lp_map) {
     // Automatic Variable Declarations
     // Implementation
-    return UserDataGetImagePath("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "ArchivesIconImage", 1);
+    return UserDataGetImagePath("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "ArchivesIconImage", 1);
 }
 
 string lib1926661B_gf_StoryMapMissionSummaryImage (string lp_map) {
@@ -3719,7 +3447,7 @@ text lib1926661B_gf_StoryMapNameLowerCase (string lp_map) {
         return StringExternal("Param/Value/lib_1926661B_61C047EF");
     }
 
-    return UserDataGetText("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "NameLowerCase", 1);
+    return UserDataGetText("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "NameLowerCase", 1);
 }
 
 text lib1926661B_gf_StoryMapHelp (string lp_map) {
@@ -3762,10 +3490,10 @@ int lib1926661B_gf_MissionStatusAge (string lp_mission, int lp_status) {
     // Implementation
     auto0FCBD4E2_val = lp_status;
     if (auto0FCBD4E2_val == lib1926661B_ge_MissionStatus_Available) {
-        return UserDataGetInt("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "AvailableAge", 1);
+        return UserDataGetInt("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "AvailableAge", 1);
     }
     else if (auto0FCBD4E2_val == lib1926661B_ge_MissionStatus_Completed) {
-        return UserDataGetInt("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "CompletedAge", 1);
+        return UserDataGetInt("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "CompletedAge", 1);
     }
     else {
     }
@@ -3861,13 +3589,13 @@ bool lib1926661B_gf_MissionStatusCheck2 (string lp_mission, int lp_status) {
 string lib1926661B_gf_MissionPitch (string lp_mission) {
     // Automatic Variable Declarations
     // Implementation
-    return UserDataGetGameLink("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "Pitch", 1);
+    return UserDataGetGameLink("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "Pitch", 1);
 }
 
 string lib1926661B_gf_TravelPitch (string lp_mission) {
     // Automatic Variable Declarations
     // Implementation
-    return UserDataGetGameLink("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "Travel Pitch", 1);
+    return UserDataGetGameLink("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "Travel Pitch", 1);
 }
 
 int lib1926661B_gf_NumberOfMissions (int lp_options) {
@@ -4246,10 +3974,10 @@ void lib1926661B_gf_KC_SetMissionStatusAge (string lp_mission, int lp_status, in
     // Implementation
     autoDFD646A8_val = lp_status;
     if (autoDFD646A8_val == lib1926661B_ge_MissionStatus_Available) {
-        UserDataSetInt("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "AvailableAge", 1, lp_age);
+        UserDataSetInt("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "AvailableAge", 1, lp_age);
     }
     else if (autoDFD646A8_val == lib1926661B_ge_MissionStatus_Completed) {
-        UserDataSetInt("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "CompletedAge", 1, lp_age);
+        UserDataSetInt("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_mission), "CompletedAge", 1, lp_age);
     }
     else {
     }
@@ -5221,7 +4949,7 @@ void lib1926661B_gf_ULoadCampaignData (string lp_map) {
     libNtve_gf_AddRemoveUIFrameTypeForGlobalFilterList(true, c_syncFrameTypeTextTag);
     TriggerDebugSetTypeFile(1, "StoryModeDebug.txt");
     lib1926661B_gv_kC_CurrentMap = lp_map;
-    UserDataSetInt("Episode1Maps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "IsCurrent", 1, 1);
+    UserDataSetInt("LoomingsMaps", lib1926661B_gf_KC_MapUserDataInstance(lp_map), "IsCurrent", 1, 1);
     lib1926661B_gv_kC_InStoryMode = lib1926661B_gf_StoryMapTypeCheck(lib1926661B_gf_CurrentMap(), c_mapKindStory);
     lib1926661B_gf_UEDFL_InitMaps();
     TriggerDebugOutput(1, StringExternal("Param/Value/lib_1926661B_ED876F0C"), false);
@@ -6109,6 +5837,43 @@ string lib1926661B_gf_KC_BankMIssionDifficultyKey (string lp_mission, int lp_dif
     // Automatic Variable Declarations
     // Implementation
     return (lib1926661B_gf_KC_StoryMapBankID(lp_mission) + "-" + IntToString(lib1926661B_gf_KC_DifficultyIndex(lp_difficulty)));
+}
+
+void lib1926661B_gf_MissionLaunchDisplay (string lp_mission) {
+    // Variable Declarations
+    int lv_indexAchievement;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Implementation
+    UISetMode(PlayerGroupAll(), c_uiModeFullscreen, c_transitionDurationImmediate);
+    lib1926661B_gf_SetAllSoundChannelVolumesCampaign(lib1926661B_ge_VolumeChannelModeCampaign_SpeechAndMusicNoEffects);
+    SoundtrackPlay(PlayerGroupAll(), c_soundtrackCategoryMusic, "pAmbience_MissionLaunchScreen", c_soundtrackCueAny, c_soundtrackIndexAny, false);
+    SoundChannelSetVolume(PlayerGroupAll(), c_soundCategoryAmbient, 0.0, 0.0);
+    SoundChannelSetVolume(PlayerGroupAll(), c_soundCategoryDialogue, 100.0, 0.0);
+    lib1926661B_gf_CinematicFade3(true, 0.0, Color(0.00, 0.00, 0.00));
+    TriggerExecute(lib1926661B_gt_KC_CreateLaunchScreen, true, true);
+    lib1926661B_gv_kC_NextMission = lp_mission;
+    DialogSetVisible(lib1926661B_gv_kC_MLDialog, PlayerGroupAll(), true);
+    libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_MLTitle, lib1926661B_gf_StoryMapName(lp_mission), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_MLObjective, StringExternal(lib1926661B_gf_KC_MissionProperty("PrimaryObjectiveText")), PlayerGroupAll());
+    libNtve_gf_SetDialogItemModel(lib1926661B_gv_kC_MLContactPortrait, (CatalogFieldValueGet(c_gameCatalogMap, lib1926661B_gv_kC_NextMission, "ContactModelLink", c_playerAny)), PlayerGroupAll());
+    libNtve_gf_SetDialogItemImage(lib1926661B_gv_kC_MLPlanetView, (("Assets/Textures/Briefings/" + (lp_mission) + "Clean.dds")), PlayerGroupAll());
+    ConversationDataRegisterPortrait("char_", PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortrait));
+    ConversationDataRegisterUnit("char_RescuedTemplar", null);
+    DialogClearSubtitlePositionOverride();
+    DialogSetSubtitlePositionOverrideControl(lib1926661B_gv_kC_MLSubtitleFrame);
+    Wait(1.2, c_timeGame);
+    TriggerEnable(lib1926661B_gt_KC_MissionLaunchClicked, true);
+    TriggerEnable(lib1926661B_gt_KC_MissionPitchPlayClicked, true);
+    TriggerEnable(lib1926661B_gt_KC_MissionPitchStopClicked, true);
+    TriggerEnable(lib1926661B_gt_KC_MissionLaunchQuitClicked, true);
+    TriggerEnable(lib1926661B_gt_KC_MissionLaunchBackClicked, true);
+    if ((lib1926661B_gv_kC_InCompletedCampaign == false)) {
+        lib1926661B_gf_KC_MissionLaunchPlayPitch();
+    }
+
 }
 
 void lib1926661B_gf_KC_MissionLaunchClose () {
@@ -7701,258 +7466,6 @@ void lib1926661B_gt_KopruluCampaignPingSound_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Trigger: KC_ForceButtonPressed
-//--------------------------------------------------------------------------------------------------
-bool lib1926661B_gt_KC_ForceButtonPressed_Func (bool testConds, bool runActions) {
-    // Automatic Variable Declarations
-    int auto0C076860_val;
-
-    // Conditions
-    if (testConds) {
-        if (!((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false))) {
-            return false;
-        }
-
-        if (!(((EventDialogControl() == lib1926661B_gv_kC_ForcePanel.lv_button[1]) || (EventDialogControl() == lib1926661B_gv_kC_ForcePanel.lv_button[2]) || (EventDialogControl() == lib1926661B_gv_kC_ForcePanel.lv_button[3]) || (EventDialogControl() == lib1926661B_gv_kC_ForcePanel.lv_button[4])))) {
-            return false;
-        }
-    }
-
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    lib1926661B_gv_kC_ForcePanelUsed = true;
-    TriggerExecute(lib1926661B_gt_KC_ForceTimersUpdate, true, false);
-    auto0C076860_val = EventDialogControl();
-    if (auto0C076860_val == lib1926661B_gv_kC_ForcePanel.lv_button[1]) {
-        lib1926661B_gf_KC_CreateForceCondor(lib1926661B_ge_ForceType_Infantry);
-    }
-    else if (auto0C076860_val == lib1926661B_gv_kC_ForcePanel.lv_button[2]) {
-        lib1926661B_gf_KC_CreateForceCondor(lib1926661B_ge_ForceType_Tank);
-    }
-    else if (auto0C076860_val == lib1926661B_gv_kC_ForcePanel.lv_button[3]) {
-        lib1926661B_gf_KC_CreateForceCondor(lib1926661B_ge_ForceType_Air);
-    }
-    else if (auto0C076860_val == lib1926661B_gv_kC_ForcePanel.lv_button[4]) {
-        lib1926661B_gf_KC_CreateForceCondor(lib1926661B_ge_ForceType_AA);
-    }
-    else {
-    }
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void lib1926661B_gt_KC_ForceButtonPressed_Init () {
-    lib1926661B_gt_KC_ForceButtonPressed = TriggerCreate("lib1926661B_gt_KC_ForceButtonPressed_Func");
-    TriggerAddEventDialogControl(lib1926661B_gt_KC_ForceButtonPressed, c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
-}
-
-//--------------------------------------------------------------------------------------------------
-// Trigger: KC_ForceTimersUpdate
-//--------------------------------------------------------------------------------------------------
-bool lib1926661B_gt_KC_ForceTimersUpdate_Func (bool testConds, bool runActions) {
-    // Variable Declarations
-    int[5] lv_forceCost;
-    int lv_index;
-    int lv_activeInfantryOfficers;
-    bool[5] lv_forceAvailable;
-
-    // Automatic Variable Declarations
-    const int auto392B2427_ae = 4;
-    const int auto392B2427_ai = 1;
-    int auto337972D5_val;
-    unitgroup autoEE1C3AB9_g;
-    int autoEE1C3AB9_u;
-    unit autoEE1C3AB9_var;
-
-    // Variable Initialization
-
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    lv_index = 1;
-    for ( ; ( (auto392B2427_ai >= 0 && lv_index <= auto392B2427_ae) || (auto392B2427_ai < 0 && lv_index >= auto392B2427_ae) ) ; lv_index += auto392B2427_ai ) {
-        auto337972D5_val = lv_index;
-        if (auto337972D5_val == 1) {
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(3, "InfantryRocket");
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(4, "InfantryMortar");
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(3, "InfantryHeavy");
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(3, "InfantryRifle");
-            autoEE1C3AB9_g = UnitGroup(null, 1, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-            autoEE1C3AB9_u = UnitGroupCount(autoEE1C3AB9_g, c_unitCountAll);
-            for (;; autoEE1C3AB9_u -= 1) {
-                autoEE1C3AB9_var = UnitGroupUnitFromEnd(autoEE1C3AB9_g, autoEE1C3AB9_u);
-                if (autoEE1C3AB9_var == null) { break; }
-                if ((UnitGetType(autoEE1C3AB9_var) == "InfantryOfficer")) {
-                    lv_activeInfantryOfficers += 1;
-                }
-            }
-            if ((lv_activeInfantryOfficers < 3)) {
-                lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(1, "InfantryOfficer");
-            }
-            if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true)) {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false) && (lib1926661B_gf_KC_SuppliesAvailable(1) <= lv_forceCost[lv_index])) {
-                    lv_forceAvailable[lv_index] = true;
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_F41F305D", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_F41F305D"), PlayerGroupAll());
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                }
-                else {
-                    lv_forceAvailable[lv_index] = false;
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_049FCC30", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_049FCC30"), PlayerGroupAll());
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-            else {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false)) {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                }
-                else {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-        }
-        else if (auto337972D5_val == 2) {
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(2, "A6");
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(2, "InfantryRifle");
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(2, "Z1");
-            if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true)) {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false) && (lib1926661B_gf_KC_SuppliesAvailable(1) <= lv_forceCost[lv_index])) {
-                    lv_forceAvailable[lv_index] = true;
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_93FB494D", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_93FB494D"), PlayerGroupAll());
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                }
-                else {
-                    lv_forceAvailable[lv_index] = false;
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_28C39DDA", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_28C39DDA"), PlayerGroupAll());
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-            else {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false)) {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                }
-                else {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-        }
-        else if (auto337972D5_val == 3) {
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(2, "TR17");
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(1, "RoutheTank");
-            if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true)) {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false) && (lib1926661B_gf_KC_SuppliesAvailable(1) <= lv_forceCost[lv_index])) {
-                    lv_forceAvailable[lv_index] = true;
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_09C0CF0B", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_09C0CF0B"), PlayerGroupAll());
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                }
-                else {
-                    lv_forceAvailable[lv_index] = false;
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_036430C7", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_036430C7"), PlayerGroupAll());
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-            else {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false)) {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                }
-                else {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-        }
-        else if (auto337972D5_val == 4) {
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(1, "Osprey");
-            lv_forceCost[lv_index] += lib1926661B_gf_KC_ReturnUnitSupplyCost(1, "RaptorJet");
-            if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true)) {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false) && (lib1926661B_gf_KC_SuppliesAvailable(1) <= lv_forceCost[lv_index])) {
-                    lv_forceAvailable[lv_index] = true;
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_7B4B7FB6", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_7B4B7FB6"), PlayerGroupAll());
-                }
-                else {
-                    lv_forceAvailable[lv_index] = false;
-                    TextExpressionSetToken("Param/Expression/lib_1926661B_01C7390F", "A", IntToText(lv_forceCost[lv_index]));
-                    libNtve_gf_SetDialogItemTooltip(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], TextExpressionAssemble("Param/Expression/lib_1926661B_01C7390F"), PlayerGroupAll());
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-            else {
-                if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false)) {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), true);
-                }
-                else {
-                    DialogControlSetEnabled(lib1926661B_gv_kC_ForcePanel.lv_button[lv_index], PlayerGroupAll(), false);
-                }
-            }
-        }
-        else {
-        }
-        libNtve_gf_SetDialogItemAnimationTime(lib1926661B_gv_kC_ForcePanel.lv_buttonCooldown[lv_index], (60.0 * (1 - TimerGetRemaining(lib1926661B_gv_kC_ForcePanel.lv_forceTimer)/lib1926661B_gv_kC_ForceTimerTime)), PlayerGroupAll());
-        if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true) && (lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false) && ((lv_forceAvailable[1] == false) || (lv_forceAvailable[2] == false) || (lv_forceAvailable[3] == false) || (lv_forceAvailable[4] == false))) {
-            libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_ForcePanel.lv_titleLabel, lib1926661B_gv_kC_ForceNameSupplies, PlayerGroupAll());
-        }
-
-        if ((lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown == false) && ((lv_forceAvailable[1] == true) || (lv_forceAvailable[2] == true) || (lv_forceAvailable[3] == true) || (lv_forceAvailable[4] == true))) {
-            libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_ForcePanel.lv_titleLabel, lib1926661B_gv_kC_ForceNameReady, PlayerGroupAll());
-        }
-
-    }
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void lib1926661B_gt_KC_ForceTimersUpdate_Init () {
-    lib1926661B_gt_KC_ForceTimersUpdate = TriggerCreate("lib1926661B_gt_KC_ForceTimersUpdate_Func");
-    TriggerEnable(lib1926661B_gt_KC_ForceTimersUpdate, false);
-    TriggerAddEventTimePeriodic(lib1926661B_gt_KC_ForceTimersUpdate, 0.5, c_timeGame);
-}
-
-//--------------------------------------------------------------------------------------------------
-// Trigger: KC_ForceTimerEnd
-//--------------------------------------------------------------------------------------------------
-bool lib1926661B_gt_KC_ForceTimerEnd_Func (bool testConds, bool runActions) {
-    // Variable Declarations
-    int lv_index;
-
-    // Automatic Variable Declarations
-    const int auto399F2FDF_ae = 4;
-    const int auto399F2FDF_ai = 1;
-
-    // Variable Initialization
-
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    lv_index = 1;
-    for ( ; ( (auto399F2FDF_ai >= 0 && lv_index <= auto399F2FDF_ae) || (auto399F2FDF_ai < 0 && lv_index >= auto399F2FDF_ae) ) ; lv_index += auto399F2FDF_ai ) {
-        DialogControlSetVisible(lib1926661B_gv_kC_ForcePanel.lv_buttonCooldown[lv_index], PlayerGroupAll(), false);
-    }
-    lib1926661B_gv_kC_ForcePanel.lv_forceOnCooldown = false;
-    lib1926661B_gv_kC_ForcePanel.lv_forceCondor = null;
-    libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_ForcePanel.lv_titleLabel, lib1926661B_gv_kC_ForceNameReady, PlayerGroupAll());
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void lib1926661B_gt_KC_ForceTimerEnd_Init () {
-    lib1926661B_gt_KC_ForceTimerEnd = TriggerCreate("lib1926661B_gt_KC_ForceTimerEnd_Func");
-    TriggerAddEventTimer(lib1926661B_gt_KC_ForceTimerEnd, lib1926661B_gv_kC_ForcePanel.lv_forceTimer);
-}
-
-//--------------------------------------------------------------------------------------------------
 // Trigger: KC_SetCasualRallyPoints
 //--------------------------------------------------------------------------------------------------
 bool lib1926661B_gt_KC_SetCasualRallyPoints_Func (bool testConds, bool runActions) {
@@ -8979,9 +8492,6 @@ void lib1926661B_InitTriggers () {
     lib1926661B_gt_KC_HeroPanelCineShow_Init();
     lib1926661B_gt_KC_HeroPanelCineHide_Init();
     lib1926661B_gt_KopruluCampaignPingSound_Init();
-    lib1926661B_gt_KC_ForceButtonPressed_Init();
-    lib1926661B_gt_KC_ForceTimersUpdate_Init();
-    lib1926661B_gt_KC_ForceTimerEnd_Init();
     lib1926661B_gt_KC_SetCasualRallyPoints_Init();
     lib1926661B_gt_DisplayTimestamp_Init();
     lib1926661B_gt_DisplayTimestampSkippable_Init();
