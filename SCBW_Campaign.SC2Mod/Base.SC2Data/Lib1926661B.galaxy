@@ -94,21 +94,20 @@ void lib1926661B_InitVariables () {
     lib1926661B_gv_kC_CampaignBankName = "UEDFLCampaign";
     lib1926661B_gv_kC_MLDialog = c_invalidDialogId;
     lib1926661B_gv_kC_MLPanel = c_invalidDialogControlId;
+    lib1926661B_gv_kC_MLBackgroundImage = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLTitle = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLObjective = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLContactPortrait = c_invalidDialogControlId;
+    lib1926661B_gv_kC_MLContactPortraitSecondary = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLSubtitleFrame = c_invalidDialogControlId;
     for (init_i = 0; init_i <= 3; init_i += 1) {
         lib1926661B_gv_kC_MLAchievements[init_i] = c_invalidDialogControlId;
     }
     lib1926661B_gv_kC_MLPlanetView = c_invalidDialogControlId;
-    lib1926661B_gv_kC_MLPlanetViewChoice = c_invalidDialogControlId;
-    lib1926661B_gv_kC_MLChoiceAButton = c_invalidDialogControlId;
-    lib1926661B_gv_kC_MLChoiceBButton = c_invalidDialogControlId;
-    lib1926661B_gv_kC_MLChoiceCButton = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLLaunchButton = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLQuitButton = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLBackButton = c_invalidDialogControlId;
+    lib1926661B_gv_kC_MLSkipButton = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLPitchPlayButton = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLPitchStopButton = c_invalidDialogControlId;
     lib1926661B_gv_kC_MLDifficultyPulldown = c_invalidDialogControlId;
@@ -5852,16 +5851,19 @@ void lib1926661B_gf_MissionLaunchDisplay (string lp_mission) {
     SoundtrackPlay(PlayerGroupAll(), c_soundtrackCategoryMusic, "pAmbience_MissionLaunchScreen", c_soundtrackCueAny, c_soundtrackIndexAny, false);
     SoundChannelSetVolume(PlayerGroupAll(), c_soundCategoryAmbient, 0.0, 0.0);
     SoundChannelSetVolume(PlayerGroupAll(), c_soundCategoryDialogue, 100.0, 0.0);
+    CameraLockInput(1, true);
+    UISetFrameVisible(PlayerGroupAll(), c_syncFrameTypeResourcePanel, false);
+    UISetFrameVisible(PlayerGroupAll(), c_syncFrameTypeSupply, false);
     lib1926661B_gf_CinematicFade3(true, 0.0, Color(0.00, 0.00, 0.00));
     TriggerExecute(lib1926661B_gt_KC_CreateLaunchScreen, true, true);
     lib1926661B_gv_kC_NextMission = lp_mission;
-    DialogSetVisible(lib1926661B_gv_kC_MLDialog, PlayerGroupAll(), true);
+    if ((lib1926661B_gv_kC_NextMission == "LT00")) {
+        DialogControlSetVisible(lib1926661B_gv_kC_MLContactPortraitSecondary, PlayerGroupAll(), false);
+    }
     libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_MLTitle, lib1926661B_gf_StoryMapName(lp_mission), PlayerGroupAll());
     libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_MLObjective, StringExternal(lib1926661B_gf_KC_MissionProperty("PrimaryObjectiveText")), PlayerGroupAll());
-    libNtve_gf_SetDialogItemModel(lib1926661B_gv_kC_MLContactPortrait, (CatalogFieldValueGet(c_gameCatalogMap, lib1926661B_gv_kC_NextMission, "ContactModelLink", c_playerAny)), PlayerGroupAll());
-    libNtve_gf_SetDialogItemImage(lib1926661B_gv_kC_MLPlanetView, (("Assets/Textures/Briefings/" + (lp_mission) + "Clean.dds")), PlayerGroupAll());
-    ConversationDataRegisterPortrait("char_", PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortrait));
-    ConversationDataRegisterUnit("char_RescuedTemplar", null);
+    libNtve_gf_SetDialogItemImage(lib1926661B_gv_kC_MLBackgroundImage, lib1926661B_gf_StoryMapLoadingScreenImage(lib1926661B_gv_kC_NextMission), PlayerGroupAll());
+    DialogSetVisible(lib1926661B_gv_kC_MLDialog, PlayerGroupAll(), true);
     DialogClearSubtitlePositionOverride();
     DialogSetSubtitlePositionOverrideControl(lib1926661B_gv_kC_MLSubtitleFrame);
     Wait(1.2, c_timeGame);
@@ -5871,7 +5873,7 @@ void lib1926661B_gf_MissionLaunchDisplay (string lp_mission) {
     TriggerEnable(lib1926661B_gt_KC_MissionLaunchQuitClicked, true);
     TriggerEnable(lib1926661B_gt_KC_MissionLaunchBackClicked, true);
     if ((lib1926661B_gv_kC_InCompletedCampaign == false)) {
-        lib1926661B_gf_KC_MissionLaunchPlayPitch();
+        lib1926661B_gf_KC_SCBWMissionPitchPlay(lib1926661B_gv_kC_NextMission, true);
     }
 
 }
@@ -5907,6 +5909,26 @@ void lib1926661B_gf_KC_MissionLaunchPlayPitch () {
 
 }
 
+void lib1926661B_gf_KC_SCBWMissionPitchPlay (string lp_mission, bool lp_wait) {
+    // Automatic Variable Declarations
+    string auto89FC5FF8_val;
+
+    // Implementation
+    lib1926661B_gv_kC_MissionLaunchPitchPlaying = true;
+    DialogControlSendAnimationEvent(lib1926661B_gv_kC_MLPanel, PlayerGroupAll(), "BriefStart");
+    auto89FC5FF8_val = lp_mission;
+    if (auto89FC5FF8_val == "LT00") {
+        lib1926661B_gv_kC_ConversationTrigger = lib1926661B_gt_Convo_Loomings0;
+    }
+    else {
+    }
+    TriggerExecute(lib1926661B_gv_kC_ConversationTrigger, true, true);
+    lib1926661B_gv_kC_MissionLaunchPitchPlaying = false;
+    DialogControlSendAnimationEvent(lib1926661B_gv_kC_MLPanel, PlayerGroupAll(), "BriefEnd");
+    libNtve_gf_SetDialogItemModel(lib1926661B_gv_kC_MLContactPortrait, null, PlayerGroupAll());
+    libNtve_gf_SetDialogItemModel(lib1926661B_gv_kC_MLContactPortraitSecondary, null, PlayerGroupAll());
+}
+
 int lib1926661B_gf_KC_MissionLaunchSelectedDifficulty () {
     // Automatic Variable Declarations
     int auto5ED18F13_val;
@@ -5934,6 +5956,23 @@ string lib1926661B_gf_KC_MissionProperty (string lp_field) {
     // Automatic Variable Declarations
     // Implementation
     return CatalogFieldValueGet(c_gameCatalogMap, (lib1926661B_gv_kC_NextMission), lp_field, c_playerAny);
+}
+
+int lib1926661B_gf_KC_MissionPortrait (int lp_slot) {
+    // Automatic Variable Declarations
+    int auto35F2CD36_val;
+
+    // Implementation
+    auto35F2CD36_val = lp_slot;
+    if (auto35F2CD36_val == lib1926661B_ge_KC_PortraitTarget_Primary) {
+        return PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortrait);
+    }
+    else if (auto35F2CD36_val == lib1926661B_ge_KC_PortraitTarget_Secondary) {
+        return PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortraitSecondary);
+    }
+    else {
+        return PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortrait);
+    }
 }
 
 void lib1926661B_gf_AddVictoryPanelStatistic (string lp_statistic) {
@@ -7724,6 +7763,38 @@ void lib1926661B_gt_KC_WaitForCutscene_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: Convo_Loomings0
+//--------------------------------------------------------------------------------------------------
+bool lib1926661B_gt_Convo_Loomings0_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00001", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortrait), "LT01Brief|Line00002", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00003", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00004", null, true, null, false);
+    Wait(2.0, c_timeReal);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00005", null, true, null, false);
+    Wait(5.0, c_timeReal);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00006", null, true, null, false);
+    Wait(3.0, c_timeReal);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00007", null, true, null, false);
+    Wait(3.0, c_timeReal);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00008", null, true, null, false);
+    Wait(3.0, c_timeReal);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00009", null, true, null, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void lib1926661B_gt_Convo_Loomings0_Init () {
+    lib1926661B_gt_Convo_Loomings0 = TriggerCreate("lib1926661B_gt_Convo_Loomings0_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: KC_CreateLaunchScreen
 //--------------------------------------------------------------------------------------------------
 bool lib1926661B_gt_KC_CreateLaunchScreen_Func (bool testConds, bool runActions) {
@@ -7759,26 +7830,24 @@ bool lib1926661B_gt_KC_CreateLaunchScreen_Func (bool testConds, bool runActions)
     lib1926661B_gv_kC_MLTitle = DialogControlLastCreated();
     DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeLabel, libNtve_gf_ConvertStringToUILayoutFrameName("Objective"));
     lib1926661B_gv_kC_MLObjective = DialogControlLastCreated();
+    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeImage, libNtve_gf_ConvertStringToUILayoutFrameName("Background"));
+    lib1926661B_gv_kC_MLBackgroundImage = DialogControlLastCreated();
     DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypePortrait, libNtve_gf_ConvertStringToUILayoutFrameName("PortraitCalloutLeft\\PortraitFrame\\Portrait"));
     lib1926661B_gv_kC_MLContactPortrait = DialogControlLastCreated();
+    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypePortrait, libNtve_gf_ConvertStringToUILayoutFrameName("PortraitCalloutRight/PortaitFrame/Portrait"));
+    lib1926661B_gv_kC_MLContactPortraitSecondary = DialogControlLastCreated();
     DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypePanel, libNtve_gf_ConvertStringToUILayoutFrameName("SubtitleFrame"));
     lib1926661B_gv_kC_MLSubtitleFrame = DialogControlLastCreated();
-    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeImage, libNtve_gf_ConvertStringToUILayoutFrameName("CenterPanel\\PlanetViewClean"));
+    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeImage, libNtve_gf_ConvertStringToUILayoutFrameName("CenterPanel\\PlanetView"));
     lib1926661B_gv_kC_MLPlanetView = DialogControlLastCreated();
-    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeImage, libNtve_gf_ConvertStringToUILayoutFrameName("CenterPanel\\PlanetViewChoice"));
-    lib1926661B_gv_kC_MLPlanetViewChoice = DialogControlLastCreated();
-    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("CenterPanel\\SelectionButton1"));
-    lib1926661B_gv_kC_MLChoiceAButton = DialogControlLastCreated();
-    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("CenterPanel\\SelectionButton2"));
-    lib1926661B_gv_kC_MLChoiceBButton = DialogControlLastCreated();
-    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("CenterPanel\\SelectionButton3"));
-    lib1926661B_gv_kC_MLChoiceCButton = DialogControlLastCreated();
     DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("CalloutLaunch\\LaunchButton"));
     lib1926661B_gv_kC_MLLaunchButton = DialogControlLastCreated();
     DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("CalloutBack\\BackButton"));
     lib1926661B_gv_kC_MLBackButton = DialogControlLastCreated();
     DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("CalloutBack\\QuitButton"));
     lib1926661B_gv_kC_MLQuitButton = DialogControlLastCreated();
+    DialogControlHookup(lib1926661B_gv_kC_MLPanel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("CalloutSkipTutorial\\SkipButton"));
+    lib1926661B_gv_kC_MLSkipButton = DialogControlLastCreated();
     if ((lib1926661B_gv_kC_InCompletedCampaign == true)) {
         DialogControlSetVisible(lib1926661B_gv_kC_MLQuitButton, PlayerGroupAll(), false);
         DialogControlSetVisible(lib1926661B_gv_kC_MLBackButton, PlayerGroupAll(), true);
@@ -7795,12 +7864,16 @@ bool lib1926661B_gt_KC_CreateLaunchScreen_Func (bool testConds, bool runActions)
     lib1926661B_gv_kC_MLDifficultyPulldown = DialogControlLastCreated();
     DialogControlAddItem(lib1926661B_gv_kC_MLDifficultyPulldown, PlayerGroupAll(), StringExternal("UI/Difficulty02Campaign"));
     DialogControlAddItem(lib1926661B_gv_kC_MLDifficultyPulldown, PlayerGroupAll(), StringExternal("UI/Difficulty03Campaign"));
+    DialogControlAddItem(lib1926661B_gv_kC_MLDifficultyPulldown, PlayerGroupAll(), StringExternal("UI/Difficulty04Campaign"));
     auto82247E17_val = PlayerDifficulty(1);
     if (auto82247E17_val == 2) {
         DialogControlSelectItem(lib1926661B_gv_kC_MLDifficultyPulldown, PlayerGroupAll(), 1);
     }
     else if (auto82247E17_val == 3) {
         DialogControlSelectItem(lib1926661B_gv_kC_MLDifficultyPulldown, PlayerGroupAll(), 2);
+    }
+    else if (auto82247E17_val == 4) {
+        DialogControlSelectItem(lib1926661B_gv_kC_MLDifficultyPulldown, PlayerGroupAll(), 3);
     }
     else {
     }
@@ -7947,11 +8020,7 @@ bool lib1926661B_gt_KC_MissionPitchPlayClicked_Func (bool testConds, bool runAct
         lib1926661B_gv_kC_MissionLaunchPitchPlaying = true;
     }
 
-    if ((lib1926661B_gf_MissionPitch(lib1926661B_gv_kC_NextMission) == null)) {
-        return true;
-    }
-
-    lib1926661B_gf_KC_MissionLaunchPlayPitch();
+    lib1926661B_gf_KC_SCBWMissionPitchPlay(lib1926661B_gv_kC_NextMission, true);
     return true;
 }
 
@@ -7982,7 +8051,8 @@ bool lib1926661B_gt_KC_MissionPitchStopClicked_Func (bool testConds, bool runAct
         return true;
     }
 
-    ConversationDataStop();
+    TriggerStop(lib1926661B_gv_kC_ConversationTrigger);
+    TransmissionClearAll();
     lib1926661B_gv_kC_MissionLaunchPitchPlaying = false;
     return true;
 }
@@ -8501,6 +8571,7 @@ void lib1926661B_InitTriggers () {
     lib1926661B_gt_KC_CinematicHandleSkipping_Init();
     lib1926661B_gt_KC_WaitForDialogCutscene_Init();
     lib1926661B_gt_KC_WaitForCutscene_Init();
+    lib1926661B_gt_Convo_Loomings0_Init();
     lib1926661B_gt_KC_CreateLaunchScreen_Init();
     lib1926661B_gt_KC_MissionLaunchQuitOKClicked_Init();
     lib1926661B_gt_KC_MissionLaunchQuitCanceledClicked_Init();
