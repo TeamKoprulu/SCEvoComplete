@@ -151,7 +151,6 @@ void lib1926661B_InitVariables () {
     for (init_i1 = 0; init_i1 <= 3; init_i1 += 1) {
         lib1926661B_gv_kC_VictoryScreen.lv_zS_VSAchievementTitle2[init_i1] = c_invalidDialogControlId;
     }
-    lib1926661B_gv_objectiveRescueStalkers = c_invalidObjectiveId;
 }
 
 // Custom Script
@@ -1189,7 +1188,7 @@ void lib1926661B_gf_KC_HookAchiRedirect (string lp_map) {
     DialogControlHookupStandard(c_triggerControlTypePanel, "/$parent/$parent/MessageLogDialog/AchievementsDialog/RedirectPanelContainer");
     lv_panel = DialogControlLastCreated();
     autoFCD03D96_val = lp_map;
-    if (autoFCD03D96_val == "UEDStory") {
+    if (autoFCD03D96_val == "LStoryDemo") {
         DialogControlSetAnimationState(lv_panel, PlayerGroupAll(), "SetPath", "Summary");
     }
     else if (autoFCD03D96_val == "UEDFL_EP01M00") {
@@ -5092,7 +5091,7 @@ void lib1926661B_gf_PrepareForStoryMode (int lp_victoryDefeat, int lp_difficulty
     SetNextMissionDifficulty(PlayerGroupSingle(1), lp_difficulty);
     lib1926661B_gf_KC_SaveAllTransitionData(false, false, (c_gameOverDefeat == c_gameOverDefeat));
     lib1926661B_gf_KC_PrepareLoadingScreen(lv_nextMap, false);
-    GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("UEDStory")));
+    GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("LStoryDemo")));
     TextExpressionSetToken("Param/Expression/lib_1926661B_CEE1F9DE", "A", StringToText(("Campaign/Swarm/" + lib1926661B_gf_StoryMapFile(lv_nextMap))));
     TriggerDebugOutput(1, TextExpressionAssemble("Param/Expression/lib_1926661B_CEE1F9DE"), false);
 }
@@ -5131,7 +5130,7 @@ void lib1926661B_gf_CreateStoryModeTransitionSave (text lp_name, text lp_transit
         return ;
     }
 
-    lv_transitionMap = ("" + lib1926661B_gf_StoryMapFile("UEDStory"));
+    lv_transitionMap = ("" + lib1926661B_gf_StoryMapFile("LStoryDemo"));
     GameSetTransitionMap(lv_transitionMap);
     if ((lib1926661B_gf_StoryMapTypeCheck(lib1926661B_gf_CurrentMap(), c_mapKindStory) == true)) {
         lv_image = lib1926661B_gf_StoryMapLoadingScreenImage(lib1926661B_gf_CurrentMap());
@@ -5155,13 +5154,13 @@ string lib1926661B_gf_PP_NextMission (string lp_mission, bool lp_simulation, int
         lv_nextMap = null;
     }
     else if ((lp_simulation == true)) {
-        lv_nextMap = "UEDStory";
+        lv_nextMap = "LStoryDemo";
     }
     else if ((lp_victoryDefeat == c_gameOverDefeat)) {
         lv_nextMap = null;
     }
     else if ((lp_mission == "UEDFL_EP01M00")) {
-        lv_nextMap = "UEDStory";
+        lv_nextMap = "LStoryDemo";
     }
     else if ((lp_mission == "UEDFL_EP01M01")) {
         lv_nextMap = "UEDFL_EP01M02_1";
@@ -5194,10 +5193,10 @@ string lib1926661B_gf_PP_NextMission (string lp_mission, bool lp_simulation, int
         lv_nextMap = "UEDFL_EP01M10";
     }
     else if ((lp_mission == "UEDFL_EP01M10")) {
-        lv_nextMap = "UEDStory";
+        lv_nextMap = "LStoryDemo";
     }
     else if ((lp_mission == "UEDFL_EP01M11")) {
-        lv_nextMap = "UEDStory";
+        lv_nextMap = "LStoryDemo";
     }
     else if (true) {
         lv_nextMap = null;
@@ -5549,7 +5548,7 @@ void lib1926661B_gf_KC_PrepareLoadingScreen (string lp_nextMap, bool lp_restart)
         lv_image = lib1926661B_gf_StoryMapLoadingScreenImage(lp_nextMap);
     }
 
-    if ((lib1926661B_gv_kC_InCompletedCampaign == false) && (lp_nextMap != "UEDFL_EP01M00") && (lp_nextMap != "UEDStory")) {
+    if ((lib1926661B_gv_kC_InCompletedCampaign == false) && (lp_nextMap != "UEDFL_EP01M00") && (lp_nextMap != "LStoryDemo")) {
         lv_title = lib1926661B_gf_StoryMapHelp3(lp_nextMap);
         lv_body = lib1926661B_gf_StoryMapHelp4(lp_nextMap);
     }
@@ -5878,11 +5877,18 @@ void lib1926661B_gf_MissionLaunchDisplay (string lp_mission) {
 
 }
 
+void lib1926661B_gf_MissionLaunchClose () {
+    // Automatic Variable Declarations
+    // Implementation
+    lib1926661B_gf_KC_MissionLaunchClose();
+}
+
 void lib1926661B_gf_KC_MissionLaunchClose () {
     // Automatic Variable Declarations
     // Implementation
-    ConversationDataStop();
+    TriggerStop(lib1926661B_gv_kC_ConversationTrigger);
     TransmissionClearAll();
+    lib1926661B_gv_kC_MissionLaunchPitchPlaying = false;
     DialogClearSubtitlePositionOverrideControl();
     DialogDestroy(lib1926661B_gv_kC_MLDialog);
     lib1926661B_gv_kC_MLDialog = c_invalidDialogId;
@@ -6052,25 +6058,6 @@ void lib1926661B_gf_DisplayCampaignVictoryScoreScreen (string lp_mission) {
     UISetGameMenuItemVisible(PlayerGroupAll(), c_gameMenuDialogRestartButton, false);
     UIClearMessages(PlayerGroupAll(), c_messageAreaAll);
     libNtve_gf_SendActorMessageToGameRegion(RegionEntireMap(), "Destroy");
-    if (((lp_mission == "UEDFL_EP01M02_1") || (lp_mission == "UEDFL_EP01M02_2") || (lp_mission == "UEDFL_EP01M03") || (lp_mission == "UEDFL_EP01M04") || (lp_mission == "UEDFL_EP01M06") || (lp_mission == "UEDFL_EP01M08") || (lp_mission == "UEDFL_EP01M09"))) {
-    }
-    else {
-        TransmissionClearAll();
-        ConversationDataStop();
-        libNtve_gf_HideAllCinematicPortraits(PlayerGroupAll());
-        SoundtrackStop(PlayerGroupAll(), c_soundtrackCategoryAmbience, true);
-        SoundtrackPlay(PlayerGroupAll(), c_soundtrackCategoryAmbience, "Ambience_Mission_Score_Screen", c_soundtrackCueAny, c_soundtrackIndexAny, false);
-        lib1926661B_gf_SetAllSoundChannelVolumesCampaign(lib1926661B_ge_VolumeChannelModeCampaign_Victory);
-    }
-    if ((lp_mission == "UEDFL_EP01M03")) {
-        SoundStopAllTriggerSounds(false);
-        SoundtrackStop(PlayerGroupAll(), c_soundtrackCategoryMusic, true);
-        lib1926661B_gf_SetAllSoundChannelVolumesCampaign(lib1926661B_ge_VolumeChannelModeCampaign_Speech);
-        SoundPlayForPlayer(SoundLink("EP01M03_NewsCast_085", c_soundIndexAny), c_maxPlayers, PlayerGroupAll(), 100.0, 0.0);
-    }
-    if (((lp_mission == "UEDFL_EP01M00") || (lp_mission == "UEDFL_EP01M01") || (lp_mission == "UEDFL_EP01M02_1") || (lp_mission == "UEDFL_EP01M02_2") || (lp_mission == "UEDFL_EP01M04") || (lp_mission == "UEDFL_EP01M06") || (lp_mission == "UEDFL_EP01M09"))) {
-        SoundtrackPlay(PlayerGroupAll(), c_soundtrackCategoryMusic, "EP01M01_MusicEnd", c_soundtrackCueAny, c_soundtrackIndexAny, false);
-    }
     lib1926661B_gf_KC_CompleteMission(lib1926661B_gf_CurrentMap());
     if ((lib1926661B_gf_StoryMapTypeCheck(lib1926661B_gf_CurrentMap(), c_mapKindMission) == true) && (lib1926661B_gf_CurrentMissionIsSimulation() == false)) {
         lv_sectionName = lib1926661B_gf_KC_BankSectionName(lib1926661B_gf_CurrentMap(), "MissionCompleteted");
@@ -6456,7 +6443,7 @@ bool lib1926661B_gt_KC_AbortMission_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    GameSetNextMap(("SCBWLoomings/" + lib1926661B_gf_StoryMapFile("UEDStory")));
+    GameSetNextMap(("SCBWLoomings/" + lib1926661B_gf_StoryMapFile("LStoryDemo")));
     if ((lib1926661B_gf_CurrentMap() == "UEDFL_EP01M10") && (lib1926661B_gv_kCX_IsVictoryPlayAgain == true) && (lib1926661B_gv_kCX_IsSimulation == false)) {
         UnitPauseAll(true);
         auto8C8FA7B1_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, (1 << (c_targetFilterHidden - 32))), 0);
@@ -6482,7 +6469,7 @@ bool lib1926661B_gt_KC_AbortMission_Func (bool testConds, bool runActions) {
     }
     else {
         lib1926661B_gf_KC_SaveAllTransitionData(false, false, (c_gameOverDefeat == c_gameOverDefeat));
-        GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("UEDStory")));
+        GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("LStoryDemo")));
         lib1926661B_gf_PrepareForStoryMode(c_gameOverDefeat, PlayerDifficulty(1));
         GameOver(1, c_gameOverDefeat, false, false);
     }
@@ -6906,7 +6893,7 @@ bool lib1926661B_gt_UED_CreditsButtonPushed_Func (bool testConds, bool runAction
         Wait(0.1, c_timeGame);
         TriggerDebugOutput(1, StringExternal("Param/Value/lib_1926661B_6C9FA21E"), false);
         if ((lib1926661B_gv_kCX_IsSimulation == false)) {
-            lib1926661B_gf_LaunchMission("UEDStory", (lib1926661B_gv_kC_InCompletedCampaign == true), 3);
+            lib1926661B_gf_LaunchMission("LStoryDemo", (lib1926661B_gv_kC_InCompletedCampaign == true), 3);
         }
 
         GameOver(1, c_gameOverVictory, false, false);
@@ -6938,8 +6925,8 @@ bool lib1926661B_gt_UED_HideCredits_Func (bool testConds, bool runActions) {
         TriggerEnable(lib1926661B_gt_UED_HideCredits, false);
         Wait(0.1, c_timeGame);
         TriggerDebugOutput(1, StringExternal("Param/Value/lib_1926661B_916A06D0"), false);
-        if ((lib1926661B_gf_CurrentMap() != "UEDStory") && (lib1926661B_gv_kCX_IsSimulation == false)) {
-            lib1926661B_gf_LaunchMission("UEDStory", (lib1926661B_gv_kC_InCompletedCampaign == true), 3);
+        if ((lib1926661B_gf_CurrentMap() != "LStoryDemo") && (lib1926661B_gv_kCX_IsSimulation == false)) {
+            lib1926661B_gf_LaunchMission("LStoryDemo", (lib1926661B_gv_kC_InCompletedCampaign == true), 3);
         }
 
     }
@@ -7952,9 +7939,14 @@ bool lib1926661B_gt_KC_MissionLaunchQuitClicked_Func (bool testConds, bool runAc
         return true;
     }
 
-    lib1926661B_gv_kC_MissionLaunchQuitToggled = true;
-    TriggerEnable(lib1926661B_gt_KC_MissionLaunchQuitOKClicked, true);
-    UIShowCustomDialog(PlayerGroupAll(), libNtve_ge_CustomDialogType_c_customDialogTypeQuery, StringExternal("Param/Value/lib_1926661B_D40C0A8A"), StringToText(""), true);
+    if ((lib1926661B_gf_CurrentMap() == "LStoryDemo")) {
+        TriggerSendEvent("KLCReturnToLanding");
+    }
+    else {
+        GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("LStoryDemo")));
+        lib1926661B_gf_PrepareForStoryMode(c_gameOverVictory, PlayerDifficulty(1));
+        GameOver(1, c_gameOverVictory, false, false);
+    }
     return true;
 }
 
@@ -8081,10 +8073,6 @@ bool lib1926661B_gt_KC_MissionLaunchClicked_Func (bool testConds, bool runAction
         }
 
         if (!((EventDialogControl() == lib1926661B_gv_kC_MLLaunchButton))) {
-            return false;
-        }
-
-        if (!((lib1926661B_gv_kC_MissionLaunchQuitToggled == false))) {
             return false;
         }
     }
@@ -8237,7 +8225,8 @@ bool lib1926661B_gt_KC_VSScreenQuit_Func (bool testConds, bool runActions) {
     DialogControlSetVisible(lib1926661B_gv_kC_VictoryScreen.lv_pU_VSMainPanel, PlayerGroupAll(), false);
     lib1926661B_gf_CinematicFade(false, 0.7, Color(0.00, 0.00, 0.00), true);
     lib1926661B_gf_KC_SaveAllTransitionData(false, false, (c_gameOverVictory == c_gameOverVictory));
-    GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("UEDStory")));
+    lib1926661B_gf_PrepareForMission("LStoryDemo", lib1926661B_gv_kCX_IsSimulation, false, lib1926661B_gv_kCX_CampaignDifficulty);
+    GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("LStoryDemo")));
     lib1926661B_gf_PrepareForStoryMode(c_gameOverVictory, PlayerDifficulty(1));
     GameOver(1, c_gameOverVictory, false, false);
     return true;
@@ -8419,113 +8408,6 @@ void lib1926661B_gt_KC_VSRestartRestart_Init () {
     TriggerAddEventDialogControl(lib1926661B_gt_KC_VSRestartRestart, c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
 }
 
-//--------------------------------------------------------------------------------------------------
-// Trigger: Objective {Rescue Stalkers} Create
-//--------------------------------------------------------------------------------------------------
-bool lib1926661B_gt_ObjectiveRescueStalkersCreate_Func (bool testConds, bool runActions) {
-    // Automatic Variable Declarations
-    // Conditions
-    if (testConds) {
-        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
-            return false;
-        }
-    }
-
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    TriggerEnable(TriggerGetCurrent(), false);
-    ObjectiveCreate(StringExternal("Param/Value/lib_1926661B_316FA6E1"), StringExternal("Param/Value/lib_1926661B_2B29897C"), c_objectiveStateActive, false);
-    lib1926661B_gv_objectiveRescueStalkers = ObjectiveLastCreated();
-    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void lib1926661B_gt_ObjectiveRescueStalkersCreate_Init () {
-    lib1926661B_gt_ObjectiveRescueStalkersCreate = TriggerCreate("lib1926661B_gt_ObjectiveRescueStalkersCreate_Func");
-}
-
-//--------------------------------------------------------------------------------------------------
-// Trigger: Objective {Rescue Stalkers} Complete
-//--------------------------------------------------------------------------------------------------
-bool lib1926661B_gt_ObjectiveRescueStalkersComplete_Func (bool testConds, bool runActions) {
-    // Automatic Variable Declarations
-    // Conditions
-    if (testConds) {
-        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
-            return false;
-        }
-    }
-
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    TriggerEnable(TriggerGetCurrent(), false);
-    TriggerExecute(lib1926661B_gt_ObjectiveRescueStalkersCreate, true, false);
-    ObjectiveSetState(lib1926661B_gv_objectiveRescueStalkers, c_objectiveStateCompleted);
-    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void lib1926661B_gt_ObjectiveRescueStalkersComplete_Init () {
-    lib1926661B_gt_ObjectiveRescueStalkersComplete = TriggerCreate("lib1926661B_gt_ObjectiveRescueStalkersComplete_Func");
-}
-
-//--------------------------------------------------------------------------------------------------
-// Trigger: Objective {Rescue Stalkers} Update
-//--------------------------------------------------------------------------------------------------
-bool lib1926661B_gt_ObjectiveRescueStalkersUpdate_Func (bool testConds, bool runActions) {
-    // Automatic Variable Declarations
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    TriggerExecute(lib1926661B_gt_ObjectiveRescueStalkersCreate, true, false);
-    ObjectiveSetName(lib1926661B_gv_objectiveRescueStalkers, StringExternal("Param/Value/lib_1926661B_078B604B"));
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void lib1926661B_gt_ObjectiveRescueStalkersUpdate_Init () {
-    lib1926661B_gt_ObjectiveRescueStalkersUpdate = TriggerCreate("lib1926661B_gt_ObjectiveRescueStalkersUpdate_Func");
-}
-
-//--------------------------------------------------------------------------------------------------
-// Trigger: Objective {Rescue Stalkers} Failed
-//--------------------------------------------------------------------------------------------------
-bool lib1926661B_gt_ObjectiveRescueStalkersFailed_Func (bool testConds, bool runActions) {
-    // Automatic Variable Declarations
-    // Conditions
-    if (testConds) {
-        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
-            return false;
-        }
-    }
-
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    TriggerEnable(TriggerGetCurrent(), false);
-    TriggerExecute(lib1926661B_gt_ObjectiveRescueStalkersCreate, true, false);
-    ObjectiveSetState(lib1926661B_gv_objectiveRescueStalkers, c_objectiveStateFailed);
-    Wait(lib1926661B_gv_campaignObjectiveDelay, c_timeReal);
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void lib1926661B_gt_ObjectiveRescueStalkersFailed_Init () {
-    lib1926661B_gt_ObjectiveRescueStalkersFailed = TriggerCreate("lib1926661B_gt_ObjectiveRescueStalkersFailed_Func");
-}
-
 void lib1926661B_InitTriggers () {
     lib1926661B_gt_KL_StartGameTimer_Init();
     lib1926661B_gt_KL_GamePaused_Init();
@@ -8589,10 +8471,6 @@ void lib1926661B_InitTriggers () {
     lib1926661B_gt_KC_VSScreenPlayAgain_Init();
     lib1926661B_gt_KC_VSRestartCancel_Init();
     lib1926661B_gt_KC_VSRestartRestart_Init();
-    lib1926661B_gt_ObjectiveRescueStalkersCreate_Init();
-    lib1926661B_gt_ObjectiveRescueStalkersComplete_Init();
-    lib1926661B_gt_ObjectiveRescueStalkersUpdate_Init();
-    lib1926661B_gt_ObjectiveRescueStalkersFailed_Init();
 }
 
 //--------------------------------------------------------------------------------------------------
