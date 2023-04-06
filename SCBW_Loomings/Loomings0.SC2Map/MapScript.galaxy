@@ -45,6 +45,8 @@ unitgroup gv_cinematicTempUnits;
 bool gv_cinematicCompleted;
 unit gv_intro_CC;
 unit[4] gv_intro_Dropships;
+int gv_intro_UnloadCount;
+unitgroup gv_intro_PreexistingPlayerUnits;
 
 void InitGlobals () {
     gv_commandCenter_TextTag = c_textTagNone;
@@ -54,6 +56,7 @@ void InitGlobals () {
     gv_cinematicHiddenUnits = UnitGroupEmpty();
     gv_cinematicPausedUnits = UnitGroupEmpty();
     gv_cinematicTempUnits = UnitGroupEmpty();
+    gv_intro_PreexistingPlayerUnits = UnitGroupEmpty();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -100,6 +103,7 @@ trigger gt_ObjectiveRefineryComplete;
 trigger gt_ObjectiveVespeneCreate;
 trigger gt_ObjectiveVespeneComplete;
 trigger gt_ObjectiveVespeneUpdate;
+trigger gt_IntroLandingUnits;
 trigger gt_IntroQ;
 trigger gt_IntroSetup;
 trigger gt_IntroCinematic;
@@ -315,16 +319,16 @@ bool gt_StartGameQ_Func (bool testConds, bool runActions) {
     TriggerExecute(gt_TipSCVQ, true, false);
     GameSetLighting("AntigaPrimeSunset", 160.0);
     TriggerQueueEnter();
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00001", "SCBWAdjutant", false, null, true);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00001", "SCBWAdjutant", false, null, true);
     TransmissionWait(TransmissionLastSent(), 4.0);
     lv_sCV = UnitGroupRandomUnit(UnitGroup("SCVSCBW", gv_pLAYER_01_USER, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
     lib1926661B_gf_AttachReticleEffectAndTextTagOnUnit(lib1926661B_ge_CampaginReticleType_TerranMainObjective, lib1926661B_ge_CampaginReticleSize_Small, null, lv_sCV, "Ref_Origin");
     UnitFlashSelection(lv_sCV, 1.5);
     TransmissionWait(TransmissionLastSent(), 0.0);
     libNtve_gf_KillModel(libNtve_gf_ActorLastCreated());
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00002", "SCBWSCV", true, lv_sCV, false);
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00003", "SCBWAdjutant", true, null, false);
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00004", "SCBWAdjutant", false, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00002", "SCBWSCV", true, lv_sCV, false);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00003", "SCBWAdjutant", true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00004", "SCBWAdjutant", false, null, false);
     TransmissionWait(TransmissionLastSent(), 2.0);
     UnitFlashSelection(UnitFromId(2083029914), 1.5);
     TriggerQueueExit();
@@ -450,8 +454,8 @@ bool gt_DepotHintStart_Func (bool testConds, bool runActions) {
     TriggerEnable(TriggerGetCurrent(), false);
     TriggerExecute(gt_TipSupplyDepotQ, true, false);
     TriggerQueueEnter();
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00005", "SCBWAdjutant", true, null, true);
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00006", "SCBWAdjutant", false, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00005", "SCBWAdjutant", true, null, true);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00006", "SCBWAdjutant", false, null, false);
     TransmissionWait(TransmissionLastSent(), 2.0);
     UISetButtonHighlighted(PlayerGroupAll(), AbilityCommand("SCVSCBW@Build", 1), true);
     TriggerQueueExit();
@@ -488,7 +492,7 @@ bool gt_MineralHintDisable_Func (bool testConds, bool runActions) {
     TriggerEnable(TriggerGetCurrent(), false);
     TriggerEnable(gt_MineralHintStart, false);
     TriggerQueueEnter();
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00011", "SCBWAdjutant", true, null, true);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00007", "SCBWAdjutant", true, null, true);
     TriggerQueueExit();
     return true;
 }
@@ -527,13 +531,13 @@ bool gt_MineralHintStart_Func (bool testConds, bool runActions) {
     TriggerEnable(TriggerGetCurrent(), false);
     TriggerEnable(gt_MineralHintDisable, false);
     TriggerQueueEnter();
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00007", "SCBWAdjutant", true, null, true);
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00010", "SCBWAdjutant", false, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00007", "SCBWAdjutant", true, null, true);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00010", "SCBWAdjutant", false, null, false);
     TransmissionWait(TransmissionLastSent(), 2.0);
     UISetButtonHighlighted(PlayerGroupAll(), AbilityCommand("SCVSCBW@Harvest", 0), true);
     TriggerEnable(gt_MineralHintFlashOff, true);
     TransmissionWait(TransmissionLastSent(), 0.0);
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00011", "SCBWAdjutant", true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00011", "SCBWAdjutant", true, null, false);
     TriggerQueueExit();
     return true;
 }
@@ -650,7 +654,7 @@ bool gt_RefineryBuilt_Func (bool testConds, bool runActions) {
     TriggerEnable(gt_DepotHintStart, false);
     TriggerExecute(gt_ObjectiveRefineryComplete, true, false);
     TriggerQueueEnter();
-    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00008", "SCBWAdjutant", false, null, true);
+    lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00008", "SCBWAdjutant", false, null, true);
     TransmissionWait(TransmissionLastSent(), 2.0);
     UnitFlashSelection(EventUnitProgressUnit(), 1.5);
     TransmissionWait(TransmissionLastSent(), 0.0);
@@ -690,7 +694,7 @@ bool gt_VespeneGatheredHlafway_Func (bool testConds, bool runActions) {
     if ((PlayerGetPropertyInt(EventPlayer(), c_playerPropVespene) >= 40) && (gv_builtDepots >= 1)) {
         TriggerEnable(TriggerGetCurrent(), false);
         TriggerQueueEnter();
-        lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00009", "SCBWAdjutant", true, null, true);
+        lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00009", "SCBWAdjutant", true, null, true);
         TriggerQueueExit();
     }
     return true;
@@ -848,8 +852,8 @@ bool gt_VictoryTutorialCompleted_Func (bool testConds, bool runActions) {
     if ((lib1926661B_gf_MissionObjectiveStateCheck("M00Main01", lib1926661B_ge_MissionObjectiveState_Completed) == true) && (lib1926661B_gf_MissionObjectiveStateCheck("M00Main03", lib1926661B_ge_MissionObjectiveState_Completed) == true) && (lib1926661B_gf_MissionObjectiveStateCheck("M00Main02", lib1926661B_ge_MissionObjectiveState_Completed) == true)) {
         TriggerEnable(TriggerGetCurrent(), false);
         TriggerQueueEnter();
-        lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00012", "SCBWAdjutant", true, null, true);
-        lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00013", "SCBWAdjutant", false, null, false);
+        lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00012", "SCBWAdjutant", true, null, true);
+        lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT00Miss|Line00013", "SCBWAdjutant", false, null, false);
         TransmissionWait(TransmissionLastSent(), 2.0);
         TriggerQueueExit();
         TriggerExecute(gt_VictorySequence, true, false);
@@ -1375,6 +1379,39 @@ void gt_ObjectiveVespeneUpdate_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: Intro Landing Units
+//--------------------------------------------------------------------------------------------------
+bool gt_IntroLandingUnits_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitGetOwner(EventUnit()) == gv_pLAYER_02_ALPHASQUADRON))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if (((EventUnit() == gv_intro_Dropships[1]) || (EventUnit() == gv_intro_Dropships[2]))) {
+        gv_intro_UnloadCount += 1;
+        UnitIssueOrder(EventUnitCargo(), OrderTargetingPoint(AbilityCommand("move", 0), PointFromName(("Intro_MarineMove" + IntToString(gv_intro_UnloadCount)))), c_orderQueueReplace);
+    }
+    else {
+        UnitIssueOrder(EventUnitCargo(), OrderTargetingPoint(AbilityCommand("move", 0), PointFromId(465057504)), c_orderQueueReplace);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_IntroLandingUnits_Init () {
+    gt_IntroLandingUnits = TriggerCreate("gt_IntroLandingUnits_Func");
+    TriggerAddEventUnitCargo(gt_IntroLandingUnits, null, false);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: Intro Q
 //--------------------------------------------------------------------------------------------------
 bool gt_IntroQ_Func (bool testConds, bool runActions) {
@@ -1409,6 +1446,9 @@ bool gt_IntroSetup_Func (bool testConds, bool runActions) {
     unitgroup auto9C200E0D_g;
     int auto9C200E0D_u;
     unit auto9C200E0D_var;
+    unitgroup auto29C60264_g;
+    int auto29C60264_u;
+    unit auto29C60264_var;
     unitgroup auto8D72E7F8_g;
     int auto8D72E7F8_u;
     unit auto8D72E7F8_var;
@@ -1445,6 +1485,13 @@ bool gt_IntroSetup_Func (bool testConds, bool runActions) {
         if (auto9C200E0D_var == null) { break; }
         libNtve_gf_ShowHideUnit(auto9C200E0D_var, false);
     }
+    auto29C60264_g = UnitGroup(null, 1, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+    auto29C60264_u = UnitGroupCount(auto29C60264_g, c_unitCountAll);
+    for (;; auto29C60264_u -= 1) {
+        auto29C60264_var = UnitGroupUnitFromEnd(auto29C60264_g, auto29C60264_u);
+        if (auto29C60264_var == null) { break; }
+        UnitGroupAdd(gv_intro_PreexistingPlayerUnits, auto29C60264_var);
+    }
     auto8D72E7F8_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
     auto8D72E7F8_u = UnitGroupCount(auto8D72E7F8_g, c_unitCountAll);
     for (;; auto8D72E7F8_u -= 1) {
@@ -1452,12 +1499,29 @@ bool gt_IntroSetup_Func (bool testConds, bool runActions) {
         if (auto8D72E7F8_var == null) { break; }
         libNtve_gf_ShowHideUnit(auto8D72E7F8_var, true);
     }
+    UnitGroupRemove(gv_cinematicPausedUnits, UnitFromId(1782982479));
+    UnitGroupRemove(gv_cinematicHiddenUnits, UnitFromId(1782982479));
+    libNtve_gf_PauseUnit(UnitFromId(1782982479), false);
+    libNtve_gf_ShowHideUnit(UnitFromId(1782982479), true);
     libNtve_gf_ShowHideUnit(UnitFromId(1782982479), true);
     libNtve_gf_CreateUnitsWithDefaultFacing(1, "CommandCenterSCBW@Flying", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(914504972));
-    UnitGroupAdd(gv_cinematicHiddenUnits, UnitLastCreated());
+    gv_intro_CC = UnitLastCreated();
+    UnitGroupAdd(gv_cinematicTempUnits, UnitLastCreated());
     libNtve_gf_CreateUnitsWithDefaultFacing(1, "DropshipSCBW", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(1003564758));
-    libNtve_gf_CreateUnitsWithDefaultFacing(1, "DropshipSCBW", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(815157055));
+    gv_intro_Dropships[1] = UnitLastCreated();
+    UnitGroupAdd(gv_cinematicTempUnits, UnitLastCreated());
+    UnitCargoCreate(UnitLastCreated(), "MarineSCBW", 7);
+    UnitGroupAddUnitGroup(gv_cinematicTempUnits, UnitCargoLastCreatedGroup());
+    libNtve_gf_CreateUnitsWithDefaultFacing(1, "DropshipSCBW", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(1228482165));
+    gv_intro_Dropships[2] = UnitLastCreated();
+    UnitGroupAdd(gv_cinematicTempUnits, UnitLastCreated());
+    UnitCargoCreate(UnitLastCreated(), "MarineSCBW", 7);
+    UnitGroupAddUnitGroup(gv_cinematicTempUnits, UnitCargoLastCreatedGroup());
     libNtve_gf_CreateUnitsWithDefaultFacing(1, "DropshipSCBW", 0, gv_pLAYER_02_ALPHASQUADRON, PointFromId(1363624239));
+    gv_intro_Dropships[3] = UnitLastCreated();
+    UnitGroupAdd(gv_cinematicTempUnits, UnitLastCreated());
+    UnitCargoCreate(UnitLastCreated(), "SCVSCBW", 1);
+    UnitGroupAdd(gv_cinematicTempUnits, UnitCargoLastCreated());
     return true;
 }
 
@@ -1479,7 +1543,18 @@ bool gt_IntroCinematic_Func (bool testConds, bool runActions) {
     CameraApplyInfo(gv_pLAYER_01_USER, CameraInfoFromId(1314572539), 0.0, -1, 10, true);
     TriggerSkippableBegin(PlayerGroupAll(), 0, null, true, false);
     gv_cinematicCompleted = false;
-    CinematicFade(true, 2.0, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    CameraApplyInfo(gv_pLAYER_01_USER, CameraInfoFromId(1969299596), 12.0, -1, 10, true);
+    CinematicFade(true, 2.0, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, false);
+    UnitIssueOrder(gv_intro_Dropships[1], OrderTargetingPoint(AbilityCommand("DropshipSCBW@Transport", 2), PointFromId(2036587044)), c_orderQueueReplace);
+    UnitIssueOrder(gv_intro_Dropships[1], OrderTargetingPoint(AbilityCommand("move", 0), PointFromId(1965582433)), c_orderQueueAddToEnd);
+    UnitIssueOrder(gv_intro_Dropships[2], OrderTargetingPoint(AbilityCommand("DropshipSCBW@Transport", 2), PointFromId(424609266)), c_orderQueueReplace);
+    UnitIssueOrder(gv_intro_Dropships[2], OrderTargetingPoint(AbilityCommand("move", 0), PointFromId(1118397687)), c_orderQueueAddToEnd);
+    UnitIssueOrder(gv_intro_Dropships[3], OrderTargetingPoint(AbilityCommand("DropshipSCBW@Transport", 2), PointFromId(815157055)), c_orderQueueReplace);
+    UnitIssueOrder(gv_intro_Dropships[3], OrderTargetingPoint(AbilityCommand("move", 0), PointFromId(112768744)), c_orderQueueAddToEnd);
+    UnitIssueOrder(gv_intro_CC, OrderTargetingPoint(AbilityCommand("CommandCenterSCBW@Land", 0), UnitGetPosition(UnitFromId(2083029914))), c_orderQueueAddToEnd);
+    Wait(11.5, c_timeGame);
+    CameraApplyInfo(gv_pLAYER_01_USER, CameraInfoFromId(1204094629), 7.0, -1, 10, true);
+    Wait(6.5, c_timeGame);
     gv_cinematicCompleted = true;
     return true;
 }
@@ -1509,8 +1584,8 @@ bool gt_IntroCinematicEnd_Func (bool testConds, bool runActions) {
     }
     else {
         lv_fadeDuration = 0.5;
+        CinematicFade(false, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
     }
-    CinematicFade(false, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
     return true;
 }
 
@@ -1527,6 +1602,12 @@ bool gt_IntroCleanup_Func (bool testConds, bool runActions) {
     fixed lv_fadeDuration;
 
     // Automatic Variable Declarations
+    unitgroup auto259B7837_g;
+    int auto259B7837_u;
+    unit auto259B7837_var;
+    unitgroup autoFEF06428_g;
+    int autoFEF06428_u;
+    unit autoFEF06428_var;
     unitgroup autoEB2EA07D_g;
     int autoEB2EA07D_u;
     unit autoEB2EA07D_var;
@@ -1536,6 +1617,9 @@ bool gt_IntroCleanup_Func (bool testConds, bool runActions) {
     unitgroup autoCC9E3842_g;
     int autoCC9E3842_u;
     unit autoCC9E3842_var;
+    unitgroup auto036BB132_g;
+    int auto036BB132_u;
+    unit auto036BB132_var;
 
     // Variable Initialization
 
@@ -1544,6 +1628,27 @@ bool gt_IntroCleanup_Func (bool testConds, bool runActions) {
         return true;
     }
 
+    if ((gv_cinematicCompleted == true)) {
+        UnitGroupRemove(gv_intro_PreexistingPlayerUnits, UnitFromId(1782982479));
+        auto259B7837_g = gv_intro_PreexistingPlayerUnits;
+        auto259B7837_u = UnitGroupCount(auto259B7837_g, c_unitCountAll);
+        for (;; auto259B7837_u -= 1) {
+            auto259B7837_var = UnitGroupUnitFromEnd(auto259B7837_g, auto259B7837_u);
+            if (auto259B7837_var == null) { break; }
+            UnitRemove(auto259B7837_var);
+        }
+        autoFEF06428_g = gv_cinematicTempUnits;
+        autoFEF06428_u = UnitGroupCount(autoFEF06428_g, c_unitCountAll);
+        for (;; autoFEF06428_u -= 1) {
+            autoFEF06428_var = UnitGroupUnitFromEnd(autoFEF06428_g, autoFEF06428_u);
+            if (autoFEF06428_var == null) { break; }
+            UnitGroupRemove(gv_cinematicTempUnits, autoFEF06428_var);
+        }
+    }
+
+    UnitRemove(gv_intro_Dropships[1]);
+    UnitRemove(gv_intro_Dropships[2]);
+    UnitRemove(gv_intro_Dropships[3]);
     autoEB2EA07D_g = gv_cinematicTempUnits;
     autoEB2EA07D_u = UnitGroupCount(autoEB2EA07D_g, c_unitCountAll);
     for (;; autoEB2EA07D_u -= 1) {
@@ -1567,21 +1672,37 @@ bool gt_IntroCleanup_Func (bool testConds, bool runActions) {
     }
     GameTimeOfDayPause(false);
     PlayerSetState(gv_pLAYER_01_USER, c_playerStateXPGain, true);
-    CameraApplyInfo(gv_pLAYER_01_USER, CameraInfoDefault(), 0.0, -1, 10, false);
     VisExploreArea(gv_pLAYER_01_USER, RegionEntireMap(), false, false);
     TriggerExecute(gt_StartAI, true, false);
     Wait(0.5, c_timeReal);
     if ((gv_cinematicCompleted == true)) {
+        CameraApplyInfo(gv_pLAYER_01_USER, CameraInfoFromId(235860792), 1.5, -1, 10, false);
         lv_fadeDuration = 1.5;
+        auto036BB132_g = UnitGroup(null, gv_pLAYER_02_ALPHASQUADRON, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        auto036BB132_u = UnitGroupCount(auto036BB132_g, c_unitCountAll);
+        for (;; auto036BB132_u -= 1) {
+            auto036BB132_var = UnitGroupUnitFromEnd(auto036BB132_g, auto036BB132_u);
+            if (auto036BB132_var == null) { break; }
+            libNtve_gf_RescueUnit(auto036BB132_var, gv_pLAYER_01_USER, true);
+        }
     }
     else {
+        CameraApplyInfo(gv_pLAYER_01_USER, CameraInfoFromId(235860792), 0.0, -1, 10, false);
         lv_fadeDuration = 1.0;
     }
     libNtve_gf_CinematicMode(false, PlayerGroupAll(), lv_fadeDuration);
     libNtve_gf_GlobalCinematicSetting(false);
+    if ((gv_cinematicCompleted == true)) {
+    }
+    else {
+        libNtve_gf_SwooshCamera(gv_pLAYER_01_USER, ((CameraInfoGetValue(CameraInfoDefault(), c_cameraValueDistance)) + 8.0), CameraInfoGetValue(CameraInfoDefault(), c_cameraValueDistance), PlayerStartLocation(gv_pLAYER_01_USER), lv_fadeDuration);
+    }
     gv_inCinematic = false;
-    libNtve_gf_SwooshCamera(gv_pLAYER_01_USER, ((CameraInfoGetValue(CameraInfoDefault(), c_cameraValueDistance)) + 8.0), CameraInfoGetValue(CameraInfoDefault(), c_cameraValueDistance), PlayerStartLocation(gv_pLAYER_01_USER), lv_fadeDuration);
-    CinematicFade(true, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    if ((gv_cinematicCompleted == true)) {
+    }
+    else {
+        CinematicFade(true, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
+    }
     return true;
 }
 
@@ -1790,6 +1911,7 @@ void InitTriggers () {
     gt_ObjectiveVespeneCreate_Init();
     gt_ObjectiveVespeneComplete_Init();
     gt_ObjectiveVespeneUpdate_Init();
+    gt_IntroLandingUnits_Init();
     gt_IntroQ_Init();
     gt_IntroSetup_Init();
     gt_IntroCinematic_Init();
