@@ -248,7 +248,7 @@
     <CActorModel default="1" id="ZergBuildingSCBW@Build" parent="ModelConstruction">
         <Aliases value="_ZergBuildModel"/>
         <On Terms="ActorCreation" Send="Create ZergBuildingSCBW@ConstructionAttached"/>
-        <HostSiteOps Ops="SOpShadow ZergBuildingFacing"/>
+        <HostSiteOps Ops="SOpShadow ZergBuildingSCBW@Facing"/>
     </CActorModel>
     <CActorUnit default="1" id="ZergBuildingSCBW" parent="GenericUnitStandard">
         <Macros value="QueueAnim"/>
@@ -292,6 +292,231 @@
         <UnitFlags index="ShowBlobShadow" value="0"/>
         <UnitFlags index="StandAnimBirthVariation" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-##unitName##.dds"/>
+    </CActorUnit>
+    <CActorModel id="SpireSCBW@Build" parent="ZergBuildingSCBW@Build"/>
+    <CActorModel id="SpireSCBW@Morph">
+        <Aliases value="_Snapshot"/>
+        <Inherits index="CloakEffect" value="1"/>
+        <Inherits index="Opacity" value="1"/>
+        <Inherits index="TeamColor" value="1"/>
+        <Inherits index="TintColor" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <Inherits index="WarpGroup" value="1"/>
+        <On Terms="ActorCreation" Send="AnimPlay MorphStart Morph,Start"/>
+        <On Terms="AnimDone; AnimName MorphStart" Send="AnimPlay Morph Morph PlayForever"/>
+        <On Terms="Signal.*.Finished" Send="AnimClear MorphStart"/>
+        <On Terms="Signal.*.Finished" Send="AnimClear Morph"/>
+        <On Terms="Signal.*.Finished" Send="AnimPlay MorphEnd Morph,End"/>
+        <On Terms="AnimDone; AnimName MorphEnd" Send="Destroy"/>
+        <On Terms="ActorOrphan" Send="AnimClear MorphStart"/>
+        <On Terms="ActorOrphan" Send="AnimClear Morph"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="Signal.*.Started; IsStatus Morphing 1" Send="Destroy"/>
+        <On Terms="Signal.*.Started" Send="StatusSet Morphing 1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpShadow SpireSCBW@MorphFacing"/>
+        <ModelFlags index="UseSyncSeed" value="1"/>
+    </CActorModel>
+    <CActorSiteOpRotationExplicit id="SpireSCBW@MorphFacing">
+        <Forward value="0.000000,-1.000000,0.000000"/>
+    </CActorSiteOpRotationExplicit>
+    <CActorUnit id="SpireSCBW" parent="ZergBuildingSCBW" unitName="SpireSCBW">
+        <Aliases value="_UnitHuge"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Send="StatusSet Morphing 1"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Send="Create SpireSCBW@Morph"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Target="SpireSCBW@Morph" Send="Signal Started"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Send="AnimPlay Morph Morph PlayForever 0.000000 0.000000 3.333000 AsDuration"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="StatusSet Morphing 0"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Target="SpireSCBW@Morph" Send="Signal Finished"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimClear Morph"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimClear ::Progress"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimBaselineStart"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimPlay Rebirth Build,D,Start 0 0.000000 0.000000 2.000000 AsDuration"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpire" Target="SpireSCBW@Morph" Send="Signal Finished"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpire" Send="Destroy"/>
+        <On Terms="UnitDeathCustomize; IsStatus Morphing 1" Send="DeathCustomize Upgrade"/>
+        <On Terms="Behavior.BuildingStasis.On" Send="TimerSet 0.330000 DelayCreation"/>
+        <On Terms="TimerExpired; TimerName DelayCreation" Target="SpireSCBW@Morph" Send="AnimSetPausedAll"/>
+        <On Terms="Behavior.BuildingStasis.Off" Target="SpireSCBW@Morph" Send="AnimSetPausedAll 0"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
+        <DeathArray index="Normal" SoundLink=""/>
+        <DeathCustoms ModelLink="SpireSCBW@DeathUnderConstruction" SoundLink="SpireSCBW@Explode" Name="Upgrade"/>
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
+        <BarOffset value="190"/>
+        <BarWidth value="120"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-Spire.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-spire.dds"/>
+        <NameOffset value="70"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-spire.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-Spire.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorModel id="EvolutionChamberSCBW@Build" parent="ZergBuildingSCBW@Build"/>
+    <CActorUnit id="EvolutionChamberSCBW" parent="ZergBuildingSCBW" unitName="EvolutionChamberSCBW">
+        <Aliases value="_UnitHuge"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
+        <BarOffset value="95"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-EvolutionChamber.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-evolutionchamber.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-evolutionchamber.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-EvolutionChamber.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorModel id="HydraliskDenSCBW@Build" parent="ZergBuildingSCBW@Build"/>
+    <CActorUnit id="HydraliskDenSCBW" parent="ZergBuildingSCBW" unitName="HydraliskDenSCBW">
+        <Aliases value="_UnitHuge"/>
+        <On Terms="ActorCreation" Send="StatusSet MorphAnim 0"/>
+        <On Terms="Signal.*.Morph" Send="AnimPlay Morph Morph"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
+        <On Terms="Effect.HydraliskDenMorphFinishDummy.Start" Send="StatusSet MorphAnim 1"/>
+        <On Terms="Effect.HydraliskDenMorphFinishDummy.Start" Send="AnimClear Waiting"/>
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
+        <BarOffset value="140"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-HydraliskDen.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-hydraliskden.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-hydraliskden.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-HydraliskDen.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorModel id="OverlordSCBW@DeathRagdoll" parent="UnitDeathRagdollFlier">
+        <On Terms="ActorCreation" Send="Create OverlordSCBW@DeathRagdollDetonationForce"/>
+    </CActorModel>
+    <CActorForceSphere id="OverlordSCBW@DeathRagdollDetonationForce">
+        <Host Subject="::Main"/>
+        <HostSiteOps Ops="SOpAttachInternalDetonation SOpForwardCasterCenter SOpRotVariancerForward60 SOpMoveByDot15ToDot5 SOpMoveDownByDot15ToDot25 SOpPointSouthWorld" HoldPosition="1"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="12.500000,5.000000"/>
+        <Radius value="1.250000,0.750000"/>
+    </CActorForceSphere>
+    <CActorUnit id="OverlordSCBW" parent="GenericUnitMorph" unitName="OverlordSCBW">
+        <Aliases value="_UnitLarge"/>
+        <Macros value="PhysicsDeathsSwarmAir"/>
+        <Macros value="PhysicsDeathsVoidAir"/>
+        <On Terms="Abil.OverlordSCBW@Transport.TransportUnloadStart" Send="AnimPlay Work Stand,Work PlayForever"/>
+        <On Terms="Abil.OverlordSCBW@Transport.TransportUnloadStop" Send="AnimClear Work"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create OverlordSCBW@Land"/>
+        <On Terms="Abil.SpawnChangelingTarget.SourceCastStart" Send="$Spell"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="OverlordSCBW@Death" SoundLink="OverlordSCBW@Death"/>
+        <DeathCustoms>
+            <ActorModel value="OverlordSCBW@DeathRagdoll"/>
+            <ModelLink value="OverlordSCBW@DeathRagdoll"/>
+            <Name value="RagdollBasic"/>
+            <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms>
+            <ModelLink value="DeathVoidShadowLarge"/>
+            <SoundLink value="ShadowUnit_DeathFX"/>
+            <VoiceLink value="ShadowUnit_DeathVox"/>
+            <Name value="Shadow"/>
+        </DeathCustoms>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
+        <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
+        <PortraitModel value="OverlordSCBW@Portrait"/>
+        <BarOffset value="70"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-Overlord.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-overlord.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-flyercarapace-level0.dds"/>
+        <NameOffset value="70"/>
+        <SoundArray index="Ready" value="OverlordSCBW@Ready"/>
+        <SoundArray index="Help" value="OverlordSCBW@Help"/>
+        <SoundArray index="What" value="OverlordSCBW@What"/>
+        <SoundArray index="Yes" value="OverlordSCBW@Yes"/>
+        <SoundArray index="Attack" value="OverlordSCBW@Attack"/>
+        <SoundArray index="Pissed" value="OverlordSCBW@Pissed"/>
+        <StatusColors index="Shields">
+            <ColorArray index="0" value="255,0,128,0"/>
+        </StatusColors>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-overlord.dds"/>
+        <VitalColors index="Shields">
+            <ColorArray value="255,0,128,0"/>
+        </VitalColors>
+        <VitalNames index="Shields" value="Vital/ZergShields"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-Overlord.dds"/>
+        </Wireframe>
+        <WireframeShieldColor value="255,0,128,0"/>
+    </CActorUnit>
+    <CActorSound id="OverlordSCBW@Death" parent="SoundOneShot">
+        <On Terms="UnitDeath.OverlordSCBW; PassChance 25.000000" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="OverlordSCBW@Land" parent="SoundOneShot"/>
+    <CActorModel id="SpawningPoolSCBW@Build" parent="ZergBuildingSCBW@Build"/>
+    <CActorSound id="SpawningPoolSCBW@DeathLow" parent="SoundOneShot">
+        <Sound value="Zerg_ExplosionLarge"/>
+    </CActorSound>
+    <CActorUnit id="SpawningPoolSCBW" parent="ZergBuildingSCBW" unitName="SpawningPoolSCBW">
+        <Aliases value="_UnitHuge"/>
+        <On Terms="UnitDeathCustomize; ModelIsLowQuality" Send="Create SpawningPoolSCBW@DeathLow"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
+        <DeathArray index="Normal" SoundLink=""/>
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
+        <BarOffset value="95"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-SpawningPool.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-spawningpool.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-spawningpool.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-SpawningPool.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorSound id="ZergBuildingSCBW@StopSound" parent="SoundOneShot">
+        <On Terms="Abil.HatcheryBuild.BuiltStop" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LairSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo HiveSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpireSCBW" Send="Create"/>
+        <Sound value="ZergBuildingSCBW@Ready"/>
+    </CActorSound>
+    <CActorSiteOpRotationExplicit id="ZergBuildingSCBW@Facing">
+        <Forward value="-1.000000,-7.000000,0.000000"/>
+    </CActorSiteOpRotationExplicit>
+    <CActorSound id="ZergBuildingSCBW@MorphCancel" parent="SoundOneShot">
+        <On Terms="AbilMorph.*.Cancel; MorphTo Lair" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo Hive" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo LurkerDen" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo LurkerDenMP" Send="Create"/>
+    </CActorSound>
+    <CActorUnit id="CreepColonySCBW" parent="ZergBuildingSCBW" unitName="CreepColonySCBW">
+        <AnimBlendTime value="0.400000"/>
+        <DeathArray index="Normal" SoundLink="SporeCrawler_Explode"/>
+        <PlacementSound value="ZergBuildingSCBW@PlacementSmall"/>
+        <WalkAnimMoveSpeed value="0.7968"/>
+        <BarOffset value="60"/>
+        <BarWidth value="90"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
+        <UnitIcon value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
+        </Wireframe>
     </CActorUnit>
     <CActorUnit id="EggSCBW" parent="GenericUnitStandard" unitName="EggSCBW">
         <Aliases value="_UnitSmall"/>
@@ -344,6 +569,7 @@
     <CActorSound id="EggSCBW@Birth" parent="SoundOneShot">
         <On Terms="AbilMorph.*.Start; MorphTo EggSCBW" Send="Create"/>
     </CActorSound>
+    <CActorModel id="CreepColonySCBW@Build" parent="ZergBuildingSCBW@Build"/>
     <CActorUnit id="LarvaSCBW" parent="GenericUnitMorph" unitName="LarvaSCBW">
         <Aliases value="_UnitSmall"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
@@ -412,7 +638,6 @@
         <On Terms="ProgressLevel.HiveSCBW@MorphProgress.Start; Level 2" Send="Create"/>
         <On Terms="ProgressLevel.LurkerDenMorph.Start; Level 2" Send="Create"/>
         <On Terms="ProgressLevel.LurkerDenMPMorph.Start; Level 2" Send="Create"/>
-        <Sound value="Zerg_BuildingMorphEnd2"/>
     </CActorSound>
     <CActorSplat id="DroneSCBW@BurrowedSplat" parent="BurrowedSplat" unitName="Drone">
         <On index="2" Terms="UnitBirth.DroneSCBW@Burrowed" Send="Create"/>
@@ -488,14 +713,12 @@
     </CActorProgress>
     <CActorSound id="ZergBuildingSCBW@MorphStart" parent="SoundOneShot">
         <On Terms="Abil.DroneSCBW@Build.BuiltStart" Send="Create"/>
-        <On Terms="Abil.QueenBuild.BuiltStart" Send="Create"/>
         <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Send="Create"/>
         <On Terms="ProgressLevel.LurkerDenMorph.Start; Level 0" Send="Create"/>
-        <On Terms="ProgressLevel.ZergHatcheryToLair.Start; Level 0" Send="Create"/>
-        <On Terms="ProgressLevel.ZergLairToHive.Start; Level 0" Send="Create"/>
+        <On Terms="ProgressLevel.LairSCBW@MorphProgress.Start; Level 0" Send="Create"/>
+        <On Terms="ProgressLevel.HiveSCBW@MorphProgress.Start; Level 0" Send="Create"/>
         <On Terms="ProgressLevel.ZergBuildingMorphModel.Start; Level 0" Send="Create"/>
         <On Terms="ProgressLevel.LurkerDenMPMorph.Start; Level 0" Send="Create"/>
-        <Sound value="Zerg_BuildingMorphStart2"/>
     </CActorSound>
     <CActorProgress id="ZergBuildingSCBW@ConstructionAttached">
         <Supporter Subject="_ZergBuildModel"/>

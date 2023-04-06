@@ -9,6 +9,7 @@
         <Icon value="Assets\Textures\btn-unit-zerg-hydralisk@scbw.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-zerg-hydralisk@scbw.dds"/>
         <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Row="1"/>
     </CButton>
     <CButton id="LurkerSCBW">
         <Icon value="Assets\Textures\btn-unit-zerg-lurker.dds"/>
@@ -19,6 +20,7 @@
         <Icon value="Assets\Textures\btn-unit-zerg-zergling.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-zerg-zergling.dds"/>
         <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Column="1"/>
     </CButton>
     <CLight id="DroneSCBW@Portrait" parent="default">
         <ToDInfoArray index="0" AmbientColor="0.411765,0.086275,0.047059" Colorize="1">
@@ -276,6 +278,8 @@
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
+        <On Terms="UnitBirth.DroneSCBW@Burrowed" Send="Create"/>
+        <On Terms="UnitBirth.DroneSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
         <On Terms="Abil.DroneSCBW@Harvest.Start" Send="AnimPlay Work Work PlayForever"/>
         <On Terms="Abil.DroneSCBW@Harvest.Stop" Send="AnimClear Work"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom DroneSCBW; MorphTo DroneSCBW@Burrowed" Send="AnimClear Burrow"/>
@@ -365,6 +369,8 @@
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="GrabbedAnimationMacro"/>
+        <On Terms="UnitBirth.ZerglingSCBW@Burrowed" Send="Create"/>
+        <On Terms="UnitBirth.ZerglingSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom ZerglingSCBW; MorphTo ZerglingSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo ZerglingSCBW; MorphFrom ZerglingSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo ZerglingSCBW; MorphFrom ZerglingSCBW@Burrowed" Send="AnimClear Burrow"/>
@@ -671,6 +677,10 @@
         <DataRecord Entry="Model,LarvaSCBW"/>
         <DataRecord Entry="Unit,LarvaSCBW"/>
     </CDataCollectionUnit>
+    <CDataCollectionUnit id="OverlordSCBW" parent="SCBW_Unit">
+        <DataRecord Entry="Button,OverlordSCBW"/>
+        <DataRecord Entry="Unit,OverlordSCBW"/>
+    </CDataCollectionUnit>
     <CDataCollectionUnit id="DroneSCBW" parent="SCBW_Unit">
         <EditorCategories value=""/>
         <DataRecord Entry="Actor,DroneSCBW"/>
@@ -738,6 +748,8 @@
         <DataRecord index="26" Entry="Model,HydraliskSCBW@DeathRagdoll"/>
         <DataRecord index="27" Entry="Model,HydraliskDeathSilent"/>
         <DataRecord index="28" Entry="Model,HydraliskPlacement"/>
+        <TechInfoUpgradeUsed value="HydraliskSCBWRangeUpgrade"/>
+        <TechInfoUpgradeUsed value="HydraliskSCBWSpeedUpgrade"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="LurkerSCBW" parent="UnitBaseSCBW">
         <EditorCategories value=""/>
@@ -778,6 +790,8 @@
         <DataRecord index="26" Entry="Model,ZerglingSCBW@DeathRagdoll"/>
         <DataRecord index="27" Entry="Model,ZerglingDeathSilent"/>
         <DataRecord index="28" Entry="Model,ZerglingPlacement"/>
+        <TechInfoUpgradeUsed value="ZerglingSCBWSpeedUpgrade"/>
+        <TechInfoUpgradeUsed value="ZerglingSCBWAttackSpeedUpgrade"/>
     </CDataCollectionUnit>
     <CUnit id="DroneSCBW">
         <DeathRevealRadius value="3"/>
@@ -819,6 +833,7 @@
         <AbilArray Link="attack"/>
         <AbilArray Link="move"/>
         <AbilArray Link="DroneSCBW@Build"/>
+        <AbilArray Link="DroneSCBW@BuildAdv"/>
         <AbilArray Link="DroneSCBW@Harvest"/>
         <AbilArray Link="DroneSCBW@BurrowDown"/>
         <WeaponArray Link="Spines"/>
@@ -829,45 +844,17 @@
             <LayoutButtons Face="AttackWorker" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
             <LayoutButtons Face="ReturnCargo" Type="AbilCmd" AbilCmd="DroneHarvest,Return" Row="1" Column="1"/>
-            <LayoutButtons>
-                <Face value="ZergBuild"/>
-                <Type value="Submenu"/>
-                <AbilCmd value="255"/>
-                <SubmenuCardId value="ZBl1"/>
-                <Row value="2"/>
-                <Column value="0"/>
-            </LayoutButtons>
-            <LayoutButtons>
-                <Face value="ZergBuildAdvanced"/>
-                <Type value="Submenu"/>
-                <AbilCmd value="255"/>
-                <SubmenuCardId value="ZBl2"/>
-                <Row value="2"/>
-                <Column value="1"/>
-            </LayoutButtons>
+            <LayoutButtons Face="ZergBuild" Type="Submenu" SubmenuCardId="Bld1" Row="2" Column="0"/>
+            <LayoutButtons Face="ZergBuildAdvanced" Type="Submenu" SubmenuCardId="Bld2" Row="2" Column="1"/>
             <LayoutButtons Face="BurrowDown" Type="AbilCmd" AbilCmd="DroneSCBW@BurrowDown,Execute" Row="2" Column="4"/>
             <LayoutButtons Face="GatherZerg" Type="AbilCmd" AbilCmd="DroneHarvest,Gather" Row="1" Column="0"/>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="DroneCarcassHarvest,Cancel" Row="2" Column="4"/>
         </CardLayouts>
-        <CardLayouts CardId="ZBl1">
-            <LayoutButtons Face="Hatchery" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build1" Row="0" Column="0"/>
-            <LayoutButtons Face="Extractor" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build3" Row="0" Column="1"/>
-            <LayoutButtons Face="SpawningPool" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build4" Row="1" Column="0"/>
-            <LayoutButtons Face="EvolutionChamber" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build5" Row="1" Column="1"/>
-            <LayoutButtons Face="BanelingNest" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build11" Row="1" Column="3"/>
+        <CardLayouts CardId="Bld1">
             <LayoutButtons Face="Cancel" Type="CancelSubmenu" Row="2" Column="4"/>
-            <LayoutButtons Face="RoachWarren" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build14" Row="1" Column="2"/>
-            <LayoutButtons Face="SpineCrawler" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build15" Row="2" Column="0"/>
-            <LayoutButtons Face="SporeCrawler" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build16" Row="2" Column="1"/>
-            <LayoutButtons Face="AutomatedExtractor" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build19" Row="0" Column="1"/>
         </CardLayouts>
-        <CardLayouts CardId="ZBl2">
-            <LayoutButtons Face="Spire" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build7" Row="1" Column="0"/>
-            <LayoutButtons Face="UltraliskCavern" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build8" Row="2" Column="0"/>
-            <LayoutButtons Face="Cancel" Type="CancelSubmenu" Row="2" Column="4"/>
-            <LayoutButtons Face="NydusNetwork" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build10" Row="1" Column="1"/>
-            <LayoutButtons Face="InfestationPit" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build9" Row="0" Column="1"/>
-            <LayoutButtons Face="HydraliskDen" Type="AbilCmd" AbilCmd="DroneSCBW@Build,Build6" Row="0" Column="0"/>
+        <CardLayouts CardId="Bld2">
+            <LayoutButtons Type="CancelSubmenu" Row="2" Column="4"/>
         </CardLayouts>
         <Radius value="0.375"/>
         <SeparationRadius value="0.375"/>
@@ -885,6 +872,7 @@
         <HotkeyCategory value="Unit/Category/ZergUnits"/>
         <KillDisplay value="Always"/>
         <RankDisplay value="Always"/>
+        <BuildTime value="18.75"/>
     </CUnit>
     <CUnit id="HydraliskSCBW">
         <DeathRevealRadius value="3"/>
@@ -913,8 +901,8 @@
         <Sight value="9"/>
         <Food value="-2"/>
         <CostCategory value="Army"/>
-        <CostResource index="Minerals" value="100"/>
-        <CostResource index="Vespene" value="50"/>
+        <CostResource index="Minerals" value="75"/>
+        <CostResource index="Vespene" value="25"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
         <DamageTakenXP value="1"/>
@@ -957,6 +945,7 @@
         <RankDisplay value="Always"/>
         <TauntDuration index="Cheer" value="5"/>
         <TauntDuration index="Dance" value="5"/>
+        <BuildTime value="26.25"/>
     </CUnit>
     <CUnit id="LurkerSCBW">
         <DeathRevealRadius value="3"/>
@@ -1113,5 +1102,6 @@
         </Fidget>
         <TauntDuration index="Cheer" value="5"/>
         <TauntDuration index="Dance" value="5"/>
+        <BuildTime value="13.125"/>
     </CUnit>
 </Catalog>
