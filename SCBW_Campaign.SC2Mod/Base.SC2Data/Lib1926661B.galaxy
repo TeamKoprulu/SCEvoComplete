@@ -5064,6 +5064,7 @@ void lib1926661B_gf_PrepareForMission (string lp_nextMission, bool lp_nextIsSimu
 
     lib1926661B_gf_KC_PrepareLoadingScreen(lp_nextMission, false);
     GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile(lp_nextMission)));
+    lib1926661B_gv_kC_NextMission = lp_nextMission;
 }
 
 void lib1926661B_gf_PrepareForStoryMode (int lp_victoryDefeat, int lp_difficulty) {
@@ -5159,40 +5160,10 @@ string lib1926661B_gf_PP_NextMission (string lp_mission, bool lp_simulation, int
     else if ((lp_victoryDefeat == c_gameOverDefeat)) {
         lv_nextMap = null;
     }
-    else if ((lp_mission == "UEDFL_EP01M00")) {
-        lv_nextMap = "LStoryDemo";
+    else if ((lp_mission == "LT00")) {
+        lv_nextMap = "LT01";
     }
-    else if ((lp_mission == "UEDFL_EP01M01")) {
-        lv_nextMap = "UEDFL_EP01M02_1";
-    }
-    else if ((lp_mission == "UEDFL_EP01M02_1")) {
-        lv_nextMap = "UEDFL_EP01M02_2";
-    }
-    else if ((lp_mission == "UEDFL_EP01M02_2")) {
-        lv_nextMap = "UEDFL_EP01M03";
-    }
-    else if ((lp_mission == "UEDFL_EP01M03")) {
-        lv_nextMap = "UEDFL_EP01M04";
-    }
-    else if ((lp_mission == "UEDFL_EP01M04")) {
-        lv_nextMap = "UEDFL_EP01M05";
-    }
-    else if ((lp_mission == "UEDFL_EP01M05")) {
-        lv_nextMap = "UEDFL_EP01M06";
-    }
-    else if ((lp_mission == "UEDFL_EP01M06")) {
-        lv_nextMap = "UEDFL_EP01M07";
-    }
-    else if ((lp_mission == "UEDFL_EP01M07")) {
-        lv_nextMap = "UEDFL_EP01M08";
-    }
-    else if ((lp_mission == "UEDFL_EP01M08")) {
-        lv_nextMap = "UEDFL_EP01M09";
-    }
-    else if ((lp_mission == "UEDFL_EP01M09")) {
-        lv_nextMap = "UEDFL_EP01M10";
-    }
-    else if ((lp_mission == "UEDFL_EP01M10")) {
+    else if ((lp_mission == "LT01")) {
         lv_nextMap = "LStoryDemo";
     }
     else if ((lp_mission == "UEDFL_EP01M11")) {
@@ -5856,9 +5827,16 @@ void lib1926661B_gf_MissionLaunchDisplay (string lp_mission) {
     lib1926661B_gf_CinematicFade3(true, 0.0, Color(0.00, 0.00, 0.00));
     TriggerExecute(lib1926661B_gt_KC_CreateLaunchScreen, true, true);
     lib1926661B_gv_kC_NextMission = lp_mission;
+    DialogControlSetVisible(lib1926661B_gv_kC_MLSkipButton, PlayerGroupAll(), false);
     if ((lib1926661B_gv_kC_NextMission == "LT00")) {
+        DialogControlSetVisible(lib1926661B_gv_kC_MLSkipButton, PlayerGroupAll(), true);
         DialogControlSetVisible(lib1926661B_gv_kC_MLContactPortraitSecondary, PlayerGroupAll(), false);
     }
+    if ((lib1926661B_gf_CurrentMap() == "LStoryDemo")) {
+        DialogControlSetVisible(lib1926661B_gv_kC_MLQuitButton, PlayerGroupAll(), false);
+        DialogControlSetVisible(lib1926661B_gv_kC_MLBackButton, PlayerGroupAll(), true);
+    }
+    DialogControlSetVisible(lib1926661B_gv_kC_MLContactPortraitSecondary, PlayerGroupAll(), false);
     libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_MLTitle, lib1926661B_gf_StoryMapName(lp_mission), PlayerGroupAll());
     libNtve_gf_SetDialogItemText(lib1926661B_gv_kC_MLObjective, StringExternal(lib1926661B_gf_KC_MissionProperty("PrimaryObjectiveText")), PlayerGroupAll());
     libNtve_gf_SetDialogItemImage(lib1926661B_gv_kC_MLBackgroundImage, lib1926661B_gf_StoryMapLoadingScreenImage(lib1926661B_gv_kC_NextMission), PlayerGroupAll());
@@ -5925,6 +5903,9 @@ void lib1926661B_gf_KC_SCBWMissionPitchPlay (string lp_mission, bool lp_wait) {
     auto89FC5FF8_val = lp_mission;
     if (auto89FC5FF8_val == "LT00") {
         lib1926661B_gv_kC_ConversationTrigger = lib1926661B_gt_Convo_Loomings0;
+    }
+    else if (auto89FC5FF8_val == "LT01") {
+        lib1926661B_gv_kC_ConversationTrigger = lib1926661B_gt_Convo_Loomings1;
     }
     else {
     }
@@ -7759,26 +7740,57 @@ bool lib1926661B_gt_Convo_Loomings0_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00001", null, true, null, false);
-    lib1926661B_gf_SendTransmissionKL(true, PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortrait), "LT01Brief|Line00002", null, true, null, false);
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00003", null, true, null, false);
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00004", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00001", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, PortraitGetTriggerControl(lib1926661B_gv_kC_MLContactPortrait), "LT00Brief|Line00002", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00003", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00004", null, true, null, false);
     Wait(2.0, c_timeReal);
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00005", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00005", null, true, null, false);
     Wait(5.0, c_timeReal);
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00006", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00006", null, true, null, false);
     Wait(3.0, c_timeReal);
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00007", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00007", null, true, null, false);
     Wait(3.0, c_timeReal);
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00008", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00008", null, true, null, false);
     Wait(3.0, c_timeReal);
-    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00009", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT00Brief|Line00009", null, true, null, false);
     return true;
 }
 
 //--------------------------------------------------------------------------------------------------
 void lib1926661B_gt_Convo_Loomings0_Init () {
     lib1926661B_gt_Convo_Loomings0 = TriggerCreate("lib1926661B_gt_Convo_Loomings0_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Convo_Loomings1
+//--------------------------------------------------------------------------------------------------
+bool lib1926661B_gt_Convo_Loomings1_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00001", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00002", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Primary), "LT01Brief|Line00003", null, true, null, false);
+    Wait(0.3, c_timeGame);
+    DialogControlSetVisible(lib1926661B_gv_kC_MLContactPortraitSecondary, PlayerGroupAll(), true);
+    Wait(0.3, c_timeGame);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Secondary), "LT01Brief|Line00004", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Secondary), "LT01Brief|Line00005", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Secondary), "LT01Brief|Line00006", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Secondary), "LT01Brief|Line00007", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Secondary), "LT01Brief|Line00008", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Secondary), "LT01Brief|Line00009", null, true, null, false);
+    lib1926661B_gf_SendTransmissionKL(true, lib1926661B_gf_KC_MissionPortrait(lib1926661B_ge_KC_PortraitTarget_Secondary), "LT01Brief|Line00010", null, true, null, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void lib1926661B_gt_Convo_Loomings1_Init () {
+    lib1926661B_gt_Convo_Loomings1 = TriggerCreate("lib1926661B_gt_Convo_Loomings1_Func");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -7939,14 +7951,9 @@ bool lib1926661B_gt_KC_MissionLaunchQuitClicked_Func (bool testConds, bool runAc
         return true;
     }
 
-    if ((lib1926661B_gf_CurrentMap() == "LStoryDemo")) {
-        TriggerSendEvent("KLCReturnToLanding");
-    }
-    else {
-        GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("LStoryDemo")));
-        lib1926661B_gf_PrepareForStoryMode(c_gameOverVictory, PlayerDifficulty(1));
-        GameOver(1, c_gameOverVictory, false, false);
-    }
+    GameSetNextMap(("SCBW_Loomings/" + lib1926661B_gf_StoryMapFile("LStoryDemo")));
+    lib1926661B_gf_PrepareForStoryMode(c_gameOverVictory, PlayerDifficulty(1));
+    GameOver(1, c_gameOverVictory, false, false);
     return true;
 }
 
@@ -7954,6 +7961,41 @@ bool lib1926661B_gt_KC_MissionLaunchQuitClicked_Func (bool testConds, bool runAc
 void lib1926661B_gt_KC_MissionLaunchQuitClicked_Init () {
     lib1926661B_gt_KC_MissionLaunchQuitClicked = TriggerCreate("lib1926661B_gt_KC_MissionLaunchQuitClicked_Func");
     TriggerAddEventDialogControl(lib1926661B_gt_KC_MissionLaunchQuitClicked, c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: KC_MissionLaunchSkipClicked
+//--------------------------------------------------------------------------------------------------
+bool lib1926661B_gt_KC_MissionLaunchSkipClicked_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((EventDialogControl() == lib1926661B_gv_kC_MLSkipButton))) {
+            return false;
+        }
+
+        if (!((lib1926661B_gv_kC_MissionLaunchedToggled == false))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((lib1926661B_gv_kC_NextMission == "LT00")) {
+        lib1926661B_gf_MissionLaunchClose();
+        lib1926661B_gf_MissionLaunchDisplay("LT01");
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void lib1926661B_gt_KC_MissionLaunchSkipClicked_Init () {
+    lib1926661B_gt_KC_MissionLaunchSkipClicked = TriggerCreate("lib1926661B_gt_KC_MissionLaunchSkipClicked_Func");
+    TriggerAddEventDialogControl(lib1926661B_gt_KC_MissionLaunchSkipClicked, c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -7977,7 +8019,7 @@ bool lib1926661B_gt_KC_MissionLaunchBackClicked_Func (bool testConds, bool runAc
         return true;
     }
 
-    lib1926661B_gf_KC_MissionLaunchClose();
+    TriggerSendEvent("KLCReturnToLanding");
     return true;
 }
 
@@ -8262,28 +8304,10 @@ bool lib1926661B_gt_KC_VSScreenContinue_Func (bool testConds, bool runActions) {
     TriggerEnable(lib1926661B_gt_KC_VSScreenContinue, false);
     TriggerEnable(lib1926661B_gt_KC_VSScreenPlayAgain, false);
     TriggerEnable(lib1926661B_gt_KC_VSScreenQuit, false);
-    SoundChannelSetVolume(PlayerGroupAll(), c_soundCategoryMusic, 0.0, 1.0);
-    SoundChannelSetVolume(PlayerGroupAll(), c_soundCategoryAmbient, 0.0, 1.0);
-    lib1926661B_gf_KC_FadeAllSoundsExceptMusic(1.0, false);
-    lib1926661B_gf_CinematicFade(false, 1.0, Color(0.00, 0.00, 0.00), true);
-    DialogControlSetVisible(lib1926661B_gv_kC_VictoryScreen.lv_pU_VSMainPanel, PlayerGroupAll(), false);
-    if ((lib1926661B_gv_kCX_IsSimulation == true)) {
-        lib1926661B_gf_PrepareForStoryMode(c_gameOverVictory, PlayerDifficulty(1));
-        GameOver(1, c_gameOverVictory, false, false);
-        return true;
-    }
-
-    if (true) {
-    }
-    if ((lib1926661B_gf_CurrentMap() == "UEDFL_EP01M10")) {
-        lib1926661B_gf_CinematicFade(false, 0.7, Color(0.00, 0.00, 0.00), true);
-        lib1926661B_gf_KC_CampaignVictory();
-    }
-    else {
-        lib1926661B_gf_CinematicFade(false, 0.7, Color(0.00, 0.00, 0.00), true);
-        lib1926661B_gf_LaunchMission(lib1926661B_gv_kC_NextMission, (lib1926661B_gv_kC_InCompletedCampaign == true), 3);
-        lib1926661B_gf_LaunchMission(lib1926661B_gf_PP_NextMission(lib1926661B_gv_kCX_LastSuccessfulMission, (lib1926661B_gv_kC_InCompletedCampaign == true), c_gameOverVictory), (lib1926661B_gv_kC_InCompletedCampaign == true), 3);
-    }
+    DialogControlSendAnimationEvent(lib1926661B_gv_kC_VictoryScreen.lv_pU_VSMainPanel, PlayerGroupAll(), "Birth");
+    Wait(0.7, c_timeGame);
+    DialogControlSetVisible(lib1926661B_gv_kC_VictoryScreen.lv_pU_VSPanel, PlayerGroupAll(), false);
+    lib1926661B_gf_MissionLaunchDisplay(lib1926661B_gv_kC_NextMission);
     return true;
 }
 
@@ -8454,10 +8478,12 @@ void lib1926661B_InitTriggers () {
     lib1926661B_gt_KC_WaitForDialogCutscene_Init();
     lib1926661B_gt_KC_WaitForCutscene_Init();
     lib1926661B_gt_Convo_Loomings0_Init();
+    lib1926661B_gt_Convo_Loomings1_Init();
     lib1926661B_gt_KC_CreateLaunchScreen_Init();
     lib1926661B_gt_KC_MissionLaunchQuitOKClicked_Init();
     lib1926661B_gt_KC_MissionLaunchQuitCanceledClicked_Init();
     lib1926661B_gt_KC_MissionLaunchQuitClicked_Init();
+    lib1926661B_gt_KC_MissionLaunchSkipClicked_Init();
     lib1926661B_gt_KC_MissionLaunchBackClicked_Init();
     lib1926661B_gt_KC_MissionPitchPlayClicked_Init();
     lib1926661B_gt_KC_MissionPitchStopClicked_Init();
