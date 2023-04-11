@@ -98,6 +98,7 @@ trigger gt_ZergAIWaves;
 trigger gt_ZergAIChase;
 trigger gt_AISoKRetaliate;
 trigger gt_AISoKProgression;
+trigger gt_AISoKCripple;
 trigger gt_AIGiveMinerals;
 trigger gt_AIGiveGas;
 trigger gt_ObjectiveDestroyCreate;
@@ -273,19 +274,19 @@ void gf_SendZergWave (int lp_waveSize, region lp_spawnArea) {
     // Implementation
     auto3036C1FD_val = lp_waveSize;
     if (auto3036C1FD_val == ge_WaveSize_Small) {
-        UnitCreate(RandomInt(2, 4), "ZerglingBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
+        UnitCreate(lib1926661B_gf_DifficultyValueInteger(2, RandomInt(2, 4)), "ZerglingBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
         UnitGroupAddUnitGroup(lv_waveGroup, UnitLastCreatedGroup());
     }
     else if (auto3036C1FD_val == ge_WaveSize_Medium) {
-        UnitCreate(RandomInt(3, 7), "ZerglingBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
+        UnitCreate(lib1926661B_gf_DifficultyValueInteger(3, RandomInt(3, 7)), "ZerglingBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
         UnitGroupAddUnitGroup(lv_waveGroup, UnitLastCreatedGroup());
-        UnitCreate(RandomInt(1, 2), "HydraliskBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
+        UnitCreate(lib1926661B_gf_DifficultyValueInteger(1, RandomInt(1, 2)), "HydraliskBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
         UnitGroupAddUnitGroup(lv_waveGroup, UnitLastCreatedGroup());
     }
     else if (auto3036C1FD_val == ge_WaveSize_Large) {
-        UnitCreate(RandomInt(4, 9), "ZerglingBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
+        UnitCreate(lib1926661B_gf_DifficultyValueInteger(3, RandomInt(3, 6)), "ZerglingBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
         UnitGroupAddUnitGroup(lv_waveGroup, UnitLastCreatedGroup());
-        UnitCreate(RandomInt(0, 3), "HydraliskBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
+        UnitCreate(lib1926661B_gf_DifficultyValueInteger(1, RandomInt(0, 3)), "HydraliskBurrowed", 0, gv_pLAYER_05_ZERG, RegionRandomPoint(lp_spawnArea), libNtve_gf_RandomAngle());
         UnitGroupAddUnitGroup(lv_waveGroup, UnitLastCreatedGroup());
     }
     else {
@@ -300,7 +301,7 @@ void gf_SendZergWave (int lp_waveSize, region lp_spawnArea) {
         if (autoD0098883_var == null) { break; }
         UnitGroupIssueOrder(lv_waveGroup, OrderTargetingPoint(AbilityCommand("attack", 0), PointFromId(775654609)), c_orderQueueReplace);
         UnitGroupIssueOrder(lv_waveGroup, OrderTargetingPoint(AbilityCommand("attack", 0), PointFromId(819192723)), c_orderQueueAddToEnd);
-        UnitGroupIssueOrder(lv_waveGroup, OrderTargetingPoint(AbilityCommand("attack", 0), PointFromId(742529627)), c_orderQueueAddToEnd);
+        UnitGroupIssueOrder(lv_waveGroup, OrderTargetingPoint(AbilityCommand("attack", 0), PointFromId(216542348)), c_orderQueueAddToEnd);
     }
 }
 
@@ -494,7 +495,7 @@ bool gt_StartGameQ_Func (bool testConds, bool runActions) {
     TriggerQueueEnter();
     TriggerExecute(gt_ObjectiveDestroyCreate, true, true);
     TriggerQueueExit();
-    TimerStart(gv_zergTimer, 120.0, false, c_timeGame);
+    TimerStart(gv_zergTimer, 110.0, false, c_timeGame);
     Wait((5.5 * 60.0), c_timeGame);
     TriggerExecute(gt_DustStorm, true, false);
     return true;
@@ -731,6 +732,7 @@ bool gt_ZergEnterBase_Func (bool testConds, bool runActions) {
     TriggerEnable(TriggerGetCurrent(), false);
     Wait(1.0, c_timeGame);
     lv_marine = UnitGroupRandomUnit(UnitGroup("MarineSCBW", gv_pLAYER_01_USER, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
+    TriggerEnable(gt_BaseExit, false);
     TriggerQueueEnter();
     lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00007", null, true, lv_marine, false);
     lib1926661B_gf_SendTransmissionKL(true, libNtve_gf_CinematicPortrait(libNtve_ge_CinematicPortraitPosition_CenterLeft), "LT01Miss|Line00008", null, true, lv_marine, false);
@@ -826,7 +828,7 @@ bool gt_DustStorm_Func (bool testConds, bool runActions) {
     GameSetLighting("EolianSandstorm", 45.0);
     TriggerEnable(gt_DustStormSand, true);
     TriggerExecute(gt_DustStormSand, true, false);
-    Wait((4.5 * 60.0), c_timeGame);
+    Wait((4.0 * 60.0), c_timeGame);
     TriggerEnable(gt_DustStormSand, false);
     GameSetLighting("EolianDay", 45.0);
     return true;
@@ -1178,7 +1180,7 @@ bool gt_ZergAIWaves_Func (bool testConds, bool runActions) {
     }
 
     for (auto4DAA7E4A_i = 1; auto4DAA7E4A_i <= auto4DAA7E4A_n; auto4DAA7E4A_i += 1) {
-        Wait(RandomFixed(20.0, 45.0), c_timeAI);
+        Wait(lib1926661B_gf_DifficultyValueReal(50.0, RandomFixed(20.0, 45.0)), c_timeAI);
         lv_random = RandomInt(1, 2);
         autoE3E26417_val = lv_random;
         if (autoE3E26417_val == 1) {
@@ -1193,7 +1195,7 @@ bool gt_ZergAIWaves_Func (bool testConds, bool runActions) {
         gf_SendZergWave(ge_WaveSize_Small, lv_region);
     }
     for (auto9D084583_i = 1; auto9D084583_i <= auto9D084583_n; auto9D084583_i += 1) {
-        Wait(RandomFixed(30.0, 60.0), c_timeAI);
+        Wait(lib1926661B_gf_DifficultyValueReal(55.0, RandomFixed(30.0, 60.0)), c_timeAI);
         lv_random = RandomInt(1, 2);
         autoAD7D1DEB_val = lv_random;
         if (autoAD7D1DEB_val == 1) {
@@ -1208,7 +1210,7 @@ bool gt_ZergAIWaves_Func (bool testConds, bool runActions) {
         gf_SendZergWave(ge_WaveSize_Medium, lv_region);
     }
     for (auto8D349D06_i = 1; auto8D349D06_i <= auto8D349D06_n; auto8D349D06_i += 1) {
-        Wait(RandomFixed(35.0, 90.0), c_timeAI);
+        Wait(lib1926661B_gf_DifficultyValueReal(70.0, RandomFixed(35.0, 90.0)), c_timeAI);
         lv_random = RandomInt(1, 2);
         auto65856406_val = lv_random;
         if (auto65856406_val == 1) {
@@ -1314,7 +1316,7 @@ bool gt_AISoKRetaliate_Func (bool testConds, bool runActions) {
     TriggerEnable(TriggerGetCurrent(), false);
     lv_attackedUnit = EventUnit();
     lv_attackerUnit = EventUnitTarget();
-    auto8F8877F5_g = UnitGroup(null, gv_pLAYER_04_SONSOFKORHAL, RegionCircle(UnitGetPosition(lv_attackedUnit), 9.0), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    auto8F8877F5_g = UnitGroup(null, gv_pLAYER_04_SONSOFKORHAL, RegionCircle(UnitGetPosition(lv_attackedUnit), lib1926661B_gf_DifficultyValueReal(6.0, 12.0)), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
     auto8F8877F5_u = UnitGroupCount(auto8F8877F5_g, c_unitCountAll);
     for (;; auto8F8877F5_u -= 1) {
         auto8F8877F5_var = UnitGroupUnitFromEnd(auto8F8877F5_g, auto8F8877F5_u);
@@ -1355,8 +1357,10 @@ bool gt_AISoKProgression_Func (bool testConds, bool runActions) {
     libNtve_gf_AICast(lv_workerSCV, OrderTargetingPoint(AbilityCommand("SCVSCBW@Build", 1), PointFromId(435604196)));
     Wait(15.0, c_timeAI);
     libNtve_gf_AICast(UnitFromId(1315373299), Order(AbilityCommand("CommandCenterSCBW@Train", 0)));
-    lv_buildingUnit = UnitGroupRandomUnit(UnitGroup("EngineeringBaySCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
-    libNtve_gf_AICast(lv_buildingUnit, Order(AbilityCommand("TerranInfantryWeaponsSCBW", 0)));
+    if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true)) {
+        lv_buildingUnit = UnitGroupRandomUnit(UnitGroup("EngineeringBaySCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
+        libNtve_gf_AICast(lv_buildingUnit, Order(AbilityCommand("TerranInfantryWeaponsSCBW", 0)));
+    }
     Wait(30.0, c_timeAI);
     lv_workerSCV = UnitGroupRandomUnit(UnitGroup("SCVSCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
     libNtve_gf_AICast(lv_workerSCV, OrderTargetingPoint(AbilityCommand("SCVSCBW@BuildAdv", 10), PointFromId(1604418837)));
@@ -1366,11 +1370,15 @@ bool gt_AISoKProgression_Func (bool testConds, bool runActions) {
     lv_workerSCV = UnitGroupRandomUnit(UnitGroup("SCVSCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
     libNtve_gf_AICast(lv_workerSCV, OrderTargetingPoint(AbilityCommand("SCVSCBW@Build", 3), PointFromId(1633811412)));
     Wait(30.0, c_timeAI);
-    lv_buildingUnit = UnitGroupRandomUnit(UnitGroup("EngineeringBaySCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
-    libNtve_gf_AICast(lv_buildingUnit, Order(AbilityCommand("TerranInfantryArmorsSCBW", 0)));
+    if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true)) {
+        lv_buildingUnit = UnitGroupRandomUnit(UnitGroup("EngineeringBaySCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
+        libNtve_gf_AICast(lv_buildingUnit, Order(AbilityCommand("TerranInfantryArmorsSCBW", 0)));
+    }
     Wait(60.0, c_timeAI);
-    lv_buildingUnit = UnitGroupRandomUnit(UnitGroup("FactorySCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
-    libNtve_gf_AICast(lv_buildingUnit, OrderTargetingPoint(AbilityCommand("FactorySCBW@AddOns", 0), UnitGetPosition(lv_buildingUnit)));
+    if ((lib1926661B_gf_DifficultyValueBoolean(false, true) == true)) {
+        lv_buildingUnit = UnitGroupRandomUnit(UnitGroup("FactorySCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
+        libNtve_gf_AICast(lv_buildingUnit, OrderTargetingPoint(AbilityCommand("FactorySCBW@AddOns", 0), UnitGetPosition(lv_buildingUnit)));
+    }
     Wait(20.0, c_timeAI);
     lv_workerSCV = UnitGroupRandomUnit(UnitGroup("SCVSCBW", gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive);
     libNtve_gf_AICast(lv_workerSCV, OrderTargetingPoint(AbilityCommand("SCVSCBW@Build", 1), PointFromId(347009323)));
@@ -1380,6 +1388,46 @@ bool gt_AISoKProgression_Func (bool testConds, bool runActions) {
 //--------------------------------------------------------------------------------------------------
 void gt_AISoKProgression_Init () {
     gt_AISoKProgression = TriggerCreate("gt_AISoKProgression_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: AI SoK Cripple
+//--------------------------------------------------------------------------------------------------
+bool gt_AISoKCripple_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((gv_gameOver == false))) {
+            return false;
+        }
+
+        if (!((gv_inCinematic == false))) {
+            return false;
+        }
+
+        if (!((UnitGetOwner(EventUnit()) == gv_pLAYER_04_SONSOFKORHAL))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, gv_pLAYER_04_SONSOFKORHAL, null, UnitFilter((1 << c_targetFilterPreventDefeat), 0, 0, (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 1), c_unitCountAlive) <= lib1926661B_gf_DifficultyValueInteger(7, 4)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    AIToggleBulliesInRegion(gv_pLAYER_04_SONSOFKORHAL, RegionPlayableMap(), false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_AISoKCripple_Init () {
+    gt_AISoKCripple = TriggerCreate("gt_AISoKCripple_Func");
+    TriggerAddEventUnitDied(gt_AISoKCripple, null);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1943,6 +1991,7 @@ bool gt_MidCleanup_Func (bool testConds, bool runActions) {
         if (auto67EE2B4A_var == null) { break; }
         libNtve_gf_ShowHideUnit(auto67EE2B4A_var, true);
     }
+    VisRevealArea(gv_pLAYER_01_USER, RegionFromId(8), 10.0, false);
     if ((gv_cinematicCompleted == true)) {
         lv_fadeDuration = 1.5;
     }
@@ -2054,8 +2103,6 @@ bool gt_VictoryCinematic_Func (bool testConds, bool runActions) {
 
     TriggerSkippableBegin(PlayerGroupAll(), 0, null, true, false);
     gv_cinematicCompleted = false;
-    CinematicFade(true, 1.0, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
-    lib1926661B_gf_SendTransmissionKL(true, c_invalidPortraitId, "EP01M08|Line00001", null, true, null, false);
     gv_cinematicCompleted = true;
     return true;
 }
@@ -2086,7 +2133,6 @@ bool gt_VictoryCinematicEnd_Func (bool testConds, bool runActions) {
     else {
         lv_fadeDuration = 0.5;
     }
-    CinematicFade(false, lv_fadeDuration, c_fadeStyleNormal, ColorWithAlpha(0.00, 0.00, 0.00, 0.00), 0.0, true);
     return true;
 }
 
@@ -2150,6 +2196,7 @@ void InitTriggers () {
     gt_ZergAIChase_Init();
     gt_AISoKRetaliate_Init();
     gt_AISoKProgression_Init();
+    gt_AISoKCripple_Init();
     gt_AIGiveMinerals_Init();
     gt_AIGiveGas_Init();
     gt_ObjectiveDestroyCreate_Init();
