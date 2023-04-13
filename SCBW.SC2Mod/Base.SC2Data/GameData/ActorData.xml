@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectDamage id="War3_WeaponBounceHitImpact">
+        <Fraction value="0">
+            <AccumulatorArray value="War3_DamageLoss"/>
+        </Fraction>
+    </CEffectDamage>
     <CActorUnit default="1" id="GenericBurrowerBaseSCBW" parent="GenericUnitBase">
         <On Terms="UnitBirth.##unitName##@Burrowed" Send="Create"/>
         <On Terms="UnitBirth.##unitName##@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
@@ -309,6 +314,95 @@
         <UnitFlags index="StandAnimBirthVariation" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-##unitName##.dds"/>
     </CActorUnit>
+    <CActorModel id="DevourerSCBWWeapon@SporesModel" parent="ModelAnimationStyleContinuous">
+        <EditorCategories value=""/>
+        <On Terms="Behavior.DevourerSCBWWeapon.On" Send="Create"/>
+        <On Terms="Behavior.DevourerSCBWWeapon.Off" Send="AnimBracketStop BSD"/>
+        <Host Subject="_Unit"/>
+        <HostSiteOps Ops="SOpAttachCenter"/>
+        <AutoScaleFactor value="1.000000"/>
+    </CActorModel>
+    <CActorAction id="DevourerSCBWWeapon@Action" parent="GenericAttack" effectImpact="DevourerSCBWWeapon@Damage" effectLaunch="DevourerSCBWWeapon@LM">
+        <LaunchAssets Sound="DevourerSCBWWeapon@Launch"/>
+        <Missile value="DevourerSCBWWeapon@Missile"/>
+        <ImpactMap index="None" Model="DevourerSCBWWeapon@Impact" Sound="DevourerSCBWWeapon@Impact"/>
+    </CActorAction>
+    <CActorMissile id="DevourerSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DevourerSCBWWeapon@Missile"/>
+    <CActorAction id="GuardianSCBWWeapon@Action" parent="GenericAttack" effectImpact="GuardianSCBWWeapon@Damage" effectLaunch="GuardianSCBWWeapon@LM">
+        <LaunchAttachQuery Methods="AMFilterWeaponLeft"/>
+        <LaunchAssets Sound="GuardianSCBWWeapon@Launch"/>
+        <Missile value="GuardianSCBWWeapon@Missile"/>
+        <ImpactMap index="None" Model="GuardianSCBWWeapon@Impact" Sound="GuardianSCBWWeapon@Impact"/>
+    </CActorAction>
+    <CActorMissile id="GuardianSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="GuardianSCBWWeapon@Missile"/>
+    <CActorAction id="MutaliskSCBWWeapon@Action" parent="GenericAttack" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@LM">
+        <LaunchAssets Sound="MutaliskSCBWWeapon@Launch"/>
+        <Missile value="MutaliskSCBWWeapon@Missile"/>
+        <ImpactSite value="MutaliskAttackSegment1ImpactSite"/>
+        <ImpactMap index="None" Model="MutaliskSCBWWeapon@Impact" Sound="MutaliskSCBWWeapon@Impact"/>
+        <ImpactPhysics Name="GlaveWurmImpact" MatchKeys="Basic" Physics="MutaliskAttackDeathForce"/>
+        <ImpactPhysics Name="GlaveWurmImpactAir" MatchKeys="BasicAir" Physics="MutaliskAttackAirDeathForce"/>
+    </CActorAction>
+    <CActorAction id="MutaliskSCBWWeapon@ActionBounce" parent="GenericAttack" effectImpact="MutaliskSCBWWeapon@BounceHitImpact" effectLaunch="MutaliskSCBWWeapon@BounceLM">
+        <LaunchAssets Sound=""/>
+        <Missile value="MutaliskSCBWWeapon@Missile"/>
+        <ImpactSite value="MutaliskAttackSegment1ImpactSite"/>
+        <ImpactMap index="None" Model="MutaliskSCBWWeapon@Impact" Sound="MutaliskSCBWWeapon@Impact"/>
+        <ImpactPhysics Name="GlaveWurmImpact" MatchKeys="Basic" Physics="MutaliskAttackDeathForce"/>
+        <ImpactPhysics Name="GlaveWurmImpactAir" MatchKeys="BasicAir" Physics="MutaliskAttackAirDeathForce"/>
+    </CActorAction>
+    <CActorMissile id="MutaliskSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="MutaliskSCBWWeapon@Missile"/>
+    <CActorForceCylinder id="UltraliskSCBWWeapon@Force">
+        <On Terms="ActorCreation" Send="Create UltraliskSCBWWeapon@UpwardForce"/>
+        <On Terms="ActorCreation" Send="Create UltraliskSCBWWeapon@LateralLeftForce"/>
+        <On Terms="ActorCreation" Send="Create UltraliskSCBWWeapon@LateralRightForce"/>
+        <Host Subject="::Main" Scope="Caster"/>
+        <HostSiteOps Ops="SOpAttachHead SOpShadow SOpForwardCasterCenterInverted SOpMoveByDot3 SOpSplashDamagePositionVariance"/>
+        <Field value="Radial"/>
+        <Duration value="0.300000"/>
+        <Magnitude value="13.500000,4.500000"/>
+        <HostEnd Subject="::Self"/>
+        <HostEndSiteOps Ops="SOpPointUpWorld SOpMoveBy1Dot5"/>
+        <Radius value="2.200000,0.300000"/>
+    </CActorForceCylinder>
+    <CActorForceBox id="UltraliskSCBWWeapon@LateralLeftForce" parent="UltraliskAttackLateralForce">
+        <HostSiteOps Ops="SOpAttachHead SOpShadow SOpForwardCasterCenterInverted SOp2DRotation SOpMoveByDot3 SOpSplashDamagePositionVariance SOpRollCounterClockwise90"/>
+    </CActorForceBox>
+    <CActorForceBox id="UltraliskSCBWWeapon@LateralRightForce" parent="UltraliskAttackLateralForce">
+        <HostSiteOps Ops="SOpAttachHead SOpShadow SOpForwardCasterCenterInverted SOp2DRotation SOpMoveByDot3 SOpSplashDamagePositionVariance SOpRollClockwise90"/>
+    </CActorForceBox>
+    <CActorForceSphere id="UltraliskSCBWWeapon@UpwardForce">
+        <Host Subject="::Main" Scope="Caster"/>
+        <HostSiteOps Ops="SOpAttachHead SOpShadow SOpPointSouthWorld SOpMoveByDot3 SOpSplashDamagePositionVariance"/>
+        <Field value="Directional"/>
+        <Duration value="0.300000"/>
+        <Magnitude value="15.750000,6.750000"/>
+        <Radius value="1.900000,0.300000"/>
+    </CActorForceSphere>
+    <CActorSound id="UltraliskSCBWWeapon@LaunchSound" parent="SoundOneShot">
+        <On Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart" Send="Create"/>
+        <Sound value="UltraliskSCBWWeapon@Launch"/>
+    </CActorSound>
+    <CActorAction id="UltraliskSCBWWeapon@Action" parent="GenericAttack" effectAttack="UltraliskSCBWWeapon@Damage">
+        <ImpactMap index="None" Model="UltraliskSCBWWeapon@Impact" Sound="UltraliskSCBWWeapon@Impact"/>
+        <ImpactPhysics>
+            <Name value="AttackSpell"/>
+            <MatchKeys value="Basic"/>
+            <AttackAnimProps value="Spell,A"/>
+            <Physics value="UltraliskSCBWWeapon@Force"/>
+        </ImpactPhysics>
+        <ShieldFlashType value="Full"/>
+    </CActorAction>
+    <CActorSound id="ScourgeSCBWWeapon@LaunchSound" parent="SoundOneShot">
+        <On Terms="WeaponStart.ScourgeSCBWWeapon.AttackStart" Send="Create"/>
+        <Sound value="ScourgeSCBWWeapon@Launch"/>
+    </CActorSound>
+    <CActorAction id="ScourgeSCBWWeapon@Action" parent="GenericAttack" effectAttack="ScourgeSCBWWeapon@Damage">
+        <ImpactMap index="None" Model="ScourgeSCBWWeapon@Impact" Sound="ScourgeSCBWWeapon@Impact"/>
+        <AcquisitionYawHalfArc value="1.000000"/>
+        <AcquisitionPitchHalfArc value="1.000000"/>
+        <AccuracyHalfArc value="1.000000"/>
+    </CActorAction>
     <CActorUnit id="HiveSCBW" parent="ZergBuildingSCBW" unitName="HiveSCBW">
         <Aliases value="_UnitHuge"/>
         <Macros value="MacroTownhallDeco_Zerg"/>
@@ -801,8 +895,8 @@
         <Macros value="PhysicsDeathsVoidGround"/>
         <Remove Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create LargeBurrowDownEffects"/>
         <Remove Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create LargeBurrowUpEffects"/>
-        <Remove Terms="WeaponStart.KaiserBlades.AttackStart; ValidateUnit CleaveResearched" Send="AnimBracketStart Attack Spell,A"/>
-        <Remove Terms="WeaponStart.KaiserBlades.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <Remove Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart; ValidateUnit CleaveResearched" Send="AnimBracketStart Attack Spell,A"/>
+        <Remove Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart" Send="AnimBracketStart Attack Attack"/>
         <Remove Terms="WeaponStart.Ram.AttackStart" Send="AnimBracketStart Attack Spell"/>
         <Remove Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="ActorCreation" Send="StatusSet BurrowCharging 0"/>
@@ -813,8 +907,8 @@
         <On Terms="AbilMorph.*.Finish; MorphTo UltraliskSCBW; MorphFrom UltraliskSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo UltraliskSCBW; MorphFrom UltraliskSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
-        <On Terms="WeaponStart.KaiserBlades.AttackStart; ValidateUnit CleaveResearched" Send="AnimBracketStart Attack Spell,A"/>
-        <On Terms="WeaponStart.KaiserBlades.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart; ValidateUnit CleaveResearched" Send="AnimBracketStart Attack Spell,A"/>
+        <On Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart" Send="AnimBracketStart Attack Attack"/>
         <On Terms="WeaponStart.Ram.AttackStart" Send="AnimBracketStart Attack Spell"/>
         <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create BurrowDownUltralisk"/>
@@ -824,14 +918,16 @@
         <On Terms="AbilMorph.*.Finish; MorphTo UltraliskSCBW; MorphFrom UltraliskSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo UltraliskSCBW@Burrowed; MorphFrom UltraliskSCBW" Send="TerrainSquibDeactivate"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Ultra_Land"/>
-        <On Terms="WeaponStart.KaiserBlades.AttackStart; !ValidateUnit HaveHotSMonarchBlades" Send="AnimPlay Attack Spell,A"/>
-        <On Terms="WeaponStart.KaiserBlades.AttackStart; ValidateUnit HaveHotSMonarchBlades" Send="AnimPlay Attack Spell,D"/>
-        <On Terms="WeaponStop.KaiserBlades.AttackStop" Send="AnimClear Attack"/>
+        <On Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart; !ValidateUnit HaveHotSMonarchBlades" Send="AnimPlay Attack Spell,A"/>
+        <On Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart; ValidateUnit HaveHotSMonarchBlades" Send="AnimPlay Attack Spell,D"/>
+        <On Terms="WeaponStop.UltraliskSCBWWeapon.AttackStop" Send="AnimClear Attack"/>
         <AnimBlendTime value="0.300000"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <EventDataSound Name="UltraliskAttack" Actor="UnitSound" Sound="Ultralisk_AttackLaunch"/>
+        <EventDataSound Name="UltraliskAttack" Actor="UnitSound" Sound="UltraliskSCBWWeapon@Cleave"/>
+        <!--
         <EventDataSound Name="UltraliskHeadAttack" Actor="UnitSound" Sound="Ultralisk_HeadAttackImpact"/>
         <EventDataSound Name="UltraliskAttackImpact" Actor="UnitSound" Sound="Ultralisk_AttackImpact"/>
+        -->
         <DeathArray index="Normal" ModelLink="UltraliskSCBW@Death" SoundLink="UltraliskSCBW@Death" VoiceLink=""/>
         <DeathArray index="Disintegrate" ModelLink="UltraliskSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
         <DeathArray index="Fire" ModelLink="UltraliskSCBW@DeathFire" SoundLink="Uni_DeathFXFireLarge"/>
