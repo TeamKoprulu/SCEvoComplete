@@ -10,29 +10,58 @@
         <AttributeFactor index="Armored" value="-0.5"/>
         <ShieldFactor value="1"/>
     </CEffectDamage>
-    <CEffectSet id="StaggerSuccessSet">
-        <EditorCategories value=""/>
-        <EffectArray value="StaggerAB"/>
-        <EffectArray value="StaggerUDReset"/>
-    </CEffectSet>
-    <CEffectUserData id="StaggerUDReset">
-        <Key value="StepCount"/>
-        <SourceKey value="StepCount"/>
-        <Amount value="0"/>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDPhaseIncrease">
+        <Key value="StaggerPhase"/>
+        <SourceKey value="StaggerPhase"/>
+        <ValidateMax value="3"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerUDPhaseReset"/>
+    </CEffectUserData>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDPhaseReset">
+        <Key value="StaggerPhase"/>
+        <SourceKey value="StaggerPhase"/>
         <Operation value="Set"/>
     </CEffectUserData>
-    <CEffectSwitch id="StaggerTrackerSwitch">
-        <CaseArray Validator="CasterHasNoOrders" Effect="StaggerUDReset"/>
-        <CaseArray Validator="StaggerHasStaggeredBehavior" Effect="StaggerUDReset"/>
-        <CaseDefault value="StaggerUDIncrease"/>
+    <CEffectSwitch id="BroodlingSCBW@WalkStaggerSwitchPhaseCheck">
+        <CaseArray Validator="StaggerIsPhase2" Effect="BroodlingSCBW@WalkStaggerUDStepIncreasePhase2"/>
+        <CaseArray Validator="StaggerIsPhase3" Effect="BroodlingSCBW@WalkStaggerUDStepIncreasePhase3"/>
+        <CaseDefault value="BroodlingSCBW@WalkStaggerUDStepIncreasePhase1"/>
     </CEffectSwitch>
-    <CEffectUserData id="StaggerUDIncrease">
-        <Key value="StepCount"/>
-        <SourceKey value="StepCount"/>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase2">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
         <ValidateMax value="7"/>
-        <EffectFailure value="StaggerSuccessSet"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
     </CEffectUserData>
-    <CEffectApplyBehavior id="StaggerAB">
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase3">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="21"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectSet id="BroodlingSCBW@WalkStaggerSuccessSet">
+        <EditorCategories value=""/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerAB"/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerUDPhaseIncrease"/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerUDStepReset"/>
+    </CEffectSet>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepReset">
+        <Key value="StaggerStepCount"/>
+        <Amount value="0"/>
+        <SourceKey value="StaggerStepCount"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectSwitch id="BroodlingSCBW@WalkStaggerTrackerSwitch">
+        <CaseArray Validator="CasterHasNoOrders" Effect="BroodlingSCBW@WalkStaggerUDStepReset"/>
+        <CaseArray Validator="StaggerHasStaggeredBehavior" Effect="BroodlingSCBW@WalkStaggerUDStepReset"/>
+        <CaseDefault value="BroodlingSCBW@WalkStaggerSwitchPhaseCheck"/>
+    </CEffectSwitch>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase1">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="14"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="BroodlingSCBW@WalkStaggerAB">
         <EditorCategories value=""/>
         <Behavior value="StaggerStaggered"/>
     </CEffectApplyBehavior>
@@ -557,7 +586,7 @@
         <WhichLocation Value="SourcePoint"/>
         <OffsetVectorStartLocation Value="SourcePoint"/>
         <Flags index="Channeled" value="1"/>
-        <PeriodCount value="4"/>
+        <PeriodCount value="3"/>
         <PeriodicEffectArray value="FirebatSCBWWeapon@Damage"/>
         <PeriodicOffsetArray value="0,-0.75,0"/>
         <PeriodicOffsetArray value="0,-1.625,0"/>
@@ -571,13 +600,17 @@
         <EditorCategories value="Race:Terran"/>
         <Amount value="4"/>
         <Death value="Fire"/>
-        <AreaArray Radius="0.4687" Fraction="1"/>
-        <AreaArray Radius="0.625" Fraction="0.5"/>
-        <AreaArray Radius="0.7812" Fraction="0.25"/>
-        <SearchFilters value="Ground;Self,Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="0.4687" Fraction="1" Validator="CasterAttackingTargetORIsEnemy"/>
+        <AreaArray Radius="0.625" Fraction="0.5" Validator="CasterAttackingTargetORIsEnemy"/>
+        <AreaArray Radius="0.7812" Fraction="0.25" Validator="CasterAttackingTargetORIsEnemy"/>
+        <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <AttributeFactor index="Light" value="1"/>
         <AttributeFactor index="Armored" value="-0.5"/>
         <ShieldFactor value="1"/>
+        <KindSplash value="Splash"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ExcludeArray Value="Outer"/>
+        <DebugTrace value="1"/>
     </CEffectDamage>
     <CEffectDamage id="MarineSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Terran"/>
