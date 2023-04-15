@@ -10,6 +10,61 @@
         <AttributeFactor index="Armored" value="-0.5"/>
         <ShieldFactor value="1"/>
     </CEffectDamage>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDPhaseIncrease">
+        <Key value="StaggerPhase"/>
+        <SourceKey value="StaggerPhase"/>
+        <ValidateMax value="3"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerUDPhaseReset"/>
+    </CEffectUserData>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDPhaseReset">
+        <Key value="StaggerPhase"/>
+        <SourceKey value="StaggerPhase"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectSwitch id="BroodlingSCBW@WalkStaggerSwitchPhaseCheck">
+        <CaseArray Validator="StaggerIsPhase2" Effect="BroodlingSCBW@WalkStaggerUDStepIncreasePhase2"/>
+        <CaseArray Validator="StaggerIsPhase3" Effect="BroodlingSCBW@WalkStaggerUDStepIncreasePhase3"/>
+        <CaseDefault value="BroodlingSCBW@WalkStaggerUDStepIncreasePhase1"/>
+    </CEffectSwitch>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase2">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="7"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase3">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="21"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectSet id="BroodlingSCBW@WalkStaggerSuccessSet">
+        <EditorCategories value=""/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerAB"/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerUDPhaseIncrease"/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerUDStepReset"/>
+    </CEffectSet>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepReset">
+        <Key value="StaggerStepCount"/>
+        <Amount value="0"/>
+        <SourceKey value="StaggerStepCount"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectSwitch id="BroodlingSCBW@WalkStaggerTrackerSwitch">
+        <CaseArray Validator="CasterHasNoOrders" Effect="BroodlingSCBW@WalkStaggerUDStepReset"/>
+        <CaseArray Validator="StaggerHasStaggeredBehavior" Effect="BroodlingSCBW@WalkStaggerUDStepReset"/>
+        <CaseDefault value="BroodlingSCBW@WalkStaggerSwitchPhaseCheck"/>
+    </CEffectSwitch>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase1">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="14"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="BroodlingSCBW@WalkStaggerAB">
+        <EditorCategories value=""/>
+        <Behavior value="StaggerStaggered"/>
+    </CEffectApplyBehavior>
     <CEffectDamage id="BroodlingSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Zerg"/>
         <Amount value="4"/>
@@ -17,9 +72,11 @@
     <CEffectDamage id="InfestedTerranSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Zerg"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
-        <AttributeBonus index="Structure" value="40"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
         <Kind value="Splash"/>
-        <Amount value="40"/>
+        <Amount value="375"/>
         <Death value="Disintegrate"/>
     </CEffectDamage>
     <CEffectSet id="InfestedTerranSCBWWeapon@LargeFriendlySet">
@@ -36,16 +93,18 @@
         <ExcludeArray Value="Outer"/>
         <ExcludeArray Value="Target"/>
         <SearchFilters value="Ground;Player,Ally,Neutral,Missile,Item,Stasis,Dead,Hidden,Invulnerable"/>
-        <AreaArray Radius="2.2" Effect="InfestedTerranSCBWWeapon@SearchDamage"/>
+        <AreaArray Radius="2.2" Effect="InfestedTerranSCBWWeapon@DamageSearch"/>
         <SearchFlags index="SameCliff" value="1"/>
     </CEffectEnumArea>
-    <CEffectDamage id="InfestedTerranSCBWWeapon@SearchDamage" parent="DU_WEAP">
+    <CEffectDamage id="InfestedTerranSCBWWeapon@DamageSearch" parent="DU_WEAP">
         <EditorCategories value="Race:Zerg"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
         <ImpactLocation Value="TargetUnit"/>
-        <AttributeBonus index="Structure" value="40"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
         <Kind value="Splash"/>
-        <Amount value="40"/>
+        <Amount value="375"/>
         <Death value="Disintegrate"/>
     </CEffectDamage>
     <CEffectSet id="InfestedTerranSCBWWeapon@Set">
@@ -53,6 +112,16 @@
         <EffectArray value="InfestedTerranSCBWWeapon@Search"/>
         <EffectArray value="SuicideDelay"/>
     </CEffectSet>
+    <CEffectMorph id="InfestedCommandCenterSCBWMorph">
+        <EditorCategories value=""/>
+        <WhichUnit Value="Target"/>
+        <MorphUnit value="InfestedCommandCenterSCBW"/>
+        <TypeFallbackUnit Value="Unknown"/>
+        <ActorKey value="Morph"/>
+        <MorphFlags index="IgnoreFacing" value="1"/>
+        <MorphFlags index="IgnorePlacement" value="1"/>
+        <MorphFlags index="RallyReset" value="1"/>
+    </CEffectMorph>
     <CEffectLaunchMissile id="SporeColonySCBWWeapon@LM">
         <EditorCategories value="Race:Zerg"/>
         <ImpactEffect value="SporeColonySCBWWeapon@Damage"/>
@@ -172,6 +241,16 @@
         <ImpactEffect value="GuardianSCBWWeapon@Damage"/>
         <AmmoUnit value="GuardianSCBWWeapon@Missile"/>
     </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="InfestedTerranSCBWWeapon@SuicideDelay">
+        <EditorCategories value="Race:Zerg"/>
+        <ExpireDelay value="0.0625"/>
+        <FinalEffect value="InfestedTerranSCBWWeapon@SuicideRemove"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="InfestedTerranSCBWWeapon@SuicideRemove">
+        <ImpactLocation Value="SourceUnit"/>
+        <Flags index="Kill" value="1"/>
+        <Death value="Remove"/>
+    </CEffectDamage>
     <CEffectDamage id="SunkenColonySCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Zerg"/>
         <Amount value="40"/>
@@ -517,7 +596,7 @@
         <WhichLocation Value="SourcePoint"/>
         <OffsetVectorStartLocation Value="SourcePoint"/>
         <Flags index="Channeled" value="1"/>
-        <PeriodCount value="4"/>
+        <PeriodCount value="3"/>
         <PeriodicEffectArray value="FirebatSCBWWeapon@Damage"/>
         <PeriodicOffsetArray value="0,-0.75,0"/>
         <PeriodicOffsetArray value="0,-1.625,0"/>
@@ -531,13 +610,17 @@
         <EditorCategories value="Race:Terran"/>
         <Amount value="4"/>
         <Death value="Fire"/>
-        <AreaArray Radius="0.4687" Fraction="1"/>
-        <AreaArray Radius="0.625" Fraction="0.5"/>
-        <AreaArray Radius="0.7812" Fraction="0.25"/>
-        <SearchFilters value="Ground;Self,Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="0.4687" Fraction="1" Validator="CasterAttackingTargetORIsEnemy"/>
+        <AreaArray Radius="0.625" Fraction="0.5" Validator="CasterAttackingTargetORIsEnemy"/>
+        <AreaArray Radius="0.7812" Fraction="0.25" Validator="CasterAttackingTargetORIsEnemy"/>
+        <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <AttributeFactor index="Light" value="1"/>
         <AttributeFactor index="Armored" value="-0.5"/>
         <ShieldFactor value="1"/>
+        <KindSplash value="Splash"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ExcludeArray Value="Outer"/>
+        <DebugTrace value="1"/>
     </CEffectDamage>
     <CEffectDamage id="MarineSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Terran"/>

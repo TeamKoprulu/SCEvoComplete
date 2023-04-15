@@ -314,6 +314,74 @@
         <UnitFlags index="StandAnimBirthVariation" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-##unitName##.dds"/>
     </CActorUnit>
+    <CActorSimple id="InfestedCommandCenterSCBW@Tinter">
+        <On Terms="ActorCreation" Target="_Unit" Send="SetTintColor 200,160,133 3.000000"/>
+    </CActorSimple>
+    <CActorModel id="InfestedCommandCenterSCBW@Infestation">
+        <Aliases value="_Snapshot"/>
+        <Inherits index="CloakEffect" value="1"/>
+        <Inherits index="Opacity" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <On Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death"/>
+        <On Terms="UnitDeath; !ModelIsLowQuality" Send="AnimBracketStop BSD"/>
+        <On Terms="UnitDeath; ModelIsLowQuality" Send="ModelSwap ZergMediumUnitDeathLow"/>
+        <On Terms="UnitDeath; ModelIsLowQuality" Send="SetScale 1.250000"/>
+        <On Terms="AnimBracketState.*.AfterClosing; AnimName BSD" Send="Destroy"/>
+        <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOrigin"/>
+    </CActorModel>
+    <CActorUnit id="InfestedCommandCenterSCBW" parent="TerranBuildingSCBW@Flyer" unitName="InfestedCommandCenterSCBW">
+        <Macros value="MacroTownhallDeco_Terran"/>
+        <Macros value="TerranCommandCenterPlayerDecalMacro"/>
+        <AcceptedHostedPropTransfers index="Decal" value="0"/>
+        <On Terms="ActorCreation" Send="Create InfestedCommandCenterSCBW@Tinter"/>
+        <On Terms="ActorCreation" Send="Create InfestedCommandCenterSCBW@Infestation"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove A"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove B"/>
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever"/>
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC"/>
+        <On Terms="UnitDeathCustomize; AnimPlaying Morph" Send="DeathCustomize Variation2"/>
+        <On Terms="Abil.InfestedCommandCenterSCBW@LiftOff.Start" Send="StatusSet FlyDeathAnim 1"/>
+        <On Terms="Abil.InfestedCommandCenterSCBW@LiftOff.Start" Send="TimerSet 1.100000 FlyDeathAnimChange"/>
+        <On Terms="TimerExpired; TimerName FlyDeathAnimChange" Send="StatusSet FlyDeathAnim 2"/>
+        <On Terms="UnitBirth.CommandCenterFlying" Send="StatusSet FlyDeathAnim 2"/>
+        <On Terms="Abil.InfestedCommandCenterSCBW@Land.Start" Send="TimerSet 0.700000 LandDeathAnimChange"/>
+        <On Terms="Abil.InfestedCommandCenterSCBW@Land.Start" Send="TimerSet 1.100000 LandDeathAnimChangeB"/>
+        <On Terms="TimerExpired; TimerName LandDeathAnimChange" Send="StatusSet FlyDeathAnim 1"/>
+        <On Terms="TimerExpired; TimerName LandDeathAnimChangeB" Send="StatusSet FlyDeathAnim 0"/>
+        <On Terms="UnitDeathCustomize; IsStatus FlyDeathAnim 1" Send="DeathCustomize Variation3"/>
+        <On Terms="UnitDeathCustomize; IsStatus FlyDeathAnim 2" Send="DeathCustomize Flying"/>
+        <On Terms="UnitBirth.CommandCenterFlying" Send="HideWorkerCount 1"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom InfestedCommandCenterSCBW@Flying; MorphTo CommandCenterSCBW" Send="HideWorkerCount"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom InfestedCommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Send="HideWorkerCount 1"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo InfestedCommandCenterSCBW" Send="Create"/>
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="InfestedCommandCenterSCBW@Explode"/>
+        <DeathCustoms index="5" ModelLink="InfestedCommandCenterSCBW@Death" SoundLink="InfestedCommandCenterSCBW@Explode" Name="Variation2"/>
+        <DeathCustoms ModelLink="InfestedCommandCenterSCBW@FlyDeath" SoundLink="InfestedCommandCenterSCBW@Explode" Name="Flying"/>
+        <DeathCustoms ModelLink="InfestedCommandCenterSCBW@DeathLow" Name="Variation3"/>
+        <BarOffset value="165"/>
+        <BarWidth value="200"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-terran-commandcenter@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-commandcenter@scbw.dds"/>
+        <NameOffset value="150"/>
+        <StatusHarvesterData Text="UI/HarvesterCountMinerals" SearchFilters="HarvestableResource;Player,Ally,Enemy" SearchRadius="8"/>
+        <UnitIcon value="Assets\Textures\btn-building-terran-commandcenter@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-commandcenter@scbw.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorModel id="InfestedCommandCenterSCBW@Build" parent="TerranBuildingSCBW@Build"/>
+    <CActorSound id="InfestedCommandCenterSCBW@Land" parent="TerranBuildingSCBW@Land" unitName="InfestedCommandCenterSCBW"/>
+    <CActorSound id="InfestedCommandCenterSCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff" unitName="InfestedCommandCenterSCBW"/>
+    <CActorSplat id="InfestedCommandCenterSCBW@Splat" parent="GenericUnitSplat" unitName="InfestedCommandCenterSCBW">
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo PlanetaryFortress" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo OrbitalCommand" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphTo CommandCenter; MorphFrom CommandCenterFlying" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CommandCenter; MorphTo CommandCenterFlying" Send="Destroy"/>
+    </CActorSplat>
     <CActorForceSphere id="InfestedTerranSCBWWeapon@Force">
         <On Terms="ActorCreation" Send="Create BanelingAttackForceUp"/>
         <On Terms="Effect.InfestedTerranSCBWWeapon@Search.Start; At Caster" Send="Create"/>
@@ -466,6 +534,7 @@
             <Image value="Assets\Textures\Wireframe-Zerg-BroodLordEgg.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CActorSplat id="InfestedTerranSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="InfestedTerranSCBW"/>
     <CActorUnit id="InfestedTerranSCBW" parent="GenericBurrowerStandard" unitSound="InfestedCivilian" unitName="InfestedTerranSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
@@ -686,6 +755,7 @@
     <CActorUnit id="ExtractorSCBW@Rich" parent="ZergBuildingSCBW" unitName="ExtractorSCBW@Rich">
         <Aliases value="_UnitHuge"/>
         <Macros value="ExtractAnim"/>
+        <On Terms="UnitConstruction.ExtractorSCBW@Rich.Start" Send="Create ExtractorSCBW@RichBuild"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasZerg.Deplete" Send="SetTintColor 255,170,170"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasZerg.Deplete" Send="AnimGroupRemove D"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasZerg.Deplete" Send="AnimGroupApply B"/>
@@ -695,9 +765,10 @@
         <On Terms="UnitDeathCustomize; ValidateUnit NoVespene" Send="DeathCustomize Empty"/>
         <On Terms="UnitBirth.ExtractorSCBW@Rich" Send="TimerSet 0.100000 HideGeyser"/>
         <On Terms="TimerExpired; TimerName HideGeyser" Send="Create GeyserBuildFinishCovered"/>
-        <DeathArray index="Normal" SoundLink="ExtractorSCBW@Explode"/>
+        <DeathArray index="Normal" ModelLink="ExtractorSCBW@RichDeath" SoundLink="ExtractorSCBW@Explode"/>
         <DeathArray index="UnderConstruction" ModelLink="ExtractorSCBW@DeathUnderConstruction" SoundLink="ExtractorSCBW@Explode"/>
         <DeathCustoms ModelLink="ExtractorSCBW@EmptyDeath" Name="Empty"/>
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
         <PlacementModel value="ExtractorSCBW@Placement"/>
         <PortraitModel value="ExtractorSCBW@Portrait"/>
         <BarOffset value="140"/>
@@ -941,10 +1012,13 @@
             <Image value="Assets\Textures\Wireframe-Zerg-LurkerEgg.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CActorSplat id="DefilerSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="DefilerSCBW"/>
     <CActorUnit id="DefilerSCBW" parent="GenericBurrowerStandard" unitName="DefilerSCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="ZergMediumBurrowEffects"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
+        <On Terms="UnitBirth.DefilerSCBW@Burrowed" Send="Create"/>
+        <On Terms="UnitBirth.DefilerSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
         <On Terms="Abil.DefilerMPConsume.SourcePrepStart" Send="$Spell 0 -1.000000 -1.000000 0.400000 AsDuration"/>
         <On Terms="Abil.DefilerMPConsume.SourcePrepStop" Send="AnimClear Spell"/>
         <On Terms="Abil.DefilerMPDarkSwarm.SourcePrepStart" Send="$Spell,00 0 -1.000000 -1.000000 1.000000 AsDuration"/>
@@ -2466,6 +2540,7 @@
         <On Terms="UnitDeathCustomize; ValidateUnit NoVespene" Send="DeathCustomize Empty"/>
         <On Terms="UnitBirth.RefinerySCBW@Rich" Send="TimerSet 0.100000 HideGeyser"/>
         <CreepHeightClass value="Medium"/>
+        <DeathArray index="Normal" ModelLink="RefinerySCBW@RichDeath" SoundLink="RefinerySCBW@Explode"/>
         <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="RefinerySCBW@Explode"/>
         <DeathCustoms ModelLink="RefinerySCBW@EmptyDeath" Name="Empty"/>
         <PlacementModel value="RefinerySCBW@Placement"/>
@@ -2661,6 +2736,8 @@
         <On Terms="UnitBirth.CommandCenterFlying" Send="HideWorkerCount 1"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW@Flying; MorphTo CommandCenterSCBW" Send="HideWorkerCount"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Send="HideWorkerCount 1"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo InfestedCommandCenterSCBW" Send="HideWorkerCount 1"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo InfestedCommandCenterSCBW" Send="Destroy"/>
         <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="CommandCenterSCBW@Explode"/>
         <DeathCustoms index="5" ModelLink="CommandCenterSCBW@Death" SoundLink="CommandCenterSCBW@Explode" Name="Variation2"/>
         <DeathCustoms ModelLink="CommandCenterSCBW@FlyDeath" SoundLink="CommandCenterSCBW@Explode" Name="Flying"/>
