@@ -10,6 +10,141 @@
         <AttributeFactor index="Armored" value="-0.5"/>
         <ShieldFactor value="1"/>
     </CEffectDamage>
+    <CEffectDamage id="DefilerSCBWDarkSwarm@DamageDummy">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactLocation Value="CasterUnitOrPoint"/>
+    </CEffectDamage>
+    <CEffectApplyBehavior id="DefilerSCBWConsume@AB">
+        <ValidatorArray index="0" value="DefilerMPNoConsume"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="DefilerSCBWConsume"/>
+    </CEffectApplyBehavior>
+    <CEffectModifyUnit id="DefilerSCBWConsume@MU">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactUnit Value="Caster"/>
+        <VitalArray index="Energy">
+            <Change value="50"/>
+        </VitalArray>
+    </CEffectModifyUnit>
+    <CEffectSet id="DefilerSCBWConsume@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="Kill"/>
+        <EffectArray value="DefilerSCBWConsume@MU"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="DefilerSCBWDarkSwarm@CP">
+        <EditorCategories value="Race:Zerg"/>
+        <PeriodCount value="40"/>
+        <PeriodicEffectArray value="DefilerSCBWDarkSwarm@Search"/>
+        <PeriodicPeriodArray value="0.25"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="DefilerSCBWDarkSwarm@LM">
+        <ImpactLocation Value="TargetPoint"/>
+        <ImpactEffect value="DefilerSCBWDarkSwarm@CP"/>
+        <AmmoUnit value="DefilerSCBWDarkSwarm@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectEnumArea id="DefilerSCBWDarkSwarm@Search">
+        <EditorCategories value="Race:Zerg"/>
+        <SearchFilters value="-;Neutral,Enemy,Air,Structure,Missile,Stasis,Dead,Hidden"/>
+        <AreaArray Radius="4" Effect="DefilerSCBWDarkSwarm@AB"/>
+    </CEffectEnumArea>
+    <CEffectApplyBehavior id="DefilerSCBWDarkSwarm@AB">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="DefilerSCBWDarkSwarm"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="DefilerSCBWPlague@AB">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="DefilerSCBWPlague"/>
+    </CEffectApplyBehavior>
+    <CEffectDamage id="DefilerSCBWPlague@Damage">
+        <ValidatorArray value="DefilerMPPlagueLifeGT1"/>
+        <ValidatorArray value="NotInvulnerable"/>
+        <ValidatorArray value="NotStasis"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Flags index="NoVitalAbsorbShields" value="1"/>
+        <Amount value="0.9375"/>
+    </CEffectDamage>
+    <CEffectEnumArea id="DefilerSCBWPlague@Search">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="-;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="1.5" Effect="DefilerSCBWPlague@AB"/>
+    </CEffectEnumArea>
+    <CEffectApplyBehavior id="QueenSCBWSpawnBroodlings@TimedLife">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWSpawnBroodlings@BroodlingFate"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="QueenSCBWParasite@AB">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWParasite"/>
+    </CEffectApplyBehavior>
+    <CEffectCreatePersistent id="QueenSCBWParasite@Detector">
+        <ValidatorArray value="HasDetector"/>
+        <EditorCategories value="Race:Zerg"/>
+        <WhichLocation Value="SourceUnit"/>
+        <ExpireDelay value="0.25"/>
+        <RevealRadius value="11"/>
+        <RevealFlags index="Detect" value="1"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="QueenSCBWParasite@LM">
+        <EditorCategories value=""/>
+        <ImpactEffect value="QueenSCBWParasite@AB"/>
+        <AmmoUnit value="QueenSCBWParasite@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectApplyBehavior id="QueenSCBWEnsnare@AB">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWEnsnare"/>
+    </CEffectApplyBehavior>
+    <CEffectDamage id="QueenSCBWEnsnare@DamageDummy">
+        <EditorCategories value="Race:Terran"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <Flags index="Notification" value="1"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="QueenSCBWEnsnare@LM">
+        <EditorCategories value=""/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ImpactEffect value="QueenSCBWEnsnare@Search"/>
+        <AmmoUnit value="QueenSCBWEnsnare@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectEnumArea id="QueenSCBWEnsnare@Search">
+        <EditorCategories value="Race:Zerg"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="-;Player,Ally,Neutral,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="2" Effect="QueenSCBWEnsnare@Set"/>
+        <SearchFlags index="CallForHelp" value="1"/>
+    </CEffectEnumArea>
+    <CEffectSet id="QueenSCBWEnsnare@Set">
+        <ValidatorArray value=""/>
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWEnsnare@AB"/>
+        <EffectArray value="QueenSCBWEnsnare@DamageDummy"/>
+    </CEffectSet>
+    <CEffectCreateUnit id="QueenSCBWSpawnBroodlings@CU">
+        <EditorCategories value=""/>
+        <SpawnEffect value="QueenSCBWSpawnBroodlings@TimedLife"/>
+        <SpawnUnit value="BroodlingSCBW"/>
+        <SpawnCount value="2"/>
+    </CEffectCreateUnit>
+    <CEffectDamage id="QueenSCBWSpawnBroodlings@Damage">
+        <EditorCategories value=""/>
+        <AINotifyFlags index="HurtEnemy" value="1"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <Flags index="Kill" value="1"/>
+        <Flags index="Notification" value="1"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="QueenSCBWSpawnBroodlings@LM">
+        <EditorCategories value=""/>
+        <ImpactEffect value="QueenSCBWSpawnBroodlings@Set"/>
+        <AmmoUnit value="QueenSCBWSpawnBroodlings@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectSet id="QueenSCBWSpawnBroodlings@Set">
+        <ValidatorArray value=""/>
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWSpawnBroodlings@Damage"/>
+        <EffectArray value="QueenSCBWSpawnBroodlings@CU"/>
+    </CEffectSet>
     <CEffectUserData id="BroodlingSCBW@WalkStaggerUDPhaseIncrease">
         <Key value="StaggerPhase"/>
         <SourceKey value="StaggerPhase"/>
@@ -120,6 +255,7 @@
         <MorphFlags index="RallyReset" value="1"/>
         <MorphUnit value="InfestedCommandCenterSCBW"/>
         <AbilKeyFallback value="InfestedCommandCenterSCBW@Morph"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter"/>
     </CEffectMorph>
     <CEffectLaunchMissile id="SporeColonySCBWWeapon@LM">
         <EditorCategories value="Race:Zerg"/>
