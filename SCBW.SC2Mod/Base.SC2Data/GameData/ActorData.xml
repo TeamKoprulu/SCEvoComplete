@@ -1017,12 +1017,25 @@
     <CActorTurret id="SporeColonySCBW@Turret">
         <On Terms="TurretEnable.SporeColonySCBW@Turret" Send="Create"/>
     </CActorTurret>
-    <CActorModel id="SunkenColonySCBW@Build" parent="ZergBuildingSCBW@Build"/>
-    <CActorModel id="SporeColonySCBW@Build" parent="ZergBuildingSCBW@Build"/>
+    <CActorModel id="SunkenColonySCBW@Build" parent="ZergBuildingSCBW@Build">
+        <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SunkenColonySCBW" Send="Destroy"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Inherits index="Opacity" value="0"/>
+    </CActorModel>
+    <CActorModel id="SporeColonySCBW@Build" parent="ZergBuildingSCBW@Build">
+        <On Terms="AbilMorph.*.Start; MorphTo SporeColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SporeColonySCBW" Send="Destroy"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Inherits index="Opacity" value="0"/>
+    </CActorModel>
     <CActorUnit id="SunkenColonySCBW" parent="ZergBuildingSCBW" unitName="SunkenColonySCBW">
-        <On Terms="WeaponStart.SunkenColony.AttackStart" Send="AnimClear Attack"/>
-        <On Terms="WeaponStart.SunkenColony.AttackStart" Send="Create SunkenColonyAttackLaunch"/>
-        <On Terms="WeaponStart.SunkenColony.AttackStart" Send="AnimPlay Attack Attack 0 0.500000 0.500000 2.000000 AsDuration"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Create"/>
+        <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="AnimClear Attack"/>
+        <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="Create SunkenColonyAttackLaunch"/>
+        <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="AnimPlay Attack Attack 0 0.500000 0.500000 2.000000 AsDuration"/>
         <AnimBlendTime value="0.400000"/>
         <PlacementModel value="SunkenColonySCBW"/>
         <PlacementSound value="Zerg_BuildingPlacementSmall"/>
@@ -1032,9 +1045,9 @@
         <GroupIcon>
             <Image value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-spinecrawler.dds"/>
         <SoundArray index="Construction" value="Zerg_BuildingMorphWhat"/>
-        <UnitIcon value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-spinecrawler.dds"/>
         <Wireframe>
             <Image value="Assets\Textures\Wireframe-Zerg-PrimalSunkenColony.dds"/>
         </Wireframe>
@@ -1333,8 +1346,10 @@
         <Sound value="Mutalisk_Death"/>
     </CActorSound>
     <CActorUnit id="QueenSCBW" parent="GenericUnitStandard" unitName="QueenSCBW">
-        <On Terms="Abil.QueenMPEnsnare.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
-        <On Terms="Abil.QueenMPSpawnBroodlings.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWEnsnare.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWSpawnBroodlings.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWParasite.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWInfestCommandCenter.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
         <On Terms="UnitMovementUpdate.*.Walk" Send="AnimClear Spell"/>
         <HostSiteOps Ops="SOpBankerQueenMP"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
@@ -1560,18 +1575,18 @@
     </CActorSiteOpRotationExplicit>
     <CActorUnit id="SpireSCBW" parent="ZergBuildingSCBW" unitName="SpireSCBW">
         <Aliases value="_UnitHuge"/>
-        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Send="StatusSet Morphing 1"/>
-        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Send="Create SpireSCBW@Morph"/>
-        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Target="SpireSCBW@Morph" Send="Signal Started"/>
-        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpire" Send="AnimPlay Morph Morph PlayForever 0.000000 0.000000 3.333000 AsDuration"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="StatusSet Morphing 0"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Target="SpireSCBW@Morph" Send="Signal Finished"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimClear Morph"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimClear ::Progress"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimBaselineStart"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="AnimPlay Rebirth Build,D,Start 0 0.000000 0.000000 2.000000 AsDuration"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpire" Target="SpireSCBW@Morph" Send="Signal Finished"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpire" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpireSCBW" Send="StatusSet Morphing 1"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpireSCBW" Send="Create SpireSCBW@Morph"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpireSCBW" Target="SpireSCBW@Morph" Send="Signal Started"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpireSCBW" Send="AnimPlay Morph Morph PlayForever 0.000000 0.000000 3.333000 AsDuration"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Send="StatusSet Morphing 0"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Target="SpireSCBW@Morph" Send="Signal Finished"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Send="AnimClear Morph"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Send="AnimClear ::Progress"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Send="AnimBaselineStart"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Send="AnimPlay Rebirth Build,D,Start 0 0.000000 0.000000 2.000000 AsDuration"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpireSCBW" Target="SpireSCBW@Morph" Send="Signal Finished"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpireSCBW" Send="Destroy"/>
         <On Terms="UnitDeathCustomize; IsStatus Morphing 1" Send="DeathCustomize Upgrade"/>
         <On Terms="Behavior.BuildingStasis.On" Send="TimerSet 0.330000 DelayCreation"/>
         <On Terms="TimerExpired; TimerName DelayCreation" Target="SpireSCBW@Morph" Send="AnimSetPausedAll"/>
@@ -1723,53 +1738,21 @@
             <Image value="Assets\Textures\Wireframe-Zerg-SpawningPool.dds"/>
         </Wireframe>
     </CActorUnit>
-    <CActorUnit id="SporeColonySCBW" parent="ZergBuildingEx" unitName="SporeColonySCBW">
+    <CActorUnit id="SporeColonySCBW" parent="ZergBuildingSCBW" unitName="SporeColonySCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="TerrainSquibAnimations"/>
-        <On Terms="AbilMorph.*.Start; AbilKey Root" Send="Create LargeBurrowDownEffects"/>
-        <On Terms="AbilMorph.*.Start; AbilKey Root" Send="Create BurrowDownLarge"/>
-        <On Terms="AbilMorph.*.Start; AbilKey Uproot" Send="Create LargeBurrowUpEffects"/>
-        <On Terms="AbilMorph.*.Start; AbilKey Uproot" Send="Create BurrowUpLarge"/>
-        <On Terms="UnitBirth.SporeCrawlerUprooted" Send="Create"/>
-        <On Terms="UnitBirth.SporeCrawlerUprooted" Send="AnimGroupRemove Burrow"/>
-        <On Terms="UnitBirth.SporeCrawlerUprooted" Target="_BuildingTerrainFlatten" Send="Destroy"/>
-        <On Terms="UnitBirth.SporeCrawlerUprooted" Send="AnimBlendTimeApply 0.100000"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SporeCrawlerUprooted" Send="AnimGroupRemove Burrow"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SporeCrawlerUprooted" Send="AnimPlay Unburrow Unburrow"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SporeCrawlerUprooted" Target="_BuildingTerrainFlatten" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SporeCrawlerUprooted" Send="AnimClear Morph"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeCrawlerUprooted" Send="AnimBlendTimeApply 0.100000"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo SporeCrawler" Send="AnimBracketStop Morph Instant"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SporeCrawler" Send="AnimBracketStart Morph IGNORE Burrow Stand,Burrow ContentPlayOnce"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SporeCrawler" Send="Create BuildingTerrainFlatten"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SporeCrawler" Send="Create SporeCrawlerBurrowLoop"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeCrawler" Send="AnimGroupApply Burrow"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeCrawler" Send="AnimBracketStop Morph"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeCrawler" Target="SporeCrawlerBurrowLoop" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo SporeCrawler" Target="SporeCrawlerBurrowLoop" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeCrawler" Send="AnimBlendTimeApply 0.400000"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Create"/>
         <On Terms="Behavior.Corruption.On" Send="AnimSetPaused Morph"/>
         <On Terms="Behavior.Corruption.Off" Send="AnimSetPaused Morph 0"/>
         <On Terms="ActorCreation" Send="AnimGroupApply Burrow"/>
-        <On Terms="UnitDeathCustomize.SporeCrawlerUprooted" Send="DeathCustomize Uprooted"/>
-        <On Terms="UnitDeathCustomize; AnimPlaying Morph" Send="DeathCustomize Uprooted"/>
-        <On Terms="UnitBirth.SporeCrawlerUprooted" Send="TerrainSquibActivateGroup RippleStandard"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeCrawlerUprooted" Send="TerrainSquibActivateGroup RippleStandard"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeCrawler" Send="TerrainSquibDeactivate"/>
         <On Terms="Behavior.ZeratulStun.On" Send="AnimSetPaused Morph"/>
         <On Terms="Behavior.ZeratulStun.Off" Send="AnimSetPaused Morph 0"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
         <AnimBlendTime value="0.400000"/>
-        <EventDataSound Name="SporeCrawlerBurrowEnd" Actor="UnitSound" Sound="Zerg_BurrowLarge"/>
-        <DeathArray index="Normal" ModelLink="SporeColonySCBW@Death" SoundLink="SporeColonySCBW@Explode"/>
-        <DeathArray index="UnderConstruction" ModelLink="SporeColonySCBW@DeathUnderConstruction" SoundLink="SporeColonySCBW@Explode"/>
-        <DeathCustoms ModelLink="SporeCrawlerUnburrowedDeath" Name="Uprooted"/>
         <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
-        <PlacementModel value="SporeColonySCBW@Placement"/>
         <PlacementSound value="Zerg_BuildingPlacementSmall"/>
         <PlacementActorModel value="SporeCrawlerPlacementModel"/>
         <PlaceholderActorModel value="SporeCrawlerPlacementModel"/>
-        <PortraitModel value="SporeColonySCBW@Portrait"/>
         <TerrainSquibs>
             <GroupName value="RippleStandard"/>
             <MovementDistance value="0.150000,0.150000"/>
@@ -1793,9 +1776,6 @@
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-building-zerg-sporecrawler.dds"/>
         <NameOffset value="30"/>
-        <SoundArray index="Ready" value="SporeColonySCBW@Ready"/>
-        <SoundArray index="What" value="SporeColonySCBW@What"/>
-        <SoundArray index="Yes" value="SporeColonySCBW@Yes"/>
         <SoundArray index="Attack" value="SporeCrawler_Attack"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-sporecrawler.dds"/>
         <Wireframe>
@@ -1828,13 +1808,23 @@
     <CActorSound id="ZergBuildingSCBW@MorphCancel" parent="SoundOneShot">
         <On Terms="AbilMorph.*.Cancel; MorphTo LairSCBW" Send="Create"/>
         <On Terms="AbilMorph.*.Cancel; MorphTo HiveSCBW" Send="Create"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo LurkerDen" Send="Create"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpire" Send="Create"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo LurkerDenMP" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SporeColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SunkerColonySCBW" Send="Create"/>
     </CActorSound>
     <CActorUnit id="CreepColonySCBW" parent="ZergBuildingSCBW" unitName="CreepColonySCBW">
+        <On Terms="Signal.*.Morph" Send="SetOpacity 0.000000 0.500000"/>
+        <On Terms="Signal.*.MorphEnd" Send="SetOpacity 1.000000 0.500000"/>
+        <On Terms="Signal.*.MorphEnd" Target="SporeColonySCBW" Send="SetOpacity 1.000000"/>
+        <On Terms="Signal.*.MorphEnd" Target="SunkenColonySCBW" Send="SetOpacity 1.000000"/>
+        <On Terms="Signal.*.DelayDestroy" Send="TimerSet 0.062500 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Signal Morph"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="Signal MorphEnd"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW" Send="Signal MorphEnd"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Signal DelayDestroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Signal DelayDestroy"/>
         <AnimBlendTime value="0.400000"/>
-        <DeathArray index="Normal" SoundLink="SporeCrawler_Explode"/>
         <PlacementSound value="ZergBuildingSCBW@PlacementSmall"/>
         <WalkAnimMoveSpeed value="0.7968"/>
         <BarOffset value="60"/>
