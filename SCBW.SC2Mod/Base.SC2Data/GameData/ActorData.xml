@@ -314,6 +314,11 @@
         <UnitFlags index="StandAnimBirthVariation" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-##unitName##.dds"/>
     </CActorUnit>
+    <CActorSplat id="LurkerSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="LurkerSCBW">
+        <Scale value="0.800000"/>
+    </CActorSplat>
+    <CActorSound id="LurkerSCBW@BurrowDown" parent="SoundOneShot"/>
+    <CActorSound id="LurkerSCBW@Land" parent="SoundOneShot"/>
     <CActorModel id="DefilerSCBWConsume@Consume" parent="ModelAnimationStyleOneShotUNIT">
         <On Terms="Behavior.DefilerSCBWConsume.On" Send="Create"/>
         <On Terms="Behavior.DefilerSCBWConsume.Off" Send="Destroy"/>
@@ -655,6 +660,58 @@
         <SoundArray index="Attack" value="InfestedTerranSCBW@Attack"/>
         <SoundArray index="Pissed" value="InfestedTerranSCBW@Pissed"/>
     </CActorUnit>
+    <CActorModel id="LurkerSCBWWeapon@DamageModelReaction" parent="ModelAnimationStyleOneShotNoOrphan">
+        <Terms value="!Option Model Low"/>
+        <Flags index="SuppressCreationErrors" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <On Terms="ActorCreation" Send="AnimSetPaused BSD"/>
+        <On Terms="ActorCreation" Send="TimerSet 0.010000 DeathValidateDelay"/>
+        <On Terms="TimerExpired; TimerName DeathValidateDelay; ScopeContains UnitDeathModel" Send="AnimSetPaused BSD 0"/>
+        <On Terms="TimerExpired; TimerName DeathValidateDelay; !ScopeContains UnitDeathModel" Send="Destroy"/>
+        <Model value="GenericAttackModel"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+    </CActorModel>
+    <CActorAction id="LurkerSCBWWeapon@Action" parent="AoEAttackBase">
+        <On Terms="Effect.LurkerSCBWWeapon@Damage.Start; At Effect" Send="Create"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Damage.Start; At Effect" Send="ActionDamage"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Damage.Stop; At Effect" Send="Destroy"/>
+        <DamageSiteOps Ops="SOpAttachHarness SOpShadow" HoldPosition="1" HoldRotation="1"/>
+        <DamageAttachQuery Methods="AMFilterTarget AMProximityAll"/>
+        <DamageMap index="Flesh" ModelReaction="LurkerSCBWWeapon@DeathBloodGeyser"/>
+        <DamageModelReaction value="LurkerSCBWWeapon@DamageModelReaction"/>
+        <Lifetime value="2.600000"/>
+    </CActorAction>
+    <CActorSound id="LurkerSCBWWeapon@LaunchSoundInitial" parent="SoundOneShot">
+        <FogVisibility value="Visible"/>
+        <On Terms="Effect.LurkerSCBWWeapon@CP.Start" Send="Create"/>
+        <HostSiteOps Ops="SOpTargetPoint SOpShadow SOpForwardCasterPoint"/>
+        <Sound value="LurkerSCBWWeapon@LaunchInitial"/>
+    </CActorSound>
+    <CActorModel id="LurkerSCBWWeapon@Spike" parent="ModelAnimationStyleOneShot">
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start" Send="Create"/>
+        <On Terms="ActorCreation" Send="AnimPlay Attack Attack"/>
+        <On Terms="ActorCreation" Send="TimerSet 1.500000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <HostSiteOps Ops="LurkerMPSOpAoEVariancer SOpShadow SOpForwardCasterPoint SOp2DRotation LurkerMPSOpShadowSpine SOpRotVariancerUp15"/>
+    </CActorModel>
+    <CActorModel id="LurkerSCBWWeapon@ImpactModel" parent="ModelAnimationStyleOneShot">
+        <On Terms="Effect.LurkerSCBWWeapon@Damage.Start; At Target" Send="Create"/>
+        <HostSiteOps Ops="SOpShadow"/>
+        <Model value="LurkerSCBWWeapon@Impact"/>
+    </CActorModel>
+    <CActorSound id="LurkerSCBWWeapon@LaunchSound" parent="SoundOneShot">
+        <FogVisibility value="Visible"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start" Send="Create"/>
+        <HostSiteOps Ops="SOpTargetPoint SOpShadow SOpForwardCasterPoint"/>
+        <Sound value="LurkerSCBWWeapon@Launch"/>
+    </CActorSound>
+    <CActorForceSphere id="LurkerSCBWWeapon@StabForce">
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start" Send="Create"/>
+        <On Terms="ActorCreation" Send="Create LurkerStabUpForce"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="25.000000,12.000000"/>
+        <Radius value="0.625000,0.100000"/>
+    </CActorForceSphere>
     <CActorSound id="QueenSCBWParasite@DeathSound" parent="SoundOneShot">
         <On Terms="Behavior.QueenSCBWParasite.Off" Send="Create"/>
         <Host Subject="_Unit"/>
