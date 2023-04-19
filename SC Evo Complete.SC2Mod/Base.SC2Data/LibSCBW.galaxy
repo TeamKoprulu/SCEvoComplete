@@ -1,0 +1,106 @@
+include "TriggerLibs/NativeLib"
+
+include "LibSCBW_h"
+
+//--------------------------------------------------------------------------------------------------
+// Library: SCEvo
+//--------------------------------------------------------------------------------------------------
+// External Library Initialization
+void libSCBW_InitLibraries () {
+    libNtve_InitVariables();
+}
+
+// Custom Script
+//--------------------------------------------------------------------------------------------------
+// Custom Script: Main
+//--------------------------------------------------------------------------------------------------
+include "Script/SCBW"
+void bluh(){
+    region r = RegionPlayableMap();
+    point p = RegionGetBoundsMax(r);
+    fixed width = PointGetX (p);
+    fixed height = PointGetY(p);
+    int i =0;
+    int j =0;
+    string model="EditorHelper";
+    for(i=0;i<width;i+=1){
+        for(j=0;j<height;j+=1){
+            //libNtve_gf_CreateModelAtPoint(model,Point(i,j));
+        }
+    }
+}
+void SCBW_main(){
+    SCBW_Init();
+    bluh();
+}
+
+void libSCBW_InitCustomScript () {
+    SCBW_main();
+}
+
+// Triggers
+//--------------------------------------------------------------------------------------------------
+// Trigger: Map Initialization
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_MapInitialization_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_playerIndex;
+
+    // Automatic Variable Declarations
+    playergroup auto52EFDCBD_g;
+    string auto66859ACD_val;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    auto52EFDCBD_g = PlayerGroupActive();
+    lv_playerIndex = -1;
+    while (true) {
+        lv_playerIndex = PlayerGroupNextPlayer(auto52EFDCBD_g, lv_playerIndex);
+        if (lv_playerIndex < 0) { break; }
+        if ((PlayerType(lv_playerIndex) != c_playerTypeComputer)) {
+            auto66859ACD_val = GameAttributePlayerValue("1", lv_playerIndex);
+            if (auto66859ACD_val == "0001") {
+                PlayerSetRace(lv_playerIndex, "BWTe");
+                libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
+                libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
+            }
+            else {
+            }
+        }
+
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_MapInitialization_Init () {
+    libSCBW_gt_MapInitialization = TriggerCreate("libSCBW_gt_MapInitialization_Func");
+    TriggerAddEventMapInit(libSCBW_gt_MapInitialization);
+}
+
+void libSCBW_InitTriggers () {
+    libSCBW_gt_MapInitialization_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_InitLib_completed = false;
+
+void libSCBW_InitLib () {
+    if (libSCBW_InitLib_completed) {
+        return;
+    }
+
+    libSCBW_InitLib_completed = true;
+
+    libSCBW_InitLibraries();
+    libSCBW_InitCustomScript();
+    libSCBW_InitTriggers();
+}
+
