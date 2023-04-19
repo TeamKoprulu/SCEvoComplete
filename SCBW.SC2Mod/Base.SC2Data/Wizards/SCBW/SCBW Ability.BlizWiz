@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wizardfile>
+	<wizard id="CreateResearchForAbilSCBW">
+		<name>Create Research For Abil</name>
+		<objecttypes create="Upgrade" load="Ability"/>
+		<input id="AbilID" type="CAbilLink">
+			<name>Ability</name>
+			<tooltip>Ability.</tooltip>
+			<layout />
+			<loadvalue>^LOADID^</loadvalue>
+		</input>
+		<input id="UnitID" type="CUnit">
+			<name>Unit</name>
+			<tooltip>Unit.</tooltip>
+			<layout />
+		</input>
+		<input id="RaceID" type="CRace">
+			<name>Race</name>
+		</input>
+		<macro id="AbilResearchID">^AbilID^Research</macro>
+		<macro id="RaceName">ref=Race,^RaceID^,Name</macro>
+		<macro id="DataCollectionParent">^RaceName^UpgradeSCBW</macro>
+		<entry catalog="Ability" type="CAbilResearch">
+			<id>^AbilResearchID^</id>
+			<parentid>SCBW_Research</parentid>
+		</entry>
+		<entry catalog="Upgrade" type="CUpgrade">
+			<id>^AbilResearchID^</id>
+			<parentid>SCBW_Research</parentid>
+			<field id="Icon">
+				<value>ref=Button,^AbilID^,Icon</value>
+			</field>
+		</entry>
+		<entry catalog="Button" type="CButton">
+			<id>^AbilResearchID^</id>
+			<parentid>SCBW_Research</parentid>
+			<field id="Name">
+				<value>Research ref=Abil,^AbilID^,Name</value>
+			</field>
+			
+			<field id="Tooltip">
+				<value>Enables &lt;s val="TooltipHighlightSCBW"&gt;&lt;d stringref="Unit,^UnitID^,Name"/&gt;s&lt;/s&gt; to use the &lt;s val="TooltipHighlightSCBW"&gt;&lt;d stringref="Abil,^AbilID^,Name"/&gt;&lt;/s&gt; ability.</value>
+			</field>
+			<field id="Icon">
+				<value>ref=Button,^AbilID^,Icon</value>
+			</field>
+			<field id="AlertIcon">
+				<value>ref=Button,^AbilID^,Icon</value>
+			</field>
+		</entry>
+		<entry catalog="Requirement" type="CRequirement">
+			<id>^AbilResearchID^</id>
+			<parentid>SCBW_AbilReq</parentid>
+		</entry>
+
+		<entry catalog="RequirementNode" type="CRequirementAnd">
+			<id>^AbilResearchID^</id>
+			<field id="Name">
+				<value></value>
+			</field>
+		</entry>
+		<entry catalog="RequirementNode" type="CRequirementAnd">
+			<id>^AbilResearchID^@Show</id>
+			<field id="Name">
+				<value>Show</value>
+			</field>
+			<field id="OperandArray">
+				<value>^AbilResearchID^@NotQoB</value>
+			</field>
+		</entry>
+
+		<entry catalog="RequirementNode" type="CRequirementCountUpgrade">
+			<id>^AbilResearchID^@Count</id>
+			<parentid>SCBW_UpgradeCount</parentid>
+			<token id="x">
+				<value>^AbilResearchID^</value>
+			</token>
+			<field id="Name">
+				<value>Count Complete</value>
+			</field>
+		</entry>
+		<entry catalog="RequirementNode" type="CRequirementCountUpgrade">
+			<id>^AbilResearchID^@QoB</id>
+			<parentid>SCBW_UpgradeQoB</parentid>
+			<token id="x">
+				<value>^AbilResearchID^</value>
+			</token>
+			<field id="Name">
+				<value>QoB</value>
+			</field>
+		</entry>
+		<entry catalog="RequirementNode" type="CRequirementNot">
+			<id>^AbilResearchID^@NotCount</id>
+			<parentid>SCBW_Not</parentid>
+			<token id="x">
+				<value>^AbilResearchID^@Count</value>
+			</token>
+			<field id="Name">
+				<value>Not Count Complete</value>
+			</field>
+		</entry>
+		<entry catalog="RequirementNode" type="CRequirementNot">
+			<id>^AbilResearchID^@NotQoB</id>
+			<parentid>SCBW_Not</parentid>
+			<token id="x">
+				<value>^AbilResearchID^@QoB</value>
+			</token>
+			<field id="Name">
+				<value>Not QoB</value>
+			</field>
+		</entry>
+		<entry catalog="DataCollection" type="CDataCollectionUpgrade">
+			<id>^AbilResearchID^</id>
+			<parentid>^DataCollectionParent^</parentid>
+		</entry>
+
+	</wizard>
+	
+	<wizard id="CreateBehaviorValidatorSCBW">
+		<name>Create Behavior Validator SCBW Structure</name>
+		<objecttypes create="Validator" load="Behavior"/>
+		<input id="BehaviorID" type="CBehaviorLink">
+			<name>ID</name>
+			<tooltip>ID of the Behavior.</tooltip>
+			<layout />
+			<loadvalue>^LOADID^</loadvalue>
+		</input>
+		<macro id="DisableID">ref=Behavior,^BehaviorID^,Name @ Disable</macro>
+		<macro id="RemoveID">ref=Behavior,^BehaviorID^,Name @ Remove</macro>
+		<entry catalog="Validator" type="CValidatorCombine">
+			<id>^BehaviorID^@Disable</id>
+			<parentid>SCBW_Behavior</parentid>
+			<field id="Name">
+				<value>^DisableID^</value>
+			</field>
+			
+			<field id="CombineArray">
+				<count>ref=Behavior,^BehaviorID^,DisableValidatorArray#</count>
+				<index>^VALUEINDEX^</index>
+				<value>ref=Behavior,^BehaviorID^,DisableValidatorArray[^VALUEINDEX^]</value>
+			</field>
+		</entry>
+		<entry catalog="Validator" type="CValidatorCombine">
+			<id>^BehaviorID^@Remove</id>
+			<parentid>SCBW_Behavior</parentid>
+			<field id="Name">
+				<value>^RemoveID^</value>
+			</field>
+			
+			<field id="CombineArray">
+				<count>ref=Behavior,^BehaviorID^,RemoveValidatorArray#</count>
+				<index>^VALUEINDEX^</index>
+				<value>ref=Behavior,^BehaviorID^,RemoveValidatorArray[^VALUEINDEX^]</value>
+			</field>
+		</entry>
+		
+		<entry catalog="Behavior">
+			<useloaded />
+			<field id="DisableValidatorArray">
+				<count>ref=Behavior,^BehaviorID^,DisableValidatorArray#</count>
+				<index>^VALUEINDEX^</index>
+				<value></value>
+			</field>
+			
+			<field id="RemoveValidatorArray">
+				<count>ref=Behavior,^BehaviorID^,RemoveValidatorArray#</count>
+				<index>^VALUEINDEX^</index>
+				<value></value>
+			</field>
+			<field id="DisableValidatorArray">
+				<index>0</index>
+				<value>^BehaviorID^@Disable</value>
+			</field>
+			<field id="RemoveValidatorArray">
+				<index>0</index>
+				<value>^BehaviorID^@Remove</value>
+			</field>
+		</entry>
+		
+	</wizard>
+
+</wizardfile>
