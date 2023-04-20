@@ -205,7 +205,6 @@ static order BWDefilerDarkSwarm (int player, unit aiUnit, unitgroup scanGroup, m
     if(g_BWDefilerDarkSwarmNoCast[player] != null){
         if (RegionContainsPoint(g_BWDefilerDarkSwarmNoCast[player], loc)){
             
-            // TriggerDebugOutput(1, StringToText("inRegion"), true);
             return null;
         }
     }
@@ -289,8 +288,6 @@ static bool BWPlagueCloakedAttacker (int player, unit aiUnit, unitgroup scanGrou
             AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DefilerSCBWPlague_AB);
             AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
             group = AIGetFilterGroup(filter, group);
-            // s = "Count >"+ IntToString(UnitGroupCount(group, c_unitCountAll));
-            // TriggerDebugOutput(1, StringToText(s), true);
 
             loc = AIBestTargetPoint(
                 AIEffectGroup(player, c_BWEF_DefilerSCBWPlague_Search, group),
@@ -312,7 +309,6 @@ static bool BWPlagueCloakedAttacker (int player, unit aiUnit, unitgroup scanGrou
                 OrderSetTargetPoint(ord, loc);
                 if (UnitOrderIsValid(aiUnit, ord)) {
 		            mark = AIMarker(aiUnit, c_BWMK_DefilerSCBWPlague);
-                    // TriggerDebugOutput(1, StringToText("Plague Reveal"),true);
                     AICastCooldown(aiUnit, ord, mark, c_castHold, c_PlagueCooldown, 4.5);
                     AIClearCloakedAttacker(player, loc);
                     return true;
@@ -351,7 +347,6 @@ static order BWDefilerMoveToSafety (int player, unit aiUnit, unitgroup scanGroup
         enemyUnits = AIGetFilterGroup(filter, scanGroup);
         if (UnitGroupCount(enemyUnits, c_unitCountAlive) > 0){
             for (i = g_BWDefilerDarkSwarmNoCastCount[player] - 1; i >= 0; i -= 1) {
-                // TriggerDebugOutput(1, IntToText(i),true);
                 if(g_BWDefilerDarkSwarmNoCastTemp[player][i] != null){
                     count = UnitGroupCount(UnitGroupFilterRegion(enemyUnits, g_BWDefilerDarkSwarmNoCastTemp[player][i], 10), c_unitCountAlive);
                     loc = RegionGetCenter(g_BWDefilerDarkSwarmNoCastTemp[player][i]);
@@ -370,10 +365,8 @@ static order BWDefilerMoveToSafety (int player, unit aiUnit, unitgroup scanGroup
         loc = RegionGetCenter(g_BWDefilerDarkSwarmNoCastTemp[player][bestIndex]);
         if(loc != null){
             if(libNtve_gf_UnitInRegion(aiUnit, RegionCircle(loc, 1.0))){
-                // TriggerDebugOutput(1, StringToText("StopOrder"),true);
                 ord = AICreateOrder(player, "stop", 0);
             }else{
-                // TriggerDebugOutput(1, StringToText("MoveOrder"),true);
                 ord = AICreateOrder(player, "move", 0);
                 OrderSetTargetPoint(ord, loc);
             }
@@ -413,7 +406,6 @@ void AIThinkDefiler (int player, unit aiUnit, unitgroup scanGroup) {
 		mark = AIMarker(aiUnit, c_BWMK_DefilerSCBWConsume);
         ord = BWDefilerConsume(player, aiUnit, scanGroup, mark);
         if (ord != null) {
-            // TriggerDebugOutput(1, StringToText("Consume"),true);
             AICastCooldown(aiUnit, ord, mark, c_castHold, c_ConsumeCooldown, 2);
             return;
         }
@@ -423,7 +415,6 @@ void AIThinkDefiler (int player, unit aiUnit, unitgroup scanGroup) {
 
         mark = AIMarker(aiUnit, c_BWMK_DefilerSCBWPlague);
         if (BWPlagueCloakedAttacker(player, aiUnit, scanGroup, mark)) {
-            // TriggerDebugOutput(1, StringToText("PlagueReveal"),true);
             return;
         }
 
@@ -660,7 +651,6 @@ void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
             mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
             ord = BWPsionicStorm(player, aiUnit, scanGroup);
             if (ord != null) {
-                //TriggerDebugOutput(1, StringToText("PsiStormOrd"), true);
                 AICast(aiUnit, ord, c_noMarker, c_castHold);
                 return;
             }
@@ -731,7 +721,6 @@ order BWVultureSpiderMine (int player, unit aiUnit, unitgroup scanGroup) {
 		return null;
 	}
 	
-    TriggerDebugOutput(1, StringToText("Search For Mines"), true);
 	loc = UnitGetPosition(aiUnit);
 
 	// Don't create large clusters of traps
@@ -740,19 +729,16 @@ order BWVultureSpiderMine (int player, unit aiUnit, unitgroup scanGroup) {
     spiderMineCount = UnitGroupCount(spiderMineGroup, c_unitCountAll);
 
     
-    TriggerDebugOutput(1, StringToText("No Spider Mines"), true);
     if (spiderMineCount != 0) {
         return null;
     }
     target = RegionRandomPoint(RegionCircle(loc, 7));
 
-    TriggerDebugOutput(1, StringToText("Send Order"), true);
 	OrderSetTargetPoint(ord, target);
 	if (!UnitOrderIsValid(aiUnit,ord)) {
 		return null;
 	}
 	
-    TriggerDebugOutput(1, StringToText("Order Returned"), true);
 	return ord;
 }
 
