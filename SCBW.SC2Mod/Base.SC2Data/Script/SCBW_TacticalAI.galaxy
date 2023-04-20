@@ -1219,6 +1219,7 @@ void AIThinkPylonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //---------------------------------------------------------------------------------------------
 const int c_BWSpawnBroodlingsCooldown = c_tactTimerFirst;
 const int c_BWEnsnareCooldown = c_tactTimerSecond;
+const int c_BWParasiteCooldown = c_tactTimerSecond;
 
 //--------------------------------------------------------------------------------------------------
 order BWQueenParasite (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
@@ -1259,6 +1260,9 @@ order BWQueenParasite (int player, unit aiUnit, unitgroup scanGroup, marker mark
         else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeMassive) == true) {
             UnitGroupAdd(filterGroup, unitToCheck);
         }
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeLight) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
         else if (UnitGetType(unitToCheck) == c_TU_SiegeTank || UnitGetType(unitToCheck) == c_TU_SiegeTankSieged) {
             UnitGroupAdd(filterGroup, unitToCheck);
         }
@@ -1275,7 +1279,7 @@ order BWQueenEnsnare (int player, unit aiUnit, unitgroup scanGroup, marker mark)
     aifilter filter;
     unitgroup enemyGroup;
 
-    if (!AITactCooldownAllow(aiUnit, c_EnsnareCooldown)) {
+    if (!AITactCooldownAllow(aiUnit, c_BWEnsnareCooldown)) {
         return null;
     }
 
@@ -1300,7 +1304,7 @@ order BWQueenEnsnare (int player, unit aiUnit, unitgroup scanGroup, marker mark)
         2, // min hits
         20, // damage base
         1.5, // min score 
-        AIEffectFixed(player, c_EF_QueenMPEnsnareArea, c_fieldAreaRadius0),
+        AIEffectFixed(player, c_BWEF_QueenSCBWEnsnare_Search, c_fieldAreaRadius0),
         UnitGetPosition(aiUnit),
         AIAbilityFixed(player, c_BWAB_QueenSCBWEnsnare, c_fieldRange0)+3,
         c_unitAttributeNone
@@ -1331,22 +1335,18 @@ order BWQueenSpawnBroodlings (int player, unit aiUnit, unitgroup scanGroup, mark
         return null;
     }
     
-    TriggerDebugOutput(1, StringToText("CDCheck"),true);
     ord = AICreateOrder(player, c_BWAB_QueenSCBWSpawnBroodlings, 0);
     if (!UnitOrderIsValid(aiUnit, ord)) {
         return null;
     }
 
-    TriggerDebugOutput(1, StringToText("ValidOrder"),true);
     filterGroup = UnitGroupEmpty();
-
 
     scanCount = UnitGroupCount(scanGroup, c_unitCountAll);
     if(scanCount == 0) {
         return null;
     }
 
-    TriggerDebugOutput(1, StringToText("ScanCount Above 0"),true);
     while (scanCount > 0) {
         unitToCheck = UnitGroupUnit(scanGroup, scanCount);
         scanCount = scanCount - 1;
@@ -1365,10 +1365,13 @@ order BWQueenSpawnBroodlings (int player, unit aiUnit, unitgroup scanGroup, mark
         else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeMassive) == true) {
             UnitGroupAdd(filterGroup, unitToCheck);
         }
-        else if (UnitGetType(unitToCheck) == c_BWTU_SiegeTankSieged || UnitGetType(unitToCheck) == c_BWTU_SiegeTankSieged) {
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeBiological) == true) {
             UnitGroupAdd(filterGroup, unitToCheck);
         }
         else if (UnitGetType(unitToCheck) == c_BWPU_DarkArchon || UnitGetType(unitToCheck) == c_BWPU_DarkArchon) {
+            UnitGroupRemove(filterGroup, unitToCheck);
+        }
+        else if (UnitGetType(unitToCheck) == c_BWPU_Archon || UnitGetType(unitToCheck) == c_BWPU_Archon) {
             UnitGroupRemove(filterGroup, unitToCheck);
         }
     }
@@ -1382,8 +1385,6 @@ void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     marker mark;
     fixed cooldown;
 
-    TriggerDebugOutput(1, StringToText("Queen Run"),true);
-
     mark = AIMarker(aiUnit, c_BWMK_QueenSCBWSpawnBroodlings);
     ord = BWQueenSpawnBroodlings(player, aiUnit, scanGroup, mark);
     if (ord != null) {
@@ -1391,38 +1392,37 @@ void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
             cooldown = 15.0;
         }
         else {
-            cooldown = 0.0;
+            cooldown = 1.0;
         }
-        TriggerDebugOutput(1, StringToText("Cast Start"),true);
         AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_SpawnBroodlingsCooldown, cooldown);
         return;
     }
 
-    //mark = AIMarker(aiUnit, c_MK_Parasite);
-    //ord = QueenClassicParasite(player, aiUnit, scanGroup, mark);
-    //if (ord != null) {
-    //    AICast(aiUnit, ord, mark, c_castRetreat);
-    //    return;
-    //}
-//
-    //mark = AIMarker(aiUnit, c_MK_Ensnare);
-    //ord = QueenMPEnsnare(player, aiUnit, scanGroup, mark);
-    //if (ord != null) {
-    //    if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
-    //        cooldown = 15.0;
-    //    }
-    //    else {
-    //        cooldown = 0.0;
-    //    }
-    //    AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_EnsnareCooldown, cooldown);
-    //    return;
-    //}
-//
-    //ord = CreepTumor(player, aiUnit);
-    //if (ord != null) {
-    //    AICast(aiUnit, ord, c_noMarker, c_castRetreat);
-    //    return;
-    //}
+    mark = AIMarker(aiUnit, c_MK_Parasite);
+    ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 20.0;
+        }
+        else {
+            cooldown = 10.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
+        return;
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWEnsnare);
+    ord = BWQueenEnsnare(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 15.0;
+        }
+        else {
+            cooldown = 5.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWEnsnareCooldown, cooldown);
+        return;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------
