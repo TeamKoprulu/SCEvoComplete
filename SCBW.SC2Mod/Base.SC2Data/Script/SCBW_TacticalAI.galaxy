@@ -1,0 +1,701 @@
+include "TriggerLibs/Computer"
+
+//--------------------------------------------------------------------------------------------------
+//  Abilities
+//--------------------------------------------------------------------------------------------------
+
+
+//--------------------------------------------------------------------------------------------------
+//  *** Defiler ***
+//--------------------------------------------------------------------------------------------------
+const string c_AB_Plague					= "DefilerSCBWPlague";
+const string c_BF_Plague                    = "DefilerSCBWPlague";
+const string c_EF_PlagueArea				= "DefilerSCBWPlague@Search";
+const string c_AB_DefilerDarkSwarm			= "DefilerSCBWDarkSwarm";
+const string c_BF_DefilerDarkSwarm          = "DefilerSCBWDarkSwarm";
+const string c_EF_DefilerDarkSwarm          = "DefilerSCBWDarkSwarm@Search";
+const string c_AB_DefilerConsume		    = "DefilerSCBWConsume";
+const int c_DarkSwarmCooldown = c_tactTimerFirst;
+const int c_ConsumeCooldown = c_tactTimerSecond;
+const int c_PlagueCooldown = c_tactTimerThird;
+
+region[c_maxPlayers] g_DefilerDarkSwarmNoCast;
+region[c_maxPlayers][11] g_DefilerDarkSwarmNoCastTemp;
+int[c_maxPlayers] g_DefilerDarkSwarmNoCastCount;
+
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: DarkSwarmNoCastRegion
+//--------------------------------------------------------------------------------------------------
+void gf_DeclareDarkSwarmNoCastRegion() {
+    point pos;
+    fixed radius;
+    int player = EventPlayer();
+    int index = -1;
+    int i;
+
+    if(g_DefilerDarkSwarmNoCastCount[player] >= 11){ return;}
+    if(g_DefilerDarkSwarmNoCast[player] == null){
+        g_DefilerDarkSwarmNoCast[player] = RegionEmpty();
+        g_DefilerDarkSwarmNoCastCount[player] = 1;
+    } else{ g_DefilerDarkSwarmNoCastCount[player] += 1; }
+    for (i = 0; i <= 10; i += 1) {
+        if(g_DefilerDarkSwarmNoCastTemp[player][i] == null){
+            index = i;
+            break;
+        }
+    }
+    if(index == -1){
+        return;
+    }
+    pos = EventPlayerEffectUsedPoint(c_effectLocationTargetPoint);
+    radius = AIEffectFixed(player, c_EF_DefilerDarkSwarm, c_fieldAreaRadius0);
+    g_DefilerDarkSwarmNoCastTemp[player][index] = RegionCircle(pos, radius);
+    RegionAddCircle(g_DefilerDarkSwarmNoCast[player], true, pos, (radius + 0.5));
+    Wait((AIEffectFixed(player, "DefilerSCBWDarkSwarm@CP", c_fieldPeriodCount) * AIEffectFixed(player, "DefilerSCBWDarkSwarm@CP", "PeriodicPeriodArray[0]")), c_timeGame);
+    Wait(0.1, c_timeGame);
+    RegionAddCircle(g_DefilerDarkSwarmNoCast[player], false, pos, radius);
+    if(g_DefilerDarkSwarmNoCastCount[player] > 0){ g_DefilerDarkSwarmNoCastCount[player] -= 1; }
+    if(g_DefilerDarkSwarmNoCastCount[player] <= 0){ g_DefilerDarkSwarmNoCast[player] = null; }
+    if(index != -1){g_DefilerDarkSwarmNoCastTemp[player][index] = null;}
+    return;
+}
+
+//--------------------------------------------------------------------------------------------------
+static order DefilerPlague (int player, unit aiUnit, unitgroup scanGroup, bool lowVitality, bool recentlyAttacked, marker mark) {
+	point loc;
+    unitgroup plagueGroup;
+    aifilter filter;
+	order ord;
+    fixed minScore;
+    int minHits;
+    int minDamage;
+
+    if (!AITactCooldownAllow(aiUnit, c_PlagueCooldown)) {
+        return null;
+    }
+
+    ord = AITacticalOrder(player, aiUnit, c_AB_Plague);
+	if (ord == null) {
+		return null;
+	}
+	
+    filter = AIFilter(player);
+    AISetFilterCanAttackAlly(filter, true, true);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BF_Plague);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    plagueGroup = AIGetFilterGroup(filter, scanGroup);
+
+    if (lowVitality) {
+        minScore = 0.5;
+        minHits = 3;
+        minDamage = 100;
+        if(recentlyAttacked){
+            minHits = 1;
+            minDamage = 50;
+        }
+    }
+    else {
+        minScore = 4.0;
+        minHits = 4;
+        minDamage = 300;
+    }
+
+	loc = AIBestTargetPoint(
+		AIEffectGroup(player, c_EF_PlagueArea, plagueGroup),
+		minHits,		// min hits
+		minDamage,	// base damage
+		minScore,	// score
+		AIEffectFixed(player, c_EF_PlagueArea, c_fieldAreaRadius0) + 0.6,
+		UnitGetPosition(aiUnit),
+		AIAbilityFixed(player, c_AB_Plague, c_fieldRange0),
+		c_unitAttributeNone
+	);
+	
+	if (loc == null) {
+		return null;
+	}
+	
+	OrderSetTargetPoint(ord, loc);
+	if (!UnitOrderIsValid(aiUnit,ord)) {
+		return null;
+	}
+	
+	return ord;
+}
+
+static order DefilerDarkSwarm (int player, unit aiUnit, unitgroup scanGroup, marker mark, bool selfCast) {
+	order ord;
+	aifilter filter;
+    unitgroup nearbyAlliedUnits;
+	unitgroup nearbyEnemyUnits;
+    int i;
+    unitgroup group;
+    unit tmp_unit;
+	point loc;
+    point aiPos;
+    if (!AITactCooldownAllow(aiUnit, c_DarkSwarmCooldown)) {
+        return null;
+    }
+	
+    if(UnitGetCustomValue(aiUnit, 26) > 0){
+        Wait(0.125, c_timeAI);
+        UnitSetCustomValue(aiUnit, 26, 0.0);
+        return null;
+    }
+
+	ord = AICreateOrder(player, c_AB_DefilerDarkSwarm, 0);
+	if (!UnitOrderIsValid(aiUnit, ord)) {
+		return null;
+	}
+    
+    aiPos = UnitGetPosition(aiUnit);
+    if(selfCast){
+        if(UnitHasBehavior2(aiUnit, c_BF_DefilerDarkSwarm)){
+            return null;
+        }
+        loc = aiPos;
+    }else{
+
+        // Filter out melee and attackers that cant attack ground targets.
+        filter = AIFilter(player);
+        AISetFilterMelee(filter, false);
+        AISetFilterCanAttackAlly(filter, true, false);
+        nearbyEnemyUnits = AIGetFilterGroup(filter, scanGroup);
+        
+        if(UnitGroupCount(nearbyEnemyUnits, c_unitCountAlive) > 0) {
+            nearbyAlliedUnits = AIFindUnits(player, null, aiPos, 
+                                            AIAbilityFixed(player, c_AB_DefilerDarkSwarm, c_fieldRange0) + 3, c_noMaxCount);
+            filter = AIFilter(player);
+            AISetFilterPlane(filter, c_planeGround);
+            AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BF_DefilerDarkSwarm);
+            AISetFilterBits(filter, UnitFilterStr("Visible;Structure,Destructible,Stasis,Dead,Hidden,Missile"));
+            AISetFilterInCombat(filter, true);
+            AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+            nearbyAlliedUnits = AIGetFilterGroup(filter, nearbyAlliedUnits);
+            for (i = 1; i <= UnitGroupCount(nearbyAlliedUnits, c_unitCountAll); i += 1) {
+                tmp_unit = UnitGroupUnit(nearbyAlliedUnits, i);
+                if(UnitGetType(tmp_unit) == c_ZU_Larva || UnitGetType(tmp_unit) == "Egg"){
+                    UnitGroupRemove(nearbyAlliedUnits, tmp_unit);
+                }
+            }
+
+            if (nearbyAlliedUnits == null) {
+                return null;
+            }
+
+            loc = AIBestTargetPoint(
+                AIEffectGroup(player, c_EF_DefilerDarkSwarm, nearbyAlliedUnits),
+                4, // min hits
+                10, // damage base
+                4.5, // min score 
+                AIEffectFixed(player, c_EF_DefilerDarkSwarm, c_fieldAreaRadius0),
+                aiPos,
+                AIAbilityFixed(player, c_AB_DefilerDarkSwarm, c_fieldRange0)+3,
+                c_unitAttributeNone
+            );
+        }
+
+    }
+
+    if (loc == null) {
+        return null;
+    }
+
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    
+    if(UnitGetCustomValue(aiUnit, 26) > 0){ return null; }
+
+    if(g_DefilerDarkSwarmNoCast[player] != null){
+        if (RegionContainsPoint(g_DefilerDarkSwarmNoCast[player], loc)){
+            
+            // TriggerDebugOutput(1, StringToText("inRegion"), true);
+            return null;
+        }
+    }
+
+    if(!selfCast){
+        group = AIFindUnits(player, "DefilerSCBW", aiPos, AIAbilityFixed(player, c_AB_DefilerDarkSwarm, c_fieldRange0) + 2, c_noMaxCount);
+        UnitGroupRemove(group, aiUnit);
+        for (i = 1; i <= UnitGroupCount(group, c_unitCountAll); i += 1) {
+            tmp_unit = UnitGroupUnit(group, i);
+            // libNtve_gf_SendActorMessageToUnit(tmp_unit, "SetTintColor 255,0,0");
+            // libNtve_gf_SendActorMessageToUnit(tmp_unit, "SetTintColor 255,255,255 10.0");
+            UnitSetCustomValue(tmp_unit, 26, 1.0);
+        }
+    }
+
+    
+    return ord;
+}
+
+static order DefilerConsume (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+	unit target;
+    unitgroup nearbyAlliedUnits;
+    aifilter filter;
+    order ord;
+    
+    if (!AITactCooldownAllow(aiUnit, c_ConsumeCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_AB_DefilerConsume, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    
+    nearbyAlliedUnits = AIFindUnits(player, c_ZU_Zergling, UnitGetPosition(aiUnit), 
+    5, 10);
+    
+    if(UnitGroupCount(nearbyAlliedUnits, c_unitCountAlive) < 4){
+        return null;
+    }
+
+    filter = AIFilter(player);
+    AISetFilterPlane(filter, c_planeGround);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+	nearbyAlliedUnits = AIGetFilterGroup(filter, nearbyAlliedUnits);
+    target = AIGetClosestUnit(aiUnit, nearbyAlliedUnits, true);
+
+	if (target == null) {
+		return null;
+	}
+	
+	OrderSetTargetUnit(ord, target);
+	if (!UnitOrderIsValid(aiUnit,ord)) {
+		return null;
+	}
+	
+	return ord;
+}
+
+static bool PlagueCloakedAttacker (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    point attacker;
+    point loc;
+    point aiPos;
+    string s;
+    unitgroup group;
+    aifilter filter;
+    if (!AITactCooldownAllow(aiUnit, c_PlagueCooldown)) {
+        return false;
+    }
+    ord = AICreateOrder(player, c_AB_Plague, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+    aiPos = UnitGetPosition(aiUnit);
+    attacker = AIGetCloakedAttacker(player);
+    if(attacker != null){
+        if (DistanceBetweenPoints(aiPos, attacker) < AIAbilityFixed(player, c_AB_Plague, c_fieldRange0) + 3){
+            group = UnitGroupSearch(null, player, aiPos, AIAbilityFixed(player, c_AB_Plague, c_fieldRange0) + 3, UnitFilterStr("Enemy,Cloaked;Dead,Missile,Visible"), c_noMaxCount);
+            filter = AIFilter(player);
+            AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BF_Plague);
+            AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+            group = AIGetFilterGroup(filter, group);
+            // s = "Count >"+ IntToString(UnitGroupCount(group, c_unitCountAll));
+            // TriggerDebugOutput(1, StringToText(s), true);
+
+            loc = AIBestTargetPoint(
+                AIEffectGroup(player, c_EF_PlagueArea, group),
+                1,		// min hits
+                1,	// base damage
+                1,	// score
+                AIEffectFixed(player, c_EF_PlagueArea, c_fieldAreaRadius0),
+                aiPos,
+                AIAbilityFixed(player, c_AB_Plague, c_fieldRange0) + 3,
+                c_unitAttributeNone
+            );
+            
+
+            if (loc == null) {
+                return false;
+            }
+
+            if(UnitGroupCount(group, c_unitCountAlive) > 0 && UnitGroupCount(AIFindUnits(player, c_ZU_Overlord, aiPos, 12, 1), c_unitCountAlive) == 0){
+                OrderSetTargetPoint(ord, loc);
+                if (UnitOrderIsValid(aiUnit, ord)) {
+		            mark = AIMarker(aiUnit, "Abil/DefilerSCBWPlague/AI");
+                    // TriggerDebugOutput(1, StringToText("Plague Reveal"),true);
+                    AICastCooldown(aiUnit, ord, mark, c_castHold, c_PlagueCooldown, 4.5);
+                    AIClearCloakedAttacker(player, loc);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+static order DefilerMoveToSafety (int player, unit aiUnit, unitgroup scanGroup, bool wasRecentlyAttacked) {
+	order ord;
+    fixed bestDistance = 13;
+    int bestIndex = -1;
+    int bestCount = 1;
+    point loc;
+    unitgroup enemyUnits;
+    fixed dist;
+    int count;
+    int i;
+    aifilter filter;
+    point aiPos = UnitGetPosition(aiUnit);
+    // int pathingCost;
+
+    if(wasRecentlyAttacked){
+        bestCount = 10;
+    }
+
+    if(g_DefilerDarkSwarmNoCastCount[player] > 0){
+        filter = AIFilter(player);
+        AISetFilterAlliance(filter, c_playerGroupEnemy);
+        AISetFilterBits(filter, UnitFilterStr("Enemy,Visible;Dead,Hidden,Missile,Stasis,Passive"));
+        AISetFilterRange(filter, aiUnit, 12);
+        AISetFilterCanAttackAlly(filter, c_groundAlliesNearby, false);
+        enemyUnits = AIGetFilterGroup(filter, scanGroup);
+        if (UnitGroupCount(enemyUnits, c_unitCountAlive) > 0){
+            for (i = g_DefilerDarkSwarmNoCastCount[player] - 1; i >= 0; i -= 1) {
+                // TriggerDebugOutput(1, IntToText(i),true);
+                if(g_DefilerDarkSwarmNoCastTemp[player][i] != null){
+                    count = UnitGroupCount(UnitGroupFilterRegion(enemyUnits, g_DefilerDarkSwarmNoCastTemp[player][i], 10), c_unitCountAlive);
+                    loc = RegionGetCenter(g_DefilerDarkSwarmNoCastTemp[player][i]);
+                    dist = DistanceBetweenPoints(aiPos, loc);
+                    if(loc != null && PointPathingIsConnected(aiPos, loc) && dist < bestDistance){
+                        if(count < bestCount){
+                            bestCount = count;
+                            bestDistance = dist;
+                            bestIndex = i;
+                        }
+                    }
+                }
+            }
+        }
+        if (bestIndex == -1){ return null; }
+        loc = RegionGetCenter(g_DefilerDarkSwarmNoCastTemp[player][bestIndex]);
+        if(loc != null){
+            if(libNtve_gf_UnitInRegion(aiUnit, RegionCircle(loc, 1.0))){
+                // TriggerDebugOutput(1, StringToText("StopOrder"),true);
+                ord = AICreateOrder(player, "stop", 0);
+            }else{
+                // TriggerDebugOutput(1, StringToText("MoveOrder"),true);
+                ord = AICreateOrder(player, "move", 0);
+                OrderSetTargetPoint(ord, loc);
+            }
+            return ord;
+        }
+    }
+
+    return null;
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDefiler (int player, unit aiUnit, unitgroup scanGroup) {
+	order ord;
+    order currOrd;
+	marker mark;
+    fixed cooldown;
+    fixed energy;
+    fixed life;
+    fixed bestDistance;
+    bool wasRecentlyAttacked;
+    bool lowVitality = false;
+    fixed plagueCost = AIAbilityFixed(player, c_AB_Plague, c_fieldEnergyCost);
+    fixed darkSwarmCost = AIAbilityFixed(player, c_AB_DefilerDarkSwarm, c_fieldEnergyCost);
+    
+    if (UnitOrderHasAbil(aiUnit, c_AB_Plague) || UnitOrderHasAbil(aiUnit, c_AB_DefilerDarkSwarm)) {
+        return;
+    }
+
+    currOrd = UnitOrder(aiUnit, 0);
+
+    life = UnitGetPropertyFixed(aiUnit, c_unitPropLifePercent, c_unitPropCurrent);
+    energy = UnitGetPropertyFixed(aiUnit, c_unitPropEnergy, c_unitPropCurrent);
+    wasRecentlyAttacked = (AILastAttack(aiUnit) > (AIGetTime() - 4.0));
+
+    // if low on energy try to find zerglings to consume
+    if ( energy < plagueCost ){
+		mark = AIMarker(aiUnit, "Abil/DefilerSCBWConsume/AI");
+        ord = DefilerConsume(player, aiUnit, scanGroup, mark);
+        if (ord != null) {
+            // TriggerDebugOutput(1, StringToText("Consume"),true);
+            AICastCooldown(aiUnit, ord, mark, c_castHold, c_ConsumeCooldown, 2);
+            return;
+        }
+    }
+
+    if ( energy >= plagueCost){
+
+        mark = AIMarker(aiUnit, "Abil/DefilerSCBWPlague/AI");
+        if (PlagueCloakedAttacker(player, aiUnit, scanGroup, mark)) {
+            // TriggerDebugOutput(1, StringToText("PlagueReveal"),true);
+            return;
+        }
+
+        if(life < 65){
+            lowVitality = true;
+        }
+
+        ord = DefilerPlague(player, aiUnit, scanGroup, lowVitality, wasRecentlyAttacked, mark);
+        if (ord != null) {
+            // TriggerDebugOutput(1, StringToText("Plague"),true);
+            AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_PlagueCooldown, 4.5);
+            return;
+        }
+    }
+    
+	if (UnitGroupCount(scanGroup, c_unitCountAlive) > 0 && energy >= darkSwarmCost) {
+        cooldown = 3.5;
+        // Self cast Dark Swarm when attacked
+		mark = AIMarker(aiUnit, "Abil/DefilerSCBWDarkSwarm/AI");
+        if (life < 75 && wasRecentlyAttacked) {
+            ord = DefilerDarkSwarm(player, aiUnit, scanGroup, mark, true);
+            if (ord != null) {
+                // TriggerDebugOutput(1, StringToText("DSwarm SelfCast"),true);
+                AICastCooldown(aiUnit, ord, mark, c_castHold, c_DarkSwarmCooldown, cooldown - 1);
+                return;
+            }
+        }
+        ord = DefilerDarkSwarm(player, aiUnit, scanGroup, mark, false);
+        if (ord != null) {
+            // TriggerDebugOutput(1, StringToText("DSwarm Cast"),true);
+            AICastCooldown(aiUnit, ord, mark, c_castHold, c_DarkSwarmCooldown, cooldown);
+            return;
+        }
+    }
+    
+    ord = DefilerMoveToSafety(player, aiUnit, scanGroup, wasRecentlyAttacked);
+    if(ord != null && UnitOrderIsValid(aiUnit, ord)){
+        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** HIGH TEMPLAR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+
+order BWPsionicStorm (int player, unit aiUnit, unitgroup scanGroup) {
+
+    order ord = AICreateOrder(player, c_AB_HighTemplarSCBWPsiStorm, 0);
+    order enemyOrd;
+    order curOrd;
+    point loc;
+    fixed barrageRadius = AIEffectFixed(player, c_EF_HighTemplarSCBWPsiStorm_Search, c_fieldAreaRadius0);
+    unitgroup threatGroup;
+    unitgroup barrageGroup;
+    unitgroup barrageThreatGroup;
+    unit unitToCheck;
+    int numPossibleThreats = 0;
+    int numActualThreats = 0;
+    int numPossibleThreatsInBarrage = 0;
+    int numActualThreatsInBarrage = 0;	
+	
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    curOrd = UnitOrder(aiUnit, 0);
+    if ((curOrd != null) && !AIIsAttackOrder(curOrd)) {
+        // don't cast again if casting
+        return null;
+    }
+
+    // Is there a threat in the area
+    threatGroup = UnitGroupFilterThreat(scanGroup, aiUnit, null, 0);
+    numPossibleThreats = UnitGroupCount(threatGroup, c_unitCountAll);
+    while (numPossibleThreats > 0) {
+        unitToCheck = UnitGroupUnit(threatGroup, numPossibleThreats);
+        numPossibleThreats = numPossibleThreats - 1;
+
+        enemyOrd = UnitOrder(unitToCheck, 0);
+        if (AIIsAttackOrder(enemyOrd) && OrderGetTargetUnit(enemyOrd) == aiUnit) {
+            numActualThreats = numActualThreats + 1;
+        }
+    }
+
+    loc = AIBestTargetPoint(
+        AIEffectGroup(player, c_EF_PsiStormArea, scanGroup),
+        1, // min hits
+        40, // damage base
+        3.0, // min score 
+        barrageRadius,
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_AB_HighTemplarSCBWPsiStorm, c_fieldRange0)+3, 
+        c_unitAttributeNone
+    );
+    if (loc == null) {
+        return null;
+    }
+
+    barrageGroup = UnitGroup(null, c_playerAny, RegionCircle(loc, barrageRadius), null, 0);
+    barrageThreatGroup = UnitGroupFilterThreat(barrageGroup, aiUnit, null, 0);
+    numPossibleThreatsInBarrage = UnitGroupCount(barrageThreatGroup, c_unitCountAll);
+    while (numPossibleThreatsInBarrage > 0) {
+        unitToCheck = UnitGroupUnit(barrageThreatGroup, numPossibleThreatsInBarrage);
+        numPossibleThreatsInBarrage = numPossibleThreatsInBarrage - 1;
+
+        enemyOrd = UnitOrder(unitToCheck, 0);
+        if (AIIsAttackOrder(enemyOrd) && OrderGetTargetUnit(enemyOrd) == aiUnit) {
+            numActualThreatsInBarrage = numActualThreatsInBarrage + 1;
+        }
+    }
+
+    if ((numActualThreats > numActualThreatsInBarrage*2) ) {
+        return null;  // too many threats not in the barrage
+    }
+
+    OrderSetTargetPoint(ord, loc);
+	
+	return ord;
+
+}
+
+const int c_BWhightemplarHallucinationCooldown = c_tactTimerFirst;
+
+//--------------------------------------------------------------------------------------------------
+order BWHallucination (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    unitgroup group;
+    aifilter filter;
+    aifilter filterAI;
+    unitgroup enemies;
+    int enemyCount;
+
+    //if (AIPlayerDifficulty(player) < c_campAdvanced) {
+    //    return null;
+    //}
+	
+    if (!AITactCooldownAllow(aiUnit, c_BWhightemplarHallucinationCooldown)) {
+        return null;
+    }
+
+    // Check enemy threat
+    filterAI = AIFilter(player);
+    AISetFilterCanAttackAlly(filterAI,c_groundAlliesNearby,c_airAlliesNearby);
+    enemies = AIGetFilterGroup(filterAI, scanGroup);
+
+    // Is there a threat in the area
+    enemyCount = UnitGroupCount(enemies, c_unitCountAll);
+    if (enemyCount <= 0) {
+        return null;
+    }
+
+    // wait until fighting 4+ enemy units
+    
+    //if (!AIIsAttackOrder(UnitOrder(aiUnit, 0))) {
+    //    return null;
+    //}
+    //if (UnitGroupCount(scanGroup, c_unitCountAlive) < 4) {
+    //    return null;
+    //}
+
+    ord = AICreateOrder(player, c_AB_HighTemplarSCBWHallucination, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
+                        AIAbilityFixed(player, c_AB_HighTemplarSCBWHallucination, c_fieldRange0) + 1,
+                        c_noMaxCount)
+    ;
+
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupAlly);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    //AISetFilterLifeLost(filter, AIEffectFixed(player, c_EF_Transfusion, c_fieldEffectChange0) - 20, c_noMax);
+    group = AIGetFilterGroup(filter, group);
+    if (group == null) {
+        return null;
+    }
+
+    return AIUnitGroupGetValidOrder(group, ord, aiUnit, c_forwards);
+}
+
+//---------------------------------------------------------------------------------------------
+bool BWMergeToSurvive (int player, unit aiUnit, unitgroup scanGroup) {
+    // only called at low heatlh, try to find a nearby templar to merge with in order to survive
+    order ord;
+    unitgroup targetGroup;
+    unit targetUnit;
+    
+    if (AIIsCampaign(player)) {
+        return false;
+    }
+    
+    // if we're not under attack, don't try to merge
+    if (AILastAttack(aiUnit) < (AIGetTime() - 4.0)) {
+        return false;
+    }
+    
+    ord = AICreateOrder(player, c_AB_ArchonSCBWMerge, 1);
+    targetGroup = UnitGroupSearch(c_BWPU_HighTemplar, player, UnitGetPosition(aiUnit), 5.0, UnitFilter((1 << c_targetFilterSelf), 0, 0, 0), c_noMaxCount);
+    targetUnit =  OrderGetTargetUnit( AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards) );
+    if (targetUnit == null) {
+        return false;
+    }
+    
+    // can't use the normal AICast because both units need the order at the same time
+    UnitIssueOrder(aiUnit, OrderTargetingUnit(AbilityCommand(c_AB_ArchonSCBWMerge, 1), targetUnit), c_orderQueueAddToEnd);
+    UnitIssueOrder(targetUnit, OrderTargetingUnit(AbilityCommand(c_AB_ArchonSCBWMerge, 1), aiUnit), c_orderQueueAddToEnd);
+    AISetUnitScriptControlled(aiUnit, false);
+    AISetUnitScriptControlled(targetUnit, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+const fixed c_BWEnemyMultiplierHighTemplar = 1.25;
+const fixed c_BWMinThreshold = 100.0;
+const int c_BWHighTemplarLowVitPerc = 40;
+const int c_BWpsiStormCooldown = c_tactTimerFirst;
+
+void BWUnitGroupTest (unitgroup scanGroup) {
+    DebugVarInt("group strength", FixedToInt(AIUnitGroupStrength(scanGroup)));
+}
+
+void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    bool lowVitality;
+    unitfilter f;
+    region r;
+    unitgroup enemyGroup;
+
+
+    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
+        if (AITactCooldownAllow(aiUnit, c_psiStormCooldown)) {
+            mark = AIMarker(aiUnit, c_MK_HighTemplarSCBWPsiStorm);
+            ord = BWPsionicStorm(player, aiUnit, scanGroup);
+            if (ord != null) {
+                //TriggerDebugOutput(1, StringToText("PsiStormOrd"), true);
+                AICast(aiUnit, ord, c_noMarker, c_castHold);
+                return;
+            }
+        }
+    }
+
+    mark = AIMarker(aiUnit, c_MK_HighTemplarSCBWPsiStorm);
+    ord = BWHallucination(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        return;
+    }
+
+    //  If we already have a psi storm order, ignore any new orders since psi storm is more important.
+    //  If we already have a Hallucination order, ignore any new Hallucination orders.
+    if (UnitOrderHasAbil(aiUnit, c_AB_HighTemplarSCBWHallucination) || UnitOrderHasAbil(aiUnit, c_AB_HighTemplarSCBWPsiStorm)) {
+        return;
+    }
+    
+    lowVitality = (UnitGetPropertyInt(aiUnit, c_unitPropVitalityPercent, c_unitPropCurrent) < c_HighTemplarLowVitPerc);
+
+    if (lowVitality) {
+        if (BWMergeToSurvive(player, aiUnit, scanGroup)) {
+            return;
+        }
+    }
+}
