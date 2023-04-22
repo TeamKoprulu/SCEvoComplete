@@ -10,6 +10,25 @@ void libSCBW_InitLibraries () {
     libNtve_InitVariables();
 }
 
+// Variable Initialization
+bool libSCBW_InitVariables_completed = false;
+
+void libSCBW_InitVariables () {
+    int init_i;
+
+    if (libSCBW_InitVariables_completed) {
+        return;
+    }
+
+    libSCBW_InitVariables_completed = true;
+
+    for (init_i = 0; init_i <= 4; init_i += 1) {
+        libSCBW_gv_playerVars[init_i].lv_frame = c_invalidDialogControlId;
+        libSCBW_gv_playerVars[init_i].lv_name = c_invalidDialogControlId;
+        libSCBW_gv_playerVars[init_i].lv_icon = c_invalidDialogControlId;
+    }
+}
+
 // Custom Script
 //--------------------------------------------------------------------------------------------------
 // Custom Script: Main
@@ -83,8 +102,43 @@ void libSCBW_gt_MapInitialization_Init () {
     TriggerAddEventMapInit(libSCBW_gt_MapInitialization);
 }
 
+//--------------------------------------------------------------------------------------------------
+// Trigger: Map Initialization 2
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_MapInitialization2_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_playerIndex;
+
+    // Automatic Variable Declarations
+    const int auto68B80C1A_ae = 4;
+    const int auto68B80C1A_ai = 1;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_playerIndex = 1;
+    for ( ; ( (auto68B80C1A_ai >= 0 && lv_playerIndex <= auto68B80C1A_ae) || (auto68B80C1A_ai < 0 && lv_playerIndex >= auto68B80C1A_ae) ) ; lv_playerIndex += auto68B80C1A_ai ) {
+        DialogControlHookupStandard(c_triggerControlTypePanel, ("UIContainer/FullScreenUpperContainer/PlayerFrame" + IntToString(lv_playerIndex)));
+        libSCBW_gv_playerVars[lv_playerIndex].lv_frame = DialogControlLastCreated();
+        DialogControlHookup(DialogControlLastCreated(), c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("PlayerFrame/Container/AnchorFrame/Icon"));
+        libSCBW_gv_playerVars[lv_playerIndex].lv_icon = DialogControlLastCreated();
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_MapInitialization2_Init () {
+    libSCBW_gt_MapInitialization2 = TriggerCreate("libSCBW_gt_MapInitialization2_Func");
+    TriggerAddEventMapInit(libSCBW_gt_MapInitialization2);
+}
+
 void libSCBW_InitTriggers () {
     libSCBW_gt_MapInitialization_Init();
+    libSCBW_gt_MapInitialization2_Init();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -100,6 +154,7 @@ void libSCBW_InitLib () {
     libSCBW_InitLib_completed = true;
 
     libSCBW_InitLibraries();
+    libSCBW_InitVariables();
     libSCBW_InitCustomScript();
     libSCBW_InitTriggers();
 }
