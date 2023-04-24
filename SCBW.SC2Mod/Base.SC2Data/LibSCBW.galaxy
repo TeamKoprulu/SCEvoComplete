@@ -10,25 +10,6 @@ void libSCBW_InitLibraries () {
     libNtve_InitVariables();
 }
 
-// Variable Initialization
-bool libSCBW_InitVariables_completed = false;
-
-void libSCBW_InitVariables () {
-    int init_i;
-
-    if (libSCBW_InitVariables_completed) {
-        return;
-    }
-
-    libSCBW_InitVariables_completed = true;
-
-    for (init_i = 0; init_i <= 4; init_i += 1) {
-        libSCBW_gv_playerVars[init_i].lv_frame = c_invalidDialogControlId;
-        libSCBW_gv_playerVars[init_i].lv_name = c_invalidDialogControlId;
-        libSCBW_gv_playerVars[init_i].lv_icon = c_invalidDialogControlId;
-    }
-}
-
 // Custom Script
 //--------------------------------------------------------------------------------------------------
 // Custom Script: Main
@@ -81,15 +62,21 @@ bool libSCBW_gt_MapInitialization_Func (bool testConds, bool runActions) {
     while (true) {
         lv_playerIndex = PlayerGroupNextPlayer(auto52EFDCBD_g, lv_playerIndex);
         if (lv_playerIndex < 0) { break; }
-        if ((PlayerType(lv_playerIndex) != c_playerTypeComputer)) {
-            auto66859ACD_val = GameAttributePlayerValue("1", lv_playerIndex);
-            if (auto66859ACD_val == "0001") {
+        if ((PlayerType(lv_playerIndex) == c_playerTypeUser)) {
+            auto66859ACD_val = PlayerRace(lv_playerIndex);
+            if (auto66859ACD_val == "Terr") {
                 PlayerSetRace(lv_playerIndex, "BWTe");
-                libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
-                libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
+            }
+            else if (auto66859ACD_val == "Prot") {
+                PlayerSetRace(lv_playerIndex, "BWPr");
+            }
+            else if (auto66859ACD_val == "Zerg") {
+                PlayerSetRace(lv_playerIndex, "BWZe");
             }
             else {
             }
+            libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
+            libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
         }
 
     }
@@ -102,28 +89,8 @@ void libSCBW_gt_MapInitialization_Init () {
     TriggerAddEventMapInit(libSCBW_gt_MapInitialization);
 }
 
-//--------------------------------------------------------------------------------------------------
-// Trigger: Map Initialization 2
-//--------------------------------------------------------------------------------------------------
-bool libSCBW_gt_MapInitialization2_Func (bool testConds, bool runActions) {
-    // Variable Declarations
-    int lv_playerIndex;
-
-    // Automatic Variable Declarations
-    // Variable Initialization
-
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void libSCBW_gt_MapInitialization2_Init () {
-    libSCBW_gt_MapInitialization2 = TriggerCreate("libSCBW_gt_MapInitialization2_Func");
-    TriggerAddEventMapInit(libSCBW_gt_MapInitialization2);
-}
-
 void libSCBW_InitTriggers () {
     libSCBW_gt_MapInitialization_Init();
-    libSCBW_gt_MapInitialization2_Init();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -139,7 +106,6 @@ void libSCBW_InitLib () {
     libSCBW_InitLib_completed = true;
 
     libSCBW_InitLibraries();
-    libSCBW_InitVariables();
     libSCBW_InitCustomScript();
     libSCBW_InitTriggers();
 }
