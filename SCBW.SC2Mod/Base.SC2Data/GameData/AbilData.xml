@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CAbilEffectTarget default="1" id="SCBW_AbilTarget">
+        <CmdButtonArray index="Execute" DefaultButtonFace="##id##" Requirements="##id##">
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
+    </CAbilEffectTarget>
+    <CAbilEffectInstant default="1" id="SCBW_AbilInstant">
+        <CmdButtonArray index="Execute" DefaultButtonFace="##id##" Requirements="##id##">
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
+    </CAbilEffectInstant>
     <CAbilResearch default="1" id="SCBW_Research">
         <?token id="race" value="Neutral"?>
         <EditorCategories value="Race:##race##,AbilityorEffectType:Structures"/>
@@ -122,8 +134,12 @@
         </HaltCmdButton>
     </CAbilBuild>
     <CAbilArmMagazine default="1" id="SCBW_ArmMagazine">
-        <InfoArray index="Ammo1">
-            <Button State="Suppressed">
+        <?token id="Ammo1"?>
+        <InfoArray index="Ammo1" Unit="##Ammo1##">
+            <Charge Link="##Ammo1##" Location="Unit"/>
+            <Cooldown Link="##Ammo1##" TimeUse="0.01"/>
+            <Button DefaultButtonFace="##Ammo1##" Requirements="##id##@Arm">
+                <Flags index="ToSelection" value="1"/>
                 <Flags index="UseDefaultButton" value="1"/>
                 <Flags index="CreateDefaultButton" value="1"/>
             </Button>
@@ -1500,6 +1516,28 @@
         </InfoArray>
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
     </CAbilResearch>
+    <CAbilTransport id="ShuttleSCBW@Transport">
+        <AbilSetId value="ULdM"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <CmdButtonArray index="Load" DefaultButtonFace="MedivacLoad"/>
+        <CmdButtonArray index="UnloadAll" DefaultButtonFace="BunkerUnloadAll">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="UnloadAt" DefaultButtonFace="MedivacUnloadAll"/>
+        <CmdButtonArray index="UnloadUnit">
+            <Flags index="Hidden" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="LoadAll">
+            <Flags index="Hidden" value="1"/>
+        </CmdButtonArray>
+        <Flags index="CargoDeath" value="1"/>
+        <MaxCargoCount value="8"/>
+        <MaxCargoSize value="8"/>
+        <TotalCargoSpace value="8"/>
+        <UnloadPeriod value="1"/>
+        <TargetFilters value="Visible;Ally,Neutral,Enemy,Buried,UnderConstruction,Dead,Hidden"/>
+        <LoadValidatorArray value="NotWidowMineTarget"/>
+    </CAbilTransport>
     <CAbilResearch id="ZergFlyerAttacksSCBW" parent="SCBW_ResearchLeveled" race="Protoss">
         <InfoArray index="Research1" Time="250">
             <Resource index="Minerals" value="100"/>
@@ -1765,11 +1803,11 @@
             <Resource index="Vespene" value="150"/>
         </InfoArray>
     </CAbilResearch>
-    <CAbilArmMagazine id="NukeSCBWArm" parent="SCBW_ArmMagazine">
+    <CAbilArmMagazine id="NukeSCBWArm" parent="SCBW_ArmMagazine" Ammo1="NukeSCBW">
         <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
         <Launch value="ReleaseAtSource"/>
         <Flags index="BestUnit" value="1"/>
-        <InfoArray index="Ammo1" Time="60" Unit="NukeSCBW">
+        <InfoArray index="Ammo1" Time="60">
             <Button DefaultButtonFace="NukeSCBWArm" Requirements="NukeSCBWArm"/>
         </InfoArray>
         <CalldownEffect value="GhostSCBWNuclearStrike@Calldown"/>
@@ -2163,7 +2201,7 @@
             <Resource index="Vespene" value="150"/>
         </InfoArray>
     </CAbilResearch>
-    <CAbilEffectTarget id="ArbiterSCBWStasisField">
+    <CAbilEffectTarget id="ArbiterSCBWStasisField" parent="SCBW_AbilTarget">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <Effect index="0" value="ArbiterSCBWStasisField@Search"/>
         <Flags index="AllowMovement" value="1"/>
@@ -2172,9 +2210,8 @@
         </Cost>
         <Range value="9"/>
         <CursorEffect value="ArbiterSCBWStasisField@Search"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="ArbiterSCBWStasisField" Requirements="ArbiterSCBWStasisField"/>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="ArbiterSCBWRecall">
+    <CAbilEffectTarget id="ArbiterSCBWRecall" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="ArbiterSCBWRecall@CPDelayInital"/>
         <Cost>
@@ -2186,7 +2223,6 @@
         <Arc value="360"/>
         <CursorEffect value="ArbiterSCBWRecall@Search"/>
         <AINotifyEffect value=""/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="ArbiterSCBWRecall" Requirements="ArbiterSCBWRecall"/>
     </CAbilEffectTarget>
     <CAbilMerge id="ArchonSCBWMerge">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -2320,17 +2356,12 @@
             <Unit value="MedicSCBW"/>
         </InfoArray>
     </CAbilTrain>
-    <CAbilArmMagazine id="CarrierSCBWHangar">
+    <CAbilArmMagazine id="CarrierSCBWHangar" parent="SCBW_ArmMagazine" Ammo1="InterceptorSCBW">
         <AbilSetId value="CarrierHanger"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Flags index="Retarget" value="1"/>
         <Leash value="12"/>
-        <InfoArray index="Ammo1" Time="10" CountStart="4" Manage="Recall" Unit="InterceptorSCBW">
-            <Charge Link="InterceptorSCBW" Location="Unit"/>
-            <Cooldown Link="InterceptorSCBW" TimeUse="0.01"/>
-            <Button DefaultButtonFace="InterceptorSCBW" Requirements="CarrierSCBWHangar@Arm">
-                <Flags index="ToSelection" value="1"/>
-            </Button>
+        <InfoArray index="Ammo1" Time="10" CountStart="4" Manage="Recall">
             <Flags index="AutoBuild" value="1"/>
             <Flags index="AutoBuildOn" value="1"/>
             <Flags index="LeashRetarget" value="1"/>
@@ -2411,7 +2442,7 @@
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Cancelable value="0"/>
     </CAbilMergeable>
-    <CAbilEffectTarget id="DarkArchonSCBWMindControl">
+    <CAbilEffectTarget id="DarkArchonSCBWMindControl" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="DarkArchonSCBWMindControl@Set"/>
         <Flags index="AbortOnAllianceChange" value="0"/>
@@ -2421,10 +2452,9 @@
         </Cost>
         <TargetFilters value="Visible;Player,Ally,Neutral,Robotic,Structure,Heroic,Missile,Stasis,Dead,Invulnerable"/>
         <Range value="8"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="DarkArchonSCBWMindControl" Requirements="DarkArchonSCBWMindControl"/>
         <CmdButtonArray index="Cancel" DefaultButtonFace="Cancel"/>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="DarkArchonSCBWMaelstrom">
+    <CAbilEffectTarget id="DarkArchonSCBWMaelstrom" parent="SCBW_AbilTarget">
         <Alignment value="Negative"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="DarkArchonSCBWMaelstrom@Search"/>
@@ -2437,9 +2467,8 @@
         <UninterruptibleArray index="Finish" value="1"/>
         <CursorEffect value="DarkArchonSCBWMaelstrom@Search"/>
         <AINotifyEffect value="DarkArchonSCBWMaelstrom@Search"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="DarkArchonSCBWMaelstrom" Requirements="DarkArchonSCBWMaelstrom"/>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="DarkArchonSCBWFeedback">
+    <CAbilEffectTarget id="DarkArchonSCBWFeedback" parent="SCBW_AbilTarget">
         <Alignment value="Negative"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="DarkArchonSCBWFeedback@Set"/>
@@ -2452,7 +2481,6 @@
         <TargetFilters value="CanHaveEnergy,Visible,HasEnergy;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="10"/>
         <AINotifyEffect value=""/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="DarkArchonSCBWFeedback" Requirements="DarkArchonSCBWFeedback"/>
     </CAbilEffectTarget>
     <CAbilBuild id="ScienceFacilitySCBW@AddOns" parent="TerranBuildingSCBW@AddOns">
         <BuildMorphAbil value="ScienceFacilitySCBW@LiftOff"/>
@@ -2687,7 +2715,7 @@
         </InfoArray>
         <ConstructionMover value="Construction"/>
     </CAbilBuild>
-    <CAbilEffectTarget id="HighTemplarSCBWPsiStorm">
+    <CAbilEffectTarget id="HighTemplarSCBWPsiStorm" parent="SCBW_AbilTarget">
         <Alignment value="Negative"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="HighTemplarSCBWPsiStorm@CP"/>
@@ -2699,7 +2727,6 @@
         <Range value="9"/>
         <CastOutroTime value="0.5"/>
         <CursorEffect value="HighTemplarSCBWPsiStorm@Search"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="HighTemplarSCBWPsiStorm" Requirements="HighTemplarSCBWPsiStorm"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="MedicSCBWOpticFlare">
         <EditorCategories value="AbilityorEffectType:Units,Race:Terran"/>
@@ -2742,7 +2769,7 @@
             <SetValidators value="Failure"/>
         </InfoArray>
     </CAbilRally>
-    <CAbilEffectTarget id="HighTemplarSCBWHallucination">
+    <CAbilEffectTarget id="HighTemplarSCBWHallucination" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="HighTemplarSCBWHallucination@SetInitial"/>
         <!--<Effect index="0" value="HighTemplarSCBWHallucinationCU"/>-->
@@ -2752,17 +2779,12 @@
         </Cost>
         <TargetFilters value="-;Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="15"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="HighTemplarSCBWHallucination" Requirements="HighTemplarSCBWHallucination"/>
         <PrepTime value="0.5"/>
     </CAbilEffectTarget>
-    <CAbilArmMagazine id="ReaverSCBWHangar">
+    <CAbilArmMagazine id="ReaverSCBWHangar" parent="SCBW_ArmMagazine" Ammo1="ScarabSCBW">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Leash value="20"/>
-        <InfoArray index="Ammo1" Time="8" CountStart="5" Unit="ScarabSCBW">
-            <Charge Link="ReaverScarabs" Location="Unit"/>
-            <Button DefaultButtonFace="ScarabSCBW" Requirements="ReaverSCBWHangar@Arm">
-                <Flags index="ToSelection" value="1"/>
-            </Button>
+        <InfoArray index="Ammo1" Time="8" CountStart="5">
             <Flags index="AutoBuild" value="1"/>
             <Flags index="AutoBuildOn" value="1"/>
         </InfoArray>
