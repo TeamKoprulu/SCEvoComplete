@@ -29,6 +29,11 @@
         <Aliases value="_CreepEngulfable"/>
         <Macros value="BuildingFlattenTerrainMacro"/>
         <Macros value="SnowVisualBuildingMacroMP"/>
+        <Macros value="GlobalLoopMacro"/>
+        <Macros value="GlobalLoopMacroMore"/>
+        <Macros value="ProtossBuildingPowerUp"/>
+        <Macros value="QueueAnim"/>
+        <Macros value="VoidMPUnpoweredAnim"/>
         <On Terms="UnitDeathCustomize; CreepEngulfs" Send="CreepEngulfmentStopTransition"/>
         <On Terms="ActorCreation; CreepIntersects" Send="CreepEngulfmentStartTransition"/>
         <On Terms="UnitConstruction.##unitName##.Start" Send="Create ##unitName##@Build"/>
@@ -40,9 +45,10 @@
         <BuildModel value="##unitName##@Birth"/>
         <DeathArray index="Normal" ModelLink="##unitName##@Death" SoundLink="##unitName##@Explode"/>
         <DeathArray index="UnderConstruction" ModelLink="##unitName##@DeathUnderConstruction" SoundLink="##unitName##@Explode"/>
+        <DeathCustoms ModelLink="##unitName##@DeathUnpowered" SoundLink="##unitName##@Explode" Name="Variation2"/>
         <PlacementModel value="##unitName##@Placement"/>
         <PlacementSound value="Protoss_BuildingPlacement"/>
-        <PortraitModel value="##unitName##Portrait"/>
+        <PortraitModel value="##unitName##@Portrait"/>
         <HeroIcon value="Assets\Textures\btn-building-protoss-##unitName##.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-armor-protoss-buildingplating.dds"/>
         <SoundArray index="Birth" value="##unitName##@Birth"/>
@@ -314,6 +320,55 @@
         <UnitFlags index="StandAnimBirthVariation" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-##unitName##.dds"/>
     </CActorUnit>
+    <CActorModel id="ShieldBatterySCBW@PlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation; ModelName ShieldBatterySCBW" Send="Create ShieldBatteryRange2"/>
+        <On Terms="ActorCreation; ModelName ShieldBatterySCBW@Placement" Send="Create ShieldBatteryRange2"/>
+        <On Terms="ActorDestruction" Target="ShieldBatterySCBW@Range" Send="Destroy"/>
+    </CActorModel>
+    <CActorRange id="ShieldBatterySCBW@Range" parent="RangeAbil" abil="ShieldBatteryRechargeChanneled">
+        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.Start" Send="Create"/>
+        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorGround" Send="Create"/>
+        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorFlyer" Send="Create"/>
+        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.Stop" Send="Destroy"/>
+        <Abil Link="ShieldBatteryRecharge"/>
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorModel id="FleetBeaconSCBW@Death" parent="UnitDeathModel">
+        <CopySource value="FleetBeacon"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
+    <CActorModel id="RoboticsBaySCBW@Death" parent="UnitDeathModel">
+        <CopySource value="RoboticsBaySCBW"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
+    <CActorModel id="RoboticsFacilitySCBW@Death" parent="UnitDeathModel">
+        <CopySource value="RoboticsFacilitySCBW"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
+    <CActorModel id="StargateSCBW@Death" parent="UnitDeathModel">
+        <CopySource value="StargateSCBW"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
+    <CActorModel id="CyberneticsCoreSCBW@Death" parent="UnitDeathModel">
+        <CopySource value="CyberneticsCoreSCBW"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
     <CActorModel id="PylonSCBW@Death" parent="UnitDeathModel">
         <CopySource value="PylonSCBW"/>
         <Inherits index="BaseModelScale" value="0"/>
@@ -793,6 +848,42 @@
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
+    <CActorModel id="ShuttleSCBW@TransportLoadModel" parent="ModelAnimationStyleOneShot">
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoLoad" Send="Create"/>
+        <!--<On Terms="ActorCreation" Send="Create UnitWarpIntoShuttle_ActorSound"/>-->
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+    </CActorModel>
+    <CActorSound id="ShuttleSCBW@TransportLoadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.TransportLoad" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="ShuttleSCBW@TransportLoad"/>
+    </CActorSound>
+    <CActorModel id="ShuttleSCBW@TransportUnloadModel" parent="ModelAnimationStyleOneShot">
+        <On Terms="Abil.ShuttleSCBW@Transport.CargoUnload" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOrigin"/>
+    </CActorModel>
+    <CActorSound id="ShuttleSCBW@TransportUnloadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.TransportUnload" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOrigin"/>
+        <Sound value="ShuttleSCBW@TransportUnload"/>
+    </CActorSound>
+    <CActorModel id="ShuttleSCBW@TransportUnloadFX">
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <Inherits index="BaseModelScale" value="1"/>
+        <Inherits index="CloakEffect" value="1"/>
+        <Inherits index="Scale" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <On Terms="ActorCreation" Send="$Stand,00"/>
+        <On Terms="AnimDone; AnimName Stand" Send="Destroy"/>
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoUnload" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachCenter SOpShadow"/>
+        <AutoScaleFactor value="1.000000"/>
+    </CActorModel>
     <CActorSiteOpBanker id="WraithSCBW@SOpBanker" parent="SOpBanker">
         <RollAngleMax value="75.000000"/>
         <RollInRate value="23.450001"/>
@@ -3662,7 +3753,7 @@
         <On Terms="UnitBirth" Send="AnimSetTimeScaleAbsolute Lifetime 1.000000"/>
     </CActorMissile>
     <CActorModel id="ForgeSCBW@Death" parent="UnitDeathModel">
-        <CopySource value="Forge"/>
+        <CopySource value="ForgeSCBW"/>
         <Inherits index="BaseModelScale" value="0"/>
         <AcceptedTransfers index="Textures" value="1"/>
         <Host Subject="_Selectable"/>
@@ -3770,7 +3861,6 @@
         -->
         <On Terms="AbilMorph.*.Finish; MorphTo PhotonCannonSCBW" Send="Create"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom PhotonCannonSCBW" Send="Destroy"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstructionAndHasDarkProtoss" Send="DeathCustomize Variation3"/>
         <On Terms="Behavior.PhaseCannonInitialStun.On" Send="ModelSwap PhotonCannonBirth"/>
         <On Terms="Behavior.PhaseCannonInitialStun.On" Send="AnimPlay Birth Stand,Build,End"/>
         <On Terms="Behavior.PhaseCannonInitialStun.On" Send="AnimSetTime Birth 5.000000"/>
@@ -3778,14 +3868,11 @@
         <On Terms="AnimDone; AnimPlaying Birth" Send="ModelSwap PhotonCannonSCBW"/>
         <On Terms="AnimDone; AnimPlaying Birth" Send="AnimPlay Creation Stand,Unpowered,End"/>
         <On Terms="AnimDone; AnimPlaying Birth" Send="AnimSetTimeScale Creation 2.000000"/>
-        <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="Protoss_BuildingWarpIn"/>
         <CreepHeightClass value="Tiny"/>
         <DeathArray index="Timeout" AnimProps="Birth" ModelLink="PhaseCannonWarpOut"/>
         <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath" SoundLink="PhotonCannon_Explode"/>
         <DeathCustoms ModelLink="PhotonCannonDeathUnpowered" SoundLink="PhotonCannon_Explode" Name="Variation2"/>
-        <DeathCustoms ModelLink="PhotonCannonTaldarimDeath" Name="DarkProtoss"/>
-        <DeathCustoms ModelLink="PhotonCannonTaldarimDeathUnpowered" Name="Variation3"/>
-        <DeathActorModel value="PhotonCannonDeath"/>
+        <DeathActorModel value="PhotonCannonSCBW@Death"/>
         <PlacementModel value="PhotonCannonPlacement"/>
         <PlacementSound value="Protoss_BuildingPlacementSmall"/>
         <PortraitModel value="ExecutorPortrait"/>
@@ -3980,16 +4067,11 @@
     <CActorModel id="StargateSCBW@Build" parent="ProtossBuildingSCBW@Build"/>
     <CActorModel id="TemplarArchiveSCBW@Build" parent="ProtossBuildingSCBW@Build"/>
     <CActorUnit id="CitadelOfAdunSCBW" parent="ProtossBuildingSCBW" unitName="CitadelOfAdunSCBW">
-        <Macros value="UnpoweredAnim"/>
-        <Macros value="QueueAnim"/>
-        <Macros value="BuildingFlattenTerrainMacro"/>
-        <Macros value="ProtossBuildingPowerUp"/>
         <On Terms="UnitDeathCustomize; ValidateUnit NoDarkProtoss" Send="DeathCustomize DarkProtoss"/>
         <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="Protoss_BuildingWarpIn"/>
         <CreepHeightClass value="Small"/>
         <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath"/>
         <DeathActorModel value="CitadelOfAdunSCBW@Death"/>
-        <PortraitModel value="ProtAdvisorSCBW@Portrait"/>
         <BarOffset value="135"/>
         <BarWidth value="135"/>
         <GroupIcon>
@@ -4008,6 +4090,7 @@
             <Image value="Assets\Textures\wireframe-protoss-citadelofadun-shield03@scbw.dds"/>
         </WireframeShield>
     </CActorUnit>
+    <CActorSplat id="TemplarArchiveSCBW@Splat" parent="GenericUnitSplat" unitName="TemplarArchiveSCBW"/>
     <CActorSplat id="CitadelOfAdunSCBW@Splat" parent="GenericUnitSplat" unitName="CitadelOfAdunSCBW"/>
     <CActorSplat id="HighTemplarSCBWPsiStorm@CursorSplat" parent="ProtossCursorSplat" abil="HighTemplarSCBWPsiStorm">
         <Model value="HighTemplarSCBWPsiStorm@CursorSplat"/>
@@ -4094,10 +4177,6 @@
     </CActorUnit>
     <CActorUnit id="StargateSCBW" parent="ProtossBuildingSCBW" unitName="StargateSCBW">
         <Aliases value="_UnitHuge"/>
-        <Macros value="ProtossBuildingPowerUp"/>
-        <Macros value="VoidMPUnpoweredAnim"/>
-        <Macros value="QueueAnim"/>
-        <Macros value="GlobalLoopMacro"/>
         <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstruction" Send="DeathCustomize Variation2"/>
         <On Terms="ActorCreation" Send="StatusSet WarpingIn 0"/>
         <On Terms="AbilTrain.StargateSCBW@Train.Start; AbilTrainProduced ScoutSCBW; !ValidateUnit HasNoPower" Send="Create ScoutSCBW@WarpInStargate"/>
@@ -4130,9 +4209,8 @@
         <On Terms="AbilMorph.*.Finish; MorphTo Stargate" Send="Create"/>
         <On Terms="ActorCreation" Send="AnimGroupRemove Work"/>
         <ModelFlags index="AutomateGlobalLoops" value="0"/>
-        <DeathCustoms ModelLink="StargateDeathUnpowered" SoundLink="StargateSCBW@Explode" Name="Variation2"/>
-        <DeathActorModel value="StargateDeath"/>
-        <PortraitModel value="StargateSCBW@Portrait"/>
+        <DeathCustoms ModelLink="StargateSCBW@DeathUnpowered" SoundLink="StargateSCBW@Explode" Name="Variation2"/>
+        <DeathActorModel value="StargateSCBW@Death"/>
         <BarOffset value="170"/>
         <BarWidth value="160"/>
         <GroupIcon>
