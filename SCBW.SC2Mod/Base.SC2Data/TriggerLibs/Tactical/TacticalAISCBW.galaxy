@@ -178,7 +178,7 @@ const fixed c_BWEnemyMultiplierHighTemplar = 1.25;
 const fixed c_BWMinThreshold = 100.0;
 const int c_BWHighTemplarLowVitPerc = 40;
 const int c_BWpsiStormCooldown = c_tactTimerFirst;
-const int c_BWHallucianteCooldown = c_tactTimerFirst;
+const int c_BWHallucianteCooldown = c_tactTimerSecond;
 
 void BWUnitGroupTest (unitgroup scanGroup) {
     DebugVarInt("group strength", FixedToInt(AIUnitGroupStrength(scanGroup)));
@@ -193,11 +193,19 @@ void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     unitgroup enemyGroup;
     fixed cooldown;
 
+    lowVitality = (UnitGetPropertyInt(aiUnit, c_unitPropVitalityPercent, c_unitPropCurrent) < c_HighTemplarLowVitPerc);
+
+    if (lowVitality) {
+        if (BWMergeToSurvive(player, aiUnit, scanGroup)) {
+            return;
+        }
+    }
+
     if (AIPlayerDifficulty(player) < c_campExpert) {
-        cooldown = 5.0;
+        cooldown = 10.0;
     }
     else {
-        cooldown = 2.0;
+        cooldown = 2.5;
     }
 
     if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
@@ -205,17 +213,10 @@ void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
             mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
             ord = BWPsionicStorm(player, aiUnit, scanGroup);
             if (ord != null) {
-                AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_BWHallucianteCooldown, cooldown);
+                AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_BWpsiStormCooldown, cooldown);
                 return;
             }
         }
-    }
-
-    mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
-    ord = BWHallucination(player, aiUnit, scanGroup, mark);
-    if (ord != null) {
-        AICast(aiUnit, ord, c_noMarker, c_castHold);
-        return;
     }
 
     //  If we already have a psi storm order, ignore any new orders since psi storm is more important.
@@ -223,13 +224,19 @@ void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     if (UnitOrderHasAbil(aiUnit, c_BWAB_HighTemplarSCBWHallucination) || UnitOrderHasAbil(aiUnit, c_BWAB_HighTemplarSCBWPsiStorm)) {
         return;
     }
-    
-    lowVitality = (UnitGetPropertyInt(aiUnit, c_unitPropVitalityPercent, c_unitPropCurrent) < c_HighTemplarLowVitPerc);
 
-    if (lowVitality) {
-        if (BWMergeToSurvive(player, aiUnit, scanGroup)) {
-            return;
-        }
+    if (AIPlayerDifficulty(player) < c_campExpert) {
+        cooldown = 25.0;
+    }
+    else {
+        cooldown = 10.0;
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
+    ord = BWHallucination(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_BWHallucianteCooldown, cooldown);
+        return;
     }
 }
 
