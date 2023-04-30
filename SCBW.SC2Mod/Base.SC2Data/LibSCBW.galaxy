@@ -14,19 +14,10 @@ void libSCBW_InitLibraries () {
 //--------------------------------------------------------------------------------------------------
 // Custom Script: Main
 //--------------------------------------------------------------------------------------------------
+include "Script/SCBW"
+
 void SCBW_main(){
-    region r = RegionPlayableMap();
-    point p = RegionGetBoundsMax(r);
-    fixed width = PointGetX (p);
-    fixed height = PointGetY(p);
-    int i =0;
-    int j =0;
-    string model="EditorHelper";
-    for(i=0;i<width;i+=1){
-        for(j=0;j<height;j+=1){
-            //libNtve_gf_CreateModelAtPoint(model,Point(i,j));
-        }
-    }
+    SCBW_Init();
 }
 
 void libSCBW_InitCustomScript () {
@@ -43,6 +34,7 @@ bool libSCBW_gt_MapInitialization_Func (bool testConds, bool runActions) {
 
     // Automatic Variable Declarations
     playergroup auto52EFDCBD_g;
+    string auto62EF0AC0_val;
     string auto66859ACD_val;
 
     // Variable Initialization
@@ -57,13 +49,38 @@ bool libSCBW_gt_MapInitialization_Func (bool testConds, bool runActions) {
     while (true) {
         lv_playerIndex = PlayerGroupNextPlayer(auto52EFDCBD_g, lv_playerIndex);
         if (lv_playerIndex < 0) { break; }
-        auto66859ACD_val = GameAttributePlayerValue("1", lv_playerIndex);
-        if (auto66859ACD_val == "0001") {
-            PlayerSetRace(lv_playerIndex, "BWTe");
+        if ((PlayerType(lv_playerIndex) == c_playerTypeUser)) {
+            auto66859ACD_val = PlayerRace(lv_playerIndex);
+            if (auto66859ACD_val == "Terr") {
+                PlayerSetRace(lv_playerIndex, "BWTe");
+            }
+            else if (auto66859ACD_val == "Prot") {
+                PlayerSetRace(lv_playerIndex, "BWPr");
+            }
+            else if (auto66859ACD_val == "Zerg") {
+                PlayerSetRace(lv_playerIndex, "BWZe");
+            }
+            else {
+            }
             libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
             libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
         }
         else {
+            if ((PlayerType(lv_playerIndex) == c_playerTypeComputer)) {
+                auto62EF0AC0_val = PlayerRace(lv_playerIndex);
+                if (auto62EF0AC0_val == "BWTe") {
+                    PlayerSetRace(lv_playerIndex, "Terr");
+                }
+                else if (auto62EF0AC0_val == "BWPr") {
+                    PlayerSetRace(lv_playerIndex, "Prot");
+                }
+                else if (auto62EF0AC0_val == "BWZe") {
+                    PlayerSetRace(lv_playerIndex, "Zerg");
+                }
+                else {
+                }
+            }
+
         }
     }
     return true;

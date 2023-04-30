@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
     <CButton id="DroneSCBW">
-        <Icon value="Assets\Textures\btn-unit-zerg-drone.dds"/>
-        <AlertIcon value="Assets\Textures\btn-unit-zerg-drone.dds"/>
+        <Icon value="Assets\Textures\btn-unit-collection-drone-remastered.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-collection-drone-remastered.dds"/>
         <EditorCategories value="Race:Zerg"/>
     </CButton>
     <CButton id="HydraliskSCBW">
@@ -15,6 +15,7 @@
         <Icon value="Assets\Textures\btn-unit-zerg-lurker.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-zerg-lurker.dds"/>
         <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Row="2"/>
     </CButton>
     <CButton id="ZerglingSCBW">
         <Icon value="Assets\Textures\btn-unit-zerg-zergling.dds"/>
@@ -103,26 +104,28 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsZerg"/>
     </CLight>
-    <CActorUnit id="LurkerSCBW" parent="GenericBurrowerStandard" unitName="LurkerSCBW">
+    <CActorUnit id="LurkerSCBW" parent="GenericBurrowerStandardSCBW" unitName="LurkerSCBW">
         <Aliases value="_UnitLarge"/>
         <Aliases value="_UnitLarge"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
         <Macros value="ZergMediumBurrowEffects"/>
         <Macros value="UnloadDropAnim"/>
         <AcceptedHostedPropTransfers index="Scale" value="0"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Lurker; MorphFrom LurkerEgg" Send="Create"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Lurker; MorphFrom LurkerEgg" Send="AnimBaselineStop"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Lurker; MorphFrom LurkerEgg" Send="$Birth 0 0.000000 -1.000000 0.000000"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerSCBWEgg" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerSCBWEgg" Send="AnimBaselineStop"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerSCBWEgg" Send="$Birth 0 0.000000 -1.000000 0.000000"/>
         <On Terms="AnimDone; AnimName Birth" Send="AnimBaselineStart"/>
-        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create BurrowDownLurker"/>
-        <On Terms="AbilMorph.*.Cancel; MorphFrom Lurker; MorphTo LurkerBurrowed" Send="AnimClear Burrow"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Lurker; MorphFrom LurkerBurrowed" Send="AnimBracketStop Burrow"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Lurker; MorphFrom LurkerBurrowed" Send="AnimClear Burrow"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create LurkerSCBW@BurrowDown"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom LurkerSCBW; MorphTo LurkerBurrowed" Send="AnimClear Burrow"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerBurrowed" Send="AnimBracketStop Burrow"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerBurrowed" Send="AnimClear Burrow"/>
         <On Terms="ActorCreation" Send="SetTintColor 255,255,255"/>
         <On Terms="UnitMovementUpdate.*.Walk; AnimPlaying Birth" Send="AnimClear Birth"/>
-        <On Terms="UnitHeightUpdate.*.Land" Send="Create Lurker_Land"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create LurkerSCBW@Land"/>
         <On Terms="WeaponStart.*.AttackStart" Send="AnimPlay Attack Attack DontResetOnUnhide"/>
         <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathArray index="Normal" ModelLink="LurkerSCBW@Death" SoundLink="LurkerSCBW@Death"/>
         <DeathArray index="Disintegrate" ModelLink="LurkerSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
         <DeathArray index="Fire" ModelLink="LurkerSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
@@ -186,19 +189,16 @@
         <On Terms="UnitBirth.HydraliskSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo HydraliskSCBW; MorphFrom HydraliskSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo HydraliskSCBW@Burrowed; MorphFrom HydraliskSCBW" Send="TerrainSquibDeactivate"/>
-        <On Terms="AbilMorph.LurkerAspectMP.Finish; MorphTo HydraliskSCBW; !AbilKey BurrowUp" Send="Create"/>
-        <On Terms="AbilMorph.LurkerAspectMP.Start; MorphFrom HydraliskSCBW; !AbilKey BurrowDown" Send="Destroy"/>
-        <On Terms="AbilMorph.LurkerAspectMPFromHydraliskBurrowed.Finish; MorphTo HydraliskSCBW; !AbilKey BurrowUp" Send="Create"/>
-        <On Terms="AbilMorph.LurkerAspectMPFromHydraliskBurrowed.Finish; MorphTo HydraliskSCBW@Burrowed; !AbilKey BurrowUp" Send="Create"/>
-        <On Terms="AbilMorph.LurkerAspectMPFromHydraliskBurrowed.Start; MorphFrom HydraliskSCBW; !AbilKey BurrowDown" Send="Destroy"/>
+        <On Terms="AbilMorph.LurkerSCBW@Morph.Finish; MorphTo HydraliskSCBW; !AbilKey BurrowUp" Send="Create"/>
+        <On Terms="AbilMorph.LurkerSCBW@Morph.Start; MorphFrom HydraliskSCBW; !AbilKey BurrowDown" Send="Destroy"/>
+        <On Terms="AbilMorph.LurkerSCBW@MorphBurrowed.Finish; MorphTo HydraliskSCBW; !AbilKey BurrowUp" Send="Create"/>
+        <On Terms="AbilMorph.LurkerSCBW@MorphBurrowed.Finish; MorphTo HydraliskSCBW@Burrowed; !AbilKey BurrowUp" Send="Create"/>
+        <On Terms="AbilMorph.LurkerSCBW@MorphBurrowed.Start; MorphFrom HydraliskSCBW; !AbilKey BurrowDown" Send="Destroy"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Hydra_Land"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo LurkerMPEgg" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Finish; MorphFrom LurkerMPEgg; MorphTo HydraliskSCBW" Send="Create"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <EventDataSound Name="HydraliskAttackImpactMelee" Actor="UnitSound" Sound="Hydralisk_AttackImpactMelee"/>
-        <DeathArray index="Normal" ModelLink="HydraliskSCBW@Death" SoundLink="HydraliskSCBW@Death"/>
-        <DeathArray index="Disintegrate" ModelLink="HydraliskSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Fire" ModelLink="HydraliskSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBWEgg" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom LurkerSCBWEgg; MorphTo HydraliskSCBW" Send="Create"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Spectre_KillerPhantasmDeath" Name="Hallucination"/>
         <DeathCustoms ModelLink="HydraliskSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="FireOnMetal"/>
@@ -228,6 +228,11 @@
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <EventDataSound Name="HydraliskAttackImpactMelee" Actor="UnitSound" Sound="Hydralisk_AttackImpactMelee"/>
+        <DeathArray index="Normal" ModelLink="HydraliskSCBW@Death" SoundLink="HydraliskSCBW@Death"/>
+        <DeathArray index="Disintegrate" ModelLink="HydraliskSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Fire" ModelLink="HydraliskSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
         <PortraitModel value="HydraliskSCBW@Portrait"/>
         <TerrainSquibs>
@@ -245,7 +250,7 @@
         <GroupIcon>
             <Image value="Assets\Textures\Wireframe-Zerg-Hydralisk.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-zerg-hydralisk.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-hydralisk@scbw.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-groundcarapace-level0.dds"/>
         <SoundArray index="Ready" value="HydraliskSCBW@Ready"/>
         <SoundArray index="Help" value="HydraliskSCBW@Help"/>
@@ -256,7 +261,7 @@
         <StatusColors index="Shields">
             <ColorArray index="0" value="255,0,128,0"/>
         </StatusColors>
-        <UnitIcon value="Assets\Textures\btn-unit-zerg-hydralisk.dds"/>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-hydralisk@scbw.dds"/>
         <VitalColors index="Shields">
             <ColorArray value="255,0,128,0"/>
         </VitalColors>
@@ -266,7 +271,7 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorUnit id="DroneSCBW" parent="GenericBurrowerStandard" unitName="DroneSCBW">
+    <CActorUnit id="DroneSCBW" parent="GenericBurrowerStandardSCBW" unitName="DroneSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
         <Macros value="CarryAnim"/>
@@ -279,8 +284,6 @@
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
-        <On Terms="UnitBirth.DroneSCBW@Burrowed" Send="Create"/>
-        <On Terms="UnitBirth.DroneSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
         <On Terms="Abil.DroneSCBW@Harvest.Start" Send="AnimPlay Work Work PlayForever"/>
         <On Terms="Abil.DroneSCBW@Harvest.Stop" Send="AnimClear Work"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom DroneSCBW; MorphTo DroneSCBW@Burrowed" Send="AnimClear Burrow"/>
@@ -298,10 +301,8 @@
         <On Terms="Behavior.OracleCloakFieldEffect.Destroy; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOff"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Drone_Land"/>
         <On Terms="ActorCreation" Send="HostSiteOpsSet ::Host SOpBasicScopeFollow"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="DroneSCBW@Death" SoundLink="DroneSCBW@Death"/>
-        <DeathArray index="Disintegrate" ModelLink="DroneSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Fire" ModelLink="DroneSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ActorModel="DroneDeathRagdoll" ModelLink="DroneSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="FireOnMetal"/>
             <BodySquibs Name="BloodReduced" IsFallback="1"/>
@@ -324,6 +325,10 @@
         <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="DroneSCBW@Death" SoundLink="DroneSCBW@Death"/>
+        <DeathArray index="Disintegrate" ModelLink="DroneSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Fire" ModelLink="DroneSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
         <PortraitModel value="DroneSCBW@Portrait"/>
         <TerrainSquibs>
             <GroupName value="RippleStandard"/>
@@ -339,7 +344,7 @@
         <GroupIcon>
             <Image value="Assets\Textures\Wireframe-Zerg-Drone.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-zerg-drone.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-collection-drone-remastered.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-groundcarapace-level0.dds"/>
         <ShieldArmorIcon value="Assets\Textures\btn-upgrade-zerg-swarmfrenzy.dds"/>
         <SoundArray index="Ready" value="DroneSCBW@Ready"/>
@@ -351,7 +356,7 @@
         <StatusColors index="Shields">
             <ColorArray index="0" value="255,0,128,0"/>
         </StatusColors>
-        <UnitIcon value="Assets\Textures\btn-unit-zerg-drone.dds"/>
+        <UnitIcon value="Assets\Textures\btn-unit-collection-drone-remastered.dds"/>
         <VitalColors index="Shields">
             <ColorArray value="255,0,128,0"/>
         </VitalColors>
@@ -380,11 +385,8 @@
         <On Terms="AbilMorph.*.Finish; MorphTo Zergling; MorphFrom ZerglingBurrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo ZerglingBurrowed; MorphFrom Zergling" Send="TerrainSquibDeactivate"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Zergling_Land"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="ZerglingSCBW@Death" SoundLink="ZerglingSCBW@Death"/>
-        <DeathArray index="Disintegrate" ModelLink="ZerglingSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Eviscerate" ModelLink="ZerglingDeathEviscerate" SoundLink="Zergling_DeathFXEviscerate"/>
-        <DeathArray index="Fire" ModelLink="ZerglingSCBW@DeathFire" SoundLink="Zergling_DeathFXFire"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ActorModel="ZerglingDeathRagdoll" ModelLink="ZerglingSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="FireOnMetal"/>
             <BodySquibs Name="Blood" IsFallback="1"/>
@@ -408,6 +410,11 @@
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Spectre_KillerPhantasmDeath" Name="Hallucination"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="ZerglingSCBW@Death" SoundLink="ZerglingSCBW@Death"/>
+        <DeathArray index="Disintegrate" ModelLink="ZerglingSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eviscerate" ModelLink="ZerglingDeathEviscerate" SoundLink="Zergling_DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="ZerglingSCBW@DeathFire" SoundLink="Zergling_DeathFXFire"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
         <PortraitModel value="ZerglingSCBW@Portrait"/>
         <TerrainSquibs>
@@ -553,15 +560,15 @@
         <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionMedium6.wav" Pitch="-3.000000,3.000000"/>
     </CSound>
     <CSound id="HydraliskSCBW@Attack" parent="ZergAckSCBW" Folder="HydraliskSCBW">
-        <AssetArray TemplateParam="HydraliskSCBW@Yes00"/>
-        <AssetArray TemplateParam="HydraliskSCBW@Yes01"/>
-        <AssetArray TemplateParam="HydraliskSCBW@Yes02"/>
-        <AssetArray TemplateParam="HydraliskSCBW@Yes03"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes03.ogg"/>
         <Flags index="Download" value="0"/>
         <DupeDestroyCount value="6"/>
     </CSound>
     <CSound id="HydraliskSCBW@Death" parent="ZergDeathSCBW" Folder="HydraliskSCBW">
-        <AssetArray TemplateParam="HydraliskSCBW@Death00"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Death00.ogg"/>
         <DupeDestroyCount value="8"/>
     </CSound>
     <CSound id="HydraliskSCBW@Explode" parent="Combat">
@@ -577,22 +584,22 @@
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
     <CSound id="HydraliskSCBW@Pissed" parent="ZergAckSCBW" Folder="HydraliskSCBW">
-        <AssetArray TemplateParam="HydraliskSCBW@Pissed00"/>
-        <AssetArray TemplateParam="HydraliskSCBW@Pissed01"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Pissed00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Pissed01.ogg"/>
     </CSound>
     <CSound id="HydraliskSCBW@Ready" parent="ZergReadySCBW" Folder="HydraliskSCBW">
-        <AssetArray TemplateParam="HydraliskSCBW@Ready00"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Ready00.ogg"/>
     </CSound>
     <CSound id="HydraliskSCBW@What" parent="ZergAckSCBW" Folder="HydraliskSCBW">
-        <AssetArray TemplateParam="HydraliskSCBW@What00"/>
-        <AssetArray TemplateParam="HydraliskSCBW@What01"/>
-        <AssetArray TemplateParam="HydraliskSCBW@What02"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@What00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@What01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@What02.ogg"/>
     </CSound>
     <CSound id="HydraliskSCBW@Yes" parent="ZergAckSCBW" Folder="HydraliskSCBW">
-        <AssetArray TemplateParam="HydraliskSCBW@Yes00"/>
-        <AssetArray TemplateParam="HydraliskSCBW@Yes01"/>
-        <AssetArray TemplateParam="HydraliskSCBW@Yes02"/>
-        <AssetArray TemplateParam="HydraliskSCBW@Yes03"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HydraliskSCBW\HydraliskSCBW@Yes03.ogg"/>
     </CSound>
     <CSound id="DroneSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
@@ -619,7 +626,7 @@
         <Pitch value="-1.000000,1.000000"/>
         <Volume value="-1.000000,1.000000"/>
     </CSound>
-    <CDataCollectionUnit id="EggSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="EggSCBW" parent="ZergUnitSCBW">
         <DataRecord Entry="Actor,EggSCBW"/>
         <DataRecord Entry="Actor,EggSCBW@Death"/>
         <DataRecord Entry="Actor,EggSCBW@Birth"/>
@@ -633,7 +640,7 @@
         <DataRecord Entry="Sound,EggSCBW@Explode"/>
         <DataRecord Entry="Unit,EggSCBW"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="LarvaSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="LarvaSCBW" parent="ZergUnitSCBW">
         <DataRecord Entry="Abil,LarvaSCBW@Train"/>
         <DataRecord Entry="Actor,LarvaSCBW@Death"/>
         <DataRecord Entry="Actor,LarvaSCBW"/>
@@ -659,7 +666,7 @@
         <DataRecord Entry="Sound,LarvaSCBW@Pissed"/>
         <DataRecord Entry="Sound,LarvaSCBW@Explode"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="OverlordSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="OverlordSCBW" parent="ZergFlyerUnitSCBW">
         <DataRecord Entry="Button,OverlordSCBW"/>
         <DataRecord Entry="Unit,OverlordSCBW"/>
         <DataRecord Entry="Abil,OverlordSCBW@Transport"/>
@@ -669,8 +676,8 @@
         <DataRecord Entry="Actor,OverlordSCBW@Death"/>
         <DataRecord Entry="Actor,OverlordSCBW@Land"/>
         <DataRecord Entry="Behavior,OverlordSCBW@Transport"/>
-        <DataRecord Entry="Button,OverlordSCBW@TransportLoad"/>
-        <DataRecord Entry="Button,OverlordSCBW@TransportUnload"/>
+        <DataRecord Entry="Button,OverlordSCBW@Load"/>
+        <DataRecord Entry="Button,OverlordSCBW@Unload"/>
         <DataRecord Entry="Model,OverlordSCBW@Death"/>
         <DataRecord Entry="Model,OverlordSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,OverlordSCBW@Portrait"/>
@@ -693,8 +700,11 @@
         <DataRecord Entry="Sound,OverlordSCBW@Attack"/>
         <DataRecord Entry="Sound,OverlordSCBW@Pissed"/>
         <DataRecord Entry="Sound,OverlordSCBW@Land"/>
+        <TechInfoUpgradeUsed value="OverlordSCBWSpeedUpgrade"/>
+        <TechInfoUpgradeUsed value="OverlordSCBWTransportResearch"/>
+        <TechInfoUpgradeUsed value="OverlordSCBWSightUpgrade"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="ScourgeSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="ScourgeSCBW" parent="ZergFlyerUnitSCBW">
         <DataRecord Entry="Button,ScourgeSCBW"/>
         <DataRecord Entry="Unit,ScourgeSCBW"/>
         <DataRecord Entry="Actor,ScourgeSCBW"/>
@@ -719,7 +729,7 @@
         <DataRecord Entry="Sound,ScourgeSCBW@Attack"/>
         <DataRecord Entry="Sound,ScourgeSCBW@Pissed"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="DevourerSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="DevourerSCBW" parent="ZergFlyerUnitSCBW">
         <DataRecord Entry="Button,DevourerSCBW"/>
         <DataRecord Entry="Unit,DevourerSCBW"/>
         <DataRecord Entry="Actor,DevourerSCBW"/>
@@ -744,7 +754,7 @@
         <DataRecord Entry="Sound,DevourerSCBW@Attack"/>
         <DataRecord Entry="Sound,DevourerSCBW@Pissed"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="GuardianSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="GuardianSCBW" parent="ZergFlyerUnitSCBW">
         <DataRecord Entry="Actor,GuardianSCBW"/>
         <DataRecord Entry="Model,GuardianSCBW"/>
         <DataRecord Entry="Model,GuardianSCBW@Death"/>
@@ -768,7 +778,7 @@
         <DataRecord Entry="Sound,GuardianSCBW@Attack"/>
         <DataRecord Entry="Sound,GuardianSCBW@Pissed"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="MutaliskSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="MutaliskSCBW" parent="ZergFlyerUnitSCBW">
         <DataRecord Entry="Actor,MutaliskSCBW"/>
         <DataRecord Entry="Actor,MutaliskSCBW@Death"/>
         <DataRecord Entry="Button,MutaliskSCBW"/>
@@ -795,7 +805,79 @@
         <DataRecord Entry="RequirementNode,MutaliskSCBW@NotQoB"/>
         <DataRecord Entry="RequirementNode,MutaliskSCBW@NotQoBAtUnit"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="QueenSCBW" parent="SCBW_Unit">
+    <CDataCollectionAbil id="QueenSCBWEnsnare" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Action"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@CursorSplat"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Impact"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@ImpactSound"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Missile"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Range"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Slow"/>
+        <DataRecord Entry="Behavior,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Button,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@LM"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@Search"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@AB"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@DamageDummy"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@Set"/>
+        <DataRecord Entry="Model,QueenSCBWEnsnare@Impact"/>
+        <DataRecord Entry="Model,QueenSCBWEnsnare@Missile"/>
+        <DataRecord Entry="Model,QueenSCBWEnsnare@Slow"/>
+        <DataRecord Entry="Requirement,QueenSCBWEnsnare"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Sound,QueenSCBWEnsnare@Launch"/>
+        <DataRecord Entry="Sound,QueenSCBWEnsnare@Impact"/>
+        <DataRecord Entry="Unit,QueenSCBWEnsnare@Missile"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="QueenSCBWInfestCommandCenter" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWInfestCommandCenter"/>
+        <DataRecord Entry="Button,QueenSCBWInfestCommandCenter"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@Set"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@MU"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@MUChangeOwner"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter@IsCommandCenter"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="QueenSCBWParasite" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWParasite"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@DeathSound"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Parasite"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Action"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Missile"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Range"/>
+        <DataRecord Entry="Behavior,QueenSCBWParasite"/>
+        <DataRecord Entry="Button,QueenSCBWParasite"/>
+        <DataRecord Entry="Effect,QueenSCBWParasite@LM"/>
+        <DataRecord Entry="Effect,QueenSCBWParasite@Detector"/>
+        <DataRecord Entry="Effect,QueenSCBWParasite@AB"/>
+        <DataRecord Entry="Model,QueenSCBWParasite@Parasite"/>
+        <DataRecord Entry="Model,QueenSCBWParasite@Missile"/>
+        <DataRecord Entry="Sound,QueenSCBWParasite@Launch"/>
+        <DataRecord Entry="Sound,QueenSCBWParasite@Impact"/>
+        <DataRecord Entry="Unit,QueenSCBWParasite@Missile"/>
+        <DataRecord Entry="Validator,QueenSCBWParasite@Detector"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="QueenSCBWSpawnBroodlings" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@Action"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@Range"/>
+        <DataRecord Entry="Behavior,QueenSCBWSpawnBroodlings@BroodlingFate"/>
+        <DataRecord Entry="Button,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@LM"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@TimedLife"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@CU"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@Damage"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@Set"/>
+        <DataRecord Entry="Model,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Requirement,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@Launch"/>
+        <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@Impact"/>
+        <DataRecord Entry="Unit,QueenSCBWSpawnBroodlings@Missile"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="QueenSCBW" parent="ZergFlyerUnitSCBW">
         <DataRecord Entry="Button,QueenSCBW"/>
         <DataRecord Entry="Unit,QueenSCBW"/>
         <DataRecord Entry="Actor,QueenSCBW"/>
@@ -819,8 +901,80 @@
         <DataRecord Entry="Sound,QueenSCBW@Yes"/>
         <DataRecord Entry="Sound,QueenSCBW@Attack"/>
         <DataRecord Entry="Sound,QueenSCBW@Pissed"/>
+        <TechInfoUpgradeUsed value="QueenSCBWEnergyUpgrade"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="DefilerSCBW" parent="SCBW_Unit">
+    <CDataCollectionAbil id="DefilerSCBWConsume" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,DefilerSCBWConsume"/>
+        <DataRecord Entry="Actor,DefilerSCBWConsume@Consume"/>
+        <DataRecord Entry="Actor,DefilerSCBWConsume@Impact"/>
+        <DataRecord Entry="Actor,DefilerSCBWConsume@ImpactSound"/>
+        <DataRecord Entry="Actor,DefilerSCBWConsume@LaunchSound"/>
+        <DataRecord Entry="Actor,DefilerSCBWConsume@ConsumeSound"/>
+        <DataRecord Entry="Behavior,DefilerSCBWConsume"/>
+        <DataRecord Entry="Button,DefilerSCBWConsume"/>
+        <DataRecord Entry="Effect,DefilerSCBWConsume@AB"/>
+        <DataRecord Entry="Effect,DefilerSCBWConsume@Set"/>
+        <DataRecord Entry="Effect,DefilerSCBWConsume@MU"/>
+        <DataRecord Entry="Model,DefilerSCBWConsume@Consume"/>
+        <DataRecord Entry="Model,DefilerSCBWConsume@Impact"/>
+        <DataRecord Entry="Sound,DefilerSCBWConsume@Impact"/>
+        <DataRecord Entry="Sound,DefilerSCBWConsume@Launch"/>
+        <DataRecord Entry="Sound,DefilerSCBWConsume@Consume"/>
+        <DataRecord Entry="Validator,DefilerSCBWConsume@AB"/>
+        <DataRecord Entry="Validator,DefilerSCBWConsume@NotBehavior"/>
+        <DataRecord Entry="Requirement,DefilerSCBWConsume"/>
+        <DataRecord Entry="RequirementNode,DefilerSCBWConsume"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="DefilerSCBWDarkSwarm" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,DefilerSCBWDarkSwarm"/>
+        <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@DarkSwarm"/>
+        <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@Action"/>
+        <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@Missile"/>
+        <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@CursorSplat"/>
+        <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@Range"/>
+        <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@LaunchSound"/>
+        <DataRecord Entry="Behavior,DefilerSCBWDarkSwarm"/>
+        <DataRecord Entry="Button,DefilerSCBWDarkSwarm"/>
+        <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@LM"/>
+        <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@Search"/>
+        <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@DamageDummy"/>
+        <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@CP"/>
+        <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@AB"/>
+        <DataRecord Entry="Model,DefilerSCBWDarkSwarm@DarkSwarm"/>
+        <DataRecord Entry="Model,DefilerSCBWDarkSwarm@Impact"/>
+        <DataRecord Entry="Model,DefilerSCBWDarkSwarm@Missile"/>
+        <DataRecord Entry="Sound,DefilerSCBWDarkSwarm@Launch"/>
+        <DataRecord Entry="Sound,DefilerSCBWDarkSwarm@LoopSound"/>
+        <DataRecord Entry="Unit,DefilerSCBWDarkSwarm@Missile"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="DefilerSCBWPlague" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,DefilerSCBWPlague"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@ImpactModel"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@CursorSplat"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@Glaze"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@ImpactSound"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@Range"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@TargetModel"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@TargetModelMedium"/>
+        <DataRecord Entry="Actor,DefilerSCBWPlague@TargetModelSmall"/>
+        <DataRecord Entry="Behavior,DefilerSCBWPlague"/>
+        <DataRecord Entry="Button,DefilerSCBWPlague"/>
+        <DataRecord Entry="Effect,DefilerSCBWPlague@Search"/>
+        <DataRecord Entry="Effect,DefilerSCBWPlague@Damage"/>
+        <DataRecord Entry="Effect,DefilerSCBWPlague@AB"/>
+        <DataRecord Entry="Model,DefilerSCBWPlague@Impact"/>
+        <DataRecord Entry="Model,DefilerSCBWPlague@Glaze"/>
+        <DataRecord Entry="Model,DefilerSCBWPlague@TargetModel"/>
+        <DataRecord Entry="Model,DefilerSCBWPlague@TargetModelMedium"/>
+        <DataRecord Entry="Model,DefilerSCBWPlague@TargetModelSmall"/>
+        <DataRecord Entry="Sound,DefilerSCBWPlague@Impact"/>
+        <DataRecord Entry="Sound,DefilerSCBWPlague@LoopSound"/>
+        <DataRecord Entry="Validator,DefilerSCBWPlague@Damage"/>
+        <DataRecord Entry="Validator,DefilerSCBWPlague@LifeGT1"/>
+        <DataRecord Entry="Requirement,DefilerSCBWPlague"/>
+        <DataRecord Entry="RequirementNode,DefilerSCBWPlague"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="DefilerSCBW" parent="ZergGroundUnitSCBW">
         <DataRecord Entry="Abil,DefilerSCBW@BurrowDown"/>
         <DataRecord Entry="Button,DefilerSCBW"/>
         <DataRecord Entry="Unit,DefilerSCBW"/>
@@ -849,8 +1003,9 @@
         <DataRecord Entry="Sound,DefilerSCBW@Yes"/>
         <DataRecord Entry="Sound,DefilerSCBW@Attack"/>
         <DataRecord Entry="Sound,DefilerSCBW@Pissed"/>
+        <TechInfoUpgradeUsed value="DefilerSCBWEnergyUpgrade"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="UltraliskSCBW" parent="SCBW_Unit">
+    <CDataCollectionUnit id="UltraliskSCBW" parent="ZergMeleeUnitSCBW">
         <DataRecord Entry="Abil,UltraliskSCBW@BurrowDown"/>
         <DataRecord Entry="Button,UltraliskSCBW"/>
         <DataRecord Entry="Unit,UltraliskSCBW"/>
@@ -884,9 +1039,32 @@
         <DataRecord Entry="Sound,UltraliskSCBW@Pissed"/>
         <DataRecord Entry="Sound,UltraliskSCBW@Movement"/>
         <DataRecord Entry="Sound,UltraliskSCBW@Explode"/>
+        <TechInfoUpgradeUsed value="UltraliskSCBWSpeedUpgrade"/>
+        <TechInfoUpgradeUsed value="UltraliskSCBWArmorUpgrade"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="DroneSCBW" parent="SCBW_Unit">
-        <EditorCategories value=""/>
+    <CDataCollectionUnit id="InfestedTerranSCBW" parent="ZergGroundUnitSCBW"/>
+    <CDataCollectionUnit id="BroodlingSCBW" parent="ZergMeleeUnitSCBW">
+        <DataRecord Entry="Model,BroodlingSCBW@DeathAcid"/>
+        <DataRecord Entry="Model,BroodlingSCBW@DeathFire"/>
+        <DataRecord Entry="Model,BroodlingSCBW@DeathRagdoll"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@NotCount"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@NotCountAtUnit"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@NotQoB"/>
+        <DataRecord Entry="RequirementNode,BroodlingSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@DeathFXAcid"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@DeathFXFire"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@Explode"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@Death"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@Help"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@Yes"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@Attack"/>
+        <DataRecord Entry="Sound,BroodlingSCBW@Pissed"/>
+    </CDataCollectionUnit>
+    <CDataCollectionUnit id="DroneSCBW" parent="ZergGroundUnitSCBW">
         <DataRecord Entry="Actor,DroneSCBW"/>
         <DataRecord Entry="Button,DroneSCBW"/>
         <DataRecord Entry="Model,DroneSCBW"/>
@@ -937,10 +1115,56 @@
         <DataRecord Entry="Sound,DroneSCBW@Help"/>
         <DataRecord Entry="Unit,DroneSCBW@Burrowed"/>
     </CDataCollectionUnit>
-    <CDataCollectionAbil id="ZerglingSCBWWeapon" parent="TerranShipWeaponSCBW">
+    <CDataCollectionAbil id="ScourgeSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,ScourgeSCBWWeapon"/>
+        <DataRecord Entry="Actor,ScourgeSCBWWeapon@Action"/>
+        <DataRecord Entry="Effect,ScourgeSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,ScourgeSCBWWeapon@Set"/>
+        <DataRecord Entry="Effect,ScourgeSCBWWeapon@RemoveSource"/>
+        <DataRecord Entry="Model,ScourgeSCBWWeapon@Impact"/>
+        <DataRecord Entry="Sound,ScourgeSCBWWeapon@Impact"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="UltraliskSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,UltraliskSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="SunkenColonySCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,SunkenColonySCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="SporeColonySCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,SporeColonySCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="GuardianSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,GuardianSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="DevourerSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,DevourerSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="MutaliskSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,MutaliskSCBWWeapon"/>
+        <DataRecord Entry="Actor,MutaliskSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,MutaliskSCBWWeapon@Missile"/>
+        <DataRecord Entry="Effect,MutaliskSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,MutaliskSCBWWeapon@LM"/>
+        <DataRecord Entry="Model,MutaliskSCBWWeapon@Missile"/>
+        <DataRecord Entry="Model,MutaliskSCBWWeapon@Impact"/>
+        <DataRecord Entry="Mover,MutaliskSCBWWeapon@MissileBounce"/>
+        <DataRecord Entry="Sound,MutaliskSCBWWeapon@Impact"/>
+        <DataRecord Entry="Sound,MutaliskSCBWWeapon@Launch"/>
+        <DataRecord Entry="Unit,MutaliskSCBWWeapon@Missile"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="BroodlingSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,BroodlingSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="InfestedTerranSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,InfestedTerranSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="ZerglingSCBWWeapon" parent="ZergWeaponSCBW">
         <DataRecord Entry="Weapon,ZerglingSCBWWeapon"/>
     </CDataCollectionAbil>
-    <CDataCollectionAbil id="HydraliskSCBWWeapon" parent="TerranShipWeaponSCBW">
+    <CDataCollectionAbil id="LurkerSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Weapon,LurkerSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="HydraliskSCBWWeapon" parent="ZergWeaponSCBW">
         <DataRecord Entry="Actor,HydraliskSCBWWeapon@Action"/>
         <DataRecord Entry="Actor,HydraliskSCBWWeapon@Missile"/>
         <DataRecord Entry="Effect,HydraliskSCBWWeapon@Damage"/>
@@ -953,28 +1177,21 @@
         <DataRecord Entry="Unit,HydraliskSCBWWeapon@Missile"/>
         <DataRecord Entry="Weapon,HydraliskSCBWWeapon"/>
     </CDataCollectionAbil>
-    <CDataCollectionUnit id="HydraliskSCBW" parent="UnitBaseSCBW">
-        <EditorCategories value=""/>
-        <DataRecord index="4" Entry="Model,HydraliskSCBW@Death"/>
-        <DataRecord index="5" Entry="Model,HydraliskDeathLow"/>
-        <DataRecord index="6" Entry="Model,HydraliskSCBW@Portrait"/>
-        <DataRecord index="7" Entry="Light,HydraliskSCBW@Portrait"/>
-        <DataRecord index="9" Entry="Sound,HydraliskSCBW@Ready"/>
-        <DataRecord index="11" Entry="Sound,HydraliskSCBW@What"/>
-        <DataRecord index="12" Entry="Sound,HydraliskSCBW@Yes"/>
-        <DataRecord index="13" Entry="Sound,HydraliskSCBW@Attack"/>
-        <DataRecord index="14" Entry="Sound,HydraliskSCBW@Pissed"/>
-        <DataRecord index="21" Entry="Sound,HydraliskSCBW@Death"/>
-        <DataRecord index="22" Entry="Sound,HydraliskSCBW@Explode"/>
-        <DataRecord index="23" Entry="Model,HydraliskSCBW@DeathAcid"/>
-        <DataRecord index="24" Entry="Model,HydraliskDeathBlast"/>
-        <DataRecord index="25" Entry="Model,HydraliskSCBW@DeathFire"/>
-        <DataRecord index="26" Entry="Model,HydraliskSCBW@DeathRagdoll"/>
-        <DataRecord index="27" Entry="Model,HydraliskDeathSilent"/>
-        <DataRecord index="28" Entry="Model,HydraliskPlacement"/>
+    <CDataCollectionUnit id="HydraliskSCBW" parent="ZergRangedUnitSCBW">
+        <TechInfoUpgradeUsed value="HydraliskSCBWRangeUpgrade"/>
+        <TechInfoUpgradeUsed value="HydraliskSCBWSpeedUpgrade"/>
         <DataRecord Entry="Abil,HydraliskSCBW@BurrowUp"/>
         <DataRecord Entry="Abil,HydraliskSCBW@BurrowDown"/>
         <DataRecord Entry="Actor,HydraliskSCBW@BurrowedSplat"/>
+        <DataRecord Entry="Actor,HydraliskSCBW"/>
+        <DataRecord Entry="Button,HydraliskSCBW"/>
+        <DataRecord Entry="Light,HydraliskSCBW@Portrait"/>
+        <DataRecord Entry="Model,HydraliskSCBW@Death"/>
+        <DataRecord Entry="Model,HydraliskSCBW@DeathAcid"/>
+        <DataRecord Entry="Model,HydraliskSCBW@DeathFire"/>
+        <DataRecord Entry="Model,HydraliskSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,HydraliskSCBW@Portrait"/>
+        <DataRecord Entry="Model,HydraliskSCBW"/>
         <DataRecord Entry="Requirement,HydraliskSCBW"/>
         <DataRecord Entry="RequirementNode,HydraliskSCBW"/>
         <DataRecord Entry="RequirementNode,HydraliskSCBW@Count"/>
@@ -986,11 +1203,19 @@
         <DataRecord Entry="RequirementNode,HydraliskSCBW@NotCount"/>
         <DataRecord Entry="RequirementNode,HydraliskSCBW@NotCountAtUnit"/>
         <DataRecord Entry="Sound,HydraliskSCBW@Help"/>
+        <DataRecord Entry="Sound,HydraliskSCBW@Death"/>
+        <DataRecord Entry="Sound,HydraliskSCBW@Ready"/>
+        <DataRecord Entry="Sound,HydraliskSCBW@What"/>
+        <DataRecord Entry="Sound,HydraliskSCBW@Yes"/>
+        <DataRecord Entry="Sound,HydraliskSCBW@Attack"/>
+        <DataRecord Entry="Sound,HydraliskSCBW@Pissed"/>
+        <DataRecord Entry="Sound,HydraliskSCBW@Explode"/>
+        <DataRecord Entry="Unit,HydraliskSCBW"/>
         <DataRecord Entry="Unit,HydraliskSCBW@Burrowed"/>
-        <TechInfoUpgradeUsed value="HydraliskSCBWRangeUpgrade"/>
-        <TechInfoUpgradeUsed value="HydraliskSCBWSpeedUpgrade"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="LurkerSCBWEgg" parent="SCBW_Unit">
+    <CDataCollectionUnit id="DevourerSCBWEgg" parent="ZergUnitSCBW"/>
+    <CDataCollectionUnit id="GuardianSCBWEgg" parent="ZergUnitSCBW"/>
+    <CDataCollectionUnit id="LurkerSCBWEgg" parent="ZergUnitSCBW">
         <DataRecord Entry="Actor,LurkerSCBWEgg"/>
         <DataRecord Entry="Unit,LurkerSCBWEgg"/>
         <DataRecord Entry="Actor,LurkerSCBWEgg@Hatch"/>
@@ -1003,48 +1228,48 @@
         <DataRecord Entry="Sound,LurkerSCBWEgg@Explode"/>
         <DataRecord Entry="Sound,LurkerSCBWEgg@Birth"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="LurkerSCBW" parent="UnitBaseSCBW">
-        <EditorCategories value=""/>
-        <DataRecord index="4" Entry="Model,LurkerSCBW@Death"/>
-        <DataRecord index="5" Entry="Model,LurkerDeathLow"/>
-        <DataRecord index="6" Entry="Model,LurkerSCBW@Portrait"/>
-        <DataRecord index="7" Entry="Light,LurkerSCBW@Portrait"/>
-        <DataRecord index="9" Entry="Sound,LurkerSCBW@Ready"/>
-        <DataRecord index="11" Entry="Sound,LurkerSCBW@What"/>
-        <DataRecord index="12" Entry="Sound,LurkerSCBW@Yes"/>
-        <DataRecord index="13" Entry="Sound,LurkerSCBW@Attack"/>
-        <DataRecord index="14" Entry="Sound,LurkerSCBW@Pissed"/>
-        <DataRecord index="21" Entry="Sound,LurkerSCBW@Death"/>
-        <DataRecord index="22" Entry="Sound,LurkerSCBW@Explode"/>
-        <DataRecord index="23" Entry="Model,LurkerSCBW@DeathAcid"/>
-        <DataRecord index="24" Entry="Model,LurkerDeathBlast"/>
-        <DataRecord index="25" Entry="Model,LurkerSCBW@DeathFire"/>
-        <DataRecord index="26" Entry="Model,LurkerDeathRagdoll"/>
-        <DataRecord index="27" Entry="Model,LurkerDeathSilent"/>
-        <DataRecord index="28" Entry="Model,LurkerPlacement"/>
+    <CDataCollectionUnit id="LurkerSCBW" parent="ZergRangedUnitSCBW">
+        <DataRecord Entry="Actor,LurkerSCBW"/>
+        <DataRecord Entry="Button,LurkerSCBW"/>
+        <DataRecord Entry="Light,LurkerSCBW@Portrait"/>
+        <DataRecord Entry="Model,LurkerSCBW@Death"/>
+        <DataRecord Entry="Model,LurkerSCBW@DeathAcid"/>
+        <DataRecord Entry="Model,LurkerSCBW@DeathFire"/>
+        <DataRecord Entry="Model,LurkerSCBW"/>
+        <DataRecord Entry="Model,LurkerSCBW@Portrait"/>
+        <DataRecord Entry="Model,LurkerSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Requirement,LurkerSCBW"/>
+        <DataRecord Entry="RequirementNode,LurkerSCBW"/>
+        <DataRecord Entry="RequirementNode,LurkerSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,LurkerSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,LurkerSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,LurkerSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,LurkerSCBW@NotQoB"/>
+        <DataRecord Entry="Sound,LurkerSCBW@Explode"/>
+        <DataRecord Entry="Sound,LurkerSCBW@Ready"/>
+        <DataRecord Entry="Sound,LurkerSCBW@What"/>
+        <DataRecord Entry="Sound,LurkerSCBW@Yes"/>
+        <DataRecord Entry="Sound,LurkerSCBW@Attack"/>
+        <DataRecord Entry="Sound,LurkerSCBW@Pissed"/>
+        <DataRecord Entry="Sound,LurkerSCBW@Death"/>
+        <DataRecord Entry="Sound,LurkerSCBW@Help"/>
+        <DataRecord Entry="Unit,LurkerSCBW"/>
     </CDataCollectionUnit>
-    <CDataCollectionUnit id="ZerglingSCBW" parent="UnitBaseSCBW">
-        <EditorCategories value=""/>
-        <DataRecord index="4" Entry="Model,ZerglingSCBW@Death"/>
-        <DataRecord index="5" Entry="Model,ZerglingDeathLow"/>
-        <DataRecord index="6" Entry="Model,ZerglingSCBW@Portrait"/>
-        <DataRecord index="7" Entry="Light,ZerglingSCBW@Portrait"/>
-        <DataRecord index="9" Entry="Sound,ZerglingSCBW@Ready"/>
-        <DataRecord index="11" Entry="Sound,ZerglingSCBW@What"/>
-        <DataRecord index="12" Entry="Sound,ZerglingSCBW@Yes"/>
-        <DataRecord index="13" Entry="Sound,ZerglingSCBW@Attack"/>
-        <DataRecord index="14" Entry="Sound,ZerglingSCBW@Pissed"/>
-        <DataRecord index="21" Entry="Sound,ZerglingSCBW@Death"/>
-        <DataRecord index="22" Entry="Sound,ZerglingSCBW@Explode"/>
-        <DataRecord index="23" Entry="Model,ZerglingSCBW@DeathAcid"/>
-        <DataRecord index="24" Entry="Model,ZerglingDeathBlast"/>
-        <DataRecord index="25" Entry="Model,ZerglingSCBW@DeathFire"/>
-        <DataRecord index="26" Entry="Model,ZerglingSCBW@DeathRagdoll"/>
-        <DataRecord index="27" Entry="Model,ZerglingDeathSilent"/>
-        <DataRecord index="28" Entry="Model,ZerglingPlacement"/>
+    <CDataCollectionUnit id="ZerglingSCBW" parent="ZergMeleeUnitSCBW">
+        <TechInfoUpgradeUsed value="ZerglingSCBWSpeedUpgrade"/>
+        <TechInfoUpgradeUsed value="ZerglingSCBWAttackSpeedUpgrade"/>
         <DataRecord Entry="Abil,ZerglingSCBW@BurrowDown"/>
         <DataRecord Entry="Abil,ZerglingSCBW@BurrowUp"/>
         <DataRecord Entry="Actor,ZerglingSCBW@BurrowedSplat"/>
+        <DataRecord Entry="Actor,ZerglingSCBW"/>
+        <DataRecord Entry="Button,ZerglingSCBW"/>
+        <DataRecord Entry="Light,ZerglingSCBW@Portrait"/>
+        <DataRecord Entry="Model,ZerglingSCBW@Death"/>
+        <DataRecord Entry="Model,ZerglingSCBW@DeathAcid"/>
+        <DataRecord Entry="Model,ZerglingSCBW@DeathFire"/>
+        <DataRecord Entry="Model,ZerglingSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,ZerglingSCBW@Portrait"/>
+        <DataRecord Entry="Model,ZerglingSCBW"/>
         <DataRecord Entry="Requirement,ZerglingSCBW"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBW"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBW@Count"/>
@@ -1055,10 +1280,16 @@
         <DataRecord Entry="RequirementNode,ZerglingSCBW@CountAtUnit"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBW@NotCount"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBW@NotCountAtUnit"/>
+        <DataRecord Entry="Sound,ZerglingSCBW@Attack"/>
+        <DataRecord Entry="Sound,ZerglingSCBW@Death"/>
         <DataRecord Entry="Sound,ZerglingSCBW@Help"/>
+        <DataRecord Entry="Sound,ZerglingSCBW@Pissed"/>
+        <DataRecord Entry="Sound,ZerglingSCBW@Ready"/>
+        <DataRecord Entry="Sound,ZerglingSCBW@What"/>
+        <DataRecord Entry="Sound,ZerglingSCBW@Yes"/>
+        <DataRecord Entry="Sound,ZerglingSCBW@Explode"/>
+        <DataRecord Entry="Unit,ZerglingSCBW"/>
         <DataRecord Entry="Unit,ZerglingSCBW@Burrowed"/>
-        <TechInfoUpgradeUsed value="ZerglingSCBWSpeedUpgrade"/>
-        <TechInfoUpgradeUsed value="ZerglingSCBWAttackSpeedUpgrade"/>
     </CDataCollectionUnit>
     <CUnit id="DroneSCBW">
         <DeathRevealRadius value="3"/>
@@ -1083,11 +1314,11 @@
         <LifeArmorName value="Unit/LifeArmorName/ZergGroundArmor"/>
         <ShieldArmorName value="Unit/ShieldArmorName/ZergWildMutation"/>
         <Speed value="2.8125"/>
-        <Acceleration value="2.5"/>
+        <Acceleration value="4.1875"/>
         <LateralAcceleration value="46.0625"/>
         <StationaryTurningRate value="999.8437"/>
         <TurningRate value="999.8437"/>
-        <Sight value="8"/>
+        <Sight value="7"/>
         <Food value="-1"/>
         <CostCategory value="Economy"/>
         <CostResource index="Minerals" value="50"/>
@@ -1114,14 +1345,14 @@
             <LayoutButtons Face="ZergBuild" Type="Submenu" SubmenuCardId="Bld1" Row="2" Column="0"/>
             <LayoutButtons Face="ZergBuildAdvanced" Type="Submenu" SubmenuCardId="Bld2" Row="2" Column="1"/>
             <LayoutButtons Face="BurrowDown" Type="AbilCmd" AbilCmd="DroneSCBW@BurrowDown,Execute" Row="2" Column="4"/>
-            <LayoutButtons Face="GatherZerg" Type="AbilCmd" AbilCmd="DroneHarvest,Gather" Row="1" Column="0"/>
+            <LayoutButtons Face="GatherZerg" Type="AbilCmd" AbilCmd="DroneSCBW@Harvest,Gather" Row="1" Column="0"/>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="DroneCarcassHarvest,Cancel" Row="2" Column="4"/>
         </CardLayouts>
         <CardLayouts CardId="Bld1">
             <LayoutButtons Face="Cancel" Type="CancelSubmenu" Row="2" Column="4"/>
         </CardLayouts>
         <CardLayouts CardId="Bld2">
-            <LayoutButtons Type="CancelSubmenu" Row="2" Column="4"/>
+            <LayoutButtons Face="Cancel" Type="CancelSubmenu" Row="2" Column="4"/>
         </CardLayouts>
         <Radius value="0.375"/>
         <SeparationRadius value="0.375"/>
@@ -1159,13 +1390,12 @@
         <LifeMax value="80"/>
         <LifeRegenRate value="0.2734"/>
         <LifeArmorName value="Unit/LifeArmorName/ZergGroundArmor"/>
-        <Speed value="2.25"/>
-        <SpeedMultiplierCreep value="1.3"/>
+        <Speed value="1.9687"/>
         <Acceleration value="1000"/>
         <LateralAcceleration value="46"/>
         <StationaryTurningRate value="999.8437"/>
         <TurningRate value="999.8437"/>
-        <Sight value="9"/>
+        <Sight value="6"/>
         <Food value="-2"/>
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="75"/>
@@ -1178,6 +1408,7 @@
         <AbilArray Link="attack"/>
         <AbilArray Link="move"/>
         <AbilArray Link="HydraliskSCBW@BurrowDown"/>
+        <AbilArray Link="LurkerSCBW@Morph"/>
         <WeaponArray Link="HydraliskMelee"/>
         <WeaponArray Link="HydraliskSCBWWeapon"/>
         <CardLayouts>
@@ -1213,6 +1444,7 @@
         <TauntDuration index="Cheer" value="5"/>
         <TauntDuration index="Dance" value="5"/>
         <BuildTime value="26.25"/>
+        <TacticalAIThink value="AIThinkHydraliskSCBW"/>
     </CUnit>
     <CUnit id="LurkerSCBW">
         <DeathRevealRadius value="3"/>
@@ -1233,32 +1465,31 @@
         <Collide index="Small" value="1"/>
         <Attributes index="Armored" value="1"/>
         <Attributes index="Biological" value="1"/>
-        <LifeStart value="200"/>
-        <LifeMax value="200"/>
+        <LifeStart value="125"/>
+        <LifeMax value="125"/>
         <LifeArmor value="1"/>
         <LifeRegenRate value="0.2734"/>
         <LifeArmorName value="Unit/LifeArmorName/ZergGroundArmor"/>
-        <Speed value="3.375"/>
-        <SpeedMultiplierCreep value="1.3"/>
+        <Speed value="2.25"/>
         <Acceleration value="1000"/>
         <LateralAcceleration value="46.0625"/>
         <StationaryTurningRate value="999.8437"/>
         <TurningRate value="999.8437"/>
         <Sight value="10"/>
-        <Food value="-3"/>
+        <Food value="-2"/>
         <CostCategory value="Army"/>
-        <CostResource index="Minerals" value="150"/>
-        <CostResource index="Vespene" value="150"/>
+        <CostResource index="Minerals" value="125"/>
+        <CostResource index="Vespene" value="125"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
         <DamageTakenXP value="1"/>
         <KillXP value="50"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
-        <AbilArray Link="BurrowLurkerDown"/>
+        <AbilArray Link="LurkerSCBW@BurrowDown"/>
         <AbilArray Link="attack"/>
         <BehaviorArray Link="LurkerWeaponDisabled"/>
-        <WeaponArray Link="Lurker" Turret="FreeRotate"/>
+        <EquipmentArray Weapon="LurkerSCBWWeapon"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -1266,7 +1497,7 @@
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
             <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
-            <LayoutButtons Face="BurrowLurkerMP" Type="AbilCmd" AbilCmd="BurrowLurkerDown,Execute" Row="2" Column="4"/>
+            <LayoutButtons Face="LurkerSCBW@BurrowDown" Type="AbilCmd" AbilCmd="LurkerSCBW@BurrowDown,Execute" Row="2" Column="4"/>
         </CardLayouts>
         <Radius value="0.75"/>
         <SeparationRadius value="0.75"/>
@@ -1293,6 +1524,8 @@
         <HotkeyCategory value="Unit/Category/ZergStory"/>
         <KillDisplay value="Always"/>
         <RankDisplay value="Always"/>
+        <BuildTime value="37.5"/>
+        <TacticalAIThink value="AIThinkLurkerSCBW"/>
     </CUnit>
     <CUnit id="ZerglingSCBW">
         <DeathRevealRadius value="3"/>
@@ -1313,13 +1546,12 @@
         <LifeRegenRate value="0.2734"/>
         <LifeArmorName value="Unit/LifeArmorName/ZergGroundArmor"/>
         <ShieldArmorName value="Unit/ShieldArmorName/ZergWildMutation"/>
-        <Speed value="2.9531"/>
-        <SpeedMultiplierCreep value="1.3"/>
+        <Speed value="3.0937"/>
         <Acceleration value="1000"/>
         <LateralAcceleration value="46.0625"/>
         <StationaryTurningRate value="999.8437"/>
         <TurningRate value="999.8437"/>
-        <Sight value="8"/>
+        <Sight value="5"/>
         <Food value="-0.5"/>
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="25"/>
@@ -1370,5 +1602,6 @@
         <TauntDuration index="Cheer" value="5"/>
         <TauntDuration index="Dance" value="5"/>
         <BuildTime value="13.125"/>
+        <TacticalAIThink value="AIThinkZerglingSCBW"/>
     </CUnit>
 </Catalog>

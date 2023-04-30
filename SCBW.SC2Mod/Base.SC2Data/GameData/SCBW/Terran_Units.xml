@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
     <CEffectCreateHealer id="SCVSCBW@Repair">
-        <ValidatorArray value="NotWarpingIn"/>
-        <ValidatorArray value="HiddenCompareBA"/>
-        <ValidatorArray value="HiddenCompareAB"/>
-        <ValidatorArray value="NotVortexd"/>
-        <ValidatorArray value="NotStasis"/>
+        <ValidatorArray value="SCVSCBW@Repair"/>
         <EditorCategories value="Race:Terran"/>
         <DrainResourceCostFactor index="Minerals" value="0.25"/>
         <DrainResourceCostFactor index="Vespene" value="0.25"/>
@@ -105,10 +101,6 @@
             <Flags index="UseDefaultButton" value="1"/>
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
-        <ResourceAmountRequest index="Minerals" value="8"/>
-        <ResourceAmountRequest index="Vespene" value="8"/>
-        <ResourceTimeMultiplier index="Minerals" value="1.68"/>
-        <ResourceTimeMultiplier index="Vespene" value="1.34"/>
     </CAbilHarvest>
     <CAbilMorph id="SiegeTankSCBW@Siege">
         <OrderArray index="0">
@@ -213,6 +205,7 @@
     <CButton id="ProbeSCBW@ReturnCargo" parent="ReturnCargoSCBW">
         <HotkeyAlias value="SCVSCBW@ReturnCargo"/>
         <DefaultButtonLayout Row="1" Column="1"/>
+        <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="BattlecruiserSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-battlecruiser@scbw.dds"/>
@@ -270,6 +263,7 @@
     </CButton>
     <CButton id="SCVSCBW@ReturnCargo" parent="ReturnCargoSCBW">
         <DefaultButtonLayout Row="1" Column="1"/>
+        <EditorCategories value="Race:Terran"/>
     </CButton>
     <CButton id="SCVSCBW@Harvest">
         <Icon value="Assets\Textures\btn-ability-terran-gather.dds"/>
@@ -600,11 +594,6 @@
         <EventDataSound Name="TerranExplosionLarge" Actor="UnitSound" Sound="Terran_ExplosionLarge"/>
         <PhysicsImpactDefault ActorModel="PhysicsImpactHarness" ActorSound="PhysicsImpactSound" OccuranceThrottlingDistance="0.500000,0.500000"/>
     </CActorModel>
-    <CActorForceSphere id="BattlecruiserSCBW@DeathRagdollDetonationForce" parent="DeathRagdollDetonationForce">
-        <Magnitude value="12.000000,3.000000"/>
-        <ForceFlags index="FallOff" value="0"/>
-        <Radius value="2.000000,1.000000"/>
-    </CActorForceSphere>
     <CActorSiteOpBankerUnit id="BattlecruiserSCBW@SOpBanker">
         <RollMax value="30.000000,10.000000"/>
         <RollInActivationAngle value="5.000000"/>
@@ -640,9 +629,8 @@
         <On Terms="WeaponStart.ATALaserBattery.AttackStart" Target="_BattlecruiserTurretATA" Send="LookAtEngage Continue"/>
         <On Terms="Abil.attack.ReadyStop" Target="_BattlecruiserTurretATS" Send="LookAtDisengage"/>
         <On Terms="Abil.attack.ReadyStop" Target="_BattlecruiserTurretATA" Send="LookAtDisengage"/>
-        <HostSiteOps Ops="BattlecruiserSCBW@SOpBanker"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="BattlecruiserSCBW@Death" SoundLink="BattlecruiserSCBW@Death"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="BattlecruiserSCBW@DeathA" Name="Upgrade"/>
         <DeathCustoms>
             <ActorModel value="BattlecruiserSCBW@DeathRagdoll"/>
@@ -669,6 +657,9 @@
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <HostSiteOps Ops="BattlecruiserSCBW@SOpBanker"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="BattlecruiserSCBW@Death" SoundLink="BattlecruiserSCBW@Death"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
         <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
         <PortraitModel value="BattlecruiserSCBW@Portrait"/>
@@ -707,12 +698,14 @@
     <CActorUnit id="ScienceVesselSCBW" parent="GenericUnitBase" unitName="ScienceVesselSCBW">
         <Aliases value="_UnitHuge"/>
         <On Terms="Abil.Irradiate.SourceCastStart" Send="$Spell"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathArray index="Normal" ModelLink="ScienceVesselSCBW@Death" SoundLink="ScienceVesselSCBW@Death"/>
         <DeathActorModel value="ScienceVesselSCBW@DeathModel"/>
         <PortraitModel value="ScienceVesselSCBW@Portrait"/>
         <BarWidth value="100"/>
         <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Terran-sciencevessel.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-sciencevessel@scbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\BTN-Unit-Terran-ScienceVessel.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel0.dds"/>
@@ -725,7 +718,7 @@
         <SoundArray index="Movement" value="ScienceVesselSCBW@Movement"/>
         <UnitIcon value="Assets\Textures\BTN-Unit-Terran-ScienceVessel.dds"/>
         <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Terran-sciencevessel.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-sciencevessel@scbw.dds"/>
         </Wireframe>
     </CActorUnit>
     <CActorModel id="ScienceVesselSCBW@DeathModel">
@@ -790,11 +783,9 @@
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Medivac_Land"/>
         <On Terms="UnitMovementUpdate.*.Walk; IsStatus Turbo 1" Send="Create Medivac_MovementAfterburner"/>
         <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad; AbilTransport ThorAP" Send="Create ThorTransit"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="AbilTransport.DropshipSCBW@Transport.PassengerKilled; AbilTransport ThorAP" Target="::actor.Thor" Send="Signal Dead"/>
-        <HostSiteOps Ops="DropshipSCBW@SOpBanker"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <Baselines index="Walk" BlendIn="1.500000" BlendOut="2.000000"/>
-        <DeathArray index="Normal" ModelLink="DropshipSCBW@Death" SoundLink="DropshipSCBW@Explode"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
             <ActorModel value="MedivacDeathRagdoll"/>
             <ModelLink value="DropshipSCBW@DeathRagdoll"/>
@@ -820,6 +811,10 @@
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <HostSiteOps Ops="DropshipSCBW@SOpBanker"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <Baselines index="Walk" BlendIn="1.500000" BlendOut="2.000000"/>
+        <DeathArray index="Normal" ModelLink="DropshipSCBW@Death" SoundLink="DropshipSCBW@Explode"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
         <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
         <PortraitModel value="DropshipSCBW@Portrait"/>
@@ -881,14 +876,16 @@
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
         <On Terms="UnitBirth.GoliathSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="GoliathSCBW@Death" SoundLink="GoliathSCBW@Explode"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
             <ModelLink value="DeathVoidShadowMedium"/>
             <SoundLink value="ShadowUnit_DeathFX"/>
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="GoliathSCBW@Death" SoundLink="GoliathSCBW@Explode"/>
         <DeathActorModel value="GoliathSCBW@Death"/>
         <PortraitModel value="GoliathSCBW@Portrait"/>
         <StandAnimTurnTime value="4"/>
@@ -950,17 +947,21 @@
         -->
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <!--<On Terms="ActionDamage" Send="SetRotationYPR 0.000000 40.000000"/>-->
-        <HostSiteOps Ops="SOpBankerWraith"/>
-        <AnimBlendTime value="0.300000"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="ValkyrieSCBW@Death" SoundLink="ValkyrieSCBW@Explode"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
             <ModelLink value="DeathVoidShadowMedium"/>
             <SoundLink value="ShadowUnit_DeathFX"/>
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <!--<On Terms="ActionDamage" Send="SetRotationYPR 0.000000 40.000000"/>-->
+        <HostSiteOps Ops="ValkyrieSCBW@SOpBanker"/>
+        <AnimBlendTime value="0.300000"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="ValkyrieSCBW@Death" SoundLink="ValkyrieSCBW@Explode"/>
         <PortraitModel value="ValkyrieSCBW@Portrait"/>
         <BarOffset value="55"/>
         <BarWidth value="66"/>
@@ -1042,9 +1043,8 @@
         <On Terms="TimerExpired; TimerName Repair" Send="AnimPlay Repair Work NonLooping"/>
         <On Terms="TimerExpired; TimerName Repair" Send="Create SCVSCBW@RepairSound"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create SCVSCBW@Land"/>
-        <AnimBlendTime value="0.500000"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="SCVSCBW@Death" SoundLink="SCVSCBW@Explode"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="SCVSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
         </DeathCustoms>
@@ -1068,6 +1068,9 @@
         <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <AnimBlendTime value="0.500000"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="SCVSCBW@Death" SoundLink="SCVSCBW@Explode"/>
         <PortraitModel value="SCVSCBW@Portrait"/>
         <TerrainSquibs>
             <MovementDistance value="0.150000,0.150000"/>
@@ -1131,6 +1134,7 @@
         <Inherits index="ModelMaterials" value="1"/>
         <AcceptedTransfers index="ModelMaterials" value="1"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create SiegeTankSCBW@Land"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <CreepHeightClass value="Tiny"/>
         <DeathArray index="Normal" ModelLink="SiegeTankSCBW@Death" SoundLink="SiegeTankSCBW@Explode"/>
@@ -1155,6 +1159,7 @@
         <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
             <ModelLink value="DeathVoidShadowMedium"/>
             <SoundLink value="ShadowUnit_DeathFX"/>
@@ -1255,10 +1260,12 @@
         <DeathArray index="Normal" ModelLink="VultureSCBW@Death" SoundLink="VultureSCBW@Explode"/>
         <PortraitModel value="VultureSCBW@Portrait"/>
         <AbilSoundArray AbilCmd="VultureSpiderMines,Execute" Sound="Vulture_SpiderMinePlace"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <BarOffset value="80"/>
         <BarWidth value="102"/>
         <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Terran-Vulture.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-vulture@scbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-unit-terran-vulture.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel0.dds"/>
@@ -1272,7 +1279,7 @@
         <SoundArray index="Movement" value="VultureSCBW@Movement"/>
         <UnitIcon value="Assets\Textures\btn-unit-terran-vulture.dds"/>
         <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Terran-Vulture.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-vulture@scbw.dds"/>
         </Wireframe>
     </CActorUnit>
     <CActorUnit id="MedicSCBW" parent="GenericUnitStandard" unitName="MedicSCBW">
@@ -1283,17 +1290,21 @@
         <Macros value="TerrainSquibAnimations"/>
         <On Terms="Abil.MedicSCBWHeal.SourceChannelStart" Send="$Spell PlayForever"/>
         <On Terms="Abil.MedicSCBWHeal.SourceChannelStop" Send="AnimClear Spell"/>
+        <On Terms="Abil.MedicSCBWRestoration.SourcePrepStart" Send="$Spell"/>
+        <On Terms="Abil.MedicSCBWOpticFlare.SourcePrepStart" Send="$Spell"/>
         <On Terms="Behavior.KillSquad.On" Send="ModelSwap MedicKillSquad"/>
         <On Terms="UnitDeathCustomize; CanApplyActionPhysics RagdollBasic" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; CanApplyActionPhysics RagdollSiegeTank" Send="DeathCustomize RagdollSiegeTank"/>
         <On Terms="UnitDeathCustomize; CanApplyActionPhysics RagdollUltraUnburrow" Send="DeathCustomize RagdollUltraUnburrow"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="MedicSCBW@Death" SoundLink="MedicSCBW@Death"/>
-        <DeathArray index="Blast" ModelLink="MedicSCBW@Death"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="MedicKillSquadDeath" SoundLink="MedicSCBW@Death" Name="Variation2"/>
         <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollBasic"/>
         <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollSiegeTank"/>
         <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollUltraUnburrow"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="MedicSCBW@Death" SoundLink="MedicSCBW@Death"/>
+        <DeathArray index="Blast" ModelLink="MedicSCBW@Death"/>
         <PortraitModel value="MedicSCBW@Portrait"/>
         <TerrainSquibs>
             <MovementDistance value="0.150000,0.150000"/>
@@ -1307,7 +1318,7 @@
         <BarOffset value="20"/>
         <BarWidth value="36"/>
         <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Terran-medic.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-medic@scbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\BTN-Unit-Terran-Medic.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
@@ -1319,7 +1330,7 @@
         <SoundArray index="Pissed" value="MedicSCBW@Pissed"/>
         <UnitIcon value="Assets\Textures\BTN-Unit-Terran-Medic.dds"/>
         <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Terran-medic.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-medic@scbw.dds"/>
         </Wireframe>
     </CActorUnit>
     <CActorUnit id="WraithSCBW" parent="GenericUnitBase" unitName="WraithSCBW">
@@ -1332,21 +1343,23 @@
         <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <HostSiteOps Ops="SOpBankerWraith"/>
-        <AnimBlendTime value="0.300000"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="WraithSCBW@Death" SoundLink="WraithSCBW@Explode"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
             <ModelLink value="DeathVoidShadowMedium"/>
             <SoundLink value="ShadowUnit_DeathFX"/>
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <HostSiteOps Ops="WraithSCBW@SOpBanker"/>
+        <AnimBlendTime value="0.300000"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="WraithSCBW@Death" SoundLink="WraithSCBW@Explode"/>
         <PortraitModel value="WraithSCBW@Portrait"/>
         <BarOffset value="55"/>
         <BarWidth value="66"/>
         <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Terran-wraith.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-wraith@scbw.dds"/>
         </GroupIcon>
         <GroupSoundArray index="Birth" value="Wraith_Birth"/>
         <GroupSoundArray index="Ready" value="WraithSCBW@Ready"/>
@@ -1366,7 +1379,7 @@
         <SoundArray index="Movement" value="WraithSCBW@Movement"/>
         <UnitIcon value="Assets\Textures\btn-unit-terran-wraith.dds"/>
         <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Terran-wraith.dds"/>
+            <Image value="Assets\Textures\wireframe-terran-wraith@scbw.dds"/>
         </Wireframe>
     </CActorUnit>
     <CActorUnit id="SiegeTankSCBWSieged" parent="GenericUnitMorph" unitName="SiegeTankSCBWSieged">
@@ -1401,11 +1414,8 @@
         <On Terms="Effect.MothershipMassRecallTeleport.Stop; CreepEngulfs" Send="CreepEngulfmentStartTransition"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <CreepHeightClass value="Small"/>
-        <CreepRateGrow value="Grow"/>
-        <CreepRateShrink value="Shrink"/>
-        <DeathArray index="Normal" ModelLink="SiegeTankSCBWSieged@Death" SoundLink="SiegeTankSCBW@Explode"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="TerranLargeUnitDeathLow" Name="AntiGravTerran"/>
         <DeathCustoms ActorModel="SiegeTankSCBW@DeathRagdoll" ModelLink="SiegeTankSCBWSieged@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
@@ -1433,6 +1443,11 @@
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <CreepHeightClass value="Small"/>
+        <CreepRateGrow value="Grow"/>
+        <CreepRateShrink value="Shrink"/>
+        <DeathArray index="Normal" ModelLink="SiegeTankSCBWSieged@Death" SoundLink="SiegeTankSCBW@Explode"/>
         <PortraitModel value="SiegeTankSCBW@Portrait"/>
         <TerrainSquibs>
             <MovementDistance value="0.150000,0.150000"/>
@@ -1465,11 +1480,6 @@
             <Image value="Assets\Textures\wireframe-terran-siegetank-sieged@scbw.dds"/>
         </Wireframe>
     </CActorUnit>
-    <CActorForceSphere id="SiegeTankSCBW@DeathRagdollDetonationForce" parent="DeathRagdollDetonationForce">
-        <HostSiteOps Ops="SiegeTankSCBW@SOpAttachInternalDetonation SOpMoveDownByDot15 SOpRandomPointInSphereDot15"/>
-        <Magnitude value="13.950000,6.750000"/>
-        <Radius value="0.900000,0.450000"/>
-    </CActorForceSphere>
     <CActorUnit id="SiegeTankSCBW@SiegeModeMorphModel" parent="GenericUnitBaseMorphTransition" unitName="SiegeModeMorphModel">
         <Aliases value="_UnitLarge"/>
         <Inherits index="ModelMaterials" value="1"/>
@@ -1479,11 +1489,13 @@
         <On Terms="AbilMorph.*.Finish; MorphFrom SiegeTankSCBWSieged" Send="Destroy"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom SiegeTankSCBW" Send="Destroy"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create SiegeTankSCBW@Land"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+        <DeathCustoms ModelLink="TerranLargeUnitDeathLow" Name="AntiGravTerran"/>
         <Model value="SiegeTankSCBW@Morph"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <CreepHeightClass value="Tiny"/>
         <DeathArray index="Normal" ModelLink="TerranLargeUnitDeath" SoundLink="SiegeTankSCBW@Explode"/>
-        <DeathCustoms ModelLink="TerranLargeUnitDeathLow" Name="AntiGravTerran"/>
         <PortraitModel value="SiegeTankSCBW@Portrait"/>
         <BarOffset value="80"/>
         <BarWidth value="102"/>
@@ -1519,13 +1531,15 @@
         <On Terms="AbilMorph.*.Finish; MorphFrom SiegeTankSCBWSieged" Send="Destroy"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create SiegeTankSCBW@Land"/>
         <On Terms="ActorCreation; CreepEngulfs" Send="CreepEngulfmentStopTransition"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+        <DeathCustoms ModelLink="TerranLargeUnitDeathLow" Name="AntiGravTerran"/>
         <Model value="SiegeTankSCBW@Morph"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <CreepHeightClass value="Tiny"/>
         <CreepRateGrow value="Grow"/>
         <CreepRateShrink value="Shrink"/>
         <DeathArray index="Normal" ModelLink="TerranLargeUnitDeath" SoundLink="SiegeTankSCBW@Explode"/>
-        <DeathCustoms ModelLink="TerranLargeUnitDeathLow" Name="AntiGravTerran"/>
         <PortraitModel value="SiegeTankSCBW@Portrait"/>
         <AbilSoundArray AbilCmd="SiegeTankSCBW@Siege,Execute" Sound="SiegeTank_SiegeModeVO"/>
         <BarOffset value="80"/>
@@ -1596,13 +1610,8 @@
         <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize RagdollFire"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <AnimBlendTime value="-0.800000"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="KerriganSCBW@Death" SoundLink="KerriganSCBW@Death"/>
-        <DeathArray index="Blast" ModelLink="GhostSCBW@DeathBlast"/>
-        <DeathArray index="Disintegrate" ModelLink="KerriganSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Eviscerate" ModelLink="KerriganSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
-        <DeathArray index="Fire" ModelLink="KerriganSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
         <DeathCustoms ActorModel="UnitDeathRagdollBloodPrevent" ModelLink="KerriganSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="None"/>
@@ -1634,6 +1643,13 @@
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <AnimBlendTime value="-0.800000"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="KerriganSCBW@Death" SoundLink="KerriganSCBW@Death"/>
+        <DeathArray index="Blast" ModelLink="GhostSCBW@DeathBlast"/>
+        <DeathArray index="Disintegrate" ModelLink="KerriganSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eviscerate" ModelLink="KerriganSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="KerriganSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
         <PortraitModel value="KerriganSCBW@Portrait"/>
         <TerrainSquibs>
@@ -1712,13 +1728,8 @@
         <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize RagdollFire"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <AnimBlendTime value="-0.800000"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="GhostSCBW@Death" SoundLink="GhostSCBW@Death"/>
-        <DeathArray index="Blast" ModelLink="GhostSCBW@DeathBlast"/>
-        <DeathArray index="Disintegrate" ModelLink="GhostSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Eviscerate" ModelLink="GhostSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
-        <DeathArray index="Fire" ModelLink="GhostSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
         <DeathCustoms ActorModel="UnitDeathRagdollBloodPrevent" ModelLink="GhostSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="None"/>
@@ -1750,6 +1761,13 @@
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <AnimBlendTime value="-0.800000"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="GhostSCBW@Death" SoundLink="GhostSCBW@Death"/>
+        <DeathArray index="Blast" ModelLink="GhostSCBW@DeathBlast"/>
+        <DeathArray index="Disintegrate" ModelLink="GhostSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eviscerate" ModelLink="GhostSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="GhostSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
         <PortraitModel value="GhostSCBW@Portrait"/>
         <TerrainSquibs>
@@ -1791,14 +1809,15 @@
         <On Terms="Abil.attack.ReadyStop" Target="FirebatAttackModel" Send="SetOpacity 0.000000 0.250000"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="FirebatSCBW@Death" SoundLink="FirebatSCBW@Explode"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
             <ModelLink value="DeathVoidShadowMedium"/>
             <SoundLink value="ShadowUnit_DeathFX"/>
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <DeathArray index="Normal" ModelLink="FirebatSCBW@Death" SoundLink="FirebatSCBW@Explode"/>
         <PortraitModel value="FirebatSCBW@Portrait"/>
         <WalkAnimMoveSpeed value="1.875"/>
         <BarOffset value="40"/>
@@ -1845,19 +1864,8 @@
         <On Terms="UnitDeathCustomize; PassChance 100.000000; !ValidateUnit IsNotNeuralParasited" Send="Create MarineSCBW@DeathNP"/>
         <On Terms="ActorCreation" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
         <On Terms="UnitDeath.MarineSCBW; AnimPlaying Cover" Target="_DeathModel" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
-        <!--
-        <On Terms="Upgrade.DarkMarineArmor.Add" Send="ModelSwap Shadow_MarineEX2"/>
-        <On Terms="UnitBirth; ValidateUnit HaveDarkMarineArmor" Send="ModelSwap Shadow_MarineEX2"/>
-        -->
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="MarineSCBW@Death" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
-        <DeathArray index="Blast" ModelLink="MarineSCBW@DeathBlast"/>
-        <DeathArray index="Disintegrate" ModelLink="MarineSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Eat" AnimProps="Stand" ModelLink="MarineSCBW@DeathEat" SoundLink="MarineSCBW@DeathFXEat"/>
-        <DeathArray index="Eviscerate" ModelLink="MarineSCBW@DeathEviscerate" SoundLink="MarineSCBW@DeathFXEviscerate"/>
-        <DeathArray index="Fire" ModelLink="MarineSCBW@DeathFire" SoundLink="MarineSCBW@DeathFXFire"/>
-        <DeathArray index="Silentkill" SoundLink="MarineSCBW@DeathFXSilentKill"/>
-        <DeathArray index="Squish" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
         <DeathCustoms ModelLink="MarineSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="None"/>
@@ -1883,6 +1891,19 @@
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
         <DeathCustoms ModelLink="MarineSCBW@DeathFire" Name="Variation14"/>
+        <!--
+        <On Terms="Upgrade.DarkMarineArmor.Add" Send="ModelSwap Shadow_MarineEX2"/>
+        <On Terms="UnitBirth; ValidateUnit HaveDarkMarineArmor" Send="ModelSwap Shadow_MarineEX2"/>
+        -->
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="MarineSCBW@Death" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
+        <DeathArray index="Blast" ModelLink="MarineSCBW@DeathBlast"/>
+        <DeathArray index="Disintegrate" ModelLink="MarineSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Eat" AnimProps="Stand" ModelLink="MarineSCBW@DeathEat" SoundLink="MarineSCBW@DeathFXEat"/>
+        <DeathArray index="Eviscerate" ModelLink="MarineSCBW@DeathEviscerate" SoundLink="MarineSCBW@DeathFXEviscerate"/>
+        <DeathArray index="Fire" ModelLink="MarineSCBW@DeathFire" SoundLink="MarineSCBW@DeathFXFire"/>
+        <DeathArray index="Silentkill" SoundLink="MarineSCBW@DeathFXSilentKill"/>
+        <DeathArray index="Squish" SoundLink="MarineSCBW@DeathFXBloodSpray"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
         <PortraitModel value="MarineSCBW@Portrait"/>
         <StandAnimTurnTime value="4"/>
@@ -2454,11 +2475,11 @@
     </CSound>
     <CSound id="BattlecruiserSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement0.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement1.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement2.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement3.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement4.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement0.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement1.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement2.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement3.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Battlecruiser\Battlecruiser_Movement4.ogg"/>
         <DupeDestroyCount value="4"/>
         <Pitch value="-1.000000,1.000000"/>
         <SustainFade index="1" Time="0" Volume="0.000000"/>
@@ -2498,11 +2519,11 @@
     </CSound>
     <CSound id="BattlecruiserSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_4a.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_5.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6a.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_1.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_4a.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_5.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6a.ogg" FacialGroup=""/>
         <Pitch value="-2.000000,0.000000"/>
         <Volume value="-3.000000,0.000000"/>
     </CSound>
@@ -2520,7 +2541,7 @@
     </CSound>
     <CSound id="ScienceVesselSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Hercules\Hercules_Movement0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Hercules\Hercules_Movement0.ogg"/>
         <Pitch value="-1.000000,1.000000"/>
         <Volume value="-6.000000,-6.000000"/>
     </CSound>
@@ -2560,22 +2581,22 @@
     </CSound>
     <CSound id="DropshipSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_04.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_05.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_01.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_02.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_03.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_04.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_05.ogg" FacialGroup=""/>
         <Pitch value="-3.000000,-1.000000"/>
         <Volume value="-8.000000,-6.000000"/>
     </CSound>
     <CSound id="DropshipSCBW@Load" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffectsSCBW\TerranTransportSCBW@Load00.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffectsSCBW\TerranTransportSCBW@Load00.ogg"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
     <CSound id="DropshipSCBW@Unload" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffectsSCBW\TerranTransportSCBW@Unload00.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffectsSCBW\TerranTransportSCBW@Unload00.ogg"/>
         <Category value="Combat"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
@@ -2597,12 +2618,12 @@
     </CSound>
     <CSound id="DropshipSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement0.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement1.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement2.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement3.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement4.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement5.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement0.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement1.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement2.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement3.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement4.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Medivac\Medivac_Movement5.ogg"/>
         <DupeDestroyCount value="4"/>
         <Pitch value="-1.000000,1.000000"/>
         <SustainFade/>
@@ -2657,7 +2678,7 @@
     </CSound>
     <CSound id="GoliathSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Thor\Thor_Movement0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Thor\Thor_Movement0.ogg"/>
         <Pitch value="6.000000,6.000000"/>
         <Volume value="-6.000000,-6.000000"/>
     </CSound>
@@ -2692,9 +2713,9 @@
     </CSound>
     <CSound id="SCVSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Hellion_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Hellion_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Hellion_Land02.wav" Pitch="4.000000,4.000000" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Hellion_Land00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Hellion_Land01.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Hellion_Land02.ogg" Pitch="4.000000,4.000000" FacialGroup=""/>
         <Category value="Combat"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="3"/>
@@ -2704,40 +2725,40 @@
     </CSound>
     <CSound id="SCVSCBW@Harvest" parent="Gather">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair00.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair01.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair02.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair03.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair04.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair00.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair01.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair02.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair03.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair04.ogg"/>
         <DupeDestroyCount value="3"/>
         <SustainFade index="1" Time="250"/>
         <Volume value="-4.000000,-4.000000"/>
     </CSound>
     <CSound id="SCVSCBW@Build" parent="Gather">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair00.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair01.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair02.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair03.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair04.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair00.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair01.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair02.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair03.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair04.ogg"/>
         <DupeDestroyCount value="3"/>
         <!--<Volume value="-19.000000,-16.000000"/>-->
     </CSound>
     <CSound id="SCVSCBW@Repair" parent="Gather">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair00.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair01.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair02.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair03.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair04.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair00.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair01.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair02.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair03.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SCVSCBW\SCVSCBW@Repair04.ogg"/>
         <DupeDestroyCount value="3"/>
         <!--<Volume value="-19.000000,-16.000000"/>-->
     </CSound>
     <CSound id="ValkyrieSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement00.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement01.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement02.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement00.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement01.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement02.ogg"/>
     </CSound>
     <CSound id="ValkyrieSCBW@Attack" parent="TerranAckSCBW" Folder="ValkyrieSCBW">
         <AssetArray TemplateParam="ValkyrieSCBW@Yes00"/>
@@ -2803,9 +2824,9 @@
     </CSound>
     <CSound id="WraithSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement00.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement01.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement02.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement00.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement01.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement02.ogg"/>
     </CSound>
     <CSound id="WraithSCBW@Pissed" parent="TerranAckSCBW" Folder="WraithSCBW">
         <AssetArray TemplateParam="WraithSCBW@Pissed00"/>
@@ -2891,13 +2912,13 @@
     </CSound>
     <CSound id="MedicSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
     </CSound>
     <CSound id="MedicSCBW@Help" parent="AlertTerranSCBW" Folder="MedicSCBW">
         <AssetArray TemplateParam="MedicSCBW@Help00"/>
@@ -2941,12 +2962,12 @@
         <AssetArray TemplateParam="SiegeTankSCBW@Yes03"/>
     </CSound>
     <CSound id="SiegeTankSCBW@Death" parent="TerranDeathSCBW" Folder="SiegeTankSCBW">
-        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Death00.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Death00.ogg"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
     <CSound id="SiegeTankSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Death00.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Death00.ogg"/>
         <DupeDestroyCount value="5"/>
     </CSound>
     <CSound id="SiegeTankSCBW@Help" parent="AlertTerranSCBW" Folder="SiegeTankSCBW">
@@ -2956,9 +2977,9 @@
     </CSound>
     <CSound id="SiegeTankSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\SiegeTank_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\SiegeTank_Land01.wav" Pitch="2.000000,2.000000" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\SiegeTank_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\SiegeTank_Land00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\SiegeTank_Land01.ogg" Pitch="2.000000,2.000000" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\SiegeTank_Land02.ogg" FacialGroup=""/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
@@ -2994,12 +3015,12 @@
     </CSound>
     <CSound id="SiegeTankSCBW@Siege" parent="Build">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Siege00.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Siege00.ogg"/>
         <Volume value="-8.000000,-8.000000"/>
     </CSound>
     <CSound id="SiegeTankSCBW@Unsiege" parent="Build">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Unsiege00.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBW@Unsiege00.ogg"/>
         <Volume value="-7.960000,-7.960000"/>
     </CSound>
     <CSound id="VultureSCBW@Attack" parent="TerranAckSCBW" Folder="VultureSCBW">
@@ -3014,16 +3035,16 @@
     </CSound>
     <CSound id="VultureSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium0.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium1.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium2.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium3.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium4.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium5.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium6.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium7.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium8.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium9.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium0.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium1.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium2.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium3.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium4.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium5.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium6.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium7.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium8.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium9.ogg"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="5"/>
@@ -3037,12 +3058,12 @@
     </CSound>
     <CSound id="VultureSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement0.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement1.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement2.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement3.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement4.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement5.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement0.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement1.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement2.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement3.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement4.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement5.ogg"/>
         <DupeDestroyCount value="3"/>
         <Pitch value="-1.000000,1.000000"/>
         <Volume value="-9.000000,-9.000000"/>
@@ -3074,19 +3095,19 @@
     </CSound>
     <CSound id="KerriganSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
     </CSound>
     <CSound id="KerriganSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.ogg" FacialGroup=""/>
         <Flags index="VariationFallback" value="0"/>
         <Category value="Combat"/>
         <Pitch value="1.000000,4.000000"/>
@@ -3144,13 +3165,13 @@
     </CSound>
     <CSound id="GhostSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
     </CSound>
     <CSound id="GhostSCBW@Help" parent="AlertTerranSCBW" Folder="GhostSCBW">
         <AssetArray TemplateParam="GhostSCBW@Help00"/>
@@ -3159,9 +3180,9 @@
     </CSound>
     <CSound id="GhostSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.ogg" FacialGroup=""/>
         <Flags index="VariationFallback" value="0"/>
         <Category value="Combat"/>
         <Pitch value="1.000000,4.000000"/>
@@ -3292,9 +3313,9 @@
     </CSound>
     <CSound id="MarineSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.ogg" FacialGroup=""/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
@@ -3305,15 +3326,15 @@
     </CSound>
     <CSound id="MarineSCBW@CheerSquibSound" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch0.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch1.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch2.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch3.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch4.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch5.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch6.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch7.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch8.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch0.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch1.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch2.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch3.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch4.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch5.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch6.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch7.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Marine\Marine_AttackLaunch8.ogg"/>
         <DupeDestroyCount value="6"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="6"/>
@@ -3322,46 +3343,46 @@
         <Volume value="-9.000000,-6.000000"/>
     </CSound>
     <CSound id="MarineSCBW@DeathNP" parent="TerranAck">
-        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\Marine\Marine_NeuralParasiteDeath00.wav"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\Marine\Marine_NeuralParasiteDeath00.ogg"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
     <CSound id="MarineSCBW@DeathFXBlast" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall0.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall1.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall2.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall3.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall4.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall5.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall6.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall7.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall8.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall9.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall0.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall1.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall2.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall3.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall4.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall5.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall6.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall7.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall8.ogg" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionSmall9.ogg" Pitch="-3.000000,3.000000"/>
         <DupeDestroyCount value="5"/>
     </CSound>
     <CSound id="MarineSCBW@DeathFXBloodSpray" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.ogg" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
     </CSound>
     <CSound id="MarineSCBW@DeathFXEat" parent="Death">
-        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXEat0.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXEat0.ogg"/>
     </CSound>
     <CSound id="MarineSCBW@DeathFXEviscerate" parent="Death">
-        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXEviscerate0.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXEviscerate0.ogg"/>
         <Pitch value="0.000000,2.000000"/>
         <Volume value="-6.000000,-4.000000"/>
     </CSound>
     <CSound id="MarineSCBW@DeathFXFire" parent="Death">
-        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXFire0.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXFire0.ogg"/>
     </CSound>
     <CSound id="MarineSCBW@DeathFXSilentKill" parent="Combat">
-        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXSilentKill0.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXSilentKill0.ogg"/>
     </CSound>
     <CSound id="MarineSCBW@StimPackVO" parent="TerranAckSCBW" Folder="MarineSCBW">
         <AssetArray TemplateParam="MarineSCBW@StimPackVO00"/>
@@ -3836,8 +3857,8 @@
         <EnergyStart value="50"/>
         <EnergyMax value="200"/>
         <EnergyRegenRate value="0.5625"/>
-        <Speed value="1.25"/>
-        <Acceleration value="1"/>
+        <Speed value="1.4062"/>
+        <Acceleration value="1.0625"/>
         <Sight value="11"/>
         <Height value="3.75"/>
         <VisionHeight value="4"/>
@@ -3880,6 +3901,7 @@
         <GlossaryWeakArray value="VikingFighter"/>
         <GlossaryWeakArray value="Corruptor"/>
         <GlossaryWeakArray value="VoidRay"/>
+        <TacticalAIThink value="AIThinkBattlecruiserSCBW"/>
     </CUnit>
     <CUnit id="ScienceVesselSCBW" parent="TerranShipSCBW">
         <DeathRevealRadius value="3"/>
@@ -3895,8 +3917,8 @@
         <EnergyStart value="50"/>
         <EnergyMax value="200"/>
         <EnergyRegenRate value="0.5625"/>
-        <Speed value="2"/>
-        <Acceleration value="1000"/>
+        <Speed value="2.8125"/>
+        <Acceleration value="6.25"/>
         <StationaryTurningRate value="999.8437"/>
         <TurningRate value="999.8437"/>
         <Sight value="10"/>
@@ -3933,7 +3955,6 @@
         <ScoreResult value="BuildOrder"/>
         <SubgroupPriority value="19"/>
         <MinimapRadius value="0.625"/>
-        <TacticalAI value=""/>
         <GlossaryPriority value="180"/>
         <KillDisplay value="Always"/>
         <RankDisplay value="Always"/>
@@ -3942,6 +3963,7 @@
             <ChanceArray index="Idle" value="33"/>
         </Fidget>
         <BuildTime value="75"/>
+        <TacticalAIThink value="AIThinkScienceVesselSCBW"/>
     </CUnit>
     <CUnit id="DropshipSCBW" parent="TerranShipSCBW">
         <DeathRevealRadius value="3"/>
@@ -3954,7 +3976,7 @@
         <LifeStart value="150"/>
         <LifeMax value="150"/>
         <LifeArmor value="1"/>
-        <Speed value="2.5"/>
+        <Speed value="3.0742"/>
         <Acceleration value="2.25"/>
         <LateralAcceleration value="1000"/>
         <StationaryTurningRate value="999.8437"/>
@@ -3965,7 +3987,7 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="100"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="46.5"/>
+        <BuildTime value="46.875"/>
         <RepairTime value="32"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -3991,6 +4013,7 @@
         <MinimapRadius value="0.75"/>
         <AIEvalFactor value="0.2"/>
         <GlossaryPriority value="185"/>
+        <TacticalAIThink value="AIThinkDropshipSCBW"/>
     </CUnit>
     <CUnit id="GoliathSCBW" parent="TerranVehicleSCBW">
         <DeathRevealRadius value="3"/>
@@ -4004,7 +4027,7 @@
         <LifeStart value="125"/>
         <LifeMax value="125"/>
         <LifeArmor value="1"/>
-        <Speed value="2.6875"/>
+        <Speed value="2.5312"/>
         <Acceleration value="1000"/>
         <LateralAcceleration value="115.1875"/>
         <StationaryTurningRate value="999.8437"/>
@@ -4051,6 +4074,7 @@
             <ChanceArray index="Idle" value="33"/>
             <ChanceArray index="Turn" value="33"/>
         </Fidget>
+        <TacticalAIThink value="AIThinkGoliathSCBW"/>
     </CUnit>
     <CUnit id="ValkyrieSCBW" parent="TerranShipSCBW">
         <DeathRevealRadius value="3"/>
@@ -4059,7 +4083,7 @@
         <LifeStart value="200"/>
         <LifeMax value="200"/>
         <LifeArmor value="2"/>
-        <Speed value="3.75"/>
+        <Speed value="3.7148"/>
         <Acceleration value="2.625"/>
         <Sight value="8"/>
         <Height value="3.75"/>
@@ -4067,7 +4091,7 @@
         <Food value="-3"/>
         <CostResource index="Minerals" value="250"/>
         <CostResource index="Vespene" value="125"/>
-        <BuildTime value="46.5"/>
+        <BuildTime value="46.875"/>
         <RepairTime value="32"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -4097,6 +4121,7 @@
         <GlossaryWeakArray value="SporeCrawler"/>
         <GlossaryWeakArray value="PhotonCannon"/>
         <GlossaryWeakArray value="MissileTurret"/>
+        <TacticalAIThink value="AIThinkValkyrieSCBW"/>
     </CUnit>
     <CUnit id="WraithSCBW" parent="TerranShipSCBW">
         <DeathRevealRadius value="3"/>
@@ -4107,15 +4132,15 @@
         <EnergyStart value="50"/>
         <EnergyMax value="200"/>
         <EnergyRegenRate value="0.5625"/>
-        <Speed value="3.75"/>
-        <Acceleration value="2.625"/>
+        <Speed value="2.5"/>
+        <Acceleration value="4.1875"/>
         <Sight value="7"/>
         <Height value="3.75"/>
         <VisionHeight value="4"/>
         <Food value="-2"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="56"/>
+        <BuildTime value="56.25"/>
         <RepairTime value="38"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -4148,6 +4173,7 @@
         <GlossaryWeakArray value="SporeCrawler"/>
         <GlossaryWeakArray value="PhotonCannon"/>
         <GlossaryWeakArray value="MissileTurret"/>
+        <TacticalAIThink value="AIThinkWraithSCBW"/>
     </CUnit>
     <CUnit id="SCVSCBW" parent="TerranGroundUnitSCBW">
         <DeathRevealRadius value="3"/>
@@ -4169,7 +4195,7 @@
         <Food value="-1"/>
         <CostCategory value="Economy"/>
         <CostResource index="Minerals" value="50"/>
-        <BuildTime value="19"/>
+        <BuildTime value="18.75"/>
         <RepairTime value="19"/>
         <AttackTargetPriority value="20"/>
         <AIOverideTargetPriority value="10"/>
@@ -4216,6 +4242,7 @@
             <ChanceArray index="Idle" value="33"/>
             <ChanceArray index="Turn" value="33"/>
         </Fidget>
+        <TacticalAIThink value="AIThinkSCVSCBW"/>
     </CUnit>
     <CUnit id="SiegeTankSCBW" parent="TerranVehicleSCBW">
         <DeathRevealRadius value="3"/>
@@ -4241,7 +4268,7 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="46.5"/>
+        <BuildTime value="46.875"/>
         <RepairTime value="32"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -4284,6 +4311,7 @@
             <ChanceArray index="Idle" value="33"/>
             <ChanceArray index="Turn" value="33"/>
         </Fidget>
+        <TacticalAIThink value="AIThinkSiegeTankSCBW"/>
     </CUnit>
     <CUnit id="SiegeTankSCBWSieged" parent="TerranVehicleSCBW">
         <Name value="Unit/Name/SiegeTankSCBW"/>
@@ -4306,7 +4334,7 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="32"/>
+        <BuildTime value="46.875"/>
         <RepairTime value="45"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -4331,11 +4359,12 @@
         <SubgroupPriority value="13"/>
         <MinimapRadius value="1"/>
         <AIEvalFactor value="1.5"/>
+        <TechAliasArray value="SiegeTankSCBW"/>
+        <TechAliasArray value="Alias_SiegeTankSCBW"/>
         <LeaderAlias value="SiegeTankSCBW"/>
         <HotkeyAlias value="SiegeTankSCBW"/>
         <SelectAlias value="SiegeTankSCBW"/>
         <SubgroupAlias value="SiegeTankSCBW"/>
-        <TechAliasArray value="Alias_SiegeTankSCBW"/>
         <GlossaryPriority value="135"/>
         <GlossaryStrongArray value="Marine"/>
         <GlossaryStrongArray value="Hydralisk"/>
@@ -4343,6 +4372,7 @@
         <GlossaryWeakArray value="Banshee"/>
         <GlossaryWeakArray value="Mutalisk"/>
         <GlossaryWeakArray value="Immortal"/>
+        <TacticalAIThink value="AIThinkSiegeTankSCBWSieged"/>
     </CUnit>
     <CUnit id="VultureSCBW" parent="TerranVehicleSCBW">
         <DeathRevealRadius value="3"/>
@@ -4354,13 +4384,13 @@
         <Collide index="Small" value="1"/>
         <LifeStart value="80"/>
         <LifeMax value="80"/>
-        <Speed value="3.332"/>
+        <Speed value="3.75"/>
         <Acceleration value="1000"/>
         <LateralAcceleration value="69.125"/>
         <Sight value="8"/>
         <Food value="-2"/>
         <CostResource index="Minerals" value="75"/>
-        <BuildTime value="28"/>
+        <BuildTime value="28.125"/>
         <RepairTime value="19"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -4385,7 +4415,7 @@
         <ScoreKill value="150"/>
         <SubgroupPriority value="12"/>
         <MinimapRadius value="0.625"/>
-        <TacticalAIThink value="AIThinkVulture"/>
+        <TacticalAIThink value="AIThinkVultureSCBW"/>
         <GlossaryPriority value="90"/>
         <GlossaryStrongArray value="Zergling"/>
         <GlossaryStrongArray value="Zealot"/>
@@ -4462,7 +4492,7 @@
         <MinimapRadius value="0.375"/>
         <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
         <TacticalAI value="Ghost"/>
-        <TacticalAIThink value="AIThinkGhost"/>
+        <TacticalAIThink value="AIThinkSarahKerriganSCBW"/>
         <AIEvalFactor value="1.2"/>
         <GlossaryCategory value="Unit/Category/TerranUnits"/>
         <GlossaryPriority value="70"/>
@@ -4535,6 +4565,7 @@
         <Radius value="0.375"/>
         <SeparationRadius value="0.375"/>
         <MinimapRadius value="0.375"/>
+        <TacticalAIThink value="AIThinkFirebatSCBW"/>
     </CUnit>
     <CUnit id="GhostSCBW" parent="TerranInfantrySCBW">
         <DeathRevealRadius value="3"/>
@@ -4546,7 +4577,7 @@
         <EnergyStart value="50"/>
         <EnergyMax value="200"/>
         <EnergyRegenRate value="0.5625"/>
-        <Speed value="2.25"/>
+        <Speed value="2"/>
         <Acceleration value="1000"/>
         <LateralAcceleration value="46.0625"/>
         <StationaryTurningRate value="999.8437"/>
@@ -4555,7 +4586,7 @@
         <Food value="-1"/>
         <CostResource index="Minerals" value="25"/>
         <CostResource index="Vespene" value="75"/>
-        <BuildTime value="47"/>
+        <BuildTime value="46.875"/>
         <RepairTime value="47"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -4600,6 +4631,7 @@
             <ChanceArray index="Idle" value="33"/>
             <ChanceArray index="Turn" value="33"/>
         </Fidget>
+        <TacticalAIThink value="AIThinkGhostSCBW"/>
     </CUnit>
     <CUnit id="MarineSCBW" parent="TerranInfantrySCBW">
         <DeathRevealRadius value="3"/>
@@ -4657,6 +4689,7 @@
         </Fidget>
         <TauntDuration index="Cheer" value="5"/>
         <TauntDuration index="Dance" value="5"/>
+        <TacticalAIThink value="AIThinkMarineSCBW"/>
     </CUnit>
     <CUnit id="MedicSCBW" parent="TerranInfantrySCBW">
         <DeathRevealRadius value="3"/>
@@ -4678,7 +4711,7 @@
         <Food value="-1"/>
         <CostResource index="Minerals" value="50"/>
         <CostResource index="Vespene" value="25"/>
-        <BuildTime value="28"/>
+        <BuildTime value="28.125"/>
         <RepairTime value="28"/>
         <AttackTargetPriority value="20"/>
         <DamageDealtXP value="1"/>
@@ -4711,14 +4744,6 @@
             <ChanceArray index="Idle" value="33"/>
             <ChanceArray index="Turn" value="33"/>
         </Fidget>
+        <TacticalAIThink value="AIThinkMedicSCBW"/>
     </CUnit>
-    <CUpgrade id="SiegeTankSCBW@Siege">
-        <Icon value="Assets\Textures\btn-unit-terran-siegetanksiegemode.dds"/>
-        <Alert value="ResearchComplete"/>
-        <Race value="Terr"/>
-        <ScoreAmount value="200"/>
-        <ScoreResult value="BuildOrder"/>
-        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <AffectedUnitArray value="SiegeTankSCBW"/>
-    </CUpgrade>
 </Catalog>
