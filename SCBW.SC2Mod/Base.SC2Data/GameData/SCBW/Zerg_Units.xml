@@ -290,6 +290,7 @@
     </CValidatorCombine>
     <CRequirement id="DefilerSCBWConsume" parent="SCBW_AbilReq"/>
     <CRequirement id="DefilerSCBWPlague" parent="SCBW_AbilReq"/>
+    <CRequirement id="QueenSCBW" parent="SCBW_UnitReq"/>
     <CRequirement id="QueenSCBWEnsnare" parent="SCBW_AbilReq"/>
     <CRequirement id="QueenSCBWSpawnBroodlings" parent="SCBW_AbilReq"/>
     <CButton id="DefilerSCBWConsume">
@@ -333,6 +334,13 @@
         <DefaultButtonLayout Row="2" Column="3"/>
         <EditorCategories value="Race:Zerg"/>
     </CButton>
+    <CButton id="QueenSCBW">
+        <Icon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Universal value="1"/>
+        <DefaultButtonLayout Row="2"/>
+    </CButton>
     <CButton id="DroneSCBW">
         <Icon value="Assets\Textures\btn-unit-collection-drone-remastered.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-collection-drone-remastered.dds"/>
@@ -362,12 +370,24 @@
     <CRequirementAnd id="DefilerSCBWPlague">
         <OperandArray value="DefilerSCBWPlagueResearch@Count"/>
     </CRequirementAnd>
+    <CRequirementAnd id="QueenSCBW">
+        <OperandArray value="QueensNestSCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementCountUnit id="QueenSCBW@Count" parent="SCBW_UnitCount" x="QueenSCBW"/>
+    <CRequirementCountUnit id="QueenSCBW@CountAtUnit" parent="SCBW_UnitCountAtUnit" x="QueenSCBW"/>
+    <CRequirementNot id="QueenSCBW@NotCount" parent="SCBW_Not" x="QueenSCBW@Count"/>
+    <CRequirementNot id="QueenSCBW@NotCountAtUnit" parent="SCBW_Not" x="QueenSCBW@CountAtUnit"/>
+    <CRequirementNot id="QueenSCBW@NotQoB" parent="SCBW_Not" x="QueenSCBW@QoB"/>
+    <CRequirementNot id="QueenSCBW@NotQoBAtUnit" parent="SCBW_Not" x="QueenSCBW@QoBAtUnit"/>
+    <CRequirementCountUnit id="QueenSCBW@QoB" parent="SCBW_UnitQoB" x="QueenSCBW"/>
+    <CRequirementCountUnit id="QueenSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="QueenSCBW"/>
     <CRequirementAnd id="QueenSCBWEnsnare">
         <OperandArray value="QueenSCBWEnsnareResearch@Count"/>
     </CRequirementAnd>
     <CRequirementAnd id="QueenSCBWSpawnBroodlings">
         <OperandArray value="QueenSCBWSpawnBroodlingsResearch@Count"/>
     </CRequirementAnd>
+    <CLight id="QueenSCBW@Portrait" parent="default"/>
     <CLight id="DroneSCBW@Portrait" parent="default">
         <ToDInfoArray index="0" AmbientColor="0.411765,0.086275,0.047059" Colorize="1">
             <Param index="HDRExposure" value="1.480000"/>
@@ -602,6 +622,35 @@
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
+    <CActorUnit id="QueenSCBW" parent="GenericUnitStandard" unitName="QueenSCBW">
+        <On Terms="Abil.QueenSCBWEnsnare.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWSpawnBroodlings.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWParasite.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWInfestCommandCenter.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="UnitMovementUpdate.*.Walk" Send="AnimClear Spell"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+        <HostSiteOps Ops="SOpBankerQueenMP"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="QueenSCBW@Death" SoundLink="QueenSCBW@Death" VoiceLink="QueenMP_Death"/>
+        <PortraitModel value="QueenSCBW@Portrait"/>
+        <BarOffset value="75"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-zerg-queenclassic.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <SoundArray index="Ready" value="QueenSCBW@Ready"/>
+        <SoundArray index="Help" value="QueenSCBW@Help"/>
+        <SoundArray index="What" value="QueenSCBW@What"/>
+        <SoundArray index="Yes" value="QueenSCBW@Yes"/>
+        <SoundArray index="Attack" value="QueenSCBW@Attack"/>
+        <SoundArray index="Pissed" value="QueenSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-zerg-queenclassic.dds"/>
+        </Wireframe>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-flyercarapace-level0.dds"/>
+    </CActorUnit>
     <CActorUnit id="LurkerSCBW" parent="GenericBurrowerStandardSCBW" unitName="LurkerSCBW">
         <Aliases value="_UnitLarge"/>
         <Aliases value="_UnitLarge"/>
@@ -1028,6 +1077,26 @@
         <ScaleMax value="0.500000,0.500000,0.500000"/>
         <ScaleMin value="0.500000,0.500000,0.500000"/>
     </CModel>
+    <CModel id="QueenSCBW" parent="Unit" Race="Zerg">
+        <Model value="Assets\Units\Zerg\QueenClassic\QueenClassic.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraLow09"/>
+        <SelectionOffset value="0.000000,0.000000,-0.350000"/>
+        <SquibTypeDefault value="Flesh"/>
+        <TechPurchaseCamera value="Star2CameraLow09"/>
+        <Tipability value="0.750000"/>
+        <UnitGlossaryCamera value="Star2CameraLow09"/>
+        <SelectionRadius value="0.700000"/>
+    </CModel>
+    <CModel id="QueenSCBW@Death" parent="UnitDeath" Race="Zerg">
+        <Model value="Assets\Units\Zerg\QueenClassic_Death\QueenClassic_Death.m3"/>
+        <LowQualityModel value="ZergSmallUnitDeathLow"/>
+        <Occlusion value="Show"/>
+    </CModel>
+    <CModel id="QueenSCBW@Portrait" parent="Portrait" Race="Zerg">
+        <Model value="Assets\Portraits\Zerg\SwarmHostSpawnPortrait\SwarmHostSpawnPortrait.m3"/>
+        <Image value="Assets\Textures\swarmhostspawnportrait_static.dds"/>
+    </CModel>
     <CModel id="DroneSCBW" parent="DroneBase">
         <Model value="Assets\Units\Zerg\Drone_Remastered\Drone_Remastered.m3"/>
     </CModel>
@@ -1193,6 +1262,44 @@
         <EditorCategories value="Race:Zerg"/>
         <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWSpawnBroodlings@Launch00.ogg" FacialGroup=""/>
         <Volume value="-8.000000,-8.000000"/>
+    </CSound>
+    <CSound id="QueenSCBW@Attack" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes03.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@Death" parent="ZergDeathSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Death00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Death01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Death02.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@Help" parent="AlertZergSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Help00.ogg"/>
+        <Mode value="3DWorld"/>
+    </CSound>
+    <CSound id="QueenSCBW@Pissed" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed03.ogg"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+    </CSound>
+    <CSound id="QueenSCBW@Ready" parent="ZergReadySCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Ready00.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@What" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What03.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@Yes" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes03.ogg"/>
     </CSound>
     <CSound id="LurkerSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
@@ -1955,6 +2062,63 @@
         <Race value="Zerg"/>
         <Mover value="MissileDefault"/>
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="QueenSCBW">
+        <DeathRevealRadius value="3"/>
+        <Race value="Zerg"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Air" value="1"/>
+        <Collide index="Flying" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <Attributes index="Psionic" value="1"/>
+        <LifeStart value="120"/>
+        <LifeMax value="120"/>
+        <LifeRegenRate value="0.2734"/>
+        <LifeArmorName value="Unit/LifeArmorName/ZergAirArmor"/>
+        <EnergyStart value="50"/>
+        <EnergyMax value="200"/>
+        <EnergyRegenRate value="0.5625"/>
+        <Mover value="Fly"/>
+        <Speed value="3.75"/>
+        <Acceleration value="4.1875"/>
+        <StationaryTurningRate value="799.9804"/>
+        <TurningRate value="799.9804"/>
+        <Sight value="10"/>
+        <Height value="3.75"/>
+        <VisionHeight value="4"/>
+        <Food value="-2"/>
+        <CostCategory value="Army"/>
+        <AttackTargetPriority value="20"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="QueenSCBWParasite"/>
+        <AbilArray Link="QueenSCBWEnsnare"/>
+        <AbilArray Link="QueenSCBWSpawnBroodlings"/>
+        <AbilArray Link="QueenSCBWInfestCommandCenter"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+        </CardLayouts>
+        <Radius value="0.75"/>
+        <SeparationRadius value="0.75"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="13"/>
+        <MinimapRadius value="0.75"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <CostResource index="Minerals" value="100"/>
+        <CostResource index="Vespene" value="100"/>
+        <BuildTime value="46.875"/>
+        <KillXP value="40"/>
+        <ScoreMake value="200"/>
+        <ScoreKill value="200"/>
+        <TacticalAIThink value="AIThinkQueenSCBW"/>
     </CUnit>
     <CUnit id="DroneSCBW">
         <DeathRevealRadius value="3"/>
