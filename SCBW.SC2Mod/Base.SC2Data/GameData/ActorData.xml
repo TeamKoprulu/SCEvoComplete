@@ -320,6 +320,33 @@
         <UnitFlags index="StandAnimBirthVariation" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-##unitName##.dds"/>
     </CActorUnit>
+    <CActorModel id="UnloadFX">
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoUnload" Send="Create"/>
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoUnload" Send="Create"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.CargoUnload" Send="Create"/>
+    </CActorModel>
+    <CActorEventMacro id="DropshipSCBW@UnloadDropAnim">
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End DontResetOnUnhide"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoLoadSuppressed" Send="AnimBracketStart Unload IGNORE Unload Unload,End DontResetOnUnhide"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="OverlordSCBW@UnloadDropAnim">
+        <On Terms="AbilTransport.OverlordSCBW@Transport.CargoLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End DontResetOnUnhide"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.CargoLoadSuppressed" Send="AnimBracketStart Unload IGNORE Unload Unload,End DontResetOnUnhide"/>
+    </CActorEventMacro>
+    <CActorSound id="OverlordSCBW@TransportLoadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.OverlordSCBW@Transport.TransportLoad" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="OverlordSCBW@TransportLoad"/>
+    </CActorSound>
+    <CActorSound id="OverlordSCBW@TransportUnloadSound" parent="SoundOneShot">
+        <On Terms="AbilTransport.OverlordSCBW@Transport.TransportUnload" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary"/>
+        <Sound value="OverlordSCBW@TransportUnload"/>
+    </CActorSound>
     <CActorBeamSimple id="ShieldBatterySCBWRecharge@ChanneledBeam" parent="BeamSimpleAnimationStyleContinuous">
         <Inherits index="Visibility" value="1"/>
         <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStart" Send="Create"/>
@@ -754,6 +781,23 @@
         <HostSiteOps Ops="SOpAttachOrigin"/>
         <Sound value="ShuttleSCBW@TransportUnload"/>
     </CActorSound>
+    <CActorEventMacro id="UnloadDropAnim">
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoLoadSuppressed" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.TransportLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.ShuttleSCBW@Transport.TransportUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.CargoLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.CargoLoadSuppressed" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.TransportLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.OverlordSCBW@Transport.TransportUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoLoadSuppressed" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End"/>
+        <On Terms="AbilTransport.DropshipSCBW@Transport.TransportUnload" Send="AnimBracketStop Unload"/>
+    </CActorEventMacro>
     <CActorModel id="ShuttleSCBW@TransportUnloadFX">
         <Flags index="SuppressSaveLoad" value="1"/>
         <Inherits index="BaseModelScale" value="1"/>
@@ -1110,35 +1154,6 @@
         <On Terms="UnitDeath.MutaliskSCBW; PassChance 25.000000" Send="Create"/>
         <Sound value="Mutalisk_Death"/>
     </CActorSound>
-    <CActorUnit id="QueenSCBW" parent="GenericUnitStandard" unitName="QueenSCBW">
-        <On Terms="Abil.QueenSCBWEnsnare.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
-        <On Terms="Abil.QueenSCBWSpawnBroodlings.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
-        <On Terms="Abil.QueenSCBWParasite.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
-        <On Terms="Abil.QueenSCBWInfestCommandCenter.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
-        <On Terms="UnitMovementUpdate.*.Walk" Send="AnimClear Spell"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
-        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
-        <HostSiteOps Ops="SOpBankerQueenMP"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="QueenSCBW@Death" SoundLink="QueenSCBW@Death" VoiceLink="QueenMP_Death"/>
-        <PortraitModel value="QueenSCBW@Portrait"/>
-        <BarOffset value="75"/>
-        <GroupIcon>
-            <Image value="Assets\Textures\wireframe-zerg-queenclassic.dds"/>
-        </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
-        <SoundArray index="Ready" value="QueenSCBW@Ready"/>
-        <SoundArray index="Help" value="QueenSCBW@Help"/>
-        <SoundArray index="What" value="QueenSCBW@What"/>
-        <SoundArray index="Yes" value="QueenSCBW@Yes"/>
-        <SoundArray index="Attack" value="QueenSCBW@Attack"/>
-        <SoundArray index="Pissed" value="QueenSCBW@Pissed"/>
-        <UnitIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
-        <Wireframe>
-            <Image value="Assets\Textures\wireframe-zerg-queenclassic.dds"/>
-        </Wireframe>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-flyercarapace-level0.dds"/>
-    </CActorUnit>
     <CActorUnit id="ScourgeSCBW" parent="GenericUnitStandard" unitName="ScourgeSCBW">
         <Aliases value="_UnitSmall"/>
         <On Terms="WeaponStart.Suicide.AttackStart" Send="StatusSet DeathSuicide 1"/>
