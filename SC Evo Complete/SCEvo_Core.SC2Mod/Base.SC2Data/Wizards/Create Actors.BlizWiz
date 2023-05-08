@@ -1,0 +1,406 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<wizardfile>
+	<wizard id="CreateActorModelForEffect">
+		<name>Create visuals (models) for effects</name>
+		<category>CreateActor</category>
+		<input id="EffectLink" type="CEffectLink">
+			<name>link effect</name>
+			<tooltip>Select the effect to create the VFX</tooltip>
+		</input>
+		<input id="Model" type="CModelPath">
+			<name>Model</name>
+			<tooltip>the visual model to apply</tooltip>
+		</input>
+		<input id="Name" type="CStringLink">
+			<name>name</name>
+			<default value="no name" />
+		</input>
+		<macro id="EntryId">^EffectLink^^suffix^</macro>
+		<entry type="CActorModel" catalog="Actor">
+			<parentid>ModelAnimationStyleContinuous</parentid>
+			<id>^EntryId^</id>
+			<field id="On_Terms">
+				<index>3</index>
+				<value>Effect.^EffectLink^.Start</value>
+			</field>
+			<field id="On_Terms">
+				<value>Effect.^EffectLink^.Stop</value>
+				<index>4</index>
+			</field>
+			<field id="On_Send">
+				<index>3</index>
+				<value>Create</value>
+			</field>
+			<field id="On_Send">
+				<index>4</index>
+				<value>AnimBracketStop BSD</value>
+			</field>
+			<field id="HostSiteOps_Ops">
+				<value>SOpShadow</value>
+			</field>
+			<field id="Name">
+				<value>^Name^</value>
+			</field>
+			<field id="EditorPrefix">
+				<value>ref=Effect,^EffectLink^,EditorPrefix</value>
+			</field>
+			<field id="EditorSuffix">
+				<value>ref=Effect,^EffectLink^,EditorSuffix</value>
+			</field>
+			<condition id="EffectLinkExist" />
+		</entry>
+		<instructions page="1">
+			Create visuals for effects
+			Special effects are created when the effect occurs
+			Some models are not supported, if you encounter this situation, please modify the actor yourself.
+		</instructions>
+		<entry type="CModel" catalog="Model">
+			<id>^EntryId^</id>
+			<field id="Name">
+				<value>^Name^</value>
+			</field>
+			<field id="Model">
+				<value>^Model^</value>
+			</field>
+			<condition id="EffectLinkExist" />
+		</entry>
+		<objecttypes create="Effect" />
+		<input id="suffix" type="CString">
+			<name>Id suffix</name>
+			<tooltip>By default, you are not required to choose a suffix, but an optional parameter is provided for you to use.</tooltip>
+			<default value="Model" />
+		</input>
+		<validate type="error">
+			<text>Link effect cannot be empty</text>
+			<condition id="EffectLinkExist" />
+		</validate>
+		<condition id="EffectLinkExist" input="EffectLink" empty="0" />
+		<validate type="warning">
+			<condition input="Model" empty="0" />
+			<text>special effects no model</text>
+		</validate>
+		<validate type="warning">
+			<condition input="Name" empty="0" />
+			<text>effect has no name</text>
+		</validate>
+	</wizard>
+	<wizard id="CreateActorRangeForAbil">
+		<category>CreateActor</category>
+		<objecttypes create="Abil" />
+		<input id="Abil" type="CAbilLink">
+			<name>link skills</name>
+			<tooltip>skills to link</tooltip>
+		</input>
+		<input id="OptionRange" type="WizardCheckbox">
+			<name>range circle</name>
+			<tooltip>create circle</tooltip>
+			<default value="1" />
+		</input>
+		<input id="OptionCursorSplat" type="WizardCheckbox">
+			<name>pointer range circle</name>
+			<tooltip>Create pointer range circle</tooltip>
+			<default value="0" />
+		</input>
+		<validate type="error">
+			<condition empty="0" input="Abil" />
+			<text>Link skill cannot be empty</text>
+		</validate>
+		<condition id="ConditionRange" input="OptionRange" value="1" operator="equal" />
+		<condition id="ConditionCursorSplat" input="OptionCursorSplat" value="1" operator="equal" />
+		<input id="CursorSplatModel" type="CModelPath">
+			<name>pointer model</name>
+			<tooltip>
+				Model of the range mouse pointer. 
+				Please search for Splat's models, non-splatter models will not work properly.
+			</tooltip>
+			<condition id="ConditionCursorSplat" />
+		</input>
+		<macro id="AbilName">ref=Abil,^Abil^,Name </macro>
+		<entry type="CActorRange" catalog="Actor">
+			<parentid>RangeAbil</parentid>
+			<id>^Abil^Range</id>
+			<field id="IconArcLength">
+				<value>3.25</value>
+			</field>
+			<field id="Icon">
+				<value>Assets\Textures\RadarIcon2.dds</value>
+			</field>
+			<condition id="ConditionRange" />
+			<field id="Name">
+				<value>^AbilName^scope</value>
+			</field>
+			<token id="abil">
+				<value>^Abil^</value>
+			</token>
+			<field id="On_Terms">
+				<index>1</index>
+				<value>Abil.^Abil^.TargetOn</value>
+			</field>
+			<field id="On_Terms">
+				<index>2</index>
+				<value>Abil.^Abil^.TargetOff</value>
+			</field>
+			<field id="On_Terms">
+				<index>3</index>
+				<value>Abil.^Abil^.ButtonHoverOn</value>
+			</field>
+			<field id="On_Terms">
+				<index>4</index>
+				<value>Abil.^Abil^.ButtonHoverOff</value>
+			</field>
+		</entry>
+		<entry type="CActorSplat" catalog="Actor">
+			<parentid>CursorSplat</parentid>
+			<id>^Abil^CursorSplat</id>
+			<condition id="ConditionCursorSplat" />
+			<field id="Model">
+				<value>^Abil^CursorSplat</value>
+			</field>
+			<field id="Name">
+				<value>^AbilName^splash chart</value>
+			</field>
+			<field id="On_Terms">
+				<index>0</index>
+				<value>Abil.^Abil^.Cursor</value>
+			</field>
+			<token id="abil">
+				<value>^Abil^</value>
+			</token>
+		</entry>
+		<name>Create Range Actors for Abilities</name>
+		<entry type="CModel" catalog="Model">
+			<id>^Abil^CursorSplat</id>
+			<condition id="ConditionCursorSplat" />
+			<field id="Model">
+				<value>^CursorSplatModel^</value>
+			</field>
+			<field id="Name">
+				<value>^AbilName^splash chart</value>
+			</field>
+		</entry>
+		<instructions page="1">
+			Create Range Actors and Mouse Pointer Actors (AOE Circles) for Abilities
+		</instructions>
+	</wizard>
+	<wizard id="CreateBeamForEffect">
+		<category>CreateActor</category>
+		<name>Create light beams for effects</name>
+		<objecttypes create="Effect" />
+		<input id="EffectLink" type="CEffectLink">
+			<name>link effect</name>
+			<tooltip>Select the effect to create the beam of light</tooltip>
+		</input>
+		<input id="Model" type="CModelPath">
+			<name>beam model</name>
+		</input>
+		<entry type="CActorBeamSimple" catalog="Actor">
+			<id>^EffectLink^Beam</id>
+			<parentid>BeamSimpleAnimationStyleContinuous</parentid>
+			<field id="HostLaunch_Subject">
+				<value>_Unit</value>
+			</field>
+			<field id="HostLaunch_Scope">
+				<value>Caster</value>
+			</field>
+			<field id="HostLaunch_Actor">
+				<value>Find</value>
+			</field>
+			<field id="HostImpact_Subject">
+				<value>_Unit</value>
+				<condition id="TargetIsUnit" />
+			</field>
+			<field id="HostImpact_Scope">
+				<value>Target</value>
+				<condition id="TargetIsUnit" />
+			</field>
+			<field id="HostImpact_Actor">
+				<value>Find</value>
+				<condition id="TargetIsUnit" />
+			</field>
+			<field id="HostLaunchSiteOps_Ops">
+				<value>SOpAttachWeapon</value>
+			</field>
+			<field id="HostImpactSiteOps_Ops">
+				<value>SOpAttachCenter</value>
+				<condition id="TargetIsUnit" />
+			</field>
+			<field id="On_Terms">
+				<index>3</index>
+				<value>Effect.^EffectLink^.Start</value>
+			</field>
+			<field id="On_Terms">
+				<index>4</index>
+				<value>Effect.^EffectLink^.Stop</value>
+				<condition id="isPersistent" />
+			</field>
+			<field id="On_Send">
+				<index>3</index>
+				<value>Create</value>
+			</field>
+			<field id="On_Send">
+				<index>4</index>
+				<value>Destroy</value>
+				<condition id="isPersistent" />
+			</field>
+			<field id="Name">
+				<value>ref=Effect,^EffectLink^,Name beam</value>
+			</field>
+			<field id="On_Terms">
+				<value>Effect.^EffectLink^.Start</value>
+				<index>4</index>
+				<condition id="isDuration" />
+			</field>
+			<field id="On_Send">
+				<value>TimerSet ^Duration^ Kill</value>
+				<index>4</index>
+				<condition id="isDuration" />
+			</field>
+			<field id="On_Terms">
+				<value>TimerExpired; TimerName Kill</value>
+				<index>5</index>
+				<condition id="isDuration" />
+			</field>
+			<field id="On_Send">
+				<index>5</index>
+				<value>Destroy</value>
+				<condition id="isDuration" />
+			</field>
+			<field id="HostImpactSiteOps_Ops">
+				<value>SOpTargetPointStationary SOpShadow</value>
+				<condition id="TargetIsPoint" />
+			</field>
+			<field id="EditorPrefix">
+				<value>ref=Effect,^EffectLink^,EditorPrefix</value>
+			</field>
+			<field id="EditorSuffix">
+				<value>ref=Effect,^EffectLink^,EditorSuffix</value>
+			</field>
+			<field id="HostImpact_Subject">
+				<value>^EffectLink^Site</value>
+				<condition id="TargetIsPoint" />
+			</field>
+			<field id="On_Terms">
+				<index>3</index>
+				<value>Effect.^EffectLink^.TargetStart</value>
+				<condition id="isHeal" />
+			</field>
+			<field id="On_Terms">
+				<index>4</index>
+				<value>Effect.^EffectLink^.TargetStop</value>
+				<condition id="isHeal" />
+			</field>
+			<field id="On_Send">
+				<index>4</index>
+				<value>Destroy</value>
+				<condition id="isHeal" />
+			</field>
+		</entry>
+		<entry type="CModel" catalog="Model">
+			<id>^EffectLink^Beam</id>
+			<field id="Model">
+				<value>^Model^</value>
+			</field>
+			<field id="Name">
+				<value>ref=Effect,^EffectLink^,Name beam</value>
+			</field>
+		</entry>
+		<instructions page="1">
+			Create beam effects for effects.
+			If it is a continuous healing effect, please choose a continuous healing effect.
+		</instructions>
+		<condition id="isPersistent" input="Type" match="equal" value="Persistent" />
+		<input id="Type" type="WizardRadio">
+			<name>beam duration type</name>
+			<tooltip>Select Persistent Effect if the effect you want to create the beam of light is a persistent effect.</tooltip>
+			<item value="Duration" text="duration" />
+			<item value="Persistent" text="persistent effect" />
+			<item value="null" text="None" />
+			<default value="Persistent" />
+			<item value="Heal" text="Continuous Healing Effect" />
+		</input>
+		<input id="TargetType" type="WizardRadio">
+			<name>target type</name>
+			<item value="Unit" text="unit target" />
+			<default value="Unit" />
+			<item value="Point" text="point" />
+		</input>
+		<condition id="isDuration" input="Type" value="Duration" match="equal" />
+		<input id="Duration" type="real32">
+			<name>beamduration</name>
+			<tooltip>The beam lasts for the specified time.</tooltip>
+			<condition id="isDuration" />
+		</input>
+		<validate type="error">
+			<condition empty="0" input="EffectLink" />
+			<text>The effect to link is empty</text>
+		</validate>
+		<validate type="warning">
+			<condition empty="0" input="Model" />
+			<text>beam has no model</text>
+		</validate>
+		<condition id="TargetIsPoint" input="TargetType" match="equal" value="Point" />
+		<condition id="TargetIsUnit" input="TargetType" match="equal" value="Unit" />
+		<entry type="CActorSiteMover" catalog="Actor">
+			<id>^EffectLink^Site</id>
+			<field id="HostSiteOps_Ops">
+				<value>SOpShadow</value>
+			</field>
+			<field id="Sharing">
+				<value>PerEffectTree</value>
+			</field>
+			<field id="On_Terms">
+				<value>Effect.^EffectLink^.Start</value>
+			</field>
+			<field id="On_Send">
+				<value>Create</value>
+			</field>
+			<condition id="TargetIsPoint" />
+			<field id="On_Terms">
+				<value>ActorOrphan</value>
+				<index>1</index>
+			</field>
+			<field id="On_Send">
+				<value>Destroy</value>
+				<index>1</index>
+			</field>
+		</entry>
+		<condition id="isHeal" input="Type" value="Heal" match="equal" />
+	</wizard>
+	<wizard id="AddShieldModelForModel">
+		<category>CreateActor</category>
+		<name>Add shield attachments to the model</name>
+		<input id="Model" type="CModelLink">
+			<name>Model</name>
+		</input>
+		<input id="Range" type="real32">
+			<name>Shield range</name>
+			<default value="0.5" />
+		</input>
+		<objecttypes create="Model" />
+		<entry type="CActorShieldImpact" catalog="Actor">
+			<allowmodify />
+			<id>ShieldImpact</id>
+			<field id="On_Terms">
+				<index>0</index>
+				<value>UnitCreation; Exclude Missile</value>
+			</field>
+			<field id="On_Send">
+				<value>Create</value>
+				<index>0</index>
+			</field>
+		</entry>
+		<entry type="CModel" catalog="Model">
+			<allowmodify />
+			<id>^Model^</id>
+			<field id="AttachProps_Id">
+				<value>Ref_Center</value>
+			</field>
+			<field id="AttachProps_SquibType">
+				<value>Shield</value>
+			</field>
+			<field id="AttachProps_RadiusShield">
+				<value>^Range^</value>
+			</field>
+		</entry>
+	</wizard>
+</wizardfile>

@@ -1,0 +1,96 @@
+include "Script/SCBW/NydusCanalSCBW";
+
+bool SCBW_ReqNodeNav(string node){
+    string scope = CatalogEntryScope(c_gameCatalogRequirementNode,node);
+    bool traced = true;
+    if(scope=="CRequirementAnd"){
+
+    }
+    return traced;
+}
+
+bool SCBW_ReqNodeNavTrig(bool a, bool b){
+    SCBW_ReqNodeNav("GhostSCBW");
+    return true;
+}
+
+
+bool SCBW_EffectTracker(bool a, bool b){
+    string effect = EventPlayerEffectUsed();
+    unit u = EventPlayerEffectUsedUnit(c_effectUnitCaster);
+    TriggerDebugOutput(1,StringToText(effect),true);
+    return true;
+}
+
+bool SCBW_NydusWaypoint(bool a, bool b){
+    unit u = EventUnit();
+    int p = EventPlayer();
+    string key = "WaypointP"+IntToString(p);
+    int path;
+    if(UnitGetType(u)!="MarineSCBW"){
+        return false;
+    }
+    if(DataTableValueExists(true,key)){
+        path = DataTableGetInt(true,key);
+        PathAddWayPoint(path,UnitGetPosition(u));
+    }
+    else{
+        path = PathCreateForUnit(PlayerGroupSingle(p),u);
+        PathSetVisible (path,c_pathLocationMinimap,true);
+        PathSetLineTexture(path, c_pathLocationMinimap, "Assets\\Textures\\waypointline.dds");
+        PathSetMinimumStepCount(path, 0);
+        PathSetMinimumTravelDistance(path, 3.0);
+        PathSetMinimumLinearDistance(path, 3.0);
+        PathSetDestinationPoint(path, UnitGetPosition(u));
+        DataTableSetInt(true,key,path);
+    }
+    return true;
+}
+
+//static void WaypointInit(){
+//    trigger t; 
+//    int player = c_playerAny;
+//    string effect;
+//    t = TriggerCreate("SCBW_NydusWaypoint");
+//    TriggerAddEventUnitRegion(t,null,RegionEntireMap(),true);
+//    
+//}
+
+
+static void EffectTrackerInit(){
+    trigger t; 
+    int player = c_playerAny;
+    string effect;
+    t = TriggerCreate("SCBW_EffectTracker");
+    //effect = "StaggerUDStepIncreasePhase1";
+    //TriggerAddEventPlayerEffectUsed(t,player,effect);
+    //effect = "StaggerUDStepIncreasePhase2";
+    //TriggerAddEventPlayerEffectUsed(t,player,effect);
+    //effect = "StaggerUDStepIncreasePhase3";
+    //TriggerAddEventPlayerEffectUsed(t,player,effect);
+    
+    t = TriggerCreate("SCBW_UnitAbilityPrintTrig");
+    TriggerAddEventUnitRegion(t,null,RegionEntireMap(),true);
+    
+}
+
+void bluh(){
+    region r = RegionPlayableMap();
+    point p = RegionGetBoundsMax(r);
+    fixed width = PointGetX (p);
+    fixed height = PointGetY(p);
+    int i =0;
+    int j =0;
+    string model="EditorHelper";
+    for(i=0;i<width;i+=1){
+        for(j=0;j<height;j+=1){
+            //libNtve_gf_CreateModelAtPoint(model,Point(i,j));
+        }
+    }
+}
+
+void SCBW_Init(){
+    NydusCanalSCBW_Init();
+    EffectTrackerInit();
+    //WaypointInit();
+}

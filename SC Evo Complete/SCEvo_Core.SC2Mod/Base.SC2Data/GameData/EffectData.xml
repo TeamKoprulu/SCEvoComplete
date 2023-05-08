@@ -1,0 +1,898 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectDamage default="1" id="ExplosiveBaseDamageSCBW" parent="DU_WEAP">
+        <AttributeFactor index="Light" value="-0.33"/>
+        <AttributeFactor index="Armored" value="0.33"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage default="1" id="ConcussiveBaseDamageSCBW" parent="DU_WEAP">
+        <AttributeFactor index="Light" value="1"/>
+        <AttributeFactor index="Armored" value="-0.5"/>
+        <ShieldFactor value="1"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="LurkerSCBWWeapon@CP">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichLocation Value="SourcePoint"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <Flags index="EffectFailure" value="1"/>
+        <PeriodCount value="7"/>
+        <PeriodicValidator value="CasterIsAttacking"/>
+        <PeriodicEffectArray value="LurkerSCBWWeapon@Search"/>
+        <PeriodicOffsetArray value="0,-1,0"/>
+        <PeriodicOffsetArray value="0,-2,0"/>
+        <PeriodicOffsetArray value="0,-3,0"/>
+        <PeriodicOffsetArray value="0,-4,0"/>
+        <PeriodicOffsetArray value="0,-5,0"/>
+        <PeriodicOffsetArray value="0,-6,0"/>
+        <PeriodicOffsetArray value="0,-7,0"/>
+        <PeriodicOffsetArray value="0,-8,0"/>
+        <PeriodicOffsetArray value="0,-9,0"/>
+        <PeriodicOffsetArray value="0,-10,0"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0.125"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="LurkerSCBWWeapon@Damage" parent="DU_WEAP_SPLASH">
+        <ValidatorArray value="noMarkers"/>
+        <ValidatorArray value="NotInvulnerable"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="20"/>
+        <Death value="Blast"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectEnumArea id="LurkerSCBWWeapon@Search">
+        <ValidatorArray value="LurkerSCBWWeapon@Search"/>
+        <EditorCategories value="Race:Zerg"/>
+        <IncludeArray Effect="LurkerSCBWWeapon@CP" Value="Target"/>
+        <SearchFilters value="Ground;Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="0.625" Effect="LurkerSCBWWeapon@Damage"/>
+        <SearchFlags index="CallForHelp" value="1"/>
+    </CEffectEnumArea>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDPhaseIncrease">
+        <Key value="StaggerPhase"/>
+        <SourceKey value="StaggerPhase"/>
+        <ValidateMax value="3"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerUDPhaseReset"/>
+    </CEffectUserData>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDPhaseReset">
+        <Key value="StaggerPhase"/>
+        <SourceKey value="StaggerPhase"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectSwitch id="BroodlingSCBW@WalkStaggerSwitchPhaseCheck">
+        <CaseArray Validator="BroodlingSCBW@WalkStaggerIsPhase2" Effect="BroodlingSCBW@WalkStaggerUDStepIncreasePhase2"/>
+        <CaseArray Validator="BroodlingSCBW@WalkStaggerIsPhase3" Effect="BroodlingSCBW@WalkStaggerUDStepIncreasePhase3"/>
+        <CaseDefault value="BroodlingSCBW@WalkStaggerUDStepIncreasePhase1"/>
+    </CEffectSwitch>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase2">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="7"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase3">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="21"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectSet id="BroodlingSCBW@WalkStaggerSuccessSet">
+        <EditorCategories value=""/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerAB"/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerUDPhaseIncrease"/>
+        <EffectArray value="BroodlingSCBW@WalkStaggerUDStepReset"/>
+    </CEffectSet>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepReset">
+        <Key value="StaggerStepCount"/>
+        <Amount value="0"/>
+        <SourceKey value="StaggerStepCount"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectSwitch id="BroodlingSCBW@WalkStaggerTrackerSwitch">
+        <CaseArray Validator="CasterHasNoOrders" Effect="BroodlingSCBW@WalkStaggerUDStepReset"/>
+        <CaseArray Validator="BroodlingSCBW@WalkStaggerHasStaggeredBehavior" Effect="BroodlingSCBW@WalkStaggerUDStepReset"/>
+        <CaseDefault value="BroodlingSCBW@WalkStaggerSwitchPhaseCheck"/>
+    </CEffectSwitch>
+    <CEffectUserData id="BroodlingSCBW@WalkStaggerUDStepIncreasePhase1">
+        <Key value="StaggerStepCount"/>
+        <SourceKey value="StaggerStepCount"/>
+        <ValidateMax value="14"/>
+        <EffectFailure value="BroodlingSCBW@WalkStaggerSuccessSet"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="BroodlingSCBW@WalkStaggerAB">
+        <EditorCategories value=""/>
+        <Behavior value="BroodlingSCBW@WalkStaggerStaggered"/>
+    </CEffectApplyBehavior>
+    <CEffectDamage id="BroodlingSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="4"/>
+    </CEffectDamage>
+    <CEffectDamage id="InfestedTerranSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <AINotifyFlags index="HurtEnemy" value="1"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+        <Kind value="Splash"/>
+        <Amount value="375"/>
+        <Death value="Disintegrate"/>
+    </CEffectDamage>
+    <CEffectSet id="InfestedTerranSCBWWeapon@LargeFriendlySet">
+        <EffectArray value="HotSRemoveBanelingExplodeLargeDeathBehavior"/>
+        <EffectArray value="HotSBanelingSplitterling"/>
+        <EffectArray value="HotSBanelingHealLargeDirect"/>
+        <EffectArray value="InfestedTerranSCBWWeapon@Search"/>
+        <EffectArray value="HotSBanelingExplodeLargeHealSearch"/>
+        <EffectArray value="SuicideDelay"/>
+    </CEffectSet>
+    <CEffectEnumArea id="InfestedTerranSCBWWeapon@Search">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactLocation Value="SourceUnit"/>
+        <ExcludeArray Value="Outer"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Ground;Missile,Item,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="2.2" Effect="InfestedTerranSCBWWeapon@DamageSearch"/>
+        <SearchFlags index="SameCliff" value="1"/>
+    </CEffectEnumArea>
+    <CEffectDamage id="InfestedTerranSCBWWeapon@DamageSearch" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <AINotifyFlags index="HurtEnemy" value="1"/>
+        <ImpactLocation Value="TargetUnit"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+        <Kind value="Splash"/>
+        <Amount value="375"/>
+        <Death value="Disintegrate"/>
+    </CEffectDamage>
+    <CEffectSet id="InfestedTerranSCBWWeapon@Set">
+        <EffectArray value="InfestedTerranSCBWWeapon@Damage"/>
+        <EffectArray value="InfestedTerranSCBWWeapon@Search"/>
+        <EffectArray value="Suicide"/>
+    </CEffectSet>
+    <CEffectCreateHealer id="ShieldBatterySCBWRecharge@Healer">
+        <ValidatorArray value="ShieldBatterySCBWRecharge@Healer"/>
+        <EditorCategories value="Race:Terran"/>
+        <PeriodicValidator value="ShieldBatterySCBWRecharge@HealerPeriodic"/>
+        <PeriodicEffect value="ShieldBatteryRechargeChanneledRevealSearch"/>
+        <DrainVital value="Energy"/>
+        <DrainVitalCostFactor value="0.5"/>
+        <RechargeVital value="Shields"/>
+        <RechargeVitalRate value="80"/>
+    </CEffectCreateHealer>
+    <CEffectDamage id="DroneSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="5"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="SporeColonySCBWWeapon@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactEffect value="SporeColonySCBWWeapon@Damage"/>
+        <AmmoUnit value="SporeCrawlerWeapon"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="SporeColonySCBWWeapon@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="15"/>
+        <Death value="Disintegrate"/>
+    </CEffectDamage>
+    <CEffectDamage id="BattlecruiserSCBWWeaponAir@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="25"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="BattlecruiserSCBWWeaponAir@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="BattlecruiserSCBWWeaponAir@Damage"/>
+        <AmmoUnit value="BattlecruiserSCBWWeaponAir@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="BattlecruiserSCBWWeaponGround@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="25"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="BattlecruiserSCBWWeaponGround@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="BattlecruiserSCBWWeaponGround@Damage"/>
+        <AmmoUnit value="BattlecruiserSCBWWeaponGround@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@AB">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="DevourerSCBWWeapon"/>
+    </CEffectApplyBehavior>
+    <CEffectDamage id="DevourerSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="25"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="DevourerSCBWWeapon@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactEffect value="DevourerSCBWWeapon@Set"/>
+        <AmmoUnit value="DevourerSCBWWeapon@Missile"/>
+        <Movers Link="MissileDefault" IfRangeLTE="1"/>
+        <Movers Link="DevourerSCBWWeapon@Missile" IfRangeLTE="4"/>
+    </CEffectLaunchMissile>
+    <CEffectEnumArea id="DevourerSCBWWeapon@Search">
+        <EditorCategories value="Race:Zerg"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Air;Player,Ally,Neutral,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="1.5" Effect="DevourerSCBWWeapon@AB"/>
+    </CEffectEnumArea>
+    <CEffectSet id="DevourerSCBWWeapon@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="DevourerSCBWWeapon@Damage"/>
+        <EffectArray value="DevourerSCBWWeapon@AB"/>
+        <EffectArray value="DevourerSCBWWeapon@Search"/>
+    </CEffectSet>
+    <CEffectSet id="MutaliskSCBWWeapon@BounceImpactSet">
+        <EffectArray value="MutaliskSCBWWeapon@BounceDamageLoss"/>
+        <EffectArray value="MutaliskSCBWWeapon@BounceHitImpact"/>
+        <EffectArray value="MutaliskSCBWWeapon@BounceHitCount"/>
+        <SetSource value="1"/>
+    </CEffectSet>
+    <CEffectLaunchMissile id="MutaliskSCBWWeapon@BounceLM">
+        <ValidatorArray index="0" value="MutaliskSCBWWeapon@BounceLM"/>
+        <ImpactEffect value="MutaliskSCBWWeapon@BounceImpactSet"/>
+        <AmmoUnit value="MutaliskSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectEnumArea id="MutaliskSCBWWeapon@BounceSearch">
+        <SearchFilters value="Visible;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="6.25" Effect="MutaliskSCBWWeapon@BounceLM"/>
+        <MaxCount value="1"/>
+    </CEffectEnumArea>
+    <CEffectUserData id="MutaliskSCBWWeapon@BounceHitCount">
+        <Key value="HitCount"/>
+        <SourceKey value="HitCount"/>
+        <SourceFailBackValue value="1"/>
+        <ValidateMax value="3"/>
+        <EffectSuccess value="MutaliskSCBWWeapon@BounceSearch"/>
+    </CEffectUserData>
+    <CEffectUserData id="MutaliskSCBWWeapon@BounceDamageLoss">
+        <Key value="DamageLoss"/>
+        <Amount value="0.66"/>
+        <SourceKey value="DamageLoss"/>
+        <SourceFailBackValue value="1"/>
+        <Operation value="Multiply"/>
+    </CEffectUserData>
+    <CEffectSet id="MutaliskSCBWWeapon@BounceSet">
+        <EffectArray value="MutaliskSCBWWeapon@BounceDamageLoss"/>
+        <EffectArray value="MutaliskSCBWWeapon@BounceHitCount"/>
+        <SetSource value="1"/>
+    </CEffectSet>
+    <CEffectLaunchMissile id="MutaliskSCBWWeapon@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="MutaliskSCBWWeapon@Damage"/>
+        <AmmoUnit value="MutaliskSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="MutaliskSCBWWeapon@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Zerg"/>
+        <Visibility value="Visible"/>
+        <Amount value="9"/>
+        <Death value="Disintegrate"/>
+        <DamageInheritEffect value="MutaliskSCBWWeapon@BounceSet"/>
+    </CEffectDamage>
+    <CEffectDamage id="GuardianSCBWWeapon@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Zerg"/>
+        <Visibility value="Visible"/>
+        <Amount value="20"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="GuardianSCBWWeapon@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactEffect value="GuardianSCBWWeapon@Damage"/>
+        <AmmoUnit value="GuardianSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="InfestedTerranSCBWWeapon@SuicideDelay">
+        <EditorCategories value="Race:Zerg"/>
+        <ExpireDelay value="0.0625"/>
+        <FinalEffect value="InfestedTerranSCBWWeapon@SuicideRemove"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="InfestedTerranSCBWWeapon@SuicideRemove">
+        <ImpactLocation Value="SourceUnit"/>
+        <Flags index="Kill" value="1"/>
+        <Death value="Remove"/>
+    </CEffectDamage>
+    <CEffectDamage id="SunkenColonySCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="30"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage id="UltraliskSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <KindSplash value="Melee"/>
+        <Amount value="20"/>
+        <Death value="Eviscerate"/>
+        <!--
+            <AreaArray Arc="45" Radius="2" Fraction="0.33"/>
+            <AreaArray Arc="180" Radius="2" Fraction="0.33"/>
+            <ExcludeArray Value="Target"/>
+            <SearchFilters value="Ground;Player,Ally,Neutral,Stasis,Dead,Hidden,Invulnerable"/>
+        -->
+    </CEffectDamage>
+    <CEffectDamage id="ScourgeSCBWWeapon@Damage">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="110"/>
+    </CEffectDamage>
+    <CEffectSet id="ScourgeSCBWWeapon@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="ScourgeSCBWWeapon@Damage"/>
+        <EffectArray value="ScourgeSCBWWeapon@RemoveSource"/>
+    </CEffectSet>
+    <CEffectDamage id="ScourgeSCBWWeapon@RemoveSource">
+        <ImpactLocation Value="SourceUnit"/>
+        <Flags index="Kill" value="1"/>
+        <Death value="Remove"/>
+    </CEffectDamage>
+    <CEffectDamage id="ZerglingSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="5"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="ComsatStationSCBWScannerSweep@Revealer">
+        <EditorCategories value="Race:Terran"/>
+        <ExpireDelay value="12.2775"/>
+        <RevealRadius value="13"/>
+        <RevealFlags index="Unfog" value="1"/>
+        <RevealFlags index="Detect" value="1"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="DragoonSCBWWeapon@Damage" parent="ExplosiveBaseDamageSCBW">
+        <EditorCategories value="Race:Protoss"/>
+        <Kind value="Ranged"/>
+        <Amount value="15"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="MissileTurretSCBWWeapon@CP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="2"/>
+        <PeriodicEffectArray value="MissileTurretSCBWWeapon@LM"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.1"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="MissileTurretSCBWWeapon@LM">
+        <ValidatorArray index="0" value="MissileTurretSCBWWeapon@LM"/>
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="MissileTurretSCBWWeapon@Damage"/>
+        <AmmoUnit value="MissileTurretSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="MissileTurretSCBWWeapon@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="15"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage id="HydraliskSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Zerg"/>
+        <Kind value="Ranged"/>
+        <Amount value="7.5"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="HydraliskSCBWWeapon@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactEffect value="HydraliskSCBWWeapon@Damage"/>
+        <AmmoUnit value="HydraliskSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="GoliathSCBWWeaponAir@CP">
+        <ValidatorArray value="GoliathSCBWWeaponAir@CP"/>
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnit"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="2"/>
+        <PeriodicEffectArray value="GoliathSCBWWeaponAir@LM"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.21"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="GoliathSCBWWeaponAir@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="GoliathSCBWWeaponAir@Damage"/>
+        <AmmoUnit value="GoliathSCBWWeaponAir@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="GoliathSCBWWeaponAir@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="7.5"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage id="GoliathSCBWWeaponGround@Damage" parent="DU_WEAP">
+        <ValidatorArray value="GoliathSCBWWeaponGround@Damage"/>
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Ranged"/>
+        <Amount value="12"/>
+    </CEffectDamage>
+    <CEffectSet id="ValkyrieSCBWWeapon@Set">
+        <EffectArray value="ValkyrieSCBWWeapon@LM"/>
+        <EffectArray value="ValkyrieSCBWWeapon@LM"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@CPOffsets">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnit"/>
+        <PeriodCount value="4"/>
+        <PeriodicEffectArray value="ValkyrieSCBWWeapon@Set"/>
+        <PeriodicOffsetArray value="-0.0312,-0.0312,0"/>
+        <PeriodicOffsetArray value="-1.5937,-0.9687,0"/>
+        <PeriodicOffsetArray value="-0.2187,-0.375,0"/>
+        <PeriodicOffsetArray value="1.125,1.625,0"/>
+        <PeriodicOffsetArray value="1.5312,-0.7812,0"/>
+        <PeriodicOffsetArray value="-1.25,1.4375,0"/>
+        <PeriodicOffsetArray value="0.125,0.5937,0"/>
+        <PeriodicOffsetArray value="-0.875,-1.5625,0"/>
+        <PeriodicOffsetArray value="-1.5625,0.4687,0"/>
+        <PeriodicOffsetArray value="1.6875,0.4062,0"/>
+        <PeriodicOffsetArray value="-0.3437,1.6562,0"/>
+        <PeriodicOffsetArray value="-0.4687,0.2812,0"/>
+        <PeriodicOffsetArray value="0.5937,-1.5625,0"/>
+        <PeriodicOffsetArray value="0.5312,-0.25,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@CP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnit"/>
+        <PeriodCount value="4"/>
+        <PeriodicEffectArray value="ValkyrieSCBWWeapon@Set"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.65"/>
+        <PeriodicPeriodArray value="0.65"/>
+        <PeriodicPeriodArray value="0.65"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="ValkyrieSCBWWeapon@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="4.5"/>
+        <AreaArray Radius="1.5" Fraction="1"/>
+        <AreaArray Radius="2" Fraction="0.5"/>
+        <AreaArray Radius="2.5" Fraction="0.25"/>
+        <SearchFilters value="Air,Visible;Player,Ally,Neutral,Missile,Stasis,Dead,Invulnerable,Benign,Passive"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="ValkyrieSCBWWeapon@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="ValkyrieSCBWWeapon@Damage"/>
+        <AmmoUnit value="ValkyrieSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="SCVSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="5"/>
+    </CEffectDamage>
+    <CEffectDamage id="GhostSCBWWeapon@Damage" parent="ConcussiveBaseDamageSCBW">
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Ranged"/>
+        <Amount value="5"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="FirebatSCBWWeapon@CP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="SourcePoint"/>
+        <OffsetVectorStartLocation Value="SourcePoint"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="3"/>
+        <PeriodicEffectArray value="FirebatSCBWWeapon@Damage"/>
+        <PeriodicOffsetArray value="0,-0.75,0"/>
+        <PeriodicOffsetArray value="0,-1.625,0"/>
+        <PeriodicOffsetArray value="0,-2.5,0"/>
+        <PeriodicPeriodArray value="0.0625"/>
+        <PeriodicPeriodArray value="0.0625"/>
+        <PeriodicPeriodArray value="0.0625"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="FirebatSCBWWeapon@Damage" parent="DU_WEAP_SPLASH">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="4"/>
+        <Death value="Fire"/>
+        <AreaArray Radius="0.4687" Fraction="1" Validator="FirebatSCBWWeapon@Damage"/>
+        <AreaArray Radius="0.625" Fraction="0.5" Validator="FirebatSCBWWeapon@Damage"/>
+        <AreaArray Radius="0.7812" Fraction="0.25" Validator="FirebatSCBWWeapon@Damage"/>
+        <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AttributeFactor index="Light" value="1"/>
+        <AttributeFactor index="Armored" value="-0.5"/>
+        <ShieldFactor value="1"/>
+        <KindSplash value="Splash"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ExcludeArray Value="Outer"/>
+    </CEffectDamage>
+    <CEffectDamage id="MarineSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Ranged"/>
+        <Amount value="6"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Ranged"/>
+        <Amount value="22.5"/>
+        <Death value="Blast"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectApplyBehavior id="ArbiterSCBWCloakField@AB">
+        <ValidatorArray index="0" value="ArbiterSCBWCloakField@AB"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWCloakField@Effect"/>
+    </CEffectApplyBehavior>
+    <CEffectEnumArea id="ArbiterSCBWCloakField@Search">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="CasterUnit"/>
+        <SearchFilters value="-;Self,Neutral,Enemy,Structure,Missile,Dead,Hidden"/>
+        <AreaArray Radius="5" Effect="ArbiterSCBWCloakField@AB"/>
+        <SearchFlags index="ExtendByUnitRadius" value="1"/>
+    </CEffectEnumArea>
+    <CEffectDamage id="ArbiterSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="7.5"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="ArbiterSCBWWeapon@LM">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="ArbiterSCBWWeapon@Damage"/>
+        <AmmoUnit value="ArbiterSCBWWeapon@Missile"/>
+        <Movers Link="MissileDefault" IfRangeLTE="1"/>
+        <Movers Link="ArbiterMPWeaponMissile" IfRangeLTE="4"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@Damage" parent="DU_WEAP">
+        <ValidatorArray value="SiegeTankSCBWSiegedWeapon@Damage"/>
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="52.5"/>
+        <Death value="Blast"/>
+        <AreaArray Radius="0.3125" Fraction="1"/>
+        <AreaArray Radius="0.7812" Fraction="0.5"/>
+        <AreaArray Radius="1.25" Fraction="0.25"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageDirect" parent="DU_WEAP">
+        <ValidatorArray value="SiegeTankSCBWSiegedWeapon@DamageDirect"/>
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="52.5"/>
+        <Death value="Blast"/>
+        <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageDummy" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
+        <Amount value="52.5"/>
+        <Death value="Blast"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectUseMagazine id="CarrierSCBWWeapon@UM">
+        <EditorCategories value="Race:Protoss"/>
+        <AmmoEffect value="CarrierSCBWWeapon@Set"/>
+    </CEffectUseMagazine>
+    <CEffectSet id="CarrierSCBWWeapon@Set">
+        <EditorCategories value=""/>
+    </CEffectSet>
+    <!--        <AttributeBonus index="Light" value="-5"/>-->
+    <!--        <AttributeBonus index="Armored" value="5"/>-->
+    <!--        -->
+    <CEffectLaunchMissile id="DragoonSCBWWeapon@LM">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="DragoonSCBWWeapon@Damage"/>
+        <AmmoUnit value="DragoonSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="CarrierSCBWWeapon@CP">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="8"/>
+        <PeriodicValidator value="CarrierSCBWWeapon@CP@Periodic"/>
+        <PeriodicEffectArray value="CarrierSCBWWeapon@UM"/>
+        <PeriodicPeriodArray value="0.5"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="InterceptorSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="6"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="InterceptorSCBWWeapon@CP">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <InitialEffect value="InterceptorSCBWWeapon@Damage"/>
+        <PeriodCount value="1"/>
+        <PeriodicEffectArray value="InterceptorSCBWWeapon@Damage"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="CorsairSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Kind value="Splash"/>
+        <Amount value="3.75"/>
+        <AreaArray Radius="0.1562" Fraction="1"/>
+        <AreaArray Radius="1.5625" Fraction="0.5"/>
+        <AreaArray Radius="3.125" Fraction="0.25"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Air,Visible;Player,Ally,Neutral"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage id="ProbeSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Amount value="5"/>
+    </CEffectDamage>
+    <CEffectDamage id="PhotonCannonSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Kind value="Ranged"/>
+        <Amount value="20"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="PhotonCannonSCBWWeapon@LM">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="PhotonCannonSCBWWeapon@Damage"/>
+        <AmmoUnit value="PhotonCannonSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="ZealotSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Amount value="4"/>
+        <Death value="Eviscerate"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="ZealotSCBWWeapon@CP">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="2"/>
+        <PeriodicEffectArray value="ZealotSCBWWeapon@Damage"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.28"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="ZealotSCBWWeapon@Set">
+        <EditorCategories value=""/>
+        <EffectArray value="ZealotSCBWWeapon@CP"/>
+    </CEffectSet>
+    <CEffectDamage id="ArchonSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <AttributeBonus index="Biological" value="10"/>
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="30"/>
+        <AreaArray Radius="0.0937" Fraction="1"/>
+        <AreaArray Radius="0.4687" Fraction="0.5"/>
+        <AreaArray Radius="0.9375" Fraction="0.25"/>
+        <ExcludeArray Value="Outer"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="-;Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABReveal">
+        <Behavior value="ReaverSCBWWeapon@Reveal"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="ReaverSCBWWeapon@Suicide">
+        <ValidatorArray value="ReaverSCBWWeapon@Suicide"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@Damage"/>
+        <EffectArray value="Suicide"/>
+    </CEffectSet>
+    <CEffectDamage id="ReaverSCBWWeapon@Damage" parent="DU_WEAP">
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="100"/>
+        <Death value="Blast"/>
+        <AreaArray Radius="0.625" Fraction="0.8"/>
+        <AreaArray Radius="1.25" Fraction="0.6"/>
+        <AreaArray Radius="1.875" Fraction="0.5"/>
+        <AreaArray Radius="1.5" Fraction="0.25"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Ground;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="ReaverSCBWWeapon@LM">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="ReaverSCBWWeapon@Suicide"/>
+        <AmmoUnit value="ReaverSCBWWeapon@Missile"/>
+        <ImpactRange value="1"/>
+    </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="ReaverSCBWWeapon@CP">
+        <ValidatorArray value="ReaverSCBWWeapon@CP"/>
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="1"/>
+        <PeriodicValidator value="ReaverSCBWWeapon@CP@Periodic"/>
+        <PeriodicEffectArray value="ReaverSCBWWeapon@Set"/>
+        <PeriodicPeriodArray value="0.75"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="ReaverSCBWWeapon@SetInitial">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@CP"/>
+    </CEffectSet>
+    <CEffectSet id="ReaverSCBWWeapon@Set">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@ABReveal"/>
+        <EffectArray value="ReaverSCBWWeapon@UM"/>
+        <EffectArray value="ReaverSCBWWeapon@LM"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABTimedLife">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ReaverSCBWWeapon@TimedLife"/>
+    </CEffectApplyBehavior>
+    <CEffectUseMagazine id="ReaverSCBWWeapon@UM">
+        <EditorCategories value="Race:Protoss"/>
+        <AmmoEffect value="ReaverSCBWWeapon@ABTimedLife"/>
+    </CEffectUseMagazine>
+    <CEffectDamage id="ScoutSCBWWeaponGround@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="8"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="ScoutSCBWWeaponAir@CP">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <PeriodCount value="2"/>
+        <PeriodicEffectArray value="ScoutSCBWWeaponAir@LMLeft"/>
+        <PeriodicEffectArray value="ScoutSCBWWeaponAir@LMRight"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="ScoutSCBWWeaponAir@LMLeft">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="ScoutSCBWWeaponAir@Damage"/>
+        <AmmoUnit value="ScoutSCBWWeaponAir@MissileLeft"/>
+        <Movers Link="MissileDefault" IfRangeLTE="1"/>
+        <Movers Link="ScoutSCBWWeaponAir@MoverLeft" IfRangeLTE="4"/>
+    </CEffectLaunchMissile>
+    <CEffectLaunchMissile id="ScoutSCBWWeaponAir@LMRight">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="ScoutSCBWWeaponAir@Damage"/>
+        <AmmoUnit value="ScoutSCBWWeaponAir@MissileRight"/>
+        <Movers Link="MissileDefault" IfRangeLTE="1"/>
+        <Movers Link="ScoutSCBWWeaponAir@MoverRight" IfRangeLTE="4"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="ScoutSCBWWeaponAir@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="6"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectDamage id="DarkTemplarSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Amount value="40"/>
+        <Death value="Eviscerate"/>
+    </CEffectDamage>
+    <CEffectSet id="SiegeTankSCBWSiegedWeapon@Set">
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageDirect"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@Damage"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@MaelstromRounds"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="SpiderMineSCBW@ABInvulnerable">
+        <ValidatorArray index="0" value="SpiderMineSCBW@ABInvulnerable"/>
+        <EditorCategories value="Race:Terran"/>
+        <Behavior value="SpiderMineSCBW@Invulnerable"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="SpiderMineSCBW@RBInvulnerable">
+        <EditorCategories value="Race:Terran"/>
+        <BehaviorLink value="SpiderMineSCBW@Invulnerable"/>
+    </CEffectRemoveBehavior>
+    <CEffectIssueOrder id="SpiderMineSCBW@BurrowOrder">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Caster"/>
+        <Abil value="SpiderMineSCBW@Burrow"/>
+        <CmdFlags index="Preempt" value="1"/>
+    </CEffectIssueOrder>
+    <CEffectLaunchMissile id="VultureSCBWWeapon@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="VultureSCBWWeapon@Damage"/>
+        <AmmoUnit value="VultureSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="VultureSCBWWeapon@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="10"/>
+        <AttributeFactor index="Light" value="1"/>
+        <AttributeFactor index="Armored" value="-0.5"/>
+        <ShieldFactor value="1"/>
+    </CEffectDamage>
+    <CEffectDamage id="SpiderMineSCBWWeapon@Damage">
+        <EditorCategories value="Race:Terran"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <ArmorReduction value="1"/>
+        <Visibility value="Visible"/>
+        <Flags index="Notification" value="1"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
+        <Amount value="94"/>
+        <Death value="Blast"/>
+        <AreaArray Radius="1.5625" Fraction="1"/>
+        <AreaArray Radius="2.3437" Fraction="0.5"/>
+        <AreaArray Radius="3.125" Fraction="0.25"/>
+        <ExcludeArray Value="Outer"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Ground;Self,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFlags index="CallForHelp" value="1"/>
+        <SearchFlags index="OffsetByUnitRadius" value="1"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectSet id="SpiderMineSCBWWeapon@Set">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="SpiderMineSCBWWeapon@Damage"/>
+        <EffectArray value="Suicide"/>
+    </CEffectSet>
+    <CEffectLaunchMissile id="WraithSCBWWeaponAir@LMLeft">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="WraithSCBWWeaponAir@Damage"/>
+        <AmmoUnit value="WraithSCBWWeaponAir@MissileLeft"/>
+    </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="WraithSCBWWeaponAir@CP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnitOrPoint"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="2"/>
+        <PeriodicEffectArray value="WraithSCBWWeaponAir@LMLeft"/>
+        <PeriodicEffectArray value="WraithSCBWWeaponAir@LMRight"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="WraithSCBWWeaponAir@LMRight">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="WraithSCBWWeaponAir@Damage"/>
+        <AmmoUnit value="WraithSCBWWeaponAir@MissileRight"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="WraithSCBWWeaponAir@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Terran"/>
+        <Visibility value="Visible"/>
+        <Amount value="15"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="WraithSCBWWeaponGround@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="WraithSCBWWeaponGround@Damage"/>
+        <AmmoUnit value="WraithSCBWWeaponGround@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="WraithSCBWWeaponGround@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="8"/>
+    </CEffectDamage>
+    <CEffectDamage id="MutaliskSCBWWeapon@BounceHitImpact">
+        <Fraction value="0">
+            <AccumulatorArray value="MutaliskSCBWWeapon@DamageLoss"/>
+        </Fraction>
+    </CEffectDamage>
+</Catalog>

@@ -1,0 +1,1930 @@
+//--------------------------------------------------------------------------------------------------
+//  Abilities
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//  *** HIGH TEMPLAR ***
+//--------------------------------------------------------------------------------------------------
+
+order BWPsionicStorm (int player, unit aiUnit, unitgroup scanGroup) {
+
+    order ord = AICreateOrder(player, c_BWAB_HighTemplarSCBWPsiStorm, 0);
+    order enemyOrd;
+    order curOrd;
+    point loc;
+    fixed barrageRadius = AIEffectFixed(player, c_BWEF_HighTemplarSCBWPsiStorm_Search, c_fieldAreaRadius0);
+    unitgroup threatGroup;
+    unitgroup barrageGroup;
+    unitgroup barrageThreatGroup;
+    unit unitToCheck;
+    int numPossibleThreats = 0;
+    int numActualThreats = 0;
+    int numPossibleThreatsInBarrage = 0;
+    int numActualThreatsInBarrage = 0;	
+	
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    curOrd = UnitOrder(aiUnit, 0);
+    if ((curOrd != null) && !AIIsAttackOrder(curOrd)) {
+        // don't cast again if casting
+        return null;
+    }
+
+    // Is there a threat in the area
+    threatGroup = UnitGroupFilterThreat(scanGroup, aiUnit, null, 0);
+    numPossibleThreats = UnitGroupCount(threatGroup, c_unitCountAll);
+    while (numPossibleThreats > 0) {
+        unitToCheck = UnitGroupUnit(threatGroup, numPossibleThreats);
+        numPossibleThreats = numPossibleThreats - 1;
+
+        enemyOrd = UnitOrder(unitToCheck, 0);
+        if (AIIsAttackOrder(enemyOrd) && OrderGetTargetUnit(enemyOrd) == aiUnit) {
+            numActualThreats = numActualThreats + 1;
+        }
+    }
+
+    loc = AIBestTargetPoint(
+        AIEffectGroup(player, c_EF_PsiStormArea, scanGroup),
+        1, // min hits
+        40, // damage base
+        3.0, // min score 
+        barrageRadius,
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_BWAB_HighTemplarSCBWPsiStorm, c_fieldRange0)+3, 
+        c_unitAttributeNone
+    );
+    if (loc == null) {
+        return null;
+    }
+
+    barrageGroup = UnitGroup(null, c_playerAny, RegionCircle(loc, barrageRadius), null, 0);
+    barrageThreatGroup = UnitGroupFilterThreat(barrageGroup, aiUnit, null, 0);
+    numPossibleThreatsInBarrage = UnitGroupCount(barrageThreatGroup, c_unitCountAll);
+    while (numPossibleThreatsInBarrage > 0) {
+        unitToCheck = UnitGroupUnit(barrageThreatGroup, numPossibleThreatsInBarrage);
+        numPossibleThreatsInBarrage = numPossibleThreatsInBarrage - 1;
+
+        enemyOrd = UnitOrder(unitToCheck, 0);
+        if (AIIsAttackOrder(enemyOrd) && OrderGetTargetUnit(enemyOrd) == aiUnit) {
+            numActualThreatsInBarrage = numActualThreatsInBarrage + 1;
+        }
+    }
+
+    if ((numActualThreats > numActualThreatsInBarrage*2) ) {
+        return null;  // too many threats not in the barrage
+    }
+
+    OrderSetTargetPoint(ord, loc);
+	
+	return ord;
+
+}
+
+const int c_BWhightemplarHallucinationCooldown = c_tactTimerFirst;
+
+order BWHallucination (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    unitgroup group;
+    aifilter filter;
+    aifilter filterAI;
+    unitgroup enemies;
+    int enemyCount;
+
+    //if (AIPlayerDifficulty(player) < c_campAdvanced) {
+    //    return null;
+    //}
+	
+    if (!AITactCooldownAllow(aiUnit, c_BWhightemplarHallucinationCooldown)) {
+        return null;
+    }
+
+    // Check enemy threat
+    filterAI = AIFilter(player);
+    AISetFilterCanAttackAlly(filterAI,c_groundAlliesNearby,c_airAlliesNearby);
+    enemies = AIGetFilterGroup(filterAI, scanGroup);
+
+    // Is there a threat in the area
+    enemyCount = UnitGroupCount(enemies, c_unitCountAll);
+    if (enemyCount <= 0) {
+        return null;
+    }
+
+    // wait until fighting 4+ enemy units
+    
+    //if (!AIIsAttackOrder(UnitOrder(aiUnit, 0))) {
+    //    return null;
+    //}
+    //if (UnitGroupCount(scanGroup, c_unitCountAlive) < 4) {
+    //    return null;
+    //}
+
+    ord = AICreateOrder(player, c_BWAB_HighTemplarSCBWHallucination, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
+                        AIAbilityFixed(player, c_BWAB_HighTemplarSCBWHallucination, c_fieldRange0) + 1,
+                        c_noMaxCount)
+    ;
+
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupAlly);
+    AISetFilterCanAttackEnemy(filter, 4, 2);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    //AISetFilterLifeLost(filter, AIEffectFixed(player, c_EF_Transfusion, c_fieldEffectChange0) - 20, c_noMax);
+    group = AIGetFilterGroup(filter, group);
+    if (group == null) {
+        return null;
+    }
+
+    return AIUnitGroupGetValidOrder(group, ord, aiUnit, c_forwards);
+}
+
+bool BWMergeToSurvive (int player, unit aiUnit, unitgroup scanGroup) {
+    // only called at low heatlh, try to find a nearby templar to merge with in order to survive
+    order ord;
+    unitgroup targetGroup;
+    unit targetUnit;
+    
+    if (AIIsCampaign(player)) {
+        return false;
+    }
+    
+    // if we're not under attack, don't try to merge
+    if (AILastAttack(aiUnit) < (AIGetTime() - 4.0)) {
+        return false;
+    }
+    
+    ord = AICreateOrder(player, c_BWAB_ArchonSCBWMerge, 1);
+    targetGroup = UnitGroupSearch(c_BWPU_HighTemplar, player, UnitGetPosition(aiUnit), 5.0, UnitFilter((1 << c_targetFilterSelf), 0, 0, 0), c_noMaxCount);
+    targetUnit =  OrderGetTargetUnit( AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards) );
+    if (targetUnit == null) {
+        return false;
+    }
+    
+    // can't use the normal AICast because both units need the order at the same time
+    UnitIssueOrder(aiUnit, OrderTargetingUnit(AbilityCommand(c_BWAB_ArchonSCBWMerge, 1), targetUnit), c_orderQueueAddToEnd);
+    UnitIssueOrder(targetUnit, OrderTargetingUnit(AbilityCommand(c_BWAB_ArchonSCBWMerge, 1), aiUnit), c_orderQueueAddToEnd);
+    AISetUnitScriptControlled(aiUnit, false);
+    AISetUnitScriptControlled(targetUnit, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+const fixed c_BWEnemyMultiplierHighTemplar = 1.25;
+const fixed c_BWMinThreshold = 100.0;
+const int c_BWHighTemplarLowVitPerc = 40;
+const int c_BWpsiStormCooldown = c_tactTimerFirst;
+const int c_BWHallucianteCooldown = c_tactTimerSecond;
+
+void BWUnitGroupTest (unitgroup scanGroup) {
+    DebugVarInt("group strength", FixedToInt(AIUnitGroupStrength(scanGroup)));
+}
+
+void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    bool lowVitality;
+    unitfilter f;
+    region r;
+    unitgroup enemyGroup;
+    fixed cooldown;
+
+    lowVitality = (UnitGetPropertyInt(aiUnit, c_unitPropVitalityPercent, c_unitPropCurrent) < c_HighTemplarLowVitPerc);
+
+    if (lowVitality) {
+        if (BWMergeToSurvive(player, aiUnit, scanGroup)) {
+            return;
+        }
+    }
+
+    if (AIPlayerDifficulty(player) < c_campExpert) {
+        cooldown = 10.0;
+    }
+    else {
+        cooldown = 2.5;
+    }
+
+    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
+        if (AITactCooldownAllow(aiUnit, c_psiStormCooldown)) {
+            mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
+            ord = BWPsionicStorm(player, aiUnit, scanGroup);
+            if (ord != null) {
+                AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_BWpsiStormCooldown, cooldown);
+                return;
+            }
+        }
+    }
+
+    //  If we already have a psi storm order, ignore any new orders since psi storm is more important.
+    //  If we already have a Hallucination order, ignore any new Hallucination orders.
+    if (UnitOrderHasAbil(aiUnit, c_BWAB_HighTemplarSCBWHallucination) || UnitOrderHasAbil(aiUnit, c_BWAB_HighTemplarSCBWPsiStorm)) {
+        return;
+    }
+
+    if (AIPlayerDifficulty(player) < c_campExpert) {
+        cooldown = 25.0;
+    }
+    else {
+        cooldown = 10.0;
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
+    ord = BWHallucination(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_BWHallucianteCooldown, cooldown);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** ACADEMY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkAcademySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ARBITER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkArbiterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** ARBITER TRIBUNAL ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkArbiterTribunalSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ARCHON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkArchonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ARMORY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkArmorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ASSIMILATOR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkAssimilatorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** BARRACKS ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkBarracksSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** BATTLECRUISER ***
+//--------------------------------------------------------------------------------------------------
+
+const int c_BWYamatoCooldown = c_tactTimerFirst;
+
+order BWBattlecruiserYamato (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    aifilter filter;
+    fixed damage;
+    unitgroup targetGroup;
+
+    if (!AITactCooldownAllow(aiUnit, c_BWYamatoCooldown)) {
+        return null;
+    }
+    //TriggerDebugOutput(1, StringToText("CD Passed"), true);
+
+    //  If we already have a yamato order, ignore new orders so that we do not count
+    //  our own markers again.
+    if (UnitOrderHasAbil(aiUnit, c_BWAB_BattlecruiserSCBWYamato)) {
+        return null;
+    }
+
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        return null;
+    }
+
+    //  Only cast as part of an existing offensive.
+    
+    if (!AIIsAttackOrder(UnitOrder(aiUnit, 0))) {
+        return null;
+    }
+     
+    //  See if this spell can be cast at all.
+    //
+    ord = AICreateOrder(player, c_BWAB_BattlecruiserSCBWYamato, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    damage = AIEffectFixed(player, c_BWEF_BattlecruiserSCBWYamato_Damage, c_fieldAmount);
+
+    //  Search enemies for those with hit points closest to the damage yamato gun inflicts.
+    //
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupEnemy);
+    AISetFilterBits(filter, UnitFilterStr("-;Missile,Self,Stasis,Dead,Hidden,Invulnerable"));
+    AISetFilterLifePerMarker(filter, damage, mark);
+    AISetFilterLifeSortReference(filter, damage, damage*c_distanceFromDamage); 
+    targetGroup = AIGetFilterGroup(filter, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+    
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_backwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkBattlecruiserSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+
+    marker mark;
+    order ord;
+    fixed cooldown;
+
+    mark = AIMarker(aiUnit, c_BWMK_BattlecruiserSCBWYamato);
+    ord = BWBattlecruiserYamato(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campExpert) {
+            cooldown = 8.0;
+        }
+        else {
+            cooldown = 3.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castHold, c_BWYamatoCooldown, cooldown);
+        return;
+    }
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** BROODLING ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkBroodlingSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** BUNKER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkBunkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** CARRIER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCarrierSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** CITADEL OF ADUN ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCitadelOfAdunSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** COMMAND CENTER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** COMMAND CENTER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** COMSAT STATION ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkComsatStationSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** CONTROL TOWER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkControlTowerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** CORSAIR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCorsairSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** COVERT OPS ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCovertOpsSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** CREEP COLONY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCreepColonySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** CYBERNETICS CORE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCyberneticsCoreSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** DARK ARCHON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDarkArchonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** DARK TEMPLAR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDarkTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** Defiler ***
+//--------------------------------------------------------------------------------------------------
+
+const int c_BWDarkSwarmCooldown = c_tactTimerFirst;
+const int c_BWConsumeCooldown = c_tactTimerSecond;
+const int c_BWPlagueCooldown = c_tactTimerThird;
+
+order BWDarkSwarm (int player, unit aiUnit, unitgroup scanGroup) {
+    // target a clump of ranged ground units
+    order ord;
+    aifilter filter;
+    unitgroup nearbyAlliedUnits;
+    unitgroup rangedGroup;
+    point loc;
+
+    ord = AICreateOrder(player, c_BWAB_DefilerSCBWDarkSwarm, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    
+    filter = AIFilter(player);
+    AISetFilterMelee(filter, c_onlyRanged);
+    AISetFilterPlane(filter, c_planeGround);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DefilerSCBWDarkSwarm_AB);
+    rangedGroup = AIGetFilterGroup(filter, scanGroup);
+
+    loc = AIBestTargetPoint(
+        AIEffectGroup(player, c_BWEF_DefilerSCBWDarkSwarm_Search, rangedGroup),
+        5, // min hits
+        10, // damage base
+        4.5, // min score 
+        AIEffectFixed(player, c_BWEF_DefilerSCBWDarkSwarm_Search, c_fieldAreaRadius0),
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_BWAB_DefilerSCBWDarkSwarm, c_fieldRange0)+3,
+        c_unitAttributeNone
+    );
+    if (loc == null) {
+        return null;
+    }
+
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    return ord;
+}
+
+order BWDefilerConsume (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+	unit target;
+    unitgroup nearbyAlliedUnits;
+    aifilter filter;
+    order ord;
+    fixed energy;
+    
+    if (!AITactCooldownAllow(aiUnit, c_BWConsumeCooldown)) {
+        return null;
+    }
+
+    // Only get enough energy for one or two spells Max
+    energy = UnitGetPropertyInt(aiUnit, c_unitPropEnergy, c_unitPropCurrent);
+    if (energy >= 175) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_DefilerSCBWConsume, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    
+    // Only try to eat Zerglings as they're the weakest unit
+    nearbyAlliedUnits = AIFindUnits(player, c_BWZU_ZerglingSCBW, UnitGetPosition(aiUnit), 5, 10);
+    
+    if(UnitGroupCount(nearbyAlliedUnits, c_unitCountAlive) < 4){
+        return null;
+    }
+
+    filter = AIFilter(player);
+    AISetFilterPlane(filter, c_planeGround);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+	nearbyAlliedUnits = AIGetFilterGroup(filter, nearbyAlliedUnits);
+    target = AIGetClosestUnit(aiUnit, nearbyAlliedUnits, true);
+
+	if (target == null) {
+		return null;
+	}
+	
+	OrderSetTargetUnit(ord, target);
+	if (!UnitOrderIsValid(aiUnit,ord)) {
+		return null;
+	}
+	
+	return ord;
+}
+
+order BWDefilerPlague (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    // target a clump of air units
+    order ord;
+    aifilter filter;
+    unitgroup airGroup;
+    point loc;
+    unit target;
+    
+    // Check UnitAbilityExists to prevent warnings in liberty/swarm
+    if (!UnitAbilityExists(aiUnit, c_BWAB_DefilerSCBWPlague)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_DefilerSCBWPlague, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    
+    filter = AIFilter(player);
+    AISetFilterPlane(filter, c_planeAir);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DefilerSCBWPlague_AB);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    airGroup = AIGetFilterGroup(filter, scanGroup);
+    
+    loc = AIBestTargetPoint(
+        airGroup,
+        1, // min hits
+        50, // damage base
+        0.5, // min score 
+        AIEffectFixed(player, c_BWEF_DefilerSCBWPlague_Search, c_fieldAreaRadius0),
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_BWAB_DefilerSCBWPlague, c_fieldRange0)+3,
+        c_unitAttributeNone
+    );
+    if (loc == null) {
+        return null;
+    }
+
+    target = UnitGroupClosestToPoint(airGroup, loc);
+    OrderSetTargetUnit(ord, target);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    return ord;
+}
+
+
+//
+//region[c_maxPlayers] g_BWDefilerDarkSwarmNoCast;
+//region[c_maxPlayers][11] g_BWDefilerDarkSwarmNoCastTemp;
+//int[c_maxPlayers] g_BWDefilerDarkSwarmNoCastCount;
+//
+//
+////--------------------------------------------------------------------------------------------------
+//// Trigger: DarkSwarmNoCastRegion
+////--------------------------------------------------------------------------------------------------
+//void gf_DeclareDarkSwarmNoCastRegion() {
+//    point pos;
+//    fixed radius;
+//    int player = EventPlayer();
+//    int index = -1;
+//    int i;
+//
+//    if(g_BWDefilerDarkSwarmNoCastCount[player] >= 11){ return;}
+//    if(g_BWDefilerDarkSwarmNoCast[player] == null){
+//        g_BWDefilerDarkSwarmNoCast[player] = RegionEmpty();
+//        g_BWDefilerDarkSwarmNoCastCount[player] = 1;
+//    } else{ g_BWDefilerDarkSwarmNoCastCount[player] += 1; }
+//    for (i = 0; i <= 10; i += 1) {
+//        if(g_BWDefilerDarkSwarmNoCastTemp[player][i] == null){
+//            index = i;
+//            break;
+//        }
+//    }
+//    if(index == -1){
+//        return;
+//    }
+//    pos = EventPlayerEffectUsedPoint(c_effectLocationTargetPoint);
+//    radius = AIEffectFixed(player, c_BWEF_DefilerSCBWDarkSwarm_Search, c_fieldAreaRadius0);
+//    g_BWDefilerDarkSwarmNoCastTemp[player][index] = RegionCircle(pos, radius);
+//    RegionAddCircle(g_BWDefilerDarkSwarmNoCast[player], true, pos, (radius + 0.5));
+//    Wait((AIEffectFixed(player, "DefilerSCBWDarkSwarm@CP", c_fieldPeriodCount) * AIEffectFixed(player, "DefilerSCBWDarkSwarm@CP", "PeriodicPeriodArray[0]")), c_timeGame);
+//    Wait(0.1, c_timeGame);
+//    RegionAddCircle(g_BWDefilerDarkSwarmNoCast[player], false, pos, radius);
+//    if(g_BWDefilerDarkSwarmNoCastCount[player] > 0){ g_BWDefilerDarkSwarmNoCastCount[player] -= 1; }
+//    if(g_BWDefilerDarkSwarmNoCastCount[player] <= 0){ g_BWDefilerDarkSwarmNoCast[player] = null; }
+//    if(index != -1){g_BWDefilerDarkSwarmNoCastTemp[player][index] = null;}
+//    return;
+//}
+//
+////--------------------------------------------------------------------------------------------------
+//static order BWDefilerPlague (int player, unit aiUnit, unitgroup scanGroup, bool lowVitality, bool recentlyAttacked, marker mark) {
+//	point loc;
+//    unitgroup plagueGroup;
+//    aifilter filter;
+//	order ord;
+//    fixed minScore;
+//    int minHits;
+//    int minDamage;
+//
+//    if (!AITactCooldownAllow(aiUnit, c_PlagueCooldown)) {
+//        return null;
+//    }
+//
+//    ord = AITacticalOrder(player, aiUnit, c_BWAB_DefilerSCBWPlague);
+//	if (ord == null) {
+//		return null;
+//	}
+//	
+//    filter = AIFilter(player);
+//    AISetFilterCanAttackAlly(filter, true, true);
+//    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DefilerSCBWPlague_AB);
+//    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+//    plagueGroup = AIGetFilterGroup(filter, scanGroup);
+//
+//    if (lowVitality) {
+//        minScore = 0.5;
+//        minHits = 3;
+//        minDamage = 100;
+//        if(recentlyAttacked){
+//            minHits = 1;
+//            minDamage = 50;
+//        }
+//    }
+//    else {
+//        minScore = 4.0;
+//        minHits = 4;
+//        minDamage = 300;
+//    }
+//
+//	loc = AIBestTargetPoint(
+//		AIEffectGroup(player, c_BWEF_DefilerSCBWPlague_Search, plagueGroup),
+//		minHits,		// min hits
+//		minDamage,	// base damage
+//		minScore,	// score
+//		AIEffectFixed(player, c_BWEF_DefilerSCBWPlague_Search, c_fieldAreaRadius0) + 0.6,
+//		UnitGetPosition(aiUnit),
+//		AIAbilityFixed(player, c_BWAB_DefilerSCBWPlague, c_fieldRange0),
+//		c_unitAttributeNone
+//	);
+//	
+//	if (loc == null) {
+//		return null;
+//	}
+//	
+//	OrderSetTargetPoint(ord, loc);
+//	if (!UnitOrderIsValid(aiUnit,ord)) {
+//		return null;
+//	}
+//	
+//	return ord;
+//}
+//
+//
+//static bool BWPlagueCloakedAttacker (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+//    order ord;
+//    point attacker;
+//    point loc;
+//    point aiPos;
+//    string s;
+//    unitgroup group;
+//    aifilter filter;
+//    if (!AITactCooldownAllow(aiUnit, c_PlagueCooldown)) {
+//        return false;
+//    }
+//    ord = AICreateOrder(player, c_BWAB_DefilerSCBWPlague, 0);
+//    if (!UnitOrderIsValid(aiUnit, ord)) {
+//        return false;
+//    }
+//    aiPos = UnitGetPosition(aiUnit);
+//    attacker = AIGetCloakedAttacker(player);
+//    if(attacker != null){
+//        if (DistanceBetweenPoints(aiPos, attacker) < AIAbilityFixed(player, c_BWAB_DefilerSCBWPlague, c_fieldRange0) + 3){
+//            group = UnitGroupSearch(null, player, aiPos, AIAbilityFixed(player, c_BWAB_DefilerSCBWPlague, c_fieldRange0) + 3, UnitFilterStr("Enemy,Cloaked;Dead,Missile,Visible"), c_noMaxCount);
+//            filter = AIFilter(player);
+//            AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DefilerSCBWPlague_AB);
+//            AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+//            group = AIGetFilterGroup(filter, group);
+//
+//            loc = AIBestTargetPoint(
+//                AIEffectGroup(player, c_BWEF_DefilerSCBWPlague_Search, group),
+//                1,		// min hits
+//                1,	// base damage
+//                1,	// score
+//                AIEffectFixed(player, c_BWEF_DefilerSCBWPlague_Search, c_fieldAreaRadius0),
+//                aiPos,
+//                AIAbilityFixed(player, c_BWAB_DefilerSCBWPlague, c_fieldRange0) + 3,
+//                c_unitAttributeNone
+//            );
+//            
+//
+//            if (loc == null) {
+//                return false;
+//            }
+//
+//            if(UnitGroupCount(group, c_unitCountAlive) > 0 && UnitGroupCount(AIFindUnits(player, c_ZU_Overlord, aiPos, 12, 1), c_unitCountAlive) == 0){
+//                OrderSetTargetPoint(ord, loc);
+//                if (UnitOrderIsValid(aiUnit, ord)) {
+//		            mark = AIMarker(aiUnit, c_BWMK_DefilerSCBWPlague);
+//                    AICastCooldown(aiUnit, ord, mark, c_castHold, c_PlagueCooldown, 4.5);
+//                    AIClearCloakedAttacker(player, loc);
+//                    return true;
+//                }
+//            }
+//        }
+//    }
+//
+//    return false;
+//}
+//
+//static order BWDefilerMoveToSafety (int player, unit aiUnit, unitgroup scanGroup, bool wasRecentlyAttacked) {
+//	order ord;
+//    fixed bestDistance = 13;
+//    int bestIndex = -1;
+//    int bestCount = 1;
+//    point loc;
+//    unitgroup enemyUnits;
+//    fixed dist;
+//    int count;
+//    int i;
+//    aifilter filter;
+//    point aiPos = UnitGetPosition(aiUnit);
+//    // int pathingCost;
+//
+//    if(wasRecentlyAttacked){
+//        bestCount = 10;
+//    }
+//
+//    if(g_BWDefilerDarkSwarmNoCastCount[player] > 0){
+//        filter = AIFilter(player);
+//        AISetFilterAlliance(filter, c_playerGroupEnemy);
+//        AISetFilterBits(filter, UnitFilterStr("Enemy,Visible;Dead,Hidden,Missile,Stasis,Passive"));
+//        AISetFilterRange(filter, aiUnit, 12);
+//        AISetFilterCanAttackAlly(filter, c_groundAlliesNearby, false);
+//        enemyUnits = AIGetFilterGroup(filter, scanGroup);
+//        if (UnitGroupCount(enemyUnits, c_unitCountAlive) > 0){
+//            for (i = g_BWDefilerDarkSwarmNoCastCount[player] - 1; i >= 0; i -= 1) {
+//                if(g_BWDefilerDarkSwarmNoCastTemp[player][i] != null){
+//                    count = UnitGroupCount(UnitGroupFilterRegion(enemyUnits, g_BWDefilerDarkSwarmNoCastTemp[player][i], 10), c_unitCountAlive);
+//                    loc = RegionGetCenter(g_BWDefilerDarkSwarmNoCastTemp[player][i]);
+//                    dist = DistanceBetweenPoints(aiPos, loc);
+//                    if(loc != null && PointPathingIsConnected(aiPos, loc) && dist < bestDistance){
+//                        if(count < bestCount){
+//                            bestCount = count;
+//                            bestDistance = dist;
+//                            bestIndex = i;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        if (bestIndex == -1){ return null; }
+//        loc = RegionGetCenter(g_BWDefilerDarkSwarmNoCastTemp[player][bestIndex]);
+//        if(loc != null){
+//            if(libNtve_gf_UnitInRegion(aiUnit, RegionCircle(loc, 1.0))){
+//                ord = AICreateOrder(player, "stop", 0);
+//            }else{
+//                ord = AICreateOrder(player, "move", 0);
+//                OrderSetTargetPoint(ord, loc);
+//            }
+//            return ord;
+//        }
+//    }
+//
+//    return null;
+//}
+//
+////--------------------------------------------------------------------------------------------------
+void AIThinkDefilerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    marker mark;
+    
+    ord = BWDefilerPlague(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        return;
+    }
+
+    ord = BWDarkSwarm(player, aiUnit, scanGroup);
+    if (ord != null) {
+        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        return;
+    }
+
+    ord = BWDefilerConsume(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** DEVOURER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDevourerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** DEVOURER COCOON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDevourerSCBWEgg (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** DRAGOON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDragoonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** DRONE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDroneSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** DRONE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** DROPSHIP ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkDropshipSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ZERG COCOON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkEggSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ENGINEERING BAY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkEngineeringBaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ENGINEERING BAY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** EVOLUTION CHAMBER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkEvolutionChamberSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** EXTRACTOR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkExtractorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** EXTRACTOR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** FACTORY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkFactorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** FACTORY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** FIREBAT ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkFirebatSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** FLEET BEACON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkFleetBeaconSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** FORGE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkForgeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** GATEWAY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkGatewaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** GHOST ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** GOLIATH ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkGoliathSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** GREATER SPIRE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkGreaterSpireSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** GUARDIAN ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkGuardianSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** GUARDIAN COCOON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkGuardianSCBWEgg (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** HATCHERY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkHatcherySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** HIVE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkHiveSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** HYDRALISK DEN ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkHydraliskDenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** HYDRALISK ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkHydraliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** HYDRALISK ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** INFESTED COMMAND CENTER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkInfestedCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** INFESTED COMMAND CENTER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** INFESTED TERRAN ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+order BWToggleSuicideBuilding (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    
+    // Check UnitAbilityExists to prevent warnings in liberty
+    if (!UnitAbilityExists(aiUnit, c_AB_VolatileBurstBuilding)) {
+        return null;
+    }
+
+    // Simple logic, if we can turn off attacking buildings, then do so
+    //
+    ord = AICreateOrder(player, c_AB_VolatileBurstBuilding, 1);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    return ord;
+}
+
+//---------------------------------------------------------------------------------------------
+void AIThinkInfestedTerranSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    
+    // turn off automatically exploding on buildings
+    ord = BWToggleSuicideBuilding(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        AICast(aiUnit, ord, mark, c_castHold);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** INFESTED TERRAN ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** INTERCEPTOR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkInterceptorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SARAH KERRIGAN ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkKerriganSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** LAIR ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkLairSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** LARVA ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkLarvaSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** LURKER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkLurkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** LURKER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** LURKER COCOON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkLurkerSCBWEgg (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** MACHINE SHOP ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkMachineShopSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** MARINE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** MEDIC ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+
+
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** MISSILE TURRET ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkMissileTurretSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** MUTALISK ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkMutaliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** NEXUS ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkNexusSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** NUCLEAR SILO ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkNuclearSiloSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** NUKE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkNukeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** NYDUS CANAL ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkNydusCanalSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** OBSERVATORY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkObservatorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** OBSERVER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkObserverSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** OVERLORD ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkOverlordSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** PHOTON CANNON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkPhotonCannonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** PHYSICS LAB ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkPhysicsLabSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** PROBE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkProbeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** PYLON ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkPylonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//---------------------------------------------------------------------------------------------
+const int c_BWSpawnBroodlingsCooldown = c_tactTimerFirst;
+const int c_BWEnsnareCooldown = c_tactTimerSecond;
+const int c_BWParasiteCooldown = c_tactTimerThird;
+
+//--------------------------------------------------------------------------------------------------
+order BWQueenParasite (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    // Targetted shot that grants vision on target
+    // Cast Parasite on massive units and siege targets
+    order ord;
+    unitgroup filterGroup;
+    unit unitToCheck;
+    int scanCount;
+
+    ord = AICreateOrder(player, c_BWAB_QueenSCBWParasite, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    filterGroup = UnitGroupEmpty();
+
+    scanCount = UnitGroupCount(scanGroup, c_unitCountAll);
+    if(scanCount == 0) {
+        return null;
+    }
+
+    while (scanCount > 0) {
+        unitToCheck = UnitGroupUnit(scanGroup, scanCount);
+        scanCount = scanCount - 1;
+
+        if (UnitHasBehavior(unitToCheck, c_BWAB_QueenSCBWParasite)) {
+            return null; // Unit with parasite exists in the group
+        }
+
+        if (UnitMarkerCount(unitToCheck, mark) > 0) {
+            return null; // Already marked unit exists in group
+        }
+
+        if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeHeroic) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeArmored) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitGetType(unitToCheck) == c_TU_SiegeTank || UnitGetType(unitToCheck) == c_TU_SiegeTankSieged) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+    }
+
+    return AIUnitGroupGetValidOrder(filterGroup, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+order BWQueenEnsnare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    // AOE that slows units in an area for a duration
+    order ord;
+    point loc;
+    aifilter filter;
+    unitgroup enemyGroup;
+
+    if (!AITactCooldownAllow(aiUnit, c_BWEnsnareCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_QueenSCBWEnsnare, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    // Ensnare units that have not been already marked or has existing behavior
+    filter = AIFilter(player);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWAB_QueenSCBWEnsnare);
+    //AISetFilterLifePerMarker(filter, damage, mark);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+
+    enemyGroup = AIGetFilterGroup(filter, scanGroup);
+    if (enemyGroup == null) {
+        return null;
+    }
+
+    loc = AIBestTargetPoint(
+        enemyGroup,
+        2, // min hits
+        20, // damage base
+        1.5, // min score 
+        AIEffectFixed(player, c_BWEF_QueenSCBWEnsnare_Search, c_fieldAreaRadius0),
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_BWAB_QueenSCBWEnsnare, c_fieldRange0)+3,
+        c_unitAttributeNone
+    );
+    if (loc == null) {
+        return null;
+    }
+
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
+order BWQueenSpawnBroodlings (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    // Targetted shot that kills the target and spawns to Broodlings at that location
+    // Spawn Broodlings on massive units and siege targets
+    order ord;
+    unitgroup filterGroup;
+    unit unitToCheck;
+    int scanCount;
+
+
+    if (!AITactCooldownAllow(aiUnit, c_BWSpawnBroodlingsCooldown)) {
+        return null;
+    }
+    
+    ord = AICreateOrder(player, c_BWAB_QueenSCBWSpawnBroodlings, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    filterGroup = UnitGroupEmpty();
+
+    scanCount = UnitGroupCount(scanGroup, c_unitCountAll);
+    if(scanCount == 0) {
+        return null;
+    }
+
+    while (scanCount > 0) {
+        unitToCheck = UnitGroupUnit(scanGroup, scanCount);
+        scanCount = scanCount - 1;
+
+        if (UnitHasBehavior(unitToCheck, c_BWAB_QueenSCBWParasite)) {
+            continue; // Ignore unit with parasite
+        }
+
+        if (UnitMarkerCount(unitToCheck, mark) > 0) {
+            continue; // Ignore unit marked for SpawnBroodling
+        }
+
+        if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeHeroic) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeMassive) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeBiological) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitGetType(unitToCheck) == c_BWPU_DarkArchon || UnitGetType(unitToCheck) == c_BWPU_DarkArchon) {
+            UnitGroupRemove(filterGroup, unitToCheck);
+        }
+        else if (UnitGetType(unitToCheck) == c_BWPU_Archon || UnitGetType(unitToCheck) == c_BWPU_Archon) {
+            UnitGroupRemove(filterGroup, unitToCheck);
+        }
+    }
+
+    return AIUnitGroupGetValidOrder(filterGroup, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    marker mark;
+    fixed cooldown;
+
+    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWSpawnBroodlings);
+    ord = BWQueenSpawnBroodlings(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 15.0;
+        }
+        else {
+            cooldown = 1.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWSpawnBroodlingsCooldown, cooldown);
+        return;
+    }
+
+    mark = AIMarker(aiUnit, c_MK_Parasite);
+    ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 20.0;
+        }
+        else {
+            cooldown = 10.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
+        return;
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWEnsnare);
+    ord = BWQueenEnsnare(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 15.0;
+        }
+        else {
+            cooldown = 5.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWEnsnareCooldown, cooldown);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** QUEEN'S NEST ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkQueensNestSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** REAVER ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkReaverSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** REFINERY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkRefinerySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** REFINERY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** ROBOTICS SUPPORT BAY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkRoboticsBaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ROBOTICS FACILITY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkRoboticsFacilitySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SCARAB ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkScarabSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SCBW_UNIT ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSCBW_Unit (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SCIENCE FACILITY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkScienceFacilitySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** SCIENCE VESSEL ***
+//--------------------------------------------------------------------------------------------------
+
+const int c_BWScienceVesselIrradiateCooldown = c_tactTimerFirst;
+const int c_BWScienceVesselDMatrixCooldown = c_tactTimerSecond;
+
+//--------------------------------------------------------------------------------------------------
+
+order BWScienceVesselDefensiveMatrix (int player, unit aiUnit, marker mark) {
+    order ord;
+    unitgroup group;
+    aifilter filter;
+
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        return null;
+    }
+	
+    if (!AITactCooldownAllow(aiUnit, c_BWScienceVesselIrradiateCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
+                        AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, c_fieldRange0) + 1,
+                        c_noMaxCount)
+    ;
+
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupAlly);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    AISetFilterLifeLost(filter, AIEffectFixed(player, c_EF_Transfusion, c_fieldEffectChange0) - 20, c_noMax);
+    group = AIGetFilterGroup(filter, group);
+    if (group == null) {
+        return null;
+    }
+
+    return AIUnitGroupGetValidOrder(group, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+order BWScienceVesselIrradiate (int player, unit aiUnit, unitgroup scanGroup) {
+    // target a clump of ranged ground units
+    order ord;
+    aifilter filter;
+    unitgroup irradiateGroup;
+	int count;
+	
+    if (!AITactCooldownAllow(aiUnit, c_BWScienceVesselIrradiateCooldown)) {
+        return null;
+    }    
+	
+    ord = AICreateOrder(player, c_BWAB_ScienceVesselSCBWIrradiate, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    
+    filter = AIFilter(player);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWAB_ScienceVesselSCBWIrradiate);
+    AISetFilterBits(filter, UnitFilterStr("Biological;Heroic,Structure,Missile,Stasis,Item,Dead,Hidden,Invulnerable"));	
+	irradiateGroup = AIGetFilterGroup(filter, scanGroup);
+
+	count = UnitGroupCount(irradiateGroup, c_unitCountAll);
+	if (count == 0) {
+		return null;
+	}
+	
+    OrderSetTargetUnit(ord, UnitGroupUnit(irradiateGroup, RandomInt(1, count)));
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        ord = AIUnitGroupGetValidOrder(irradiateGroup, ord, aiUnit, c_backwards);
+    }
+    	
+    return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkScienceVesselSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    unit heal;
+    marker mark;
+	fixed cooldown;
+
+    if(AIPlayerDifficulty(player) < c_campAdvanced) {
+		return;
+	}
+
+    mark = AIMarker(aiUnit, c_BWMK_ScienceVesselSCBWDefensiveMatrix);
+    ord = BWScienceVesselDefensiveMatrix(player, aiUnit, mark);
+    if (ord != null) {
+        
+		if(AIPlayerDifficulty(player) == c_campAdvanced) {
+			cooldown = 35.0;
+		}
+		else {
+			cooldown = 25.0;
+		}		
+		AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWScienceVesselDMatrixCooldown, cooldown);
+        return;
+    }
+
+    ord = BWScienceVesselIrradiate(player, aiUnit, scanGroup);
+    if (ord != null) {
+        
+		if(AIPlayerDifficulty(player) == c_campAdvanced) {
+			cooldown = 35.0;
+		}
+		else {
+			cooldown = 15.0;
+		}
+		AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselIrradiateCooldown, cooldown);
+        return;
+    }
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** SCOURGE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkScourgeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SCOUT ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkScoutSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SCV ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSCVSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SHIELD BATTERY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkShieldBatterySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SHUTTLE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkShuttleSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** SIEGE TANK ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSiegeTankSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SIEGE TANK ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSiegeTankSCBWSieged (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SPAWNING POOL ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSpawningPoolSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SPIDER MINE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSpiderMineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** SPIRE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSpireSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SPORE COLONY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSporeColonySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** STARGATE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkStargateSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** STARPORT ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkStarportSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** SUNKEN COLONY ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSunkenColonySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** SUPPLY DEPOT ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkSupplyDepotSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** TEMPLAR ARCHIVES ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkTemplarArchiveSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** ULTRALISK CAVERN ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkUltraliskCavernSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ULTRALISK ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkUltraliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ULTRALISK ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** VALKYRIE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkValkyrieSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** Vulture ***
+//--------------------------------------------------------------------------------------------------
+
+const int c_secondsPerSpiderMine = 3;
+const int c_vultureMineMaxRandom = c_gameLoopsPerSecond * c_secondsPerSpiderMine / c_framesPerThink;
+const int c_VulturemineCooldown = c_tactTimerFirst;
+
+order BWVultureSpiderMine (int player, unit aiUnit, unitgroup scanGroup) {
+	order ord;
+	fixed energy;
+	point loc;
+	fixed distToEnemy;
+	unitgroup spiderMineGroup;
+	int spiderMineCount;
+    point target;
+	
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        return null;
+    }
+	
+    if (AIIsCampaign(player)) {
+        if (RandomInt(0, c_vultureMineMaxRandom) != 1) {
+            return null;
+        }
+    }
+
+    ord = AICreateOrder(player, c_BWAB_VulturePlaceSpiderMineSCBW, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+	
+	// If there are enemies nearby don't cast
+	if (UnitGroupCount(scanGroup, c_unitCountAlive) > 0) {
+		return null;
+	}
+	
+	distToEnemy = AIPathDistToNearestKnownEnemyStructure(player, UnitGetPosition(aiUnit), true);//DistanceBetweenPoints(UnitGetPosition(aiUnit), PlayerStartLocation(RandomInt(1,2)));
+	if (distToEnemy >= 50) {
+		return null;
+	}
+	
+	loc = UnitGetPosition(aiUnit);
+
+	// Don't create large clusters of traps
+    spiderMineGroup = UnitGroup(c_BWTU_SpiderMine_Burrowed, player, RegionCircle(loc, 10), 
+                            UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);							
+    spiderMineCount = UnitGroupCount(spiderMineGroup, c_unitCountAll);
+
+    
+    if (spiderMineCount != 0) {
+        return null;
+    }
+    target = RegionRandomPoint(RegionCircle(loc, 7));
+
+	OrderSetTargetPoint(ord, target);
+	if (!UnitOrderIsValid(aiUnit,ord)) {
+		return null;
+	}
+	
+	return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkVultureSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    fixed cooldown;
+
+    if (!AITactCooldownAllow(aiUnit, c_VulturemineCooldown)) {
+        return;
+    }
+
+    if (AIPlayerDifficulty(player) < c_campExpert) {
+        cooldown = 25.0;
+    }
+    else {
+        cooldown = 10.0;
+    }
+
+    ord = BWVultureSpiderMine(player, aiUnit, scanGroup);
+    if (ord != null) {
+        AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_VulturemineCooldown, cooldown);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** WRAITH ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkWraithSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord = AICreateOrder(player, c_AB_WraithCloak, 0);
+    bool isCloaking = true;
+
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        ord = AICreateOrder(player, c_BWAB_WraithSCBWCloak, 1);
+        if (!UnitOrderIsValid(aiUnit, ord)) {
+            return;
+        }
+        isCloaking = false;
+    }
+
+    if (isCloaking != AICloakEvaluate(aiUnit, 50, 50, 10)) {
+        return;
+    }
+    AICast(aiUnit, ord, c_noMarker, c_castHold);
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** ZEALOT ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkZealotSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ZERGLING ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkZerglingSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+//--------------------------------------------------------------------------------------------------
+//  *** ZERGLING ***
+//--------------------------------------------------------------------------------------------------
