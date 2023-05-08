@@ -1,0 +1,62 @@
+static const string NYDUS_TYPE = "NydusCanalSCBW";
+static trigger CargoTrig;
+
+static string PeerNydusKey(unit u){
+    return "NydusCanalSCBW."+IntToString(UnitGetTag(u))+".Peer";
+}
+
+static unit PeerNydusGet(unit u){
+    if(UnitGetType(u)!=NYDUS_TYPE){return null;}
+    else if(DataTableValueExists(true,PeerNydusKey(u))){
+        return DataTableGetUnit(true,PeerNydusKey(u));
+    }
+    else{return null;}
+}
+static void PeerNydusSet(unit u1, unit u2){
+    if(UnitGetType(u1)!=NYDUS_TYPE){return;}
+    else if(UnitGetType(u2)!=NYDUS_TYPE){return;}
+    else{
+        DataTableSetUnit(true,PeerNydusKey(u1),u2);
+        DataTableSetUnit(true,PeerNydusKey(u2),u1);
+    }
+}
+
+static void DebugMsg(string s){
+    TriggerDebugOutput(1,StringToText(s),false);
+}
+
+static void RegisterNydus(unit u){
+    TriggerAddEventUnitCargo(CargoTrig,UnitRefFromUnit(u),true);
+}
+
+
+bool NydusCanalSCBW_TeleportCargoTrig(bool a, bool b){
+    unit source= EventUnit();
+    unit target = PeerNydusGet(source);
+    order o = Order(AbilityCommand(NYDUS_TYPE+"@Transport",c_abilTransportCmdUnloadAll));
+    UnitIssueOrder(target,o,c_orderQueueAddToEnd);
+    return true;
+}
+
+
+bool NydusCanalSCBW_RegisterNydusTrig(bool a, bool b){
+    unit builderUnit = EventUnit();
+    unit builtUnit = EventUnitProgressUnit();
+    DebugMsg("builderUnit"+UnitGetType(builderUnit));
+    DebugMsg("builtUnit"+UnitGetType(builtUnit));
+    if(UnitGetType(builderUnit)!=NYDUS_TYPE){return false;}
+    else if(UnitGetType(builtUnit)!=NYDUS_TYPE){return false;}
+    PeerNydusSet(builderUnit,builtUnit);
+    RegisterNydus(builderUnit);
+    RegisterNydus(builtUnit);
+    return true;
+}
+
+void NydusCanalSCBW_Init(){
+    trigger t;
+    t= TriggerCreate("NydusCanalSCBW_TeleportCargoTrig");
+    CargoTrig = t;
+    t= TriggerCreate("NydusCanalSCBW_RegisterNydusTrig");
+    TriggerAddEventUnitConstructProgress(t,null,c_unitProgressStageComplete);
+    
+}
