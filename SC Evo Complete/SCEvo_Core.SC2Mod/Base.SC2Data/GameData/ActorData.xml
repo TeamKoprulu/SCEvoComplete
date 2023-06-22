@@ -386,6 +386,11 @@
     <CActorSound id="DroneSCBWWeapon@Launch" parent="SoundOneShot">
         <On Terms="WeaponStart.DroneSCBWWeapon.AttackStart" Send="Create"/>
     </CActorSound>
+    <CActorModel id="PhotonCannonSCBW@PlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation; ModelName PhotonCannonSCBW@Placement" Send="Create PhotonCannonSCBW@Range"/>
+        <On Terms="ActorCreation; ModelName PhotonCannonSCBW; ModelIsLowQuality" Send="Create PhotonCannonSCBW@Range"/>
+        <On Terms="ActorDestruction" Target="ShieldBatterySCBW@Range" Send="Destroy"/>
+    </CActorModel>
     <CActorModel id="UnloadFX">
         <On Terms="AbilTransport.DropshipSCBW@Transport.CargoUnload" Send="Create"/>
         <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoUnload" Send="Create"/>
@@ -449,16 +454,16 @@
         <On Terms="ActorOrphan" Send="Destroy"/>
     </CActorSound>
     <CActorModel id="ShieldBatterySCBW@PlacementModel" parent="PlacementModel">
-        <On Terms="ActorCreation; ModelName ShieldBatterySCBW" Send="Create ShieldBatteryRange2"/>
-        <On Terms="ActorCreation; ModelName ShieldBatterySCBW@Placement" Send="Create ShieldBatteryRange2"/>
+        <On Terms="ActorCreation; ModelName ShieldBatterySCBW@Placement" Send="Create ShieldBatterySCBW@Range"/>
+        <On Terms="ActorCreation; ModelName ShieldBatterySCBW; ModelIsLowQuality" Send="Create ShieldBatterySCBW@Range"/>
         <On Terms="ActorDestruction" Target="ShieldBatterySCBW@Range" Send="Destroy"/>
     </CActorModel>
     <CActorRange id="ShieldBatterySCBW@Range" parent="RangeAbil" abil="ShieldBatteryRechargeChanneled">
-        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.Start" Send="Create"/>
-        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorGround" Send="Create"/>
-        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorFlyer" Send="Create"/>
-        <On Terms="SelectionLocalUpdate.ShieldBatterySCBW.Stop" Send="Destroy"/>
-        <Abil Link="ShieldBatteryRecharge"/>
+        <On index="1" Terms="SelectionLocalUpdate.ShieldBatterySCBW.Start" Send="Create"/>
+        <On index="2" Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorGround" Send="Create"/>
+        <On index="3" Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorFlyer" Send="Create"/>
+        <On index="4" Terms="SelectionLocalUpdate.ShieldBatterySCBW.Stop" Send="Destroy"/>
+        <Abil Link="ShieldBatterySCBWRecharge"/>
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
@@ -509,30 +514,10 @@
     </CActorSplat>
     <CActorSound id="LurkerSCBW@BurrowDown" parent="SoundOneShot"/>
     <CActorSound id="LurkerSCBW@Land" parent="SoundOneShot"/>
-    <CActorSimple id="InfestedCommandCenterSCBW@Tinter">
-        <!--<On Terms="ActorCreation" Target="_Unit" Send="SetTintColor 200,160,133 3.000000"/>-->
-    </CActorSimple>
-    <CActorModel id="InfestedCommandCenterSCBW@Infestation">
-        <Aliases value="_Snapshot"/>
-        <Inherits index="CloakEffect" value="1"/>
-        <Inherits index="Opacity" value="1"/>
-        <Inherits index="Visibility" value="1"/>
-        <On Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death"/>
-        <On Terms="UnitDeath; !ModelIsLowQuality" Send="AnimBracketStop BSD"/>
-        <On Terms="UnitDeath; ModelIsLowQuality" Send="ModelSwap ZergMediumUnitDeathLow"/>
-        <On Terms="UnitDeath; ModelIsLowQuality" Send="SetScale 1.250000"/>
-        <On Terms="AnimBracketState.*.AfterClosing; AnimName BSD" Send="Destroy"/>
-        <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
-        <Host Subject="_Selectable"/>
-        <HostSiteOps Ops="SOpAttachOrigin"/>
-    </CActorModel>
     <CActorUnit id="InfestedCommandCenterSCBW" parent="TerranBuildingSCBW@Flyer" unitName="InfestedCommandCenterSCBW">
         <Macros value="MacroTownhallDeco_Terran"/>
         <Macros value="TerranCommandCenterPlayerDecalMacro"/>
         <AcceptedHostedPropTransfers index="Decal" value="0"/>
-        <On Terms="ActorCreation" Send="Create InfestedCommandCenterSCBW@Tinter"/>
-        <On Terms="ActorCreation" Send="Create InfestedCommandCenterSCBW@Infestation"/>
-        <On Terms="ActorCreation" Send="Create CreepGlazeSCBW"/>
         <On Terms="ActorCreation" Send="AnimGroupRemove A"/>
         <On Terms="ActorCreation" Send="AnimGroupRemove B"/>
         <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever"/>
