@@ -320,6 +320,13 @@
         <UnitFlags index="StandAnimBirthVariation" value="0"/>
         <UnitIcon value="Assets\Textures\btn-building-zerg-##unitName##.dds"/>
     </CActorUnit>
+    <CActorModel default="1" id="EggSCBWDeathModelBase" parent="ModelAnimationStyleOneShotNoOrphan">
+        <CopySource value="EggSCBW"/>
+        <Inherits index="Scale" value="1"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
     <CActorModel id="AssimilatorSCBW@Rich@Build" parent="ProtossBuildingSCBW@Build"/>
     <CActorUnit id="AssimilatorSCBW@Rich" parent="ProtossBuildingSCBW" unitName="AssimilatorSCBW@Rich">
         <Aliases value="_UnitHuge"/>
@@ -386,6 +393,16 @@
     <CActorSound id="DroneSCBWWeapon@Launch" parent="SoundOneShot">
         <On Terms="WeaponStart.DroneSCBWWeapon.AttackStart" Send="Create"/>
     </CActorSound>
+    <CActorModel id="EggSCBW@DeathModel" parent="EggSCBWDeathModelBase"/>
+    <CActorModel id="EggSCBW@DeathModelVariation0" parent="EggSCBWDeathModelBase">
+        <ModelFlags index="UseSyncSeed" value="1"/>
+    </CActorModel>
+    <CActorModel id="EggSCBW@DeathModelVariation1" parent="EggSCBWDeathModelBase">
+        <ModelFlags index="UseSyncSeed" value="1"/>
+    </CActorModel>
+    <CActorModel id="EggSCBW@DeathModelVariation2" parent="EggSCBWDeathModelBase">
+        <ModelFlags index="UseSyncSeed" value="1"/>
+    </CActorModel>
     <CActorModel id="PhotonCannonSCBW@PlacementModel" parent="PlacementModel">
         <On Terms="ActorCreation; ModelName PhotonCannonSCBW@Placement" Send="Create PhotonCannonSCBW@Range"/>
         <On Terms="ActorCreation; ModelName PhotonCannonSCBW; ModelIsLowQuality" Send="Create PhotonCannonSCBW@Range"/>
@@ -1467,15 +1484,14 @@
         <On Terms="ActorCreation; ModelName EggSCBW" Send="TextureSelectByMatch main.specular main"/>
         <On Terms="ActorCreation; ModelName EggSCBW" Send="TextureSelectByMatch main.normal main"/>
         <On Terms="ActorCreation; ModelName EggSCBW" Send="TextureSelectByMatch main.emissive main"/>
-        <On Terms="AbilTrain.LarvaSCBW@Train.Finish; ModelVariation 0" Send="Create EggsplosionGeneric0"/>
-        <On Terms="AbilTrain.LarvaSCBW@Train.Finish; ModelVariation 1" Send="Create EggsplosionGeneric1"/>
-        <On Terms="AbilTrain.LarvaSCBW@Train.Finish; ModelVariation 2" Send="Create EggsplosionGeneric2"/>
-        <On Terms="UnitDeathCustomize.EggSCBW; ModelVariation 0" Send="Create EggsplosionGeneric0"/>
-        <On Terms="UnitDeathCustomize.EggSCBW; ModelVariation 1" Send="Create EggsplosionGeneric1"/>
-        <On Terms="UnitDeathCustomize.EggSCBW; ModelVariation 2" Send="Create EggsplosionGeneric2"/>
+        <On Terms="AbilTrain.LarvaSCBW@Train.Finish; ModelVariation 0" Send="Create EggSCBW@DeathModelVariation0"/>
+        <On Terms="AbilTrain.LarvaSCBW@Train.Finish; ModelVariation 1" Send="Create EggSCBW@DeathModelVariation1"/>
+        <On Terms="AbilTrain.LarvaSCBW@Train.Finish; ModelVariation 2" Send="Create EggSCBW@DeathModelVariation2"/>
+        <On Terms="UnitDeathCustomize.EggSCBW; ModelVariation 0" Send="Create EggSCBW@DeathModelVariation0"/>
+        <On Terms="UnitDeathCustomize.EggSCBW; ModelVariation 1" Send="Create EggSCBW@DeathModelVariation1"/>
+        <On Terms="UnitDeathCustomize.EggSCBW; ModelVariation 2" Send="Create EggSCBW@DeathModelVariation2"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
-        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="ZergSmallUnitDeath" SoundLink="EggSCBW@Death"/>
@@ -1508,8 +1524,9 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorSound id="EggSCBW@Death" parent="SoundOneShot">
+    <CActorSound id="EggSCBW@DeathSound" parent="SoundOneShot">
         <On Terms="UnitDeath.EggSCBW; PassChance 25.000000" Send="Create"/>
+        <Sound value="EggSCBW@Death"/>
     </CActorSound>
     <CActorSound id="EggSCBW@Birth" parent="SoundOneShot">
         <On Terms="AbilMorph.*.Start; MorphTo EggSCBW" Send="Create"/>
