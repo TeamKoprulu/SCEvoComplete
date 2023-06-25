@@ -514,7 +514,7 @@ void BWTerranTechUp (int player, int tier) {
         AISetStock( player, 1, c_BWTB_Armory );
         AISetStock( player, 1, c_BWTB_Starport );
         AISetStock( player, 1, c_BWTB_ControlTower );
-        AISetStock( player, 4, c_BWTB_Barracks );
+        AISetStock( player, 3, c_BWTB_Barracks );
         AISetStock( player, 1, c_BWTB_ScienceFacility );
 
         if (tier >= c_ldPhaseLate) {
@@ -526,6 +526,147 @@ void BWTerranTechUp (int player, int tier) {
             AISetStock( player, 2, c_BWTB_Armory );
             AISetStock( player, 3, c_BWTB_Factory );
             AISetStock( player, 3, c_BWTB_Starport );
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergBasicEconomy
+//--------------------------------------------------------------------------------------------------
+void BWZergBasicEconomy (int player, int tier, int minWorkers) {
+    int econMin = AIGetMinPeonCount(player, c_townMax);
+    if (minWorkers > econMin) {
+        minWorkers = econMin;
+    }
+
+    AIDefaultEconomy(player, c_BWZB_Hatchery_Alias, c_BWZB_Extractor, c_BWZU_Overlord, c_BWZU_Drone, minWorkers, c_stockAlways);
+    AISetStock( player, 1, c_ZU_Queen );
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergBasicExpansion
+//--------------------------------------------------------------------------------------------------
+void BWZergBasicExpansion (int player, int tier, int minerals, int gas) {
+    AIDefaultExpansion(player, c_BWZB_Hatchery, minerals, gas, c_expandDefault);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergGeneralBuild
+//--------------------------------------------------------------------------------------------------
+void BWZergGeneralBuild (int player, int tier) {
+    if (tier >= c_ldPhaseMid) {
+        //if (PlayerBeaconIsSet(player, c_beaconDetect)) {
+        //    AISetStock( player, 1, c_BWZU_Overseer );
+        //}
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMacroExpand
+//--------------------------------------------------------------------------------------------------
+bool BWZergMacroExpand (int player) {
+    fixed defenseEval = 0;
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) < 13) {
+        return false;
+    }
+    if (AITechCount(player, c_BWZB_Hatchery_Alias, c_techCountQueuedOrBetter) >= 2) {
+        return false;
+    }
+    
+    defenseEval = AISelfDefenseThreatEval(c_dtRealSelfThreat, player);
+    if (defenseEval >= 120) {
+        // don't expand if currently under attack
+        return false;
+    }
+
+    if (!AIIsExpandingOrHasExpanded(player)) {
+        if (!AIHasNearbyOpenExpansion(player)) {
+            return false;
+        }
+        if (!AIHasRes(player,200,0)) {
+            AIEnableStock(player);
+            return true;
+        }
+
+        // we should try to expand
+        AIExpand(player, AIGetTownLocation(player, c_townMain), c_BWZB_Hatchery);
+    }
+
+    // currently expanding see if we need to save minerals
+    if (!AIHasRes(player,400,0)) {
+        AIEnableStock(player);
+        return true;
+    }
+    return false; // already saved enough, we're allowed to continure the stock
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergAtEachTown
+//--------------------------------------------------------------------------------------------------
+void BWZergAtEachTown (int player, int tier) {
+    int i = 0;
+    int town;
+    int numTowns = 0;
+
+    while (i < c_townMax) {
+        town = i;
+        i = i + 1;
+
+        if (AIGetTownState(player, town) != c_townStateEstablished) {
+            continue;
+        }
+
+        if (AIGetBuildingCountInTown(player, town, c_BWZB_Hatchery_Alias, c_techCountCompleteOnly) < 1) {
+            continue;
+        }
+
+        numTowns += 1;
+
+        if (AIGetBuildingCountInTown(player, town, c_BWZB_SporeColony, c_techCountCompleteOnly) < 2) {
+            AISetStockEx(player, town, 2, c_BWZB_SporeColony, c_makeResourceDefense | c_nearDropoff, 0);
+            continue;
+        }
+        if (AIGetBuildingCountInTown(player, town, c_BWZB_SunkenColony, c_techCountCompleteOnly) < 2) {
+            AISetStockEx(player, town, 2, c_BWZB_SunkenColony, c_makeResourceDefense | c_nearDropoff, 0);
+            continue;
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergTechUp
+//--------------------------------------------------------------------------------------------------
+void BWZergTechUp (int player, int tier) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff < c_skirMedium) {
+        // don't build extra buildings below medium
+        return;
+    }
+
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+
+    if (tier >= c_ldPhaseMid) {
+        BWZergAtEachTown(player, tier);
+        AISetStock( player, 1, c_BWZB_QueensNest );
+        AISetStock( player, 1, c_BWZB_Spire_Alias );
+        AISetStock( player, 2, c_BWZB_EvolutionChamber );
+
+        if (tier >= c_ldPhaseLate) {
+            AISetStock( player, 1, c_BWZB_UltraliskCavern );
+            AISetStock( player, 1, c_BWZB_GreaterSpire );
+            AISetStock( player, 1, c_BWZB_DefilerMound );
+            AISetStock( player, 2, c_BWZB_Spire_Alias );
+            AISetStock( player, 1, c_BWZB_NydusCanal );
+            
+            if (diff > c_skirMedium) {
+                // only make a macro hatch above medium
+                AISetStock( player, 2, c_BWZB_Hatchery_Alias );
+            }
         }
     }
 }

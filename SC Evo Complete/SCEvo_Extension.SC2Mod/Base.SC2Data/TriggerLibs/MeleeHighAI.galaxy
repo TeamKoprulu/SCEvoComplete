@@ -317,6 +317,43 @@ void AIAdjustedDefaultExpansion (int player, string hall, int minerals, int gas,
 }
 
 //--------------------------------------------------------------------------------------------------
+//  BWZergHDFastExpand
+//--------------------------------------------------------------------------------------------------
+bool BWZergHDFastExpand (int player) {
+    fixed defenseEval = 0;
+
+    if (AITechCount(player, c_BWZB_Hatchery_Alias, c_techCountQueuedOrBetter) >= 2) {
+        return false;
+    }
+    
+    defenseEval = AISelfDefenseThreatEval(c_dtRealSelfThreat, player);
+    if (defenseEval >= 120) {
+        // don't expand if currently under attack
+        return false;
+    }
+
+    if (!AIIsExpandingOrHasExpanded(player)) {
+        if (!AIHasNearbyOpenExpansion(player)) {
+            return false;
+        }
+        if (!AIHasRes(player,200,0)) {
+            AIEnableStock(player);
+            return true;
+        }
+
+        // we should try to expand
+        AIExpand(player, AIGetTownLocation(player, c_townMain), c_BWZB_Hatchery);
+    }
+
+    // currently expanding see if we need to save minerals
+    if (!AIHasRes(player,400,0)) {
+        AIEnableStock(player);
+        return true;
+    }
+    return false; // already saved enough, we're allowed to continure the stock
+}
+
+//--------------------------------------------------------------------------------------------------
 //  BWTerranHDFastExpand
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDFastExpand (int player) {
