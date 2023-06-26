@@ -2,243 +2,6 @@
 //  Abilities
 //--------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------
-//  *** HIGH TEMPLAR ***
-//--------------------------------------------------------------------------------------------------
-
-order BWPsionicStorm (int player, unit aiUnit, unitgroup scanGroup) {
-
-    order ord = AICreateOrder(player, c_BWAB_HighTemplarSCBWPsiStorm, 0);
-    order enemyOrd;
-    order curOrd;
-    point loc;
-    fixed barrageRadius = AIEffectFixed(player, c_BWEF_HighTemplarSCBWPsiStorm_Search, c_fieldAreaRadius0);
-    unitgroup threatGroup;
-    unitgroup barrageGroup;
-    unitgroup barrageThreatGroup;
-    unit unitToCheck;
-    int numPossibleThreats = 0;
-    int numActualThreats = 0;
-    int numPossibleThreatsInBarrage = 0;
-    int numActualThreatsInBarrage = 0;	
-	
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    curOrd = UnitOrder(aiUnit, 0);
-    if ((curOrd != null) && !AIIsAttackOrder(curOrd)) {
-        // don't cast again if casting
-        return null;
-    }
-
-    // Is there a threat in the area
-    threatGroup = UnitGroupFilterThreat(scanGroup, aiUnit, null, 0);
-    numPossibleThreats = UnitGroupCount(threatGroup, c_unitCountAll);
-    while (numPossibleThreats > 0) {
-        unitToCheck = UnitGroupUnit(threatGroup, numPossibleThreats);
-        numPossibleThreats = numPossibleThreats - 1;
-
-        enemyOrd = UnitOrder(unitToCheck, 0);
-        if (AIIsAttackOrder(enemyOrd) && OrderGetTargetUnit(enemyOrd) == aiUnit) {
-            numActualThreats = numActualThreats + 1;
-        }
-    }
-
-    loc = AIBestTargetPoint(
-        AIEffectGroup(player, c_EF_PsiStormArea, scanGroup),
-        1, // min hits
-        40, // damage base
-        3.0, // min score 
-        barrageRadius,
-        UnitGetPosition(aiUnit),
-        AIAbilityFixed(player, c_BWAB_HighTemplarSCBWPsiStorm, c_fieldRange0)+3, 
-        c_unitAttributeNone
-    );
-    if (loc == null) {
-        return null;
-    }
-
-    barrageGroup = UnitGroup(null, c_playerAny, RegionCircle(loc, barrageRadius), null, 0);
-    barrageThreatGroup = UnitGroupFilterThreat(barrageGroup, aiUnit, null, 0);
-    numPossibleThreatsInBarrage = UnitGroupCount(barrageThreatGroup, c_unitCountAll);
-    while (numPossibleThreatsInBarrage > 0) {
-        unitToCheck = UnitGroupUnit(barrageThreatGroup, numPossibleThreatsInBarrage);
-        numPossibleThreatsInBarrage = numPossibleThreatsInBarrage - 1;
-
-        enemyOrd = UnitOrder(unitToCheck, 0);
-        if (AIIsAttackOrder(enemyOrd) && OrderGetTargetUnit(enemyOrd) == aiUnit) {
-            numActualThreatsInBarrage = numActualThreatsInBarrage + 1;
-        }
-    }
-
-    if ((numActualThreats > numActualThreatsInBarrage*2) ) {
-        return null;  // too many threats not in the barrage
-    }
-
-    OrderSetTargetPoint(ord, loc);
-	
-	return ord;
-
-}
-
-const int c_BWhightemplarHallucinationCooldown = c_tactTimerFirst;
-
-order BWHallucination (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
-    order ord;
-    unitgroup group;
-    aifilter filter;
-    aifilter filterAI;
-    unitgroup enemies;
-    int enemyCount;
-
-    //if (AIPlayerDifficulty(player) < c_campAdvanced) {
-    //    return null;
-    //}
-	
-    if (!AITactCooldownAllow(aiUnit, c_BWhightemplarHallucinationCooldown)) {
-        return null;
-    }
-
-    // Check enemy threat
-    filterAI = AIFilter(player);
-    AISetFilterCanAttackAlly(filterAI,c_groundAlliesNearby,c_airAlliesNearby);
-    enemies = AIGetFilterGroup(filterAI, scanGroup);
-
-    // Is there a threat in the area
-    enemyCount = UnitGroupCount(enemies, c_unitCountAll);
-    if (enemyCount <= 0) {
-        return null;
-    }
-
-    // wait until fighting 4+ enemy units
-    
-    //if (!AIIsAttackOrder(UnitOrder(aiUnit, 0))) {
-    //    return null;
-    //}
-    //if (UnitGroupCount(scanGroup, c_unitCountAlive) < 4) {
-    //    return null;
-    //}
-
-    ord = AICreateOrder(player, c_BWAB_HighTemplarSCBWHallucination, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
-                        AIAbilityFixed(player, c_BWAB_HighTemplarSCBWHallucination, c_fieldRange0) + 1,
-                        c_noMaxCount)
-    ;
-
-    filter = AIFilter(player);
-    AISetFilterAlliance(filter, c_playerGroupAlly);
-    AISetFilterCanAttackEnemy(filter, 4, 2);
-    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
-    //AISetFilterLifeLost(filter, AIEffectFixed(player, c_EF_Transfusion, c_fieldEffectChange0) - 20, c_noMax);
-    group = AIGetFilterGroup(filter, group);
-    if (group == null) {
-        return null;
-    }
-
-    return AIUnitGroupGetValidOrder(group, ord, aiUnit, c_forwards);
-}
-
-bool BWMergeToSurvive (int player, unit aiUnit, unitgroup scanGroup) {
-    // only called at low heatlh, try to find a nearby templar to merge with in order to survive
-    order ord;
-    unitgroup targetGroup;
-    unit targetUnit;
-    
-    if (AIIsCampaign(player)) {
-        return false;
-    }
-    
-    // if we're not under attack, don't try to merge
-    if (AILastAttack(aiUnit) < (AIGetTime() - 4.0)) {
-        return false;
-    }
-    
-    ord = AICreateOrder(player, c_BWAB_ArchonSCBWMerge, 1);
-    targetGroup = UnitGroupSearch(c_BWPU_HighTemplar, player, UnitGetPosition(aiUnit), 5.0, UnitFilter((1 << c_targetFilterSelf), 0, 0, 0), c_noMaxCount);
-    targetUnit =  OrderGetTargetUnit( AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards) );
-    if (targetUnit == null) {
-        return false;
-    }
-    
-    // can't use the normal AICast because both units need the order at the same time
-    UnitIssueOrder(aiUnit, OrderTargetingUnit(AbilityCommand(c_BWAB_ArchonSCBWMerge, 1), targetUnit), c_orderQueueAddToEnd);
-    UnitIssueOrder(targetUnit, OrderTargetingUnit(AbilityCommand(c_BWAB_ArchonSCBWMerge, 1), aiUnit), c_orderQueueAddToEnd);
-    AISetUnitScriptControlled(aiUnit, false);
-    AISetUnitScriptControlled(targetUnit, false);
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-const fixed c_BWEnemyMultiplierHighTemplar = 1.25;
-const fixed c_BWMinThreshold = 100.0;
-const int c_BWHighTemplarLowVitPerc = 40;
-const int c_BWpsiStormCooldown = c_tactTimerFirst;
-const int c_BWHallucianteCooldown = c_tactTimerSecond;
-
-void BWUnitGroupTest (unitgroup scanGroup) {
-    DebugVarInt("group strength", FixedToInt(AIUnitGroupStrength(scanGroup)));
-}
-
-void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    marker mark;
-    order ord;
-    bool lowVitality;
-    unitfilter f;
-    region r;
-    unitgroup enemyGroup;
-    fixed cooldown;
-
-    lowVitality = (UnitGetPropertyInt(aiUnit, c_unitPropVitalityPercent, c_unitPropCurrent) < c_HighTemplarLowVitPerc);
-
-    if (lowVitality) {
-        if (BWMergeToSurvive(player, aiUnit, scanGroup)) {
-            return;
-        }
-    }
-
-    if (AIPlayerDifficulty(player) < c_campExpert) {
-        cooldown = 10.0;
-    }
-    else {
-        cooldown = 2.5;
-    }
-
-    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
-        if (AITactCooldownAllow(aiUnit, c_psiStormCooldown)) {
-            mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
-            ord = BWPsionicStorm(player, aiUnit, scanGroup);
-            if (ord != null) {
-                AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_BWpsiStormCooldown, cooldown);
-                return;
-            }
-        }
-    }
-
-    //  If we already have a psi storm order, ignore any new orders since psi storm is more important.
-    //  If we already have a Hallucination order, ignore any new Hallucination orders.
-    if (UnitOrderHasAbil(aiUnit, c_BWAB_HighTemplarSCBWHallucination) || UnitOrderHasAbil(aiUnit, c_BWAB_HighTemplarSCBWPsiStorm)) {
-        return;
-    }
-
-    if (AIPlayerDifficulty(player) < c_campExpert) {
-        cooldown = 25.0;
-    }
-    else {
-        cooldown = 10.0;
-    }
-
-    mark = AIMarker(aiUnit, c_BWMK_HighTemplarSCBWPsiStorm);
-    ord = BWHallucination(player, aiUnit, scanGroup, mark);
-    if (ord != null) {
-        AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_BWHallucianteCooldown, cooldown);
-        return;
-    }
-}
 
 //--------------------------------------------------------------------------------------------------
 //  *** ACADEMY ***
@@ -539,7 +302,7 @@ order BWDefilerConsume (int player, unit aiUnit, unitgroup scanGroup, marker mar
     }
     
     // Only try to eat Zerglings as they're the weakest unit
-    nearbyAlliedUnits = AIFindUnits(player, c_BWZU_ZerglingSCBW, UnitGetPosition(aiUnit), 5, 10);
+    nearbyAlliedUnits = AIFindUnits(player, c_BWZU_Zergling, UnitGetPosition(aiUnit), 5, 10);
     
     if(UnitGroupCount(nearbyAlliedUnits, c_unitCountAlive) < 4){
         return null;
@@ -1158,9 +921,16 @@ void AIThinkMachineShopSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //  *** MARINE ***
 //--------------------------------------------------------------------------------------------------
 
+const int c_stimpackCooldown = c_tactTimerFirst;
+
 //--------------------------------------------------------------------------------------------------
 void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Stimpack
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
+
 //--------------------------------------------------------------------------------------------------
 //  *** MEDIC ***
 //--------------------------------------------------------------------------------------------------
@@ -1696,6 +1466,10 @@ void AIThinkShuttleSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkSiegeTankSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Siege
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //  *** SIEGE TANK ***
@@ -1703,6 +1477,10 @@ void AIThinkSiegeTankSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkSiegeTankSCBWSieged (int player, unit aiUnit, unitgroup scanGroup) {
+    //Unsiege
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //  *** SPAWNING POOL ***
