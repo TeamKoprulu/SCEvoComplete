@@ -1011,6 +1011,71 @@ void AIThinkGatewaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //  *** GHOST ***
 //--------------------------------------------------------------------------------------------------
 
+const fixed c_LockdownMinVitality = 100;
+
+order Lockdown (int player, unit aiUnit, unitgroup scanGroup, marker mark, marker gameMark, bool lowVitality) {
+    order ord;
+    aifilter filter;
+    unit target;
+    unitgroup targetGroup;
+    //  vars related to nearby enemies.
+    aifilter groundAirFilter;
+    unitgroup threatGroup;
+    int enemyGroundCount;
+    int enemyAirCount;
+
+    if (AIIsCampaign(player)) {
+        return null;
+    }
+    
+    //  Create order and check validity
+    //
+    ord = AICreateOrder(player, c_BWAB_GhostSCBWLockdown, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    //  Scan for enemy air and ground units
+    //
+    enemyGroundCount = 0;
+    enemyAirCount = 0;
+
+    groundAirFilter = AIFilter(player);
+    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
+    AISetFilterPlane(groundAirFilter, c_planeGround);
+    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    AISetFilterPlane(groundAirFilter, c_planeAir);
+    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    //  Apply filters to enemies
+    //
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupEnemy);
+    AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_GhostSCBWLockdown, c_fieldTargetFiltersAB)));
+    AISetFilterRange(filter, aiUnit, AIAbilityFixed(player, c_BWAB_GhostSCBWLockdown, c_fieldRange0) + 1);
+    AISetFilterLife(filter, c_LockdownMinVitality, c_noMax);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
+    targetGroup = AIGetFilterGroup(filter, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    //  Since it's a missile, we also have to check the game-side marker
+    //
+    filter = AIFilter(player);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, gameMark);
+    targetGroup = AIGetFilterGroup(filter, targetGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    //  Return valid target
+    //
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
+}
+
 //--------------------------------------------------------------------------------------------------
 void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
@@ -1018,6 +1083,15 @@ void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
         if (AIEvalTacticalData(aiUnit, null)) {
             return;
         }
+    }
+
+    // lockdown
+    mark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
+    gameMark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
+    ord = Lockdown(player, aiUnit, scanGroup, mark, gameMark, lowVitality);
+    if (ord != null) {
+        AICast(aiUnit, ord, mark, c_castHold);
+        return;
     }
 }
 //--------------------------------------------------------------------------------------------------
@@ -1742,6 +1816,11 @@ void AIThinkScienceVesselSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 			cooldown = 25.0;
 		}		
 		AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWScienceVesselDMatrixCooldown, cooldown);
+        return;
+    }
+
+    //EMP Shockwave
+    if (AIEvalTacticalData(aiUnit, null)) {
         return;
     }
 
