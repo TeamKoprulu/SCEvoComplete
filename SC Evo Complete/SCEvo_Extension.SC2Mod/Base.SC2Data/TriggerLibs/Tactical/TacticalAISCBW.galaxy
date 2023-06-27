@@ -1078,6 +1078,11 @@ order Lockdown (int player, unit aiUnit, unitgroup scanGroup, marker mark, marke
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    marker gameMark;
+    order ord;
+    bool lowVitality;
+
     if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
         // cloaking will be disabled by xml on campaign
         if (AIEvalTacticalData(aiUnit, null)) {
@@ -1086,8 +1091,8 @@ void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     }
 
     // lockdown
+    gameMark = AIMarker(aiUnit, c_BWMK_GameGhostSCBWLockdown);
     mark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
-    gameMark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
     ord = Lockdown(player, aiUnit, scanGroup, mark, gameMark, lowVitality);
     if (ord != null) {
         AICast(aiUnit, ord, mark, c_castHold);
@@ -1311,9 +1316,9 @@ order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker ma
 
     filterAI = AIFilter(player);
     AISetFilterCanAttackAlly(filterAI, c_groundAlliesNearby, false);
+    AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_MedicSCBWOpticFlare_ABBlind);
     AISetFilterBits(filterAI, UnitFilterStr(AIAbilityStr(player, c_BWAB_MedicSCBWOpticFlare, c_fieldTargetFiltersAB)));
     AISetFilterRange(filterAI, aiUnit, AIAbilityFixed(player, c_BWAB_MedicSCBWOpticFlare, c_fieldRange0) + 1);
-    AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_behaviormax, c_BWBF_MedicSCBWOpticFlare_ABBlind);
 
     //  Select starting from the end, to obtain the target that has health closest to snipe
     //  damage.
@@ -1332,6 +1337,10 @@ void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
     int randomVal;
     fixed cooldown = 0.0;
+
+    if (UnitGetPropertyInt(aiUnit, c_unitPropEnergy, c_unitPropCurrent) < 70) {
+        return; // save at least 20 energy for healing
+    }
 
     mark = AIMarker(aiUnit, c_BWMK_MedicSCBWOpticFlare);
     ord = AIOrderOpticFlare(player, aiUnit, scanGroup, mark);
