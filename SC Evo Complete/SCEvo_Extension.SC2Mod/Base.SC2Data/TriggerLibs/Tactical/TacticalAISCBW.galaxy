@@ -1,7 +1,216 @@
 //--------------------------------------------------------------------------------------------------
+//  Set Nuke Constants
+//--------------------------------------------------------------------------------------------------
+void BWAISetNukeConstants (int player) {
+    AISetNukeGhost(player, c_BWTU_Ghost);
+    AISetNukeNukeEffect(player, c_BWEF_GhostSCBWNuclearStrike_Damage);
+    AISetNukeCloak(player, c_BWTR_GhostSCBWCloakResearch);
+    AISetNukeNukeAbilLink(player, c_BWAB_GhostSCBWNuclearStrike);
+    AISetNukeCloakAbilLink(player, c_BWAB_GhostSCBWCloak);
+    
+    AISetNukeCloakRegenRate(player, AIBehaviorFixed(player, c_BWBF_GhostSCBWCloak, c_fieldModification0));
+    AISetNukeCloakCost(player, AIAbilityFixed(player, c_BWAB_GhostSCBWCloak, c_fieldEnergyCost));
+    AISetNukeNukeCastTime(player, 20);
+
+    AISetNukeDamage(player, AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAmount), AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAttrStructure));
+    AISetNukeRadiusClose(player, AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaRadius0), AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaFraction0));
+    AISetNukeRadiusMedium(player, AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaRadius1), AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaFraction1));
+    AISetNukeRadiusFar(player, AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaRadius2), AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaFraction2));
+}
+
+//--------------------------------------------------------------------------------------------------
 //  Abilities
 //--------------------------------------------------------------------------------------------------
 
+//--------------------------------------------------------------------------------------------------
+//  BWCargoDefend
+//--------------------------------------------------------------------------------------------------
+const fixed c_BWcampaignBunkerLoadRange = 4.0;
+const bool c_BWbunkerUnload = true;
+const bool c_BWbunkerLoad = false;
+
+//---------------------------------------------------------------------------------------------
+unit BWCampaignWantsToBeInBunker (int player, unit aiUnit, unitgroup bunkerGroup, bool unload) {
+    int bunkerCount;
+    unit unitToCheck;
+    bool wantsToBeInBunker;
+    order unitOrder;
+
+    //  When loading, check to see if there is space in the bunker at all.
+    //
+    if (!unload) {
+        if (UnitCargoValue(aiUnit, c_unitCargoSpaceFree) == 0) {
+            return null;
+        }
+    }
+
+    bunkerCount = UnitGroupCount(bunkerGroup, c_unitCountAll);
+    while (bunkerCount > 0) {
+        unitToCheck = UnitGroupUnit(bunkerGroup, bunkerCount);
+        bunkerCount = bunkerCount - 1;
+
+        //  Make sure the unit is alive.
+        //
+        if (!UnitIsAlive(unitToCheck)) {
+            continue;
+        }
+        if (AIIsScriptControlled(unitToCheck)) {
+            continue;
+        }
+        //  When loading, make sure the unit is not already in a transport.
+        //
+        if (!unload) {
+            if (UnitTestState(unitToCheck, c_unitStateInsideTransport)) {
+                continue;
+            }
+        }
+
+        //  The unit wants to be somewhere far away, do not load it.
+        //
+        wantsToBeInBunker = true;
+
+        if (AIControlForceToMove(unitToCheck)) {
+            // If the unit is forced to move, it shouldn't be in the bunker even in combat
+            wantsToBeInBunker = false;
+        }
+        else if (!AIUnitIsInCombat(unitToCheck) && !AIUnitIsInCombat(aiUnit)) {
+            // Otherwise the unit will only want to be out of the bunker if not combat is happening
+            
+            //  The unit wants to execute a non attack order.
+            unitOrder = UnitOrder(aiUnit, 0);
+            if (unitOrder != null && !AIIsAttackOrder(unitOrder)) {
+                wantsToBeInBunker = false;
+            }
+            //  The unit wants to move.
+            else if (AIControlWantsToMove(unitToCheck)) {
+                wantsToBeInBunker = false;
+            }
+            // Unit has no home point
+            else if (AIGetHomePosition(unitToCheck) == c_nullPoint) {
+                wantsToBeInBunker = false;
+            }
+            // Unit's home point is too far away
+            else if (!PointsInRange(UnitGetPosition(aiUnit), AIGetHomePosition(unitToCheck), c_campaignBunkerLoadRange)) {
+                wantsToBeInBunker = false;
+            }
+        }
+
+        //  Do not care about units that want to be in bunker when we want to unload.
+        //  Similarly, do not care about units that do not want to be in bunker when we want to load.
+        //
+        if (wantsToBeInBunker == unload) {
+            continue;
+        }
+
+        return unitToCheck;
+    }
+    return null;
+}
+
+//---------------------------------------------------------------------------------------------
+bool BWCargoDefend (int player, unit aiUnit, unitgroup scanGroup, int searchRange, int loadRange, string wanted, string command) {
+    aifilter filter;
+    unitgroup nearBunkerGroup;
+    int bunkerCount;
+    unit unitToCheck;    
+    order ord = null;
+    bool autoLoad = false;
+    bool wantsToBeInBunker;
+    unitgroup targetGroup;
+
+    targetGroup = UnitGroupFilterRegion(scanGroup, RegionCircle(UnitGetPosition(aiUnit), searchRange), 0);
+    if (UnitGroupCount(targetGroup, c_unitCountAlive) == 0) { // no nearby enemies.
+
+        //  Both checks are needed because auto loading bunkers is needed on campaign before the
+        //  AI is active.....
+        if (AIIsCampaign(player)) {
+            autoLoad = true;
+        }
+        else if (AIGetDifficulty(player, c_diffAutoLoadBunkers)) {
+            autoLoad = true;
+        }
+
+        if (autoLoad && (command == c_BWAB_BunkerTransport)) {
+            // handle bunkers on campaign differently.
+            unitToCheck = BWCampaignWantsToBeInBunker(player, aiUnit, UnitCargoGroup(aiUnit), c_bunkerUnload);
+            if (unitToCheck != null) {
+                ord = AICreateOrder(player, command, e_AB_TransportUnloadUnit); // unload the bunker.
+                OrderSetTargetPassenger(ord, unitToCheck);
+            }
+
+            if (ord == null) {
+                nearBunkerGroup = AIFindUnits(player, wanted, UnitGetPosition(aiUnit), c_campaignBunkerLoadRange, c_noMaxCount);
+                if (wanted == c_nullString) {
+                    filter = AIFilter(player);
+                    AISetFilterMelee(filter, c_onlyRanged);
+                    AISetFilterValidPassenger(filter, aiUnit);
+                    nearBunkerGroup = AIGetFilterGroup(filter, nearBunkerGroup);
+                }
+
+                unitToCheck = BWCampaignWantsToBeInBunker(player, aiUnit, nearBunkerGroup, c_bunkerLoad);
+                if (unitToCheck != null) {
+                    ord = AICreateOrder(player, command, e_AB_TransportLoadUnit); // load the bunker.
+                    OrderSetTargetUnit(ord, unitToCheck);
+                }
+            }
+        }
+        else { // not a campaign bunker
+            if (UnitCargoValue(aiUnit, c_unitCargoSpaceUsed) == 0) { // nothing to unload
+                return false;
+            }
+            ord = AICreateOrder(player, command, e_AB_TransportUnloadAll); // unload bunker
+        }
+    }
+    else { // nearby enemies found.
+        if (UnitCargoValue(aiUnit, c_unitCargoSpaceFree) == 0) { // check for space
+            return false;
+        }
+
+        if (command == c_AB_CommandCenterChange) {
+            if (!AIAnyWorkersFleeingNearby(player,UnitGetPosition(aiUnit),8.0)) {
+                return false;
+            }
+        }
+
+        nearBunkerGroup = AIFindUnits(player, wanted, UnitGetPosition(aiUnit), loadRange, c_noMaxCount);
+        if (wanted == c_nullString) {
+            filter = AIFilter(player);
+            AISetFilterMelee(filter, c_onlyRanged);
+            AISetFilterValidPassenger(filter, aiUnit);
+            nearBunkerGroup = AIGetFilterGroup(filter, nearBunkerGroup);
+        }
+
+        bunkerCount = UnitGroupCount(nearBunkerGroup, c_unitCountAll);
+        while (bunkerCount > 0) {
+            unitToCheck = UnitGroupUnit(nearBunkerGroup, bunkerCount);
+            bunkerCount = bunkerCount - 1;
+
+            if (!UnitIsAlive(unitToCheck)) {
+                continue;
+            }
+            if (AIIsScriptControlled(unitToCheck)) {
+                continue;
+            }
+            if (UnitTestState(unitToCheck, c_unitStateInsideTransport)) {
+                continue;
+            }
+            
+            if (command == c_AB_CommandCenterChange) {
+                ord = AICreateOrder(player, command, e_AB_TransportLoadAll);
+            }
+            else {
+                ord = AICreateOrder(player, command, e_AB_TransportLoadUnit);
+                OrderSetTargetUnit(ord, unitToCheck);
+            }
+            break;
+        }
+    }
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+    AICast(aiUnit, ord, c_noMarker, c_castHold);
+    return true;
+}
 
 //--------------------------------------------------------------------------------------------------
 //  *** ACADEMY ***
@@ -52,6 +261,10 @@ void AIThinkAssimilatorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkBarracksSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -146,6 +359,7 @@ void AIThinkBroodlingSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkBunkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    BWCargoDefend(player, aiUnit, scanGroup, 8, 10, c_nullString, c_BWAB_BunkerTransport);
 }
 //--------------------------------------------------------------------------------------------------
 //  *** CARRIER ***
@@ -167,6 +381,10 @@ void AIThinkCitadelOfAdunSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //  *** COMMAND CENTER ***
@@ -178,7 +396,50 @@ void AIThinkCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
+//  ScannerSweep
+//--------------------------------------------------------------------------------------------------
+bool ComsatScannerSweep (int player, unit aiUnit) {
+    order ord;
+    point loc;
+    bool needsNearbyAttackers;
+
+    ord = AICreateOrder(player, c_BWAB_ComsatStationSCBWScannerSweep, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+
+    //  If something is attacking while cloaked and we can defend if we reveal it, cast sweep.
+    //
+    loc = AIGetCloakedAttacker(player);  // includes unscanned detect beacon
+    if (loc == null) {
+        return false;
+    }
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+    
+    needsNearbyAttackers = true;
+    if (PlayerBeaconIsSet(player, c_beaconDetect)) {
+        if (loc == PlayerBeaconGetTargetPoint(player, c_beaconDetect)) {
+            needsNearbyAttackers = false;
+        }
+    }
+
+    if (needsNearbyAttackers && !AIHasNearbyAlliedAttackers(player, loc, 10.0)) {
+        return false;
+    }
+
+    AICast(aiUnit, ord, c_noMarker, c_castHold);
+    AIClearCloakedAttacker(player, loc);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
 void AIThinkComsatStationSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    if (ComsatScannerSweep(player, aiUnit)) {
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //  *** CONTROL TOWER ***
@@ -704,6 +965,10 @@ void AIThinkExtractorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkFactorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //  *** FACTORY ***
@@ -716,6 +981,10 @@ void AIThinkFactorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkFirebatSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Stimpack
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //  *** FLEET BEACON ***
@@ -744,6 +1013,12 @@ void AIThinkGatewaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
+        // cloaking will be disabled by xml on campaign
+        if (AIEvalTacticalData(aiUnit, null)) {
+            return;
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -935,10 +1210,70 @@ void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //  *** MEDIC ***
 //--------------------------------------------------------------------------------------------------
 
+const int c_opticFlareCooldown = c_tactTimerFirst;
+
+//---------------------------------------------------------------------------------------------
+order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    fixed damage;
+    aifilter filterAI;
+    unitfilter filterUnit;
+    unitgroup targetGroup;
+
+
+    if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
+        return null;
+    }
+    
+    // Check UnitAbilityExists to prevent warnings in void
+    if (!UnitAbilityExists(aiUnit, c_BWAB_MedicSCBWOpticFlare)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_MedicSCBWOpticFlare, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    } 
+
+    filterAI = AIFilter(player);
+    AISetFilterCanAttackAlly(filterAI, c_groundAlliesNearby, false);
+    AISetFilterBits(filterAI, UnitFilterStr(AIAbilityStr(player, c_BWAB_MedicSCBWOpticFlare, c_fieldTargetFiltersAB)));
+    AISetFilterRange(filterAI, aiUnit, AIAbilityFixed(player, c_BWAB_MedicSCBWOpticFlare, c_fieldRange0) + 1);
+    AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_behaviormax, c_BWBF_MedicSCBWOpticFlare_ABBlind);
+
+    //  Select starting from the end, to obtain the target that has health closest to snipe
+    //  damage.
+    //
+    targetGroup = AIGetFilterGroup(filterAI, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_backwards);
+}
+
 //--------------------------------------------------------------------------------------------------
 void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    int randomVal;
+    fixed cooldown = 0.0;
 
+    mark = AIMarker(aiUnit, c_BWMK_MedicSCBWOpticFlare);
+    ord = AIOrderOpticFlare(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player)) {
+            if (AIPlayerDifficulty(player) < c_campAdvanced) {
+                cooldown = 8.0;
+            }
+            else if (AIPlayerDifficulty(player) < c_campExpert) {
+                cooldown = 3.0;
+            }
+        }
 
+        AICastCooldown(aiUnit, ord, mark, c_castHold, c_opticFlareCooldown, cooldown);
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -1526,6 +1861,10 @@ void AIThinkStargateSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkStarportSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1612,9 +1951,9 @@ order BWVultureSpiderMine (int player, unit aiUnit, unitgroup scanGroup) {
     }
 	
 	// If there are enemies nearby don't cast
-	if (UnitGroupCount(scanGroup, c_unitCountAlive) > 0) {
-		return null;
-	}
+	//if (UnitGroupCount(scanGroup, c_unitCountAlive) > 0) {
+	//	return null;
+	//}
 	
 	distToEnemy = AIPathDistToNearestKnownEnemyStructure(player, UnitGetPosition(aiUnit), true);//DistanceBetweenPoints(UnitGetPosition(aiUnit), PlayerStartLocation(RandomInt(1,2)));
 	if (distToEnemy >= 50) {
@@ -1652,7 +1991,7 @@ void AIThinkVultureSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     }
 
     if (AIPlayerDifficulty(player) < c_campExpert) {
-        cooldown = 25.0;
+        cooldown = 18.0;
     }
     else {
         cooldown = 10.0;
