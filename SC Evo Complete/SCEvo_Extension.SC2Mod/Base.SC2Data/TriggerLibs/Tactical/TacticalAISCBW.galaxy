@@ -524,6 +524,11 @@ void AIThinkBattlecruiserSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
     mark = AIMarker(aiUnit, c_BWMK_BattlecruiserSCBWYamato);
     ord = BWBattlecruiserYamato(player, aiUnit, scanGroup, mark);
+
+    if (!AITactCooldownAllow(aiUnit, c_BWYamatoCooldown)) {
+        return;
+    }
+
     if (ord != null) {
         if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campExpert) {
             cooldown = 8.0;
@@ -1108,13 +1113,13 @@ void AIThinkDefilerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     
     ord = BWDefilerPlague(player, aiUnit, scanGroup, mark);
     if (ord != null) {
-        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        AICast(aiUnit, ord, c_noMarker, c_castRetreat);
         return;
     }
 
     ord = BWDarkSwarm(player, aiUnit, scanGroup);
     if (ord != null) {
-        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        AICast(aiUnit, ord, c_noMarker, c_castRetreat);
         return;
     }
 
@@ -1154,10 +1159,11 @@ void AIThinkDragoonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkDroneSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Burrow Down
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
-//--------------------------------------------------------------------------------------------------
-//  *** DRONE ***
-//--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -1416,7 +1422,7 @@ void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     mark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
     ord = Lockdown(player, aiUnit, scanGroup, mark, gameMark, lowVitality);
     if (ord != null) {
-        AICast(aiUnit, ord, mark, c_castHold);
+        AICast(aiUnit, ord, mark, c_castRetreat);
         return;
     }
 }
@@ -1611,6 +1617,7 @@ void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //--------------------------------------------------------------------------------------------------
 
 const int c_opticFlareCooldown = c_tactTimerFirst;
+const int c_opticFlareMinHealth = 100;
 
 //---------------------------------------------------------------------------------------------
 order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
@@ -1657,6 +1664,7 @@ order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker ma
 
     filterAI = AIFilter(player);
     
+    AISetFilterLife(filterAI, c_opticFlareMinHealth, c_noMax);
     AISetFilterMelee(filterAI, c_onlyRanged);
     AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_noBehaviorMax, "MedicSCBWOpticFlare");
     AISetFilterBits(filterAI, UnitFilterStr(AIAbilityStr(player, c_BWAB_MedicSCBWOpticFlare, c_fieldTargetFiltersAB)));
@@ -1667,9 +1675,6 @@ order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker ma
         return null;
     }
 
-    //  Select starting from the end, to obtain the target that has health closest to snipe
-    //  damage.
-    //
     targetGroup = AIGetFilterGroup(filterAI, scanGroup);
     if (targetGroup == null) {
         return null;
@@ -1691,6 +1696,11 @@ void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
     mark = AIMarker(aiUnit, c_BWMK_MedicSCBWOpticFlare);
     ord = AIOrderOpticFlare(player, aiUnit, scanGroup, mark);
+
+    if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
+        return;
+    }
+
     if (ord != null) {
         if (AIIsCampaign(player)) {
             if (AIPlayerDifficulty(player) < c_campAdvanced) {
@@ -1701,7 +1711,7 @@ void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
             }
         }
 
-        AICastCooldown(aiUnit, ord, mark, c_castHold, c_opticFlareCooldown, cooldown);
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_opticFlareCooldown, cooldown);
         return;
     }
 }
