@@ -354,6 +354,43 @@ bool BWZergHDFastExpand (int player) {
 }
 
 //--------------------------------------------------------------------------------------------------
+//  BWProtossHDFastExpand
+//--------------------------------------------------------------------------------------------------
+bool BWProtossHDFastExpand (int player) {
+    fixed defenseEval = 0;
+
+    if (AITechCount(player, c_BWPB_Nexus, c_techCountQueuedOrBetter) >= 2) {
+        return false;
+    }
+    
+    defenseEval = AISelfDefenseThreatEval(c_dtRealSelfThreat, player);
+    if (defenseEval >= 120) {
+        // don't expand if currently under attack
+        return false;
+    }
+
+    if (!AIIsExpandingOrHasExpanded(player)) {
+        if (!AIHasNearbyOpenExpansion(player)) {
+            return false;
+        }
+        if (!AIHasRes(player,300,0)) {
+            AIEnableStock(player);
+            return true;
+        }
+
+        // we should try to expand
+        AIExpand(player, AIGetTownLocation(player, c_townMain), c_BWPB_Nexus);
+    }
+
+    // currently expanding see if we need to save minerals
+    if (!AIHasRes(player,500,0)) {
+        AIEnableStock(player);
+        return true;
+    }
+    return false; // already saved enough, we're allowed to continure the stock
+}
+
+//--------------------------------------------------------------------------------------------------
 //  BWTerranHDFastExpand
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDFastExpand (int player) {

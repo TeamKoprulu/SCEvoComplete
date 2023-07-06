@@ -682,6 +682,144 @@ void BWZergTechUp (int player, int tier) {
     }
 }
 
+//--------------------------------------------------------------------------------------------------
+//  BWProtossBasicEconomy
+//--------------------------------------------------------------------------------------------------
+void BWProtossBasicEconomy (int player, int tier, int minWorkers) {
+    int econMin = AIGetMinPeonCount(player, c_townMax);
+    if (minWorkers > econMin) {
+        minWorkers = econMin;
+    }
+
+    AIDefaultEconomy(player, c_BWPB_Nexus, c_BWPB_Assimilator, c_BWPB_Pylon, c_BWPU_Probe, minWorkers, c_stockAlways);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossBasicExpansion
+//--------------------------------------------------------------------------------------------------
+void BWProtossBasicExpansion (int player, int tier, int minerals, int gas) {
+    AIDefaultExpansion(player, c_BWPB_Nexus, minerals, gas, c_expandDefault);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossGeneralBuild
+//--------------------------------------------------------------------------------------------------
+void BWProtossGeneralBuild (int player, int tier) {
+    if (tier >= c_ldPhaseMid) {
+        if (PlayerBeaconIsSet(player, c_beaconDetect)) {
+            AISetStock( player, 1, c_BWPU_Observer );
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMacroExpand
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMacroExpand (int player) {
+    fixed defenseEval = 0;
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) < 14) {
+        return false;
+    }
+    if (AITechCount(player, c_BWPB_Nexus, c_techCountQueuedOrBetter) >= 2) {
+        return false;
+    }
+    
+    defenseEval = AISelfDefenseThreatEval(c_dtRealSelfThreat, player);
+    if (defenseEval >= 120) {
+        // don't expand if currently under attack
+        return false;
+    }
+
+    if (!AIIsExpandingOrHasExpanded(player)) {
+        if (!AIHasNearbyOpenExpansion(player)) {
+            return false;
+        }
+        if (!AIHasRes(player,300,0)) {
+            AIEnableStock(player);
+            return true;
+        }
+
+        // we should try to expand
+        AIExpand(player, AIGetTownLocation(player, c_townMain), c_BWPB_Nexus);
+    }
+
+    // currently expanding see if we need to save minerals
+    if (!AIHasRes(player,500,0)) {
+        AIEnableStock(player);
+        return true;
+    }
+    return false; // already saved enough, we're allowed to continure the stock
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossAtEachTown
+//--------------------------------------------------------------------------------------------------
+void BWProtossAtEachTown (int player, int tier) {
+    int i = 0;
+    int town;
+
+    while (i < c_townMax) {
+        town = i;
+        i = i + 1;
+
+        if (AIGetTownState(player, town) != c_townStateEstablished) {
+            continue;
+        }
+
+        if (AIGetBuildingCountInTown(player, town, c_BWPB_Nexus, c_techCountCompleteOnly) < 1) {
+            continue;
+        }
+
+        // make 2 pylons in each town
+        if (AIGetBuildingCountInTown(player, town, c_BWPB_Pylon, c_techCountCompleteOnly) < 2) {
+            AISetStockEx(player, town, 1, c_BWPB_Pylon, c_makeExpanPower, 0);
+            AISetStockEx(player, town, 2, c_BWPB_Pylon, c_makeResourceDefense | c_nearDropoff, 0);
+            continue;
+        }
+
+        if (AIGetBuildingCountInTown(player, town, c_BWPB_PhotonCannon, c_techCountCompleteOnly) < 2) {
+            AISetStockEx(player, town, 2, c_BWPB_PhotonCannon, c_makeResourceDefense | c_nearDropoff, 0);
+            continue;
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossTechUp
+//--------------------------------------------------------------------------------------------------
+void BWProtossTechUp (int player, int tier) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff < c_skirMedium) {
+        // don't build extra buildings below medium
+        return;
+    }
+
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    AISetStock( player, 1, c_BWPB_Forge );
+
+    if (tier >= c_ldPhaseMid) {
+        BWProtossAtEachTown(player, tier);
+        AISetStock( player, 1, c_BWPB_RoboticsFacility );
+        AISetStock( player, 1, c_BWPB_Stargate );
+        AISetStock( player, 1, c_BWPB_CitadelofAdun );
+        AISetStock( player, 3, c_BWPB_Gateway );
+        AISetStock( player, 2, c_BWPB_Forge );
+
+        if (tier >= c_ldPhaseLate) {
+            AISetStock( player, 1, c_BWPB_TemplarArchives );
+            AISetStock( player, 1, c_BWPB_Observatory );
+            AISetStock( player, 1, c_BWPB_RoboticsSupportBay );
+            AISetStock( player, 1, c_BWPB_FleetBeacon );
+            AISetStock( player, 1, c_BWPB_ArbiterTribunal );
+            AISetStock( player, 2, c_BWPB_RoboticsFacility );
+            AISetStock( player, 2, c_BWPB_Stargate );
+        }
+    }
+}
 
 //--------------------------------------------------------------------------------------------------
 //  TerranBasicEconomy
