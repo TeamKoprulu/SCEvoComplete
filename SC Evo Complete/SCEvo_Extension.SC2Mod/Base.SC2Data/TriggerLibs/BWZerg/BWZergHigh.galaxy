@@ -1048,10 +1048,12 @@ void BWZergHDEmergencyDetectionAntiAir (int player) {
 void BWZergHDDefenseMainTown (int player) {   
     int mainTown;
     int state; 
-    int spineCrawlerInTown;
-    int sporeCrawlerInTown;
-    int spineCrawlerCount;
-    int sporeCrawlerCount;
+    int creepColonyInTown;
+    int sunkenColonyInTown;
+    int sporeColonyInTown;
+    int creepColonyCount;
+    int sunkenColonyCount;
+    int sporeColonyCount;
     int amount;
     int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
 
@@ -1075,17 +1077,24 @@ void BWZergHDDefenseMainTown (int player) {
         }
     }
 
-    spineCrawlerInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_SunkenColony, c_techCountCompleteOnly);
-    if (spineCrawlerInTown < amount) {
-        spineCrawlerCount = AITechCount(player, c_BWZB_SunkenColony, c_techCountCompleteOnly) + 1;
-        AISetStockEx(player, mainTown, spineCrawlerCount, c_BWZB_SunkenColony, c_makeDefense, 0);
+    creepColonyInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_CreepColony_Alias, c_techCountCompleteOnly);
+    if (creepColonyInTown < amount) {
+        creepColonyCount = AITechCount(player, c_BWZB_CreepColony_Alias, c_techCountCompleteOnly) + 1;
+        AISetStockEx(player, mainTown, creepColonyCount, c_BWZB_CreepColony_Alias, c_makeDefense, 0);
         return;
     }
 
-    sporeCrawlerInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_SporeColony, c_techCountCompleteOnly);
-    if (sporeCrawlerInTown < amount + 1) {
-        sporeCrawlerCount = AITechCount(player, c_BWZB_SporeColony, c_techCountCompleteOnly) + 1;
-        AISetStockEx(player, mainTown, sporeCrawlerCount, c_BWZB_SporeColony, c_makeResourceDefense, 0);
+    sunkenColonyInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_SunkenColony, c_techCountCompleteOnly);
+    if (sunkenColonyInTown < amount) {
+        sunkenColonyCount = AITechCount(player, c_BWZB_SunkenColony, c_techCountCompleteOnly) + 1;
+        AISetStockEx(player, mainTown, sunkenColonyCount, c_BWZB_SunkenColony, c_makeDefense, 0);
+        return;
+    }
+
+    sporeColonyInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_SporeColony, c_techCountCompleteOnly);
+    if (sporeColonyInTown < amount + 1) {
+        sporeColonyCount = AITechCount(player, c_BWZB_SporeColony, c_techCountCompleteOnly) + 1;
+        AISetStockEx(player, mainTown, sporeColonyCount, c_BWZB_SporeColony, c_makeResourceDefense, 0);
         return;
     }
 }
@@ -1135,6 +1144,8 @@ void BWZergHDDefenseOtherTowns (int player) {
                 amount = 3;
             }
         }
+
+        AISetStockEx(player, town, amount, c_BWZB_CreepColony, c_makeDefense, 0);
         
         AISetStockEx(player, town, amount, c_BWZB_SunkenColony, c_makeDefense, 0);
 
