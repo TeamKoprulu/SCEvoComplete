@@ -1212,8 +1212,73 @@ void AIThinkArmorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //  *** ARBITER ***
 //--------------------------------------------------------------------------------------------------
 
+const int c_BWStasisCooldown = c_tactTimerFirst;
+
+//Stasis
+order BWStasis (int player, unit aiUnit, marker mark, marker gameMark, unitgroup scanGroup) {
+    order ord;
+    fixed energy;
+    aifilter filter;
+    bool groundAllies;
+    unitgroup enemyGroup;
+    point loc;
+    
+    if (!AITactCooldownAllow(aiUnit, c_BWStasisCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_ArbiterSCBWStasisField, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    //  Cast on strongest enemy that can attack our allies
+    filter = AIFilter(player);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_ArbiterSCBWStasisField_AB);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, gameMark);
+    enemyGroup = AIGetFilterGroup(filter, scanGroup);
+
+    loc = AIBestTargetPoint(
+        AIEffectGroup(player, c_BWEF_ArbiterSCBWStasisField_Search, enemyGroup),
+        5, // min hits
+        30, // damage base
+        3.5, // min score
+        AIEffectFixed(player, c_BWEF_ArbiterSCBWStasisField_Search, c_fieldAreaRadius0),
+        UnitGetPosition(aiUnit),
+        AIUnitFixed(player, c_BWPU_Arbiter, c_fieldSightRange), 
+        c_unitAttributeNone
+    );
+    if (loc == null) {
+        return null;
+    }
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    return ord;
+}
+
 //--------------------------------------------------------------------------------------------------
 void AIThinkArbiterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    marker gameMark;
+    order ord;
+    fixed cooldown;
+
+    // fungal growth
+    gameMark = AIMarker(aiUnit, c_BWMK_ArbiterSCBWGameStasisField);
+    mark = AIMarker(aiUnit, c_BWMK_ArbiterSCBWStasisField);
+    ord = BWStasis(player, aiUnit, mark, gameMark, scanGroup);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 20.0;
+        }
+        else {
+            cooldown = 1.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castHold, c_BWStasisCooldown, cooldown);
+        return;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
