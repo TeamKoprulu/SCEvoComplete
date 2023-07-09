@@ -1,4 +1,8 @@
 //--------------------------------------------------------------------------------------------------
+//  BW Terran
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
 //  Set Nuke Constants
 //--------------------------------------------------------------------------------------------------
 void BWAISetNukeConstants (int player) {
@@ -17,10 +21,6 @@ void BWAISetNukeConstants (int player) {
     AISetNukeRadiusMedium(player, AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaRadius1), AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaFraction1));
     AISetNukeRadiusFar(player, AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaRadius2), AIEffectFixed(player, c_BWEF_GhostSCBWNuclearStrike_Damage, c_fieldAreaFraction2));
 }
-
-//--------------------------------------------------------------------------------------------------
-//  Abilities
-//--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
 //  BWCargoDefend
@@ -213,34 +213,705 @@ bool BWCargoDefend (int player, unit aiUnit, unitgroup scanGroup, int searchRang
 }
 
 //--------------------------------------------------------------------------------------------------
-//  *** ACADEMY ***
+//  *** BUNKER ***
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-void AIThinkAcademySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+void AIThinkBunkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    BWCargoDefend(player, aiUnit, scanGroup, 8, 10, c_nullString, c_BWAB_BunkerTransport);
 }
+
 //--------------------------------------------------------------------------------------------------
-//  *** ARBITER ***
+//  *** MARINE ***
+//--------------------------------------------------------------------------------------------------
+const int c_stimpackCooldown = c_tactTimerFirst;
+
+void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Stimpack
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** MEDIC ***
+//--------------------------------------------------------------------------------------------------
+const int c_opticFlareCooldown = c_tactTimerFirst;
+const int c_opticFlareMinHealth = 100;
+
+order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    fixed damage;
+    aifilter filterAI;
+    unitfilter filterUnit;
+    unitgroup targetGroup;
+    //  vars related to nearby enemies.
+    aifilter groundAirFilter;
+    unitgroup threatGroup;
+    int enemyGroundCount;
+    int enemyAirCount;
+    
+
+
+    if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
+        return null;
+    }
+    
+    // Check UnitAbilityExists to prevent warnings in void
+    if (!UnitAbilityExists(aiUnit, c_BWAB_MedicSCBWOpticFlare)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_MedicSCBWOpticFlare, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    } 
+
+    //  Scan for enemy air and ground units
+    //
+    enemyGroundCount = 0;
+    enemyAirCount = 0;
+
+    groundAirFilter = AIFilter(player);
+    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
+    AISetFilterPlane(groundAirFilter, c_planeGround);
+    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    AISetFilterPlane(groundAirFilter, c_planeAir);
+    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+
+    filterAI = AIFilter(player);
+    
+    AISetFilterLife(filterAI, c_opticFlareMinHealth, c_noMax);
+    AISetFilterMelee(filterAI, c_onlyRanged);
+    AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_noBehaviorMax, "MedicSCBWOpticFlare");
+    AISetFilterBits(filterAI, UnitFilterStr(AIAbilityStr(player, c_BWAB_MedicSCBWOpticFlare, c_fieldTargetFiltersAB)));
+    AISetFilterRange(filterAI, aiUnit, AIAbilityFixed(player, c_BWAB_MedicSCBWOpticFlare, c_fieldRange0) + 1);
+    AISetFilterCanAttackEnemy(filterAI, enemyGroundCount, enemyAirCount);
+    targetGroup = AIGetFilterGroup(filterAI, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    targetGroup = AIGetFilterGroup(filterAI, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    int randomVal;
+    fixed cooldown = 0.0;
+
+    if (UnitGetPropertyInt(aiUnit, c_unitPropEnergy, c_unitPropCurrent) < 70) {
+        return; // save at least 20 energy for healing
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_MedicSCBWOpticFlare);
+    ord = AIOrderOpticFlare(player, aiUnit, scanGroup, mark);
+
+    if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
+        return;
+    }
+
+    if (ord != null) {
+        if (AIIsCampaign(player)) {
+            if (AIPlayerDifficulty(player) < c_campAdvanced) {
+                cooldown = 7.0;
+            }
+            else if (AIPlayerDifficulty(player) < c_campExpert) {
+                cooldown = 2.0;
+            }
+        }
+
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_opticFlareCooldown, cooldown);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** Vulture ***
+//--------------------------------------------------------------------------------------------------
+const int c_secondsPerSpiderMine = 3;
+const int c_vultureMineMaxRandom = c_gameLoopsPerSecond * c_secondsPerSpiderMine / c_framesPerThink;
+const int c_VulturemineCooldown = c_tactTimerFirst;
+
+order BWVultureSpiderMine (int player, unit aiUnit, unitgroup scanGroup) {
+	order ord;
+	fixed energy;
+	point loc;
+	fixed distToEnemy;
+	unitgroup spiderMineGroup;
+	int spiderMineCount;
+    point target;
+	
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        return null;
+    }
+	
+    if (AIIsCampaign(player)) {
+        if (RandomInt(0, c_vultureMineMaxRandom) != 1) {
+            return null;
+        }
+    }
+
+    ord = AICreateOrder(player, c_BWAB_VulturePlaceSpiderMineSCBW, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+	
+	// If there are enemies nearby don't cast
+	//if (UnitGroupCount(scanGroup, c_unitCountAlive) > 0) {
+	//	return null;
+	//}
+	
+	distToEnemy = AIPathDistToNearestKnownEnemyStructure(player, UnitGetPosition(aiUnit), true);//DistanceBetweenPoints(UnitGetPosition(aiUnit), PlayerStartLocation(RandomInt(1,2)));
+	if (distToEnemy >= 50) {
+		return null;
+	}
+	
+	loc = UnitGetPosition(aiUnit);
+
+	// Don't create large clusters of traps
+    spiderMineGroup = UnitGroup(c_BWTU_SpiderMine_Burrowed, player, RegionCircle(loc, 10), 
+                            UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);							
+    spiderMineCount = UnitGroupCount(spiderMineGroup, c_unitCountAll);
+
+    
+    if (spiderMineCount != 0) {
+        return null;
+    }
+    target = RegionRandomPoint(RegionCircle(loc, 7));
+
+	OrderSetTargetPoint(ord, target);
+	if (!UnitOrderIsValid(aiUnit,ord)) {
+		return null;
+	}
+	
+	return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkVultureSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    fixed cooldown;
+
+    if (!AITactCooldownAllow(aiUnit, c_VulturemineCooldown)) {
+        return;
+    }
+
+    if (AIPlayerDifficulty(player) < c_campExpert) {
+        cooldown = 8.0;
+    }
+    else {
+        cooldown = 3.0;
+    }
+
+    ord = BWVultureSpiderMine(player, aiUnit, scanGroup);
+    if (ord != null) {
+        AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_VulturemineCooldown, cooldown);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** SCIENCE VESSEL ***
+//--------------------------------------------------------------------------------------------------
+const int c_BWScienceVesselIrradiateCooldown = c_tactTimerFirst;
+const int c_BWScienceVesselDMatrixCooldown = c_tactTimerSecond;
+const int c_BWScienceVesselEMPCooldown = c_tactTimerThird;
+const fixed c_EMPminShields = 15;
+
+//--------------------------------------------------------------------------------------------------
+
+order BWScienceVesselDefensiveMatrix (int player, unit aiUnit, marker mark) {
+    order ord;
+    unitgroup group;
+    aifilter filter;
+
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        return null;
+    }
+	
+    if (!AITactCooldownAllow(aiUnit, c_BWScienceVesselDMatrixCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
+                        AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, c_fieldRange0) + 1,
+                        c_noMaxCount)
+    ;
+
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupAlly);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    AISetFilterLifeLost(filter, AIEffectFixed(player, c_EF_Transfusion, c_fieldEffectChange0) - 20, c_noMax);
+    AISetFilterInCombat(filter, c_onlyInCombat);
+    group = AIGetFilterGroup(filter, group);
+    if (group == null) {
+        return null;
+    }
+
+    return AIUnitGroupGetValidOrder(group, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+order BWScienceVesselIrradiate (int player, unit aiUnit, unitgroup scanGroup) {
+    // target a clump of ranged ground units
+    order ord;
+    aifilter filter;
+    unitgroup irradiateGroup;
+	int count;
+	
+    if (!AITactCooldownAllow(aiUnit, c_BWScienceVesselIrradiateCooldown)) {
+        return null;
+    }    
+	
+    ord = AICreateOrder(player, c_BWAB_ScienceVesselSCBWIrradiate, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    
+    filter = AIFilter(player);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWAB_ScienceVesselSCBWIrradiate);
+    AISetFilterBits(filter, UnitFilterStr("Biological;Heroic,Structure,Missile,Stasis,Item,Dead,Hidden,Invulnerable"));	
+	irradiateGroup = AIGetFilterGroup(filter, scanGroup);
+
+	count = UnitGroupCount(irradiateGroup, c_unitCountAll);
+	if (count == 0) {
+		return null;
+	}
+	
+    OrderSetTargetUnit(ord, UnitGroupUnit(irradiateGroup, RandomInt(1, count)));
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        ord = AIUnitGroupGetValidOrder(irradiateGroup, ord, aiUnit, c_backwards);
+    }
+    	
+    return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
+order BWScienceVesselShieldedEMP (int player, unit aiUnit, unitgroup scanGroup) {
+    point loc;
+    aifilter filter;
+    unitgroup EMPGroup;
+
+    order ord = AITacticalOrder(player, aiUnit, c_BWAB_ScienceVesselSCBWEMPShockwave);
+    if (ord == null) {
+        return null;
+    }
+
+
+    filter = AIFilter(player);
+    AISetFilterShields(filter, c_EMPminShields, c_noMax);
+    EMPGroup = AIGetFilterGroup(filter, scanGroup);
+    
+
+    loc = AIBestTargetPoint(
+        AIEffectGroup(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, scanGroup),
+        5, // min hits
+        50, // damage base
+        2.0, // score
+        AIEffectFixed(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, c_fieldAreaRadius0) + 1.0,
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWEMPShockwave, c_fieldRange0),
+        c_unitAttributeNone
+    );
+
+    if (loc == null) {
+        return null;
+    }
+    
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkScienceVesselSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    unit heal;
+    marker mark;
+	fixed cooldown;
+
+    if(AIPlayerDifficulty(player) < c_campAdvanced) {
+		return;
+	}
+
+    ord = BWScienceVesselShieldedEMP(player, aiUnit, scanGroup);
+    if (ord != null) {
+		if(AIPlayerDifficulty(player) == c_campAdvanced) {
+			cooldown = 15.0;
+		}
+		else {
+			cooldown = 5.0;
+		}		
+
+        AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselEMPCooldown, cooldown);
+        return;
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_ScienceVesselSCBWDefensiveMatrix);
+    ord = BWScienceVesselDefensiveMatrix(player, aiUnit, mark);
+    if (ord != null) {
+        
+		if(AIPlayerDifficulty(player) == c_campAdvanced) {
+			cooldown = 20.0;
+		}
+		else {
+			cooldown = 10.0;
+		}		
+		AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWScienceVesselDMatrixCooldown, cooldown);
+        return;
+    }
+
+    //EMP Shockwave
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+
+    ord = BWScienceVesselIrradiate(player, aiUnit, scanGroup);
+    if (ord != null) {
+        
+		if(AIPlayerDifficulty(player) == c_campAdvanced) {
+			cooldown = 22.5;
+		}
+		else {
+			cooldown = 10.0;
+		}
+		AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselIrradiateCooldown, cooldown);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** WRAITH ***
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-void AIThinkArbiterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+void AIThinkWraithSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord = AICreateOrder(player, c_BWAB_WraithSCBWCloak, 0);
+    bool isCloaking = true;
+
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        ord = AICreateOrder(player, c_BWAB_WraithSCBWCloak, 1);
+        if (!UnitOrderIsValid(aiUnit, ord)) {
+            return;
+        }
+        isCloaking = false;
+    }
+
+    if (isCloaking != AICloakEvaluate(aiUnit, 50, 50, 10)) {
+        return;
+    }
+    AICast(aiUnit, ord, c_noMarker, c_castHold);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** SIEGE TANK ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkSiegeTankSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Siege
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
 //--------------------------------------------------------------------------------------------------
+//  *** SIEGE TANK SIEGED ***
 //--------------------------------------------------------------------------------------------------
-//  *** ARBITER TRIBUNAL ***
+void AIThinkSiegeTankSCBWSieged (int player, unit aiUnit, unitgroup scanGroup) {
+    //Unsiege
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** BATTLECRUISER ***
+//--------------------------------------------------------------------------------------------------
+const int c_BWYamatoCooldown = c_tactTimerFirst;
+
+order BWBattlecruiserYamato (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    order ord;
+    aifilter filter;
+    fixed damage;
+    unitgroup targetGroup;
+
+    if (!AITactCooldownAllow(aiUnit, c_BWYamatoCooldown)) {
+        return null;
+    }
+    //TriggerDebugOutput(1, StringToText("CD Passed"), true);
+
+    //  If we already have a yamato order, ignore new orders so that we do not count
+    //  our own markers again.
+    if (UnitOrderHasAbil(aiUnit, c_BWAB_BattlecruiserSCBWYamato)) {
+        return null;
+    }
+
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        return null;
+    }
+
+    //  Only cast as part of an existing offensive.
+    
+    if (!AIIsAttackOrder(UnitOrder(aiUnit, 0))) {
+        return null;
+    }
+     
+    //  See if this spell can be cast at all.
+    //
+    ord = AICreateOrder(player, c_BWAB_BattlecruiserSCBWYamato, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    damage = AIEffectFixed(player, c_BWEF_BattlecruiserSCBWYamato_Damage, c_fieldAmount);
+
+    //  Search enemies for those with hit points closest to the damage yamato gun inflicts.
+    //
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupEnemy);
+    AISetFilterBits(filter, UnitFilterStr("-;Missile,Self,Stasis,Dead,Hidden,Invulnerable"));
+    AISetFilterLifePerMarker(filter, damage, mark);
+    AISetFilterLifeSortReference(filter, damage, damage*c_distanceFromDamage); 
+    targetGroup = AIGetFilterGroup(filter, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+    
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_backwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkBattlecruiserSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+
+    marker mark;
+    order ord;
+    fixed cooldown;
+
+    mark = AIMarker(aiUnit, c_BWMK_BattlecruiserSCBWYamato);
+    ord = BWBattlecruiserYamato(player, aiUnit, scanGroup, mark);
+
+    if (!AITactCooldownAllow(aiUnit, c_BWYamatoCooldown)) {
+        return;
+    }
+
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campExpert) {
+            cooldown = 8.0;
+        }
+        else {
+            cooldown = 3.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castHold, c_BWYamatoCooldown, cooldown);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** FIREBAT ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkFirebatSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Stimpack
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** NUCLEAR SILO ***
+//--------------------------------------------------------------------------------------------------
+const int c_BWMinGhostCount = 1;
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkNuclearSiloSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    int ghostCount;
+    order ord;
+
+    ord = AICreateOrder(player, c_BWAB_NukeSCBWArm, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return;
+    }
+
+    ghostCount = TechTreeUnitCount(player, c_BWTU_Ghost, c_techCountQueuedOrBetter);
+    if (ghostCount >= c_BWMinGhostCount) {
+        if (ord != null) {
+            AICast(aiUnit, ord, c_noMarker, c_castHold);
+            return;
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** COMMAND CENTER ***
+//--------------------------------------------------------------------------------------------------
+
+const int c_BWCommandCenterEarlyCount = 1;
+const int c_BWComsatMaxCount = 2;
+const int c_BWGhostMinCount = 1;
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    int commandCenterCount;
+    int comsatStationCount;
+    int nuclearSiloCount;
+    int ghostCount;
+    order ord;
+
+    //Count Units
+    commandCenterCount = TechTreeUnitCount(player, c_BWTB_CommandCenter, c_techCountQueuedOrBetter);
+    comsatStationCount = TechTreeUnitCount(player, c_BWTB_ComsatStation, c_techCountQueuedOrBetter);
+    nuclearSiloCount = TechTreeUnitCount(player, c_BWTB_NuclearSilo, c_techCountQueuedOrBetter);
+    ghostCount = TechTreeUnitCount(player, c_BWTU_Ghost, c_techCountQueuedOrBetter);
+
+    ////rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_CommandCenterSCBW_AddOns, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return;
+    }
+
+    //Only build one if there is Detection Danger
+    if (AISuspectDetectionDanger(player, 60 * 3)){
+        if (commandCenterCount < c_BWComsatMaxCount) {
+            if (comsatStationCount < c_BWComsatMaxCount) {
+                if (ord != null) {
+                    AICast(aiUnit, ord, c_noMarker, c_castHold);
+                    return;
+                }
+            }
+        }
+    }
+
+    // Build Additional Comsats if there is detection danger late in the game
+    if (AISuspectDetectionDanger(player, c_lateDetectionDangerTime)){
+        if (commandCenterCount <= c_BWComsatMaxCount) {
+            if (comsatStationCount < c_BWComsatMaxCount) {
+                if (ord != null) {
+                    AICast(aiUnit, ord, c_noMarker, c_castHold);
+                    return;
+                }
+            }
+        }
+    }
+
+    ord = AICreateOrder(player, c_BWAB_CommandCenterSCBW_AddOns, 1);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return;
+    }
+
+    if (commandCenterCount > c_BWComsatMaxCount && comsatStationCount >= c_BWComsatMaxCount) {
+        if (ghostCount >= c_BWGhostMinCount) {
+            if (ord != null) {
+                AICast(aiUnit, ord, c_noMarker, c_castHold);
+                return;
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//  *** COMSAT STATION ***
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-void AIThinkArbiterTribunalSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+//  Scanner Sweep
+//--------------------------------------------------------------------------------------------------
+bool ComsatScannerSweep (int player, unit aiUnit) {
+    order ord;
+    point loc;
+    bool needsNearbyAttackers;
+
+    ord = AICreateOrder(player, c_BWAB_ComsatStationSCBWScannerSweep, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+
+    //  If something is attacking while cloaked and we can defend if we reveal it, cast sweep.
+    //
+    loc = AIGetCloakedAttacker(player);  // includes unscanned detect beacon
+    if (loc == null) {
+        return false;
+    }
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+    
+    needsNearbyAttackers = true;
+    if (PlayerBeaconIsSet(player, c_beaconDetect)) {
+        if (loc == PlayerBeaconGetTargetPoint(player, c_beaconDetect)) {
+            needsNearbyAttackers = false;
+        }
+    }
+
+    if (needsNearbyAttackers && !AIHasNearbyAlliedAttackers(player, loc, 10.0)) {
+        return false;
+    }
+
+    AICast(aiUnit, ord, c_noMarker, c_castHold);
+    AIClearCloakedAttacker(player, loc);
+    return true;
 }
-//--------------------------------------------------------------------------------------------------
-//  *** ARCHON ***
-//--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-void AIThinkArchonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+void AIThinkComsatStationSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    if (ComsatScannerSweep(player, aiUnit)) {
+        return;
+    }
 }
+
+//--------------------------------------------------------------------------------------------------
+//  *** BARRACKS ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkBarracksSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** FACTORY ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkFactorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** STARPORT ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkStarportSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //rally
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BW Terran Upgrade Buildings (Melee)
+//--------------------------------------------------------------------------------------------------
+
 //--------------------------------------------------------------------------------------------------
 //  *** ARMORY ***
 //--------------------------------------------------------------------------------------------------
@@ -426,267 +1097,117 @@ void AIThinkArmorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
         }
     }
 }
+
 //--------------------------------------------------------------------------------------------------
-//  *** ASSIMILATOR ***
+//  *** ENGINEERING BAY ***
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-void AIThinkAssimilatorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** BARRACKS ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkBarracksSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //rally
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** BATTLECRUISER ***
-//--------------------------------------------------------------------------------------------------
-
-const int c_BWYamatoCooldown = c_tactTimerFirst;
-
-order BWBattlecruiserYamato (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+void AIThinkEngineeringBaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
-    aifilter filter;
-    fixed damage;
-    unitgroup targetGroup;
+    int infantryUnitCount;
 
-    if (!AITactCooldownAllow(aiUnit, c_BWYamatoCooldown)) {
-        return null;
-    }
-    //TriggerDebugOutput(1, StringToText("CD Passed"), true);
+    // Only counts Combat Infantry Units
+    infantryUnitCount = 
+    TechTreeUnitCount(player, c_BWTU_Marine, c_techCountQueuedOrBetter)+
+    TechTreeUnitCount(player, c_BWTU_Firebat, c_techCountQueuedOrBetter)+
+    TechTreeUnitCount(player, c_BWTU_Ghost, c_techCountQueuedOrBetter);
 
-    //  If we already have a yamato order, ignore new orders so that we do not count
-    //  our own markers again.
-    if (UnitOrderHasAbil(aiUnit, c_BWAB_BattlecruiserSCBWYamato)) {
-        return null;
-    }
 
-    if (AIPlayerDifficulty(player) < c_campAdvanced) {
-        return null;
-    }
+    //Tier 1
+    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryWeaponsSCBW_Lvl1, c_techCountQueuedOrBetter) == 0) {
+        ord = AICreateOrder(player, c_BWTR_TerranInfantryWeapons, 0);
 
-    //  Only cast as part of an existing offensive.
-    
-    if (!AIIsAttackOrder(UnitOrder(aiUnit, 0))) {
-        return null;
-    }
-     
-    //  See if this spell can be cast at all.
-    //
-    ord = AICreateOrder(player, c_BWAB_BattlecruiserSCBWYamato, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    damage = AIEffectFixed(player, c_BWEF_BattlecruiserSCBWYamato_Damage, c_fieldAmount);
-
-    //  Search enemies for those with hit points closest to the damage yamato gun inflicts.
-    //
-    filter = AIFilter(player);
-    AISetFilterAlliance(filter, c_playerGroupEnemy);
-    AISetFilterBits(filter, UnitFilterStr("-;Missile,Self,Stasis,Dead,Hidden,Invulnerable"));
-    AISetFilterLifePerMarker(filter, damage, mark);
-    AISetFilterLifeSortReference(filter, damage, damage*c_distanceFromDamage); 
-    targetGroup = AIGetFilterGroup(filter, scanGroup);
-    if (targetGroup == null) {
-        return null;
-    }
-    
-    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_backwards);
-}
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkBattlecruiserSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-
-    marker mark;
-    order ord;
-    fixed cooldown;
-
-    mark = AIMarker(aiUnit, c_BWMK_BattlecruiserSCBWYamato);
-    ord = BWBattlecruiserYamato(player, aiUnit, scanGroup, mark);
-
-    if (!AITactCooldownAllow(aiUnit, c_BWYamatoCooldown)) {
-        return;
-    }
-
-    if (ord != null) {
-        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campExpert) {
-            cooldown = 8.0;
-        }
-        else {
-            cooldown = 3.0;
-        }
-        AICastCooldown(aiUnit, ord, mark, c_castHold, c_BWYamatoCooldown, cooldown);
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** BROODLING ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkBroodlingSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** BUNKER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkBunkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    BWCargoDefend(player, aiUnit, scanGroup, 8, 10, c_nullString, c_BWAB_BunkerTransport);
-}
-//--------------------------------------------------------------------------------------------------
-//  *** CARRIER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkCarrierSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** CITADEL OF ADUN ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkCitadelOfAdunSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** COMMAND CENTER ***
-//--------------------------------------------------------------------------------------------------
-
-const int c_BWCommandCenterEarlyCount = 1;
-const int c_BWComsatMaxCount = 2;
-const int c_BWGhostMinCount = 1;
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    int commandCenterCount;
-    int comsatStationCount;
-    int nuclearSiloCount;
-    int ghostCount;
-    order ord;
-
-    //Count Units
-    commandCenterCount = TechTreeUnitCount(player, c_BWTB_CommandCenter, c_techCountQueuedOrBetter);
-    comsatStationCount = TechTreeUnitCount(player, c_BWTB_ComsatStation, c_techCountQueuedOrBetter);
-    nuclearSiloCount = TechTreeUnitCount(player, c_BWTB_NuclearSilo, c_techCountQueuedOrBetter);
-    ghostCount = TechTreeUnitCount(player, c_BWTU_Ghost, c_techCountQueuedOrBetter);
-
-    ////rally
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-
-    ord = AICreateOrder(player, c_BWAB_CommandCenterSCBW_AddOns, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return;
-    }
-
-    //Only build one if there is Detection Danger
-    if (AISuspectDetectionDanger(player, 60 * 3)){
-        if (commandCenterCount < c_BWComsatMaxCount) {
-            if (comsatStationCount < c_BWComsatMaxCount) {
-                if (ord != null) {
+        if (UnitOrderIsValid(aiUnit, ord)) {
+            Wait(1.0, c_timeAI);
+            if (infantryUnitCount >= 6) {
+                if (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
                     AICast(aiUnit, ord, c_noMarker, c_castHold);
-                    return;
                 }
             }
         }
     }
 
-    // Build Additional Comsats if there is detection danger late in the game
-    if (AISuspectDetectionDanger(player, c_lateDetectionDangerTime)){
-        if (commandCenterCount <= c_BWComsatMaxCount) {
-            if (comsatStationCount < c_BWComsatMaxCount) {
-                if (ord != null) {
+    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryArmorsSCBW_Lvl1, c_techCountQueuedOrBetter) == 0) {
+        ord = AICreateOrder(player, c_BWTR_TerranInfantryArmorsSCBW, 0);
+
+        if (UnitOrderIsValid(aiUnit, ord)) {
+            Wait(1.0, c_timeAI);
+            if (infantryUnitCount >= 6) {
+                if (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
                     AICast(aiUnit, ord, c_noMarker, c_castHold);
-                    return;
                 }
             }
         }
     }
 
-    ord = AICreateOrder(player, c_BWAB_CommandCenterSCBW_AddOns, 1);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return;
+    //Tier 2
+    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryWeaponsSCBW_Lvl2, c_techCountQueuedOrBetter) == 0) {
+        ord = AICreateOrder(player, c_BWTR_TerranInfantryWeapons, 1);
+
+        if (UnitOrderIsValid(aiUnit, ord)) {
+            Wait(1.0, c_timeAI);
+            if (infantryUnitCount >= 8) {
+                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
+                    AICast(aiUnit, ord, c_noMarker, c_castHold);
+                }
+            }
+        }
     }
 
-    if (commandCenterCount > c_BWComsatMaxCount && comsatStationCount >= c_BWComsatMaxCount) {
-        if (ghostCount >= c_BWGhostMinCount) {
-            if (ord != null) {
-                AICast(aiUnit, ord, c_noMarker, c_castHold);
-                return;
+    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryArmorsSCBW_Lvl2, c_techCountQueuedOrBetter) == 0) {
+        ord = AICreateOrder(player, c_BWTR_TerranInfantryArmorsSCBW, 1);
+
+        if (UnitOrderIsValid(aiUnit, ord)) {
+            Wait(1.0, c_timeAI);
+            if (infantryUnitCount >= 8) {
+                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
+                    AICast(aiUnit, ord, c_noMarker, c_castHold);
+                }
+            }
+        }
+    }
+
+    //Tier 3
+    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryWeaponsSCBW_Lvl3, c_techCountQueuedOrBetter) == 0) {
+        ord = AICreateOrder(player, c_BWTR_TerranInfantryWeapons, 2);
+
+        if (UnitOrderIsValid(aiUnit, ord)) {
+            Wait(1.0, c_timeAI);
+            if (infantryUnitCount >= 10) {
+                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
+                    AICast(aiUnit, ord, c_noMarker, c_castHold);
+                }
+            }
+        }
+    }
+
+    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryArmorsSCBW_Lvl3, c_techCountQueuedOrBetter) == 0) {
+        ord = AICreateOrder(player, c_BWTR_TerranInfantryArmorsSCBW, 2);
+
+        if (UnitOrderIsValid(aiUnit, ord)) {
+            Wait(1.0, c_timeAI);
+            if (infantryUnitCount >= 10) {
+                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
+                    AICast(aiUnit, ord, c_noMarker, c_castHold);
+                }
             }
         }
     }
 }
 
 //--------------------------------------------------------------------------------------------------
+//  BW Protoss
 //--------------------------------------------------------------------------------------------------
-//  *** COMSAT STATION ***
+
+//--------------------------------------------------------------------------------------------------
+//  *** ARBITER ***
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-//  ScannerSweep
-//--------------------------------------------------------------------------------------------------
-bool ComsatScannerSweep (int player, unit aiUnit) {
-    order ord;
-    point loc;
-    bool needsNearbyAttackers;
-
-    ord = AICreateOrder(player, c_BWAB_ComsatStationSCBWScannerSweep, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return false;
-    }
-
-    //  If something is attacking while cloaked and we can defend if we reveal it, cast sweep.
-    //
-    loc = AIGetCloakedAttacker(player);  // includes unscanned detect beacon
-    if (loc == null) {
-        return false;
-    }
-    OrderSetTargetPoint(ord, loc);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return false;
-    }
-    
-    needsNearbyAttackers = true;
-    if (PlayerBeaconIsSet(player, c_beaconDetect)) {
-        if (loc == PlayerBeaconGetTargetPoint(player, c_beaconDetect)) {
-            needsNearbyAttackers = false;
-        }
-    }
-
-    if (needsNearbyAttackers && !AIHasNearbyAlliedAttackers(player, loc, 10.0)) {
-        return false;
-    }
-
-    AICast(aiUnit, ord, c_noMarker, c_castHold);
-    AIClearCloakedAttacker(player, loc);
-    return true;
+void AIThinkArbiterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 }
 
-//--------------------------------------------------------------------------------------------------
-void AIThinkComsatStationSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    if (ComsatScannerSweep(player, aiUnit)) {
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** CONTROL TOWER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkControlTowerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
 //--------------------------------------------------------------------------------------------------
 //  *** CORSAIR ***
 //--------------------------------------------------------------------------------------------------
@@ -694,27 +1215,7 @@ void AIThinkControlTowerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //--------------------------------------------------------------------------------------------------
 void AIThinkCorsairSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 }
-//--------------------------------------------------------------------------------------------------
-//  *** COVERT OPS ***
-//--------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------
-void AIThinkCovertOpsSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** CREEP COLONY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkCreepColonySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** CYBERNETICS CORE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkCyberneticsCoreSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
 //--------------------------------------------------------------------------------------------------
 //  *** DARK ARCHON ***
 //--------------------------------------------------------------------------------------------------
@@ -722,12 +1223,283 @@ void AIThinkCyberneticsCoreSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //--------------------------------------------------------------------------------------------------
 void AIThinkDarkArchonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 }
+
 //--------------------------------------------------------------------------------------------------
-//  *** DARK TEMPLAR ***
+//  *** NEXUS ***
+//--------------------------------------------------------------------------------------------------
+
+void AIThinkNexusSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** GATEWAY ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkGatewaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** ROBOTICS FACILITY ***
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-void AIThinkDarkTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+void AIThinkRoboticsFacilitySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Rally
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** STARGATE ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkStargateSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BW Protoss Upgrade Buildings (Melee)
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//  *** FORGE ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkForgeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** CYBERNETICS CORE ***
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkCyberneticsCoreSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BW Zerg
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//  *** QUEEN ***
+//--------------------------------------------------------------------------------------------------
+const int c_BWSpawnBroodlingsCooldown = c_tactTimerFirst;
+const int c_BWEnsnareCooldown = c_tactTimerSecond;
+const int c_BWParasiteCooldown = c_tactTimerThird;
+
+//--------------------------------------------------------------------------------------------------
+order BWQueenParasite (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    // Targetted shot that grants vision on target
+    // Cast Parasite on massive units and siege targets
+    order ord;
+    unitgroup filterGroup;
+    unit unitToCheck;
+    int scanCount;
+
+    ord = AICreateOrder(player, c_BWAB_QueenSCBWParasite, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    filterGroup = UnitGroupEmpty();
+
+    scanCount = UnitGroupCount(scanGroup, c_unitCountAll);
+    if(scanCount == 0) {
+        return null;
+    }
+
+    while (scanCount > 0) {
+        unitToCheck = UnitGroupUnit(scanGroup, scanCount);
+        scanCount = scanCount - 1;
+
+        if (UnitHasBehavior(unitToCheck, c_BWAB_QueenSCBWParasite)) {
+            return null; // Unit with parasite exists in the group
+        }
+
+        if (UnitMarkerCount(unitToCheck, mark) > 0) {
+            return null; // Already marked unit exists in group
+        }
+
+        if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeHeroic) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeArmored) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitGetType(unitToCheck) == c_TU_SiegeTank || UnitGetType(unitToCheck) == c_TU_SiegeTankSieged) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+    }
+
+    return AIUnitGroupGetValidOrder(filterGroup, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+order BWQueenEnsnare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    // AOE that slows units in an area for a duration
+    order ord;
+    point loc;
+    aifilter filter;
+    unitgroup enemyGroup;
+    //  vars related to nearby enemies.
+    aifilter groundAirFilter;
+    unitgroup threatGroup;
+    int enemyGroundCount;
+    int enemyAirCount;
+
+    if (!AITactCooldownAllow(aiUnit, c_BWEnsnareCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_QueenSCBWEnsnare, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    //  Scan for enemy air and ground units
+    //
+    enemyGroundCount = 0;
+    enemyAirCount = 0;
+
+    groundAirFilter = AIFilter(player);
+    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
+    AISetFilterPlane(groundAirFilter, c_planeGround);
+    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    AISetFilterPlane(groundAirFilter, c_planeAir);
+    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    // Ensnare units that have not been already marked or has existing behavior
+    filter = AIFilter(player);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWAB_QueenSCBWEnsnare);
+    //AISetFilterLifePerMarker(filter, damage, mark);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
+    AISetFilterAlliance(filter, c_playerGroupEnemy);
+
+    enemyGroup = AIGetFilterGroup(filter, scanGroup);
+    if (enemyGroup == null) {
+        return null;
+    }
+
+    loc = AIBestTargetPoint(
+        enemyGroup,
+        2, // min hits
+        20, // damage base
+        1.5, // min score 
+        AIEffectFixed(player, c_BWEF_QueenSCBWEnsnare_Search, c_fieldAreaRadius0),
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_BWAB_QueenSCBWEnsnare, c_fieldRange0)+3,
+        c_unitAttributeNone
+    );
+    if (loc == null) {
+        return null;
+    }
+
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
+order BWQueenSpawnBroodlings (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+    // Targetted shot that kills the target and spawns to Broodlings at that location
+    // Spawn Broodlings on massive units and siege targets
+    order ord;
+    unitgroup filterGroup;
+    unit unitToCheck;
+    int scanCount;
+
+
+    if (!AITactCooldownAllow(aiUnit, c_BWSpawnBroodlingsCooldown)) {
+        return null;
+    }
+    
+    ord = AICreateOrder(player, c_BWAB_QueenSCBWSpawnBroodlings, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    filterGroup = UnitGroupEmpty();
+
+    scanCount = UnitGroupCount(scanGroup, c_unitCountAll);
+    if(scanCount == 0) {
+        return null;
+    }
+
+    while (scanCount > 0) {
+        unitToCheck = UnitGroupUnit(scanGroup, scanCount);
+        scanCount = scanCount - 1;
+
+        if (UnitHasBehavior(unitToCheck, c_BWAB_QueenSCBWParasite)) {
+            continue; // Ignore unit with parasite
+        }
+
+        if (UnitMarkerCount(unitToCheck, mark) > 0) {
+            continue; // Ignore unit marked for SpawnBroodling
+        }
+
+        if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeHeroic) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeMassive) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeBiological) == true) {
+            UnitGroupAdd(filterGroup, unitToCheck);
+        }
+        else if (UnitGetType(unitToCheck) == c_BWPU_DarkArchon || UnitGetType(unitToCheck) == c_BWPU_DarkArchon) {
+            UnitGroupRemove(filterGroup, unitToCheck);
+        }
+        else if (UnitGetType(unitToCheck) == c_BWPU_Archon || UnitGetType(unitToCheck) == c_BWPU_Archon) {
+            UnitGroupRemove(filterGroup, unitToCheck);
+        }
+    }
+
+    return AIUnitGroupGetValidOrder(filterGroup, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    marker mark;
+    fixed cooldown;
+
+    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWSpawnBroodlings);
+    ord = BWQueenSpawnBroodlings(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 15.0;
+        }
+        else {
+            cooldown = 1.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWSpawnBroodlingsCooldown, cooldown);
+        return;
+    }
+
+    mark = AIMarker(aiUnit, c_MK_Parasite);
+    ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 20.0;
+        }
+        else {
+            cooldown = 10.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
+        return;
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWEnsnare);
+    ord = BWQueenEnsnare(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 15.0;
+        }
+        else {
+            cooldown = 5.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWEnsnareCooldown, cooldown);
+        return;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1145,29 +1917,6 @@ void AIThinkDefilerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 }
 
 //--------------------------------------------------------------------------------------------------
-//  *** DEVOURER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkDevourerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** DEVOURER COCOON ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkDevourerSCBWEgg (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** DRAGOON ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkDragoonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
 //  *** DRONE ***
 //--------------------------------------------------------------------------------------------------
 
@@ -1180,123 +1929,125 @@ void AIThinkDroneSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 }
 
 //--------------------------------------------------------------------------------------------------
+//  *** HYDRALISK ***
 //--------------------------------------------------------------------------------------------------
-//  *** DROPSHIP ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkDropshipSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+void AIThinkHydraliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Burrow Down
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
 }
+
 //--------------------------------------------------------------------------------------------------
-//  *** ZERG COCOON ***
+//  *** INFESTED TERRAN ***
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-void AIThinkEggSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** ENGINEERING BAY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkEngineeringBaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+order BWToggleSuicideBuilding (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
     order ord;
-    int infantryUnitCount;
-
-    // Only counts Combat Infantry Units
-    infantryUnitCount = 
-    TechTreeUnitCount(player, c_BWTU_Marine, c_techCountQueuedOrBetter)+
-    TechTreeUnitCount(player, c_BWTU_Firebat, c_techCountQueuedOrBetter)+
-    TechTreeUnitCount(player, c_BWTU_Ghost, c_techCountQueuedOrBetter);
-
-
-    //Tier 1
-    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryWeaponsSCBW_Lvl1, c_techCountQueuedOrBetter) == 0) {
-        ord = AICreateOrder(player, c_BWTR_TerranInfantryWeapons, 0);
-
-        if (UnitOrderIsValid(aiUnit, ord)) {
-            Wait(1.0, c_timeAI);
-            if (infantryUnitCount >= 6) {
-                if (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
-                    AICast(aiUnit, ord, c_noMarker, c_castHold);
-                }
-            }
-        }
+    
+    // Check UnitAbilityExists to prevent warnings in liberty
+    if (!UnitAbilityExists(aiUnit, c_AB_VolatileBurstBuilding)) {
+        return null;
     }
 
-    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryArmorsSCBW_Lvl1, c_techCountQueuedOrBetter) == 0) {
-        ord = AICreateOrder(player, c_BWTR_TerranInfantryArmorsSCBW, 0);
-
-        if (UnitOrderIsValid(aiUnit, ord)) {
-            Wait(1.0, c_timeAI);
-            if (infantryUnitCount >= 6) {
-                if (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
-                    AICast(aiUnit, ord, c_noMarker, c_castHold);
-                }
-            }
-        }
+    // Simple logic, if we can turn off attacking buildings, then do so
+    //
+    ord = AICreateOrder(player, c_AB_VolatileBurstBuilding, 1);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
     }
 
-    //Tier 2
-    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryWeaponsSCBW_Lvl2, c_techCountQueuedOrBetter) == 0) {
-        ord = AICreateOrder(player, c_BWTR_TerranInfantryWeapons, 1);
+    return ord;
+}
 
-        if (UnitOrderIsValid(aiUnit, ord)) {
-            Wait(1.0, c_timeAI);
-            if (infantryUnitCount >= 8) {
-                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
-                    AICast(aiUnit, ord, c_noMarker, c_castHold);
-                }
-            }
-        }
-    }
-
-    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryArmorsSCBW_Lvl2, c_techCountQueuedOrBetter) == 0) {
-        ord = AICreateOrder(player, c_BWTR_TerranInfantryArmorsSCBW, 1);
-
-        if (UnitOrderIsValid(aiUnit, ord)) {
-            Wait(1.0, c_timeAI);
-            if (infantryUnitCount >= 8) {
-                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
-                    AICast(aiUnit, ord, c_noMarker, c_castHold);
-                }
-            }
-        }
-    }
-
-    //Tier 3
-    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryWeaponsSCBW_Lvl3, c_techCountQueuedOrBetter) == 0) {
-        ord = AICreateOrder(player, c_BWTR_TerranInfantryWeapons, 2);
-
-        if (UnitOrderIsValid(aiUnit, ord)) {
-            Wait(1.0, c_timeAI);
-            if (infantryUnitCount >= 10) {
-                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
-                    AICast(aiUnit, ord, c_noMarker, c_castHold);
-                }
-            }
-        }
-    }
-
-    if(TechTreeUpgradeCount(player, c_BWTR_TerranInfantryArmorsSCBW_Lvl3, c_techCountQueuedOrBetter) == 0) {
-        ord = AICreateOrder(player, c_BWTR_TerranInfantryArmorsSCBW, 2);
-
-        if (UnitOrderIsValid(aiUnit, ord)) {
-            Wait(1.0, c_timeAI);
-            if (infantryUnitCount >= 10) {
-                if   (UnitQueueItemTime(aiUnit,c_unitQueueTimeRemaining, 1) <= 0) {
-                    AICast(aiUnit, ord, c_noMarker, c_castHold);
-                }
-            }
-        }
+//---------------------------------------------------------------------------------------------
+void AIThinkInfestedTerranSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    //Burrow AI Eval
+    
+    // turn off automatically exploding on buildings
+    ord = BWToggleSuicideBuilding(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        AICast(aiUnit, ord, mark, c_castHold);
+        return;
     }
 }
 
 //--------------------------------------------------------------------------------------------------
+//  *** LURKER ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkLurkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Lurker Burrow/Unburrow
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** ULTRALISK ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkUltraliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Burrow Down
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** ZERGLING ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkZerglingSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Burrow Down
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** HATCHERY ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkHatcherySCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Rallies
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** LAIR ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkLairSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Rallies
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** HIVE ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkHiveSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Rallies
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** INFESTED COMMAND CENTER ***
+//--------------------------------------------------------------------------------------------------
+void AIThinkInfestedCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    //Rally
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BW Zerg Upgrade Buildings (Melee)
+//--------------------------------------------------------------------------------------------------
+
 //--------------------------------------------------------------------------------------------------
 //  *** EVOLUTION CHAMBER ***
-//--------------------------------------------------------------------------------------------------
-
 //--------------------------------------------------------------------------------------------------
 void AIThinkEvolutionChamberSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
@@ -1442,1058 +2193,9 @@ void AIThinkEvolutionChamberSCBW (int player, unit aiUnit, unitgroup scanGroup) 
         }
     }
 }
-//--------------------------------------------------------------------------------------------------
-//  *** EXTRACTOR ***
-//--------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------
-void AIThinkExtractorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** EXTRACTOR ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** FACTORY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkFactorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //rally
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** FACTORY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** FIREBAT ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkFirebatSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Stimpack
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** FLEET BEACON ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkFleetBeaconSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** FORGE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkForgeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** GATEWAY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkGatewaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** GHOST ***
-//--------------------------------------------------------------------------------------------------
-
-const fixed c_LockdownMinVitality = 100;
-
-order Lockdown (int player, unit aiUnit, unitgroup scanGroup, marker mark, marker gameMark, bool lowVitality) {
-    order ord;
-    aifilter filter;
-    unit target;
-    unitgroup targetGroup;
-    //  vars related to nearby enemies.
-    aifilter groundAirFilter;
-    unitgroup threatGroup;
-    int enemyGroundCount;
-    int enemyAirCount;
-
-    if (AIIsCampaign(player)) {
-        return null;
-    }
-    
-    //  Create order and check validity
-    //
-    ord = AICreateOrder(player, c_BWAB_GhostSCBWLockdown, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    //  Scan for enemy air and ground units
-    //
-    enemyGroundCount = 0;
-    enemyAirCount = 0;
-
-    groundAirFilter = AIFilter(player);
-    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
-    AISetFilterPlane(groundAirFilter, c_planeGround);
-    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
-
-    AISetFilterPlane(groundAirFilter, c_planeAir);
-    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
-
-    //  Apply filters to enemies
-    //
-    filter = AIFilter(player);
-    AISetFilterAlliance(filter, c_playerGroupEnemy);
-    AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_GhostSCBWLockdown, c_fieldTargetFiltersAB)));
-    AISetFilterRange(filter, aiUnit, AIAbilityFixed(player, c_BWAB_GhostSCBWLockdown, c_fieldRange0) + 1);
-    AISetFilterLife(filter, c_LockdownMinVitality, c_noMax);
-    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
-    AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
-    targetGroup = AIGetFilterGroup(filter, scanGroup);
-    if (targetGroup == null) {
-        return null;
-    }
-
-    //  Since it's a missile, we also have to check the game-side marker
-    //
-    filter = AIFilter(player);
-    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, gameMark);
-    targetGroup = AIGetFilterGroup(filter, targetGroup);
-    if (targetGroup == null) {
-        return null;
-    }
-
-    //  Return valid target
-    //
-    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
-}
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    marker mark;
-    marker gameMark;
-    order ord;
-    bool lowVitality;
-
-    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
-        // cloaking will be disabled by xml on campaign
-        if (AIEvalTacticalData(aiUnit, null)) {
-            return;
-        }
-    }
-
-    // lockdown
-    gameMark = AIMarker(aiUnit, c_BWMK_GameGhostSCBWLockdown);
-    mark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
-    ord = Lockdown(player, aiUnit, scanGroup, mark, gameMark, lowVitality);
-    if (ord != null) {
-        AICast(aiUnit, ord, mark, c_castRetreat);
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** GOLIATH ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkGoliathSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-
-//--------------------------------------------------------------------------------------------------
-//  *** GUARDIAN ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkGuardianSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** GUARDIAN COCOON ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkGuardianSCBWEgg (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** HATCHERY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkHatcherySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Rallies
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//  *** HIVE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkHiveSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Rallies
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** HYDRALISK DEN ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkHydraliskDenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** HYDRALISK ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkHydraliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Burrow Down
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** INFESTED COMMAND CENTER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkInfestedCommandCenterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** INFESTED COMMAND CENTER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** INFESTED TERRAN ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-order BWToggleSuicideBuilding (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
-    order ord;
-    
-    // Check UnitAbilityExists to prevent warnings in liberty
-    if (!UnitAbilityExists(aiUnit, c_AB_VolatileBurstBuilding)) {
-        return null;
-    }
-
-    // Simple logic, if we can turn off attacking buildings, then do so
-    //
-    ord = AICreateOrder(player, c_AB_VolatileBurstBuilding, 1);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    return ord;
-}
-
-//---------------------------------------------------------------------------------------------
-void AIThinkInfestedTerranSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    marker mark;
-    order ord;
-    
-    // turn off automatically exploding on buildings
-    ord = BWToggleSuicideBuilding(player, aiUnit, scanGroup, mark);
-    if (ord != null) {
-        AICast(aiUnit, ord, mark, c_castHold);
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//  *** INFESTED TERRAN ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** INTERCEPTOR ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkInterceptorSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SARAH KERRIGAN ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkKerriganSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** LAIR ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkLairSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Rallies
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** LARVA ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkLarvaSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** LURKER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkLurkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Lurker Burrow/Unburrow
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** LURKER COCOON ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkLurkerSCBWEgg (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** MACHINE SHOP ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkMachineShopSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** MARINE ***
-//--------------------------------------------------------------------------------------------------
-
-const int c_stimpackCooldown = c_tactTimerFirst;
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Stimpack
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//  *** MEDIC ***
-//--------------------------------------------------------------------------------------------------
-
-const int c_opticFlareCooldown = c_tactTimerFirst;
-const int c_opticFlareMinHealth = 100;
-
-//---------------------------------------------------------------------------------------------
-order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
-    order ord;
-    fixed damage;
-    aifilter filterAI;
-    unitfilter filterUnit;
-    unitgroup targetGroup;
-    //  vars related to nearby enemies.
-    aifilter groundAirFilter;
-    unitgroup threatGroup;
-    int enemyGroundCount;
-    int enemyAirCount;
-    
-
-
-    if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
-        return null;
-    }
-    
-    // Check UnitAbilityExists to prevent warnings in void
-    if (!UnitAbilityExists(aiUnit, c_BWAB_MedicSCBWOpticFlare)) {
-        return null;
-    }
-
-    ord = AICreateOrder(player, c_BWAB_MedicSCBWOpticFlare, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    } 
-
-    //  Scan for enemy air and ground units
-    //
-    enemyGroundCount = 0;
-    enemyAirCount = 0;
-
-    groundAirFilter = AIFilter(player);
-    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
-    AISetFilterPlane(groundAirFilter, c_planeGround);
-    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
-
-    AISetFilterPlane(groundAirFilter, c_planeAir);
-    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
-
-
-    filterAI = AIFilter(player);
-    
-    AISetFilterLife(filterAI, c_opticFlareMinHealth, c_noMax);
-    AISetFilterMelee(filterAI, c_onlyRanged);
-    AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_noBehaviorMax, "MedicSCBWOpticFlare");
-    AISetFilterBits(filterAI, UnitFilterStr(AIAbilityStr(player, c_BWAB_MedicSCBWOpticFlare, c_fieldTargetFiltersAB)));
-    AISetFilterRange(filterAI, aiUnit, AIAbilityFixed(player, c_BWAB_MedicSCBWOpticFlare, c_fieldRange0) + 1);
-    AISetFilterCanAttackEnemy(filterAI, enemyGroundCount, enemyAirCount);
-    targetGroup = AIGetFilterGroup(filterAI, scanGroup);
-    if (targetGroup == null) {
-        return null;
-    }
-
-    targetGroup = AIGetFilterGroup(filterAI, scanGroup);
-    if (targetGroup == null) {
-        return null;
-    }
-
-    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
-}
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    marker mark;
-    order ord;
-    int randomVal;
-    fixed cooldown = 0.0;
-
-    if (UnitGetPropertyInt(aiUnit, c_unitPropEnergy, c_unitPropCurrent) < 70) {
-        return; // save at least 20 energy for healing
-    }
-
-    mark = AIMarker(aiUnit, c_BWMK_MedicSCBWOpticFlare);
-    ord = AIOrderOpticFlare(player, aiUnit, scanGroup, mark);
-
-    if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
-        return;
-    }
-
-    if (ord != null) {
-        if (AIIsCampaign(player)) {
-            if (AIPlayerDifficulty(player) < c_campAdvanced) {
-                cooldown = 7.0;
-            }
-            else if (AIPlayerDifficulty(player) < c_campExpert) {
-                cooldown = 2.0;
-            }
-        }
-
-        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_opticFlareCooldown, cooldown);
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** MISSILE TURRET ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkMissileTurretSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** MUTALISK ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkMutaliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** NEXUS ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkNexusSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** NUCLEAR SILO ***
-//--------------------------------------------------------------------------------------------------
-const int c_BWMinGhostCount = 1;
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkNuclearSiloSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    int ghostCount;
-    order ord;
-
-    ord = AICreateOrder(player, c_BWAB_NukeSCBWArm, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return;
-    }
-
-    ghostCount = TechTreeUnitCount(player, c_BWTU_Ghost, c_techCountQueuedOrBetter);
-    if (ghostCount >= c_BWMinGhostCount) {
-        if (ord != null) {
-            AICast(aiUnit, ord, c_noMarker, c_castHold);
-            return;
-        }
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** NUKE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkNukeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** NYDUS CANAL ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkNydusCanalSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** OBSERVATORY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkObservatorySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** OBSERVER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkObserverSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** OVERLORD ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkOverlordSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** PHOTON CANNON ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkPhotonCannonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** PHYSICS LAB ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkPhysicsLabSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** PROBE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkProbeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** PYLON ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkPylonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//---------------------------------------------------------------------------------------------
-const int c_BWSpawnBroodlingsCooldown = c_tactTimerFirst;
-const int c_BWEnsnareCooldown = c_tactTimerSecond;
-const int c_BWParasiteCooldown = c_tactTimerThird;
-
-//--------------------------------------------------------------------------------------------------
-order BWQueenParasite (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
-    // Targetted shot that grants vision on target
-    // Cast Parasite on massive units and siege targets
-    order ord;
-    unitgroup filterGroup;
-    unit unitToCheck;
-    int scanCount;
-
-    ord = AICreateOrder(player, c_BWAB_QueenSCBWParasite, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    filterGroup = UnitGroupEmpty();
-
-    scanCount = UnitGroupCount(scanGroup, c_unitCountAll);
-    if(scanCount == 0) {
-        return null;
-    }
-
-    while (scanCount > 0) {
-        unitToCheck = UnitGroupUnit(scanGroup, scanCount);
-        scanCount = scanCount - 1;
-
-        if (UnitHasBehavior(unitToCheck, c_BWAB_QueenSCBWParasite)) {
-            return null; // Unit with parasite exists in the group
-        }
-
-        if (UnitMarkerCount(unitToCheck, mark) > 0) {
-            return null; // Already marked unit exists in group
-        }
-
-        if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeHeroic) == true) {
-            UnitGroupAdd(filterGroup, unitToCheck);
-        }
-        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeArmored) == true) {
-            UnitGroupAdd(filterGroup, unitToCheck);
-        }
-        else if (UnitGetType(unitToCheck) == c_TU_SiegeTank || UnitGetType(unitToCheck) == c_TU_SiegeTankSieged) {
-            UnitGroupAdd(filterGroup, unitToCheck);
-        }
-    }
-
-    return AIUnitGroupGetValidOrder(filterGroup, ord, aiUnit, c_forwards);
-}
-
-//--------------------------------------------------------------------------------------------------
-order BWQueenEnsnare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
-    // AOE that slows units in an area for a duration
-    order ord;
-    point loc;
-    aifilter filter;
-    unitgroup enemyGroup;
-    //  vars related to nearby enemies.
-    aifilter groundAirFilter;
-    unitgroup threatGroup;
-    int enemyGroundCount;
-    int enemyAirCount;
-
-    if (!AITactCooldownAllow(aiUnit, c_BWEnsnareCooldown)) {
-        return null;
-    }
-
-    ord = AICreateOrder(player, c_BWAB_QueenSCBWEnsnare, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    //  Scan for enemy air and ground units
-    //
-    enemyGroundCount = 0;
-    enemyAirCount = 0;
-
-    groundAirFilter = AIFilter(player);
-    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
-    AISetFilterPlane(groundAirFilter, c_planeGround);
-    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
-
-    AISetFilterPlane(groundAirFilter, c_planeAir);
-    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
-
-    // Ensnare units that have not been already marked or has existing behavior
-    filter = AIFilter(player);
-    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWAB_QueenSCBWEnsnare);
-    //AISetFilterLifePerMarker(filter, damage, mark);
-    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
-    AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
-    AISetFilterAlliance(filter, c_playerGroupEnemy);
-
-    enemyGroup = AIGetFilterGroup(filter, scanGroup);
-    if (enemyGroup == null) {
-        return null;
-    }
-
-    loc = AIBestTargetPoint(
-        enemyGroup,
-        2, // min hits
-        20, // damage base
-        1.5, // min score 
-        AIEffectFixed(player, c_BWEF_QueenSCBWEnsnare_Search, c_fieldAreaRadius0),
-        UnitGetPosition(aiUnit),
-        AIAbilityFixed(player, c_BWAB_QueenSCBWEnsnare, c_fieldRange0)+3,
-        c_unitAttributeNone
-    );
-    if (loc == null) {
-        return null;
-    }
-
-    OrderSetTargetPoint(ord, loc);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    return ord;
-}
-
-//--------------------------------------------------------------------------------------------------
-order BWQueenSpawnBroodlings (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
-    // Targetted shot that kills the target and spawns to Broodlings at that location
-    // Spawn Broodlings on massive units and siege targets
-    order ord;
-    unitgroup filterGroup;
-    unit unitToCheck;
-    int scanCount;
-
-
-    if (!AITactCooldownAllow(aiUnit, c_BWSpawnBroodlingsCooldown)) {
-        return null;
-    }
-    
-    ord = AICreateOrder(player, c_BWAB_QueenSCBWSpawnBroodlings, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    filterGroup = UnitGroupEmpty();
-
-    scanCount = UnitGroupCount(scanGroup, c_unitCountAll);
-    if(scanCount == 0) {
-        return null;
-    }
-
-    while (scanCount > 0) {
-        unitToCheck = UnitGroupUnit(scanGroup, scanCount);
-        scanCount = scanCount - 1;
-
-        if (UnitHasBehavior(unitToCheck, c_BWAB_QueenSCBWParasite)) {
-            continue; // Ignore unit with parasite
-        }
-
-        if (UnitMarkerCount(unitToCheck, mark) > 0) {
-            continue; // Ignore unit marked for SpawnBroodling
-        }
-
-        if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeHeroic) == true) {
-            UnitGroupAdd(filterGroup, unitToCheck);
-        }
-        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeMassive) == true) {
-            UnitGroupAdd(filterGroup, unitToCheck);
-        }
-        else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeBiological) == true) {
-            UnitGroupAdd(filterGroup, unitToCheck);
-        }
-        else if (UnitGetType(unitToCheck) == c_BWPU_DarkArchon || UnitGetType(unitToCheck) == c_BWPU_DarkArchon) {
-            UnitGroupRemove(filterGroup, unitToCheck);
-        }
-        else if (UnitGetType(unitToCheck) == c_BWPU_Archon || UnitGetType(unitToCheck) == c_BWPU_Archon) {
-            UnitGroupRemove(filterGroup, unitToCheck);
-        }
-    }
-
-    return AIUnitGroupGetValidOrder(filterGroup, ord, aiUnit, c_forwards);
-}
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    order ord;
-    marker mark;
-    fixed cooldown;
-
-    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWSpawnBroodlings);
-    ord = BWQueenSpawnBroodlings(player, aiUnit, scanGroup, mark);
-    if (ord != null) {
-        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
-            cooldown = 15.0;
-        }
-        else {
-            cooldown = 1.0;
-        }
-        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWSpawnBroodlingsCooldown, cooldown);
-        return;
-    }
-
-    mark = AIMarker(aiUnit, c_MK_Parasite);
-    ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
-    if (ord != null) {
-        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
-            cooldown = 20.0;
-        }
-        else {
-            cooldown = 10.0;
-        }
-        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
-        return;
-    }
-
-    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWEnsnare);
-    ord = BWQueenEnsnare(player, aiUnit, scanGroup, mark);
-    if (ord != null) {
-        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
-            cooldown = 15.0;
-        }
-        else {
-            cooldown = 5.0;
-        }
-        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWEnsnareCooldown, cooldown);
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** QUEEN'S NEST ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkQueensNestSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** REAVER ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkReaverSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** REFINERY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkRefinerySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** REFINERY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** ROBOTICS SUPPORT BAY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkRoboticsBaySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** ROBOTICS FACILITY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkRoboticsFacilitySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SCARAB ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkScarabSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SCBW_UNIT ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSCBW_Unit (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SCIENCE FACILITY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkScienceFacilitySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** SCIENCE VESSEL ***
-//--------------------------------------------------------------------------------------------------
-
-const int c_BWScienceVesselIrradiateCooldown = c_tactTimerFirst;
-const int c_BWScienceVesselDMatrixCooldown = c_tactTimerSecond;
-
-//--------------------------------------------------------------------------------------------------
-
-order BWScienceVesselDefensiveMatrix (int player, unit aiUnit, marker mark) {
-    order ord;
-    unitgroup group;
-    aifilter filter;
-
-    if (AIPlayerDifficulty(player) < c_campAdvanced) {
-        return null;
-    }
-	
-    if (!AITactCooldownAllow(aiUnit, c_BWScienceVesselIrradiateCooldown)) {
-        return null;
-    }
-
-    ord = AICreateOrder(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-
-    group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
-                        AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, c_fieldRange0) + 1,
-                        c_noMaxCount)
-    ;
-
-    filter = AIFilter(player);
-    AISetFilterAlliance(filter, c_playerGroupAlly);
-    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
-    AISetFilterLifeLost(filter, AIEffectFixed(player, c_EF_Transfusion, c_fieldEffectChange0) - 20, c_noMax);
-    AISetFilterInCombat(filter, c_onlyInCombat);
-    group = AIGetFilterGroup(filter, group);
-    if (group == null) {
-        return null;
-    }
-
-    return AIUnitGroupGetValidOrder(group, ord, aiUnit, c_forwards);
-}
-
-//--------------------------------------------------------------------------------------------------
-order BWScienceVesselIrradiate (int player, unit aiUnit, unitgroup scanGroup) {
-    // target a clump of ranged ground units
-    order ord;
-    aifilter filter;
-    unitgroup irradiateGroup;
-	int count;
-	
-    if (!AITactCooldownAllow(aiUnit, c_BWScienceVesselIrradiateCooldown)) {
-        return null;
-    }    
-	
-    ord = AICreateOrder(player, c_BWAB_ScienceVesselSCBWIrradiate, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-    
-    filter = AIFilter(player);
-    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWAB_ScienceVesselSCBWIrradiate);
-    AISetFilterBits(filter, UnitFilterStr("Biological;Heroic,Structure,Missile,Stasis,Item,Dead,Hidden,Invulnerable"));	
-	irradiateGroup = AIGetFilterGroup(filter, scanGroup);
-
-	count = UnitGroupCount(irradiateGroup, c_unitCountAll);
-	if (count == 0) {
-		return null;
-	}
-	
-    OrderSetTargetUnit(ord, UnitGroupUnit(irradiateGroup, RandomInt(1, count)));
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        ord = AIUnitGroupGetValidOrder(irradiateGroup, ord, aiUnit, c_backwards);
-    }
-    	
-    return ord;
-}
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkScienceVesselSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    order ord;
-    unit heal;
-    marker mark;
-	fixed cooldown;
-
-    if(AIPlayerDifficulty(player) < c_campAdvanced) {
-		return;
-	}
-
-    mark = AIMarker(aiUnit, c_BWMK_ScienceVesselSCBWDefensiveMatrix);
-    ord = BWScienceVesselDefensiveMatrix(player, aiUnit, mark);
-    if (ord != null) {
-        
-		if(AIPlayerDifficulty(player) == c_campAdvanced) {
-			cooldown = 30.0;
-		}
-		else {
-			cooldown = 20.0;
-		}		
-		AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWScienceVesselDMatrixCooldown, cooldown);
-        return;
-    }
-
-    //EMP Shockwave
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-
-    ord = BWScienceVesselIrradiate(player, aiUnit, scanGroup);
-    if (ord != null) {
-        
-		if(AIPlayerDifficulty(player) == c_campAdvanced) {
-			cooldown = 22.5;
-		}
-		else {
-			cooldown = 10.0;
-		}
-		AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselIrradiateCooldown, cooldown);
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** SCOURGE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkScourgeSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SCOUT ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkScoutSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SCV ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSCVSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SHIELD BATTERY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkShieldBatterySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SHUTTLE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkShuttleSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-
-//--------------------------------------------------------------------------------------------------
-//  *** SIEGE TANK ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSiegeTankSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Siege
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SIEGE TANK ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSiegeTankSCBWSieged (int player, unit aiUnit, unitgroup scanGroup) {
-    //Unsiege
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SPAWNING POOL ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSpawningPoolSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SPIDER MINE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSpiderMineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-
-//--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 //  *** SPIRE ***
-//--------------------------------------------------------------------------------------------------
-
 //--------------------------------------------------------------------------------------------------
 void AIThinkSpireSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
@@ -2586,212 +2288,5 @@ void AIThinkSpireSCBW (int player, unit aiUnit, unitgroup scanGroup) {
                 }
             }
         }
-    }
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SPORE COLONY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSporeColonySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** STARGATE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkStargateSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** STARPORT ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkStarportSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //rally
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** SUNKEN COLONY ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSunkenColonySCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** SUPPLY DEPOT ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkSupplyDepotSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** TEMPLAR ARCHIVES ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkTemplarArchiveSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** ULTRALISK CAVERN ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkUltraliskCavernSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** ULTRALISK ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkUltraliskSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Burrow Down
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** VALKYRIE ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkValkyrieSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** Vulture ***
-//--------------------------------------------------------------------------------------------------
-
-const int c_secondsPerSpiderMine = 3;
-const int c_vultureMineMaxRandom = c_gameLoopsPerSecond * c_secondsPerSpiderMine / c_framesPerThink;
-const int c_VulturemineCooldown = c_tactTimerFirst;
-
-order BWVultureSpiderMine (int player, unit aiUnit, unitgroup scanGroup) {
-	order ord;
-	fixed energy;
-	point loc;
-	fixed distToEnemy;
-	unitgroup spiderMineGroup;
-	int spiderMineCount;
-    point target;
-	
-    if (AIPlayerDifficulty(player) < c_campAdvanced) {
-        return null;
-    }
-	
-    if (AIIsCampaign(player)) {
-        if (RandomInt(0, c_vultureMineMaxRandom) != 1) {
-            return null;
-        }
-    }
-
-    ord = AICreateOrder(player, c_BWAB_VulturePlaceSpiderMineSCBW, 0);
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        return null;
-    }
-	
-	// If there are enemies nearby don't cast
-	//if (UnitGroupCount(scanGroup, c_unitCountAlive) > 0) {
-	//	return null;
-	//}
-	
-	distToEnemy = AIPathDistToNearestKnownEnemyStructure(player, UnitGetPosition(aiUnit), true);//DistanceBetweenPoints(UnitGetPosition(aiUnit), PlayerStartLocation(RandomInt(1,2)));
-	if (distToEnemy >= 50) {
-		return null;
-	}
-	
-	loc = UnitGetPosition(aiUnit);
-
-	// Don't create large clusters of traps
-    spiderMineGroup = UnitGroup(c_BWTU_SpiderMine_Burrowed, player, RegionCircle(loc, 10), 
-                            UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);							
-    spiderMineCount = UnitGroupCount(spiderMineGroup, c_unitCountAll);
-
-    
-    if (spiderMineCount != 0) {
-        return null;
-    }
-    target = RegionRandomPoint(RegionCircle(loc, 7));
-
-	OrderSetTargetPoint(ord, target);
-	if (!UnitOrderIsValid(aiUnit,ord)) {
-		return null;
-	}
-	
-	return ord;
-}
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkVultureSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    order ord;
-    fixed cooldown;
-
-    if (!AITactCooldownAllow(aiUnit, c_VulturemineCooldown)) {
-        return;
-    }
-
-    if (AIPlayerDifficulty(player) < c_campExpert) {
-        cooldown = 8.0;
-    }
-    else {
-        cooldown = 3.0;
-    }
-
-    ord = BWVultureSpiderMine(player, aiUnit, scanGroup);
-    if (ord != null) {
-        AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_VulturemineCooldown, cooldown);
-        return;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-//  *** WRAITH ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkWraithSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    order ord = AICreateOrder(player, c_BWAB_WraithSCBWCloak, 0);
-    bool isCloaking = true;
-
-    if (!UnitOrderIsValid(aiUnit, ord)) {
-        ord = AICreateOrder(player, c_BWAB_WraithSCBWCloak, 1);
-        if (!UnitOrderIsValid(aiUnit, ord)) {
-            return;
-        }
-        isCloaking = false;
-    }
-
-    if (isCloaking != AICloakEvaluate(aiUnit, 50, 50, 10)) {
-        return;
-    }
-    AICast(aiUnit, ord, c_noMarker, c_castHold);
-}
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-//  *** ZEALOT ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkZealotSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-}
-//--------------------------------------------------------------------------------------------------
-//  *** ZERGLING ***
-//--------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------
-void AIThinkZerglingSCBW (int player, unit aiUnit, unitgroup scanGroup) {
-    //Burrow Down
-    if (AIEvalTacticalData(aiUnit, null)) {
-        return;
     }
 }
