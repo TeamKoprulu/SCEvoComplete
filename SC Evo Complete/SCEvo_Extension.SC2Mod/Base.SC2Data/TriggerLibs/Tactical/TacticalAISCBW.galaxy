@@ -336,6 +336,99 @@ void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 }
 
 //--------------------------------------------------------------------------------------------------
+//  *** GHOST ***
+//--------------------------------------------------------------------------------------------------
+
+const fixed c_LockdownMinVitality = 100;
+
+order Lockdown (int player, unit aiUnit, unitgroup scanGroup, marker mark, marker gameMark, bool lowVitality) {
+    order ord;
+    aifilter filter;
+    unit target;
+    unitgroup targetGroup;
+    //  vars related to nearby enemies.
+    aifilter groundAirFilter;
+    unitgroup threatGroup;
+    int enemyGroundCount;
+    int enemyAirCount;
+
+    if (AIIsCampaign(player)) {
+        return null;
+    }
+    
+    //  Create order and check validity
+    //
+    ord = AICreateOrder(player, c_BWAB_GhostSCBWLockdown, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    //  Scan for enemy air and ground units
+    //
+    enemyGroundCount = 0;
+    enemyAirCount = 0;
+
+    groundAirFilter = AIFilter(player);
+    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
+    AISetFilterPlane(groundAirFilter, c_planeGround);
+    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    AISetFilterPlane(groundAirFilter, c_planeAir);
+    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    //  Apply filters to enemies
+    //
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupEnemy);
+    AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_GhostSCBWLockdown, c_fieldTargetFiltersAB)));
+    AISetFilterRange(filter, aiUnit, AIAbilityFixed(player, c_BWAB_GhostSCBWLockdown, c_fieldRange0) + 1);
+    AISetFilterLife(filter, c_LockdownMinVitality, c_noMax);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
+    targetGroup = AIGetFilterGroup(filter, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    //  Since it's a missile, we also have to check the game-side marker
+    //
+    filter = AIFilter(player);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, gameMark);
+    targetGroup = AIGetFilterGroup(filter, targetGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    //  Return valid target
+    //
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    marker gameMark;
+    order ord;
+    bool lowVitality;
+
+    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
+        // cloaking will be disabled by xml on campaign
+        if (AIEvalTacticalData(aiUnit, null)) {
+            return;
+        }
+    }
+
+    // lockdown
+    gameMark = AIMarker(aiUnit, c_BWMK_GameGhostSCBWLockdown);
+    mark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
+    ord = Lockdown(player, aiUnit, scanGroup, mark, gameMark, lowVitality);
+    if (ord != null) {
+        AICast(aiUnit, ord, mark, c_castRetreat);
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
 //  *** Vulture ***
 //--------------------------------------------------------------------------------------------------
 const int c_secondsPerSpiderMine = 3;
@@ -1282,6 +1375,85 @@ void AIThinkArbiterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 }
 
 //--------------------------------------------------------------------------------------------------
+//  *** HIGH TEMPLAR ***
+//--------------------------------------------------------------------------------------------------
+
+const int c_BWPsiStormCooldown = c_tactTimerFirst;
+
+//---------------------------------------------------------------------------------------------
+bool BWMergeToSurvive (int player, unit aiUnit, unitgroup scanGroup) {
+    // only called at low heatlh, try to find a nearby templar to merge with in order to survive
+    order ord;
+    unitgroup targetGroup;
+    unit targetUnit;
+    
+    if (AIIsCampaign(player)) {
+        return false;
+    }
+    
+    // if we're not under attack, don't try to merge
+    if (AILastAttack(aiUnit) < (AIGetTime() - 4.0)) {
+        return false;
+    }
+    
+    ord = AICreateOrder(player, c_BWAB_ArchonSCBWMerge, 1);
+    targetGroup = UnitGroupSearch(c_BWPU_HighTemplar, player, UnitGetPosition(aiUnit), 5.0, UnitFilter((1 << c_targetFilterSelf), 0, 0, 0), c_noMaxCount);
+    targetUnit =  OrderGetTargetUnit( AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards) );
+    if (targetUnit == null) {
+        return false;
+    }
+    
+    // can't use the normal AICast because both units need the order at the same time
+    UnitIssueOrder(aiUnit, OrderTargetingUnit(AbilityCommand(c_BWAB_ArchonSCBWMerge, 1), targetUnit), c_orderQueueAddToEnd);
+    UnitIssueOrder(targetUnit, OrderTargetingUnit(AbilityCommand(c_BWAB_ArchonSCBWMerge, 1), aiUnit), c_orderQueueAddToEnd);
+    AISetUnitScriptControlled(aiUnit, false);
+    AISetUnitScriptControlled(targetUnit, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    fixed cooldown;
+    bool lowVitality;
+
+    //Psionic Storm
+    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
+        if (AITactCooldownAllow(aiUnit, c_BWPsiStormCooldown)) {
+            // psi storm
+            if (AIEvalTacticalData(aiUnit, null)) {        
+                if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campExpert) {
+                    AISetCooldown(aiUnit, c_BWPsiStormCooldown, 5.0);
+                }
+                return;
+            }
+        }
+    }
+
+    if (AIIsCampaign(player)) {
+        // not using hallucination or merge to survive in campaign
+        return;
+    }
+
+    //  If we already have a psi storm order, ignore any new orders since psi storm is more important.
+    if (UnitOrderHasAbil(aiUnit, c_BWAB_HighTemplarSCBWPsiStorm)) {
+        return;
+    }
+    
+    lowVitality = (UnitGetPropertyInt(aiUnit, c_unitPropVitalityPercent, c_unitPropCurrent) < c_HighTemplarLowVitPerc);
+
+    if (lowVitality) {
+        if (BWMergeToSurvive(player, aiUnit, scanGroup)) {
+            return;
+        }
+    }
+    
+    //We're not using hallucination as it doesn't feel right while playing
+    //Hallucination might be implemented at a later date
+}
+
+//--------------------------------------------------------------------------------------------------
 //  *** CORSAIR ***
 //--------------------------------------------------------------------------------------------------
 
@@ -1350,7 +1522,193 @@ void AIThinkCorsairSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //--------------------------------------------------------------------------------------------------
 //  *** DARK ARCHON ***
 //--------------------------------------------------------------------------------------------------
+
+//Feedback
+const int c_maelstromCooldown = c_tactTimerSecond;
+const int c_BWFeedbackMinDamageNormal = 100;
+const int c_BWFeedbackMinDamageLowVitality = 50;
+const fixed c_BWMindControlMinVitality = 125;
+
+//---------------------------------------------------------------------------------------------
+order BWFeedback (int player, unit aiUnit, unitgroup scanGroup, marker mark, bool lowVitality) {
+    order ord;
+    fixed damage;
+    aifilter filter;
+    int minEnergy;
+    unitgroup targetGroup;
+    
+    if (AIIsCampaign(player)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_DarkArchonSCBWFeedback, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    } 
+
+    if (lowVitality) {
+        minEnergy = c_BWFeedbackMinDamageLowVitality;
+    }
+    else {
+        minEnergy = c_BWFeedbackMinDamageNormal;
+    }
+
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupEnemy);
+    AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_DarkArchonSCBWFeedback, c_fieldTargetFiltersAB)));
+    AISetFilterRange(filter, aiUnit, AIAbilityFixed(player, c_BWAB_DarkArchonSCBWFeedback, c_fieldRange0) + 1);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    AISetFilterEnergy(filter, minEnergy, c_noMax);
+
+    //  Pick a valid target
+    targetGroup = AIGetFilterGroup(filter, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
+}
+
+//---------------------------------------------------------------------------------------------
+order BWMindControl (int player, unit aiUnit, unitgroup scanGroup, marker mark, bool lowVitality) {
+    order ord;
+    aifilter filter;
+    unit target;
+    unitgroup targetGroup;
+    //  vars related to nearby enemies.
+    aifilter groundAirFilter;
+    unitgroup threatGroup;
+    int enemyGroundCount;
+    int enemyAirCount;
+
+    if (AIIsCampaign(player)) {
+        return null;
+    }
+    
+    //  Create order and check validity
+    //
+    ord = AICreateOrder(player, c_BWAB_DarkArchonSCBWMindControl, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    //  Scan for enemy air and ground units
+    //
+    enemyGroundCount = 0;
+    enemyAirCount = 0;
+
+    groundAirFilter = AIFilter(player);
+    AISetFilterAlliance(groundAirFilter, c_playerGroupEnemy);
+    AISetFilterPlane(groundAirFilter, c_planeGround);
+    enemyGroundCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    AISetFilterPlane(groundAirFilter, c_planeAir);
+    enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
+
+    //  Apply filters to enemies
+    //
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupEnemy);
+    AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_DarkArchonSCBWMindControl, c_fieldTargetFiltersAB)));
+    AISetFilterRange(filter, aiUnit, AIAbilityFixed(player, c_BWAB_DarkArchonSCBWMindControl, c_fieldRange0) + 1);
+    AISetFilterLife(filter, c_BWMindControlMinVitality, c_noMax);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
+    targetGroup = AIGetFilterGroup(filter, scanGroup);
+    if (targetGroup == null) {
+        return null;
+    }
+
+    //  Return valid target
+    //
+    return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
+}
+
+//---------------------------------------------------------------------------------------------
+order BWMaelstrom (int player, unit aiUnit, marker mark, unitgroup scanGroup) {
+    order ord;
+    fixed energy;
+    aifilter filter;
+    bool groundAllies;
+    unitgroup enemyGroup;
+    point loc;
+    
+    if (!AITactCooldownAllow(aiUnit, c_maelstromCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_DarkArchonSCBWMaelstrom, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    //  Cast on strongest enemy that can attack our allies
+    filter = AIFilter(player);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DarkArchonSCBWMaelstrom_AB);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    enemyGroup = AIGetFilterGroup(filter, scanGroup);
+
+    loc = AIBestTargetPoint(
+        AIEffectGroup(player, c_BWEF_DarkArchonSCBWMaelstrom_Search, enemyGroup),
+        5, // min hits
+        30, // damage base
+        3.5, // min score
+        AIEffectFixed(player, c_BWEF_DarkArchonSCBWMaelstrom_Search, c_fieldAreaRadius0),
+        UnitGetPosition(aiUnit),
+        AIUnitFixed(player, c_BWPU_DarkArchon, c_fieldSightRange), 
+        c_unitAttributeBiological
+    );
+    if (loc == null) {
+        return null;
+    }
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    return ord;
+}
+
 void AIThinkDarkArchonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    marker mark;
+    order ord;
+    bool lowVitality;
+    unitfilter f;
+    region r;
+    unitgroup enemyGroup;
+    fixed cooldown;
+
+    lowVitality = (UnitGetPropertyInt(aiUnit, c_unitPropVitalityPercent, c_unitPropCurrent) < c_HighTemplarLowVitPerc);
+
+    // feedback
+    mark = AIMarker(aiUnit, c_BWMK_DarkArchonSCBWFeedback);
+    ord = BWFeedback(player, aiUnit, scanGroup, mark, lowVitality);
+    if (ord != null) {
+        AICast(aiUnit, ord, mark, c_castRetreat);
+        return;
+    }
+    
+    //Maelstrom
+    mark = AIMarker(aiUnit, c_BWMK_DarkArchonSCBWMaelstrom);
+    ord = BWMaelstrom(player, aiUnit, mark, scanGroup);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 15.0;
+        }
+        else {
+            cooldown = 0.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castHold, c_maelstromCooldown, cooldown);
+        return;
+    }
+
+
+    // mind control
+    mark = AIMarker(aiUnit, c_BWMK_DarkArchonSCBWMindControl);
+    ord = BWMindControl(player, aiUnit, scanGroup, mark, lowVitality);
+    if (ord != null) {
+        AICast(aiUnit, ord, mark, c_castRetreat);
+        return;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
