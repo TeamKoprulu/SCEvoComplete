@@ -327,6 +327,24 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorModel id="FirebatSCBWWeapon@ImpactStructure" parent="ModelAnimationStyleOneShot">
+        <Inherits index="Visibility" value="1"/>
+        <Host Subject="_Unit"/>
+        <HostSiteOps Ops="SOpAttachRandomDamage"/>
+        <Model value="FirebatSCBWWeapon@Impact"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+    </CActorModel>
+    <CActorSound id="FirebatSCBWWeapon@DamageSound" parent="GenericAttackDamageSound">
+        <Terms value="Cap 1"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <Host Subject="_Unit"/>
+    </CActorSound>
+    <CActorModel id="FirebatSCBWWeapon@DamageModel" parent="GenericAttackDamageModel">
+        <Terms value="Cap 1"/>
+        <On Terms="ActorCreation; ValidateUnitType NotStructureTarget" Send="Create FirebatSCBWWeapon@Impact"/>
+        <On Terms="ActorCreation; ValidateUnitType IsStructureTarget" Send="Create FirebatSCBWWeapon@ImpactStructure"/>
+        <Host Subject="_Unit"/>
+    </CActorModel>
     <CActorForceBox id="UltraliskSCBWWeapon@LateralLeftForce">
         <Host Subject="::Main" Scope="Caster"/>
         <HostSiteOps Ops="SOpAttachHead SOpShadow SOpForwardCasterCenterInverted SOp2DRotation SOpMoveByDot3 SOpSplashDamagePositionVariance SOpRollCounterClockwise90"/>
@@ -1977,13 +1995,18 @@
         <On Terms="StatusDecrement; IsStatus ActiveCount 0" Send="Destroy"/>
         <On Terms="ActorCreation; ValidatePlayer HaveDetectionEnemy" Send="Destroy"/>
     </CActorSimple>
-    <CActorAction id="FirebatSCBWWeapon@Attack" parent="GenericAttackBase" effectAttack="FirebatSCBWWeapon@CP">
+    <CActorAction id="FirebatSCBWWeapon@Attack" parent="GenericAttackBase">
         <On Terms="Effect.FirebatSCBWWeapon@CP.Start; At Caster" Send="Create"/>
-        <On Terms="Effect.FirebatSCBWWeapon@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <On Terms="Effect.SplashDamage.Start; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <On Terms="Effect.SplashDamage.Stop; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
+        <On Terms="Effect.FirebatSCBWWeapon@CP.Stop; At Caster" Send="Destroy"/>
         <LaunchAssets Model="FirebatSCBWWeapon@Launch" Sound="FirebatSCBWWeapon@Launch"/>
         <LaunchModel value="FirebatSCBWWeapon@Model"/>
         <ContainerAssets Model="FirebatSCBWWeapon@BunkerLaunch" Sound="FirebatSCBWWeapon@BunkerLaunch"/>
         <ImpactMap index="None" Sound="FirebatSCBWWeapon@Impact"/>
+        <DamageMap index="None" Model="Invisible" Sound="FirebatSCBWWeapon@Impact"/>
+        <DamageModel value="FirebatSCBWWeapon@DamageModel"/>
+        <DamageSound value="FirebatSCBWWeapon@DamageSound"/>
     </CActorAction>
     <CActorModel id="FirebatSCBWWeapon@Model" parent="ModelAnimationStyleOneShotNoOrphan">
         <Flags index="SuppressCreationErrors" value="1"/>
@@ -1999,11 +2022,10 @@
         <Radius value="0.400000"/>
     </CActorRegionCircle>
     <CActorModel id="FirebatSCBWWeapon@Impact" parent="ModelAnimationStyleOneShot">
-        <Terms value="Cap 1"/>
-        <On Terms="Effect.FirebatSCBWWeapon@Damage.Start; At Target" Send="Create"/>
-        <On Terms="ActorOrphan" Send="Destroy"/>
-        <Host Subject="_Selectable"/>
-        <HostSiteOps Ops="SOpAttachRandomDamage"/>
+        <Host Subject="_Unit"/>
+        <HostSiteOps Ops="SOpAttachHead SOpForwardCasterCenter"/>
+        <Inherits index="Visibility" value="1"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
     </CActorModel>
     <CActorAction id="MarineSCBWWeapon@Attack" parent="GenericAttack" effectAttack="MarineSCBWWeapon@Damage">
         <LaunchAssets Model="MarineSCBWWeapon@Launch" Sound="MarineSCBWWeapon@Launch"/>
