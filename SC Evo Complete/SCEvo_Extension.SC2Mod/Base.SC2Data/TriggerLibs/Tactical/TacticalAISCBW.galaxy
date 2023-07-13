@@ -302,6 +302,11 @@ order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker ma
     return AIUnitGroupGetValidOrder(targetGroup, ord, aiUnit, c_forwards);
 }
 
+//if(CatalogFieldValueGet(c_gameCatalogBehavior, "", "alignment", player))
+//{
+//
+//}
+
 //--------------------------------------------------------------------------------------------------
 void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     marker mark;
@@ -519,7 +524,8 @@ void AIThinkVultureSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 const int c_BWScienceVesselIrradiateCooldown = c_tactTimerFirst;
 const int c_BWScienceVesselDMatrixCooldown = c_tactTimerSecond;
 const int c_BWScienceVesselEMPCooldown = c_tactTimerThird;
-const fixed c_EMPminShields = 15;
+const fixed c_EMPminShields = 50;
+const fixed c_EMPminEnergy = 40;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -634,6 +640,45 @@ order BWScienceVesselShieldedEMP (int player, unit aiUnit, unitgroup scanGroup) 
 }
 
 //--------------------------------------------------------------------------------------------------
+order BWScienceVesselEnergyEMP (int player, unit aiUnit, unitgroup scanGroup) {
+    point loc;
+    aifilter filter;
+    unitgroup EMPGroup;
+
+    order ord = AITacticalOrder(player, aiUnit, c_BWAB_ScienceVesselSCBWEMPShockwave);
+    if (ord == null) {
+        return null;
+    }
+
+
+    filter = AIFilter(player);
+    AISetFilterEnergy(filter, c_EMPminEnergy, c_noMax);
+    EMPGroup = AIGetFilterGroup(filter, scanGroup);
+    
+
+    loc = AIBestTargetPoint(
+        AIEffectGroup(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, scanGroup),
+        5, // min hits
+        50, // damage base
+        2.0, // score
+        AIEffectFixed(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, c_fieldAreaRadius0) + 1.0,
+        UnitGetPosition(aiUnit),
+        AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWEMPShockwave, c_fieldRange0),
+        c_unitAttributeNone
+    );
+
+    if (loc == null) {
+        return null;
+    }
+    
+    OrderSetTargetPoint(ord, loc);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+    return ord;
+}
+
+//--------------------------------------------------------------------------------------------------
 void AIThinkScienceVesselSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
     unit heal;
@@ -644,13 +689,26 @@ void AIThinkScienceVesselSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 		return;
 	}
 
-    ord = BWScienceVesselShieldedEMP(player, aiUnit, scanGroup);
+    ord = BWScienceVesselIrradiate(player, aiUnit, scanGroup);
     if (ord != null) {
+        
 		if(AIPlayerDifficulty(player) == c_campAdvanced) {
-			cooldown = 15.0;
+			cooldown = 22.5;
 		}
 		else {
-			cooldown = 5.0;
+			cooldown = 4.0;
+		}
+		AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselIrradiateCooldown, cooldown);
+        return;
+    }
+
+    ord = BWScienceVesselEnergyEMP(player, aiUnit, scanGroup);
+    if (ord != null) {
+		if(AIPlayerDifficulty(player) == c_campAdvanced) {
+			cooldown = 10.0;
+		}
+		else {
+			cooldown = 1.0;
 		}		
 
         AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselEMPCooldown, cooldown);
@@ -671,23 +729,25 @@ void AIThinkScienceVesselSCBW (int player, unit aiUnit, unitgroup scanGroup) {
         return;
     }
 
-    //EMP Shockwave
-    if (AIEvalTacticalData(aiUnit, null)) {
+    ord = BWScienceVesselShieldedEMP(player, aiUnit, scanGroup);
+    if (ord != null) {
+		if(AIPlayerDifficulty(player) == c_campAdvanced) {
+			cooldown = 15.0;
+		}
+		else {
+			cooldown = 5.0;
+		}		
+
+        AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselEMPCooldown, cooldown);
         return;
     }
 
-    ord = BWScienceVesselIrradiate(player, aiUnit, scanGroup);
-    if (ord != null) {
-        
-		if(AIPlayerDifficulty(player) == c_campAdvanced) {
-			cooldown = 22.5;
-		}
-		else {
-			cooldown = 10.0;
-		}
-		AICastCooldown(aiUnit, ord, c_noMarker, c_castRetreat, c_BWScienceVesselIrradiateCooldown, cooldown);
-        return;
-    }
+    //EMP Shockwave
+    //if (AIEvalTacticalData(aiUnit, null)) {
+    //    return;
+    //}
+
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1948,11 +2008,10 @@ void AIThinkCyberneticsCoreSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 
     // Counts all Combatant Air Units
     airUnitCount = 
-    TechTreeUnitCount(player, c_BWPU_Zealot, c_techCountQueuedOrBetter)+
-    TechTreeUnitCount(player, c_BWPU_Dragoon, c_techCountQueuedOrBetter)+
-    TechTreeUnitCount(player, c_BWPU_DarkTemplar, c_techCountQueuedOrBetter)+
-    TechTreeUnitCount(player, c_BWPU_Archon, c_techCountQueuedOrBetter)+
-    TechTreeUnitCount(player, c_BWPU_Reaver, c_techCountQueuedOrBetter);
+    TechTreeUnitCount(player, c_BWPU_Scout, c_techCountQueuedOrBetter)+
+    TechTreeUnitCount(player, c_BWPU_Corsair, c_techCountQueuedOrBetter)+
+    TechTreeUnitCount(player, c_BWPU_Arbiter, c_techCountQueuedOrBetter)+
+    TechTreeUnitCount(player, c_BWPU_Carrier, c_techCountQueuedOrBetter);
 
     //Tier 1 Air Weapons
     if(TechTreeUpgradeCount(player, c_BWPR_ProtossAirWeaponsSCBW_Lvl1, c_techCountQueuedOrBetter) == 0) {
@@ -2404,7 +2463,7 @@ order BWDefilerPlague (int player, unit aiUnit, unitgroup scanGroup, marker mark
 
     AISetFilterPlane(groundAirFilter, c_planeAir);
     enemyAirCount = UnitGroupCount(AIGetFilterGroup(groundAirFilter, scanGroup), c_unitCountAlive);
-    
+
     filter = AIFilter(player);
     AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DefilerSCBWPlague_AB);
     AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
@@ -2419,7 +2478,7 @@ order BWDefilerPlague (int player, unit aiUnit, unitgroup scanGroup, marker mark
         0.5, // min score 
         AIEffectFixed(player, c_BWEF_DefilerSCBWPlague_Search, c_fieldAreaRadius0),
         UnitGetPosition(aiUnit),
-        AIAbilityFixed(player, c_BWAB_DefilerSCBWPlague, c_fieldRange0)+3,
+        AIAbilityFixed(player, c_BWAB_DefilerSCBWPlague, c_fieldRange0)+0,
         c_unitAttributeNone
     );
     if (loc == null) {
