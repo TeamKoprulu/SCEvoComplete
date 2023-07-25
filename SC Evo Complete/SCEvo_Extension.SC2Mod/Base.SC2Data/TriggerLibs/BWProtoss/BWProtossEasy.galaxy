@@ -1,0 +1,844 @@
+//==================================================================================================
+//  BWProtoss Easy Skirmish AI
+//  This is a generated file. Do not edit directly.
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossUpgradesEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossUpgradesEasy (int player, int phase) {
+    int buildType;
+
+    if (phase < c_ldPhaseLate) {
+        buildType = AIGetUserInt(player, c_openingBuildType);
+    } else {
+        buildType = AIGetUserInt(player, c_lateGameBuildType);
+    }
+
+    if (buildType != e_buildType_Air) {
+
+
+        if (phase >= c_ldPhaseMid) {
+
+            if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) >= 3) {
+                AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+            }
+
+            if (phase >= c_ldPhaseLate) {
+
+                AISetStock( player, 1, c_BWPR_ProtossGroundWeaponsSCBW_Lvl1 );
+                AISetStock( player, 1, c_BWPR_ProtossGroundArmorsSCBW_Lvl1 );
+                AISetStock( player, 1, c_BWPR_ObserverSCBWSpeedUpgrade );
+                AISetStock( player, 1, c_BWPR_ShuttleSCBWSpeedUpgrade );
+
+                if (phase >= c_ldPhaseFinal) {
+
+                    AISetStock( player, 1, c_BWPR_ProtossGroundWeaponsSCBW_Lvl2 );
+                    AISetStock( player, 1, c_BWPR_ProtossGroundArmorsSCBW_Lvl2 );
+                    AISetStock( player, 1, c_BWPR_ProtossAirWeaponsSCBW_Lvl1 );
+                    AISetStock( player, 1, c_BWPR_ProtossAirArmorsSCBW_Lvl1 );
+
+                }
+            }
+        }
+    }
+    else {  // (buildType == e_buildType_Air) 
+
+
+        if (phase >= c_ldPhaseMid) {
+
+
+            if (phase >= c_ldPhaseLate) {
+
+                AISetStock( player, 1, c_BWPR_ProtossAirWeaponsSCBW_Lvl1 );
+                AISetStock( player, 1, c_BWPR_ProtossAirArmorsSCBW_Lvl1 );
+                AISetStock( player, 1, c_BWPR_ObserverSCBWSpeedUpgrade );
+                AISetStock( player, 1, c_BWPR_ShuttleSCBWSpeedUpgrade );
+
+                if (phase >= c_ldPhaseFinal) {
+
+                    AISetStock( player, 1, c_BWPR_ProtossAirWeaponsSCBW_Lvl2 );
+                    AISetStock( player, 1, c_BWPR_ProtossAirArmorsSCBW_Lvl2 );
+                    AISetStock( player, 1, c_BWPR_ProtossGroundWeaponsSCBW_Lvl1 );
+                    AISetStock( player, 1, c_BWPR_ProtossGroundArmorsSCBW_Lvl1 );
+
+                }
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenArmyInitEasy
+//--------------------------------------------------------------------------------------------------
+int BWProtossOpenArmyInitEasy (int player, int buildType) {
+    int armyRoll = 0;
+    int duration = 0;
+
+    if (buildType == e_buildType_Rush) {
+        // next attack should be around 5 foodCost and 300 resCost after about 375 seconds
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+        // validation: 3 units above with average cost 6 food and 400 resources
+        duration = 401 + RandomInt(-13, 20);
+    }
+    else if (buildType == e_buildType_Timing) {
+        // next attack should be around 7 foodCost and 400 resCost after about 431 seconds
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+        // validation: 4 units above with average cost 8 food and 525 resources
+        duration = 457 + RandomInt(-15, 22);
+    }
+    else if (buildType == e_buildType_Power) {
+        // next attack should be around 9 foodCost and 540 resCost after about 543 seconds
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+        // validation: 5 units above with average cost 10 food and 700 resources
+        duration = 573 + RandomInt(-19, 28);
+    }
+    else if (buildType == e_buildType_Macro) {
+        // next attack should be around 5 foodCost and 300 resCost after about 225 seconds
+        AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+        // validation: 3 units above with average cost 6 food and 375 resources
+        duration = 233 + RandomInt(-7, 11);
+    }
+    else if (buildType == e_buildType_Air) {
+        // next attack should be around 6 foodCost and 600 resCost after about 581 seconds
+        AIAddToStockArmy(player, c_BWPU_Scout, 2);
+        // validation: 2 units above with average cost 6 food and 700 resources
+        duration = 621 + RandomInt(-20, 31);
+    }
+    else {
+        return BWProtossOpenArmyInitEasy(player, e_buildType_Macro);
+    }
+
+    AISetUserInt(player, c_ldNextArmyRoll, armyRoll);
+    return duration;
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenInitEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossOpenInitEasy (int player) {
+    int buildType = 0;
+
+    AIChooseNextOpeningBuild(player);
+    buildType = AIGetUserInt(player, c_openingBuildType);
+    AISetupNextArmy (player, buildType, c_ldPhaseOpen, BWProtossOpenArmyInitEasy);
+
+    AISetMainState(player, e_mainState_Open, e_mainSubState_Build);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenBuildEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossOpenBuildEasy (int player) {
+    int buildType = AIGetUserInt(player, c_openingBuildType);
+    int armyRoll = AIGetUserInt(player, c_ldNextArmyRoll);
+    int timeOut = AIGetUserInt(player, c_nextArmyTime);
+    bool nextState = false;
+
+    if (AIHasPlayerChangedCurrentOpening(player)) {
+        AISetMainState(player, e_mainState_Open, e_mainSubState_Init);
+        return;
+    }
+
+    AIClearStock(player);
+
+    if (buildType == e_buildType_Rush) {
+        AISetStock( player, 1, c_BWPB_Nexus );
+        AISetStock( player, 14, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Pylon );
+        AISetStock( player, 16, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Gateway );
+        AISetStock( player, 1, c_BWPB_Assimilator );
+        AISetStock( player, 2, c_BWPB_Pylon );
+        AISetStock( player, 1, c_BWPB_CyberneticsCore );
+        AISetStockFarms( player, c_BWPB_Pylon, c_stockNormalFarms);
+        AISetStock( player, 1, c_BWPU_Dragoon );
+    }
+    else if (buildType == e_buildType_Timing) {
+        AISetStock( player, 1, c_BWPB_Nexus );
+        AISetStock( player, 14, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Pylon );
+        AISetStock( player, 16, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Gateway );
+        AISetStock( player, 1, c_BWPB_Assimilator );
+        AISetStock( player, 2, c_BWPB_Pylon );
+        AISetStock( player, 1, c_BWPB_CyberneticsCore );
+        AISetStockFarms( player, c_BWPB_Pylon, c_stockNormalFarms);
+        AISetStock( player, 1, c_BWPU_Dragoon );
+        AISetStock( player, 2, c_BWPB_Assimilator );
+    }
+    else if (buildType == e_buildType_Power) {
+        AISetStock( player, 1, c_BWPB_Nexus );
+        AISetStock( player, 14, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Pylon );
+        AISetStock( player, 16, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Gateway );
+        AISetStock( player, 1, c_BWPB_Assimilator );
+        AISetStock( player, 2, c_BWPB_Pylon );
+        AISetStock( player, 1, c_BWPB_CyberneticsCore );
+        AISetStockFarms( player, c_BWPB_Pylon, c_stockNormalFarms);
+        AISetStock( player, 1, c_BWPU_Dragoon );
+        AISetStock( player, 2, c_BWPB_Assimilator );
+    }
+    else if (buildType == e_buildType_Macro) {
+        AISetStock( player, 1, c_BWPB_Nexus );
+        AISetStock( player, 14, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Pylon );
+        AISetStock( player, 16, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Gateway );
+        if (BWProtossMacroExpand(player)) { return; }
+        AISetStock( player, 1, c_BWPU_Zealot );
+        AISetStock( player, 2, c_BWPB_Pylon );
+        AISetStock( player, 1, c_BWPB_Assimilator );
+        AISetStock( player, 1, c_BWPB_CyberneticsCore );
+        AISetStockFarms( player, c_BWPB_Pylon, c_stockNormalFarms);
+        AISetStockUnitNext( player, 22, c_BWPU_Probe, c_stockIdle );
+        AISetStock( player, 1, c_BWPU_Dragoon );
+        AISetStock( player, 2, c_BWPB_Assimilator );
+    }
+    else if (buildType == e_buildType_Air) {
+        AISetStock( player, 1, c_BWPB_Nexus );
+        AISetStock( player, 14, c_BWPU_Probe );
+        AISetStock( player, 1, c_BWPB_Pylon );
+        AISetStock( player, 16, c_BWPU_Probe );
+        if (BWProtossMacroExpand(player)) { return; }
+        AISetStock( player, 1, c_BWPB_Assimilator );
+        AISetStock( player, 1, c_BWPB_Gateway );
+        AISetStock( player, 2, c_BWPB_Assimilator );
+        AISetStock( player, 2, c_BWPB_Pylon );
+        AISetStockUnitNext( player, 22, c_BWPU_Probe, c_stockIdle );
+        AISetStockFarms( player, c_BWPB_Pylon, c_stockNormalFarms);
+        AISetStock( player, 1, c_BWPB_CyberneticsCore );
+        AISetStock( player, 1, c_BWPB_Stargate );
+        AISetStock( player, 3, c_BWPB_Pylon );
+    }
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStockArmyScale(player, 0.35);
+
+    BWProtossGeneralBuild(player, c_ldPhaseOpen);
+
+    AISetStockArmyScale(player, 0.70);
+
+    BWProtossUpgradesEasy(player, c_ldPhaseOpen);
+
+    AISetStockArmyScale(player, 1.00);
+
+    AILDStockWorkers( player, 22, c_BWPU_Probe);
+
+    BWProtossTechUp(player, c_ldPhaseOpen);
+
+    if (buildType == e_buildType_Air) {
+        AISetStock( player, 1, c_BWPU_Shuttle );
+    }
+
+    AIEnableStock(player);
+
+    AILDGeneralSharedLogic(player);
+
+    nextState = AITestTimeout(player, timeOut, e_mainState_Mid, e_mainSubState_Init);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidArmyInitEasy
+//--------------------------------------------------------------------------------------------------
+int BWProtossMidArmyInitEasy (int player, int buildType) {
+    int armyRoll = 0;
+    int duration = 0;
+
+    if (buildType == e_buildType_Rush) {
+        // next attack should be around 10 foodCost and 600 resCost after about 340 seconds
+        AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        // validation: 5 units above with average cost 10 food and 700 resources
+        duration = 335 + RandomInt(-11, 16);
+    }
+    else if (buildType == e_buildType_Timing) {
+        // next attack should be around 13 foodCost and 760 resCost after about 380 seconds
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+        AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Zealot, c_BWPU_Dragoon), 1);
+        AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Dragoon, c_BWPU_Zealot), 1);
+        // validation: 7 units above with average cost 14 food and 1024 resources
+        duration = 401 + RandomInt(-13, 20);
+    }
+    else if (buildType == e_buildType_Power) {
+        // next attack should be around 13 foodCost and 790 resCost after about 400 seconds
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+        AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+        AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+        AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Zealot, c_BWPU_Dragoon), 1);
+        // validation: 7 units above with average cost 14 food and 1062 resources
+        duration = 421 + RandomInt(-14, 21);
+    }
+    else if (buildType == e_buildType_Macro) {
+        // next attack should be around 18 foodCost and 1080 resCost after about 581 seconds
+        // note: mid macro build did not send opening attack at 225 time
+        armyRoll = RandomInt(1,5);
+        if (armyRoll <= 3) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Zealot, c_BWPU_Dragoon), 1);
+            // validation: 9 units above with average cost 18 food and 1287 resources
+            duration = 573 + RandomInt(-26, 39);
+        }
+        else if (armyRoll <= 4) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 4);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Dragoon, c_BWPU_Dragoon), 1);
+            // validation: 10 units above with average cost 20 food and 1350 resources
+            duration = 612 + RandomInt(-27, 41);
+        }
+        else if (armyRoll <= 5) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+            AIAddToStockArmy(player, c_BWPU_Reaver, 2);
+            // validation: 7 units above with average cost 18 food and 1425 resources
+            duration = 610 + RandomInt(-27, 41);
+        }
+    }
+    else if (buildType == e_buildType_Air) {
+        // next attack should be around 9 foodCost and 900 resCost after about 380 seconds
+        AIAddToStockArmy(player, c_BWPU_Scout, 1);
+        AIAddToStockArmyPickFrom2Count(player, c_BWPU_Scout, 2, c_BWPU_Corsair, 3);
+        // validation: 4 units above with average cost 9 food and 1075 resources
+        duration = 410 + RandomInt(-13, 20);
+    }
+    else {
+        return BWProtossMidArmyInitEasy(player, e_buildType_Macro);
+    }
+
+    AISetUserInt(player, c_ldNextArmyRoll, armyRoll);
+    return duration;
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidInitEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossMidInitEasy (int player) {
+    int buildType = 0;
+
+    AIChooseNextOpeningBuild(player);
+    buildType = AIGetUserInt(player, c_openingBuildType);
+    AISetupNextArmy (player, buildType, c_ldPhaseMid, BWProtossMidArmyInitEasy);
+
+    AISetFlag(player, e_flagsScouting, true);
+    AISetFlag(player, e_flagsLateScout, true);
+    AISetFlag(player, e_flagsDetect, true);
+
+    AISetMainState(player, e_mainState_Mid, e_mainSubState_Build);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidBuildEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossMidBuildEasy (int player) {
+    int buildType = AIGetUserInt(player, c_openingBuildType);
+    int armyRoll = AIGetUserInt(player, c_ldNextArmyRoll);
+    int timeOut = AIGetUserInt(player, c_nextArmyTime);
+    bool nextState = false;
+
+    if (AIHasPlayerChangedCurrentOpening(player)) {
+        AISetMainState(player, e_mainState_Mid, e_mainSubState_Init);
+        return;
+    }
+
+    AIClearStock(player);
+
+    BWProtossBasicEconomy(player, c_ldPhaseMid, 16);
+    AISetStock( player, 3, c_BWPB_Pylon );
+    if (buildType == e_buildType_Air) {
+        AISetStock( player, 1, c_BWPU_Shuttle );
+    }
+    BWProtossBasicExpansion(player, c_ldPhaseMid, 5500, 1500);
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStockArmyScale(player, 0.35);
+
+    BWProtossGeneralBuild(player, c_ldPhaseMid);
+
+    AILDStockWorkers( player, 22, c_BWPU_Probe);
+
+    if (buildType == e_buildType_Rush) {
+    }
+    else if (buildType == e_buildType_Timing) {
+    }
+    else if (buildType == e_buildType_Power) {
+        if (BWProtossMacroExpand(player)) { return; }
+    }
+    else if (buildType == e_buildType_Macro) {
+        if (BWProtossMacroExpand(player)) { return; }
+    }
+    else if (buildType == e_buildType_Air) {
+        if (BWProtossMacroExpand(player)) { return; }
+    }
+
+    if (AINeedsDetection(player)) {
+        AISetStock( player, 1, c_BWPU_Observer );
+    }
+
+    AISetStockArmyScale(player, 0.70);
+
+    AILDStockWorkers( player, 50, c_BWPU_Probe);
+
+    BWProtossUpgradesEasy(player, c_ldPhaseMid);
+
+    AISetStockArmyScale(player, 1.00);
+
+    AISetStock( player, 2, c_BWPU_Observer );
+
+    BWProtossTechUp(player, c_ldPhaseMid);
+
+    AIEnableStock(player);
+
+    AILDGeneralSharedLogic(player);
+
+    nextState = AITestTimeout(player, timeOut, e_mainState_Late, e_mainSubState_Init);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossLateArmyInitEasy
+//--------------------------------------------------------------------------------------------------
+int BWProtossLateArmyInitEasy (int player, int buildType) {
+    int armyRoll = 0;
+    int duration = 0;
+
+    if (buildType == e_buildType_Core) {
+        // next attack should be around 17 foodCost and 1000 resCost after about 320 seconds
+        armyRoll = RandomInt(1,5);
+        if (armyRoll <= 3) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Scout), 1);
+            // validation: 6 units above with average cost 14 food and 1050 resources
+            duration = 313 + RandomInt(-10, 15);
+        }
+        else if (armyRoll <= 4) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 4);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Scout), 1);
+            // validation: 6 units above with average cost 14 food and 950 resources
+            duration = 300 + RandomInt(-10, 15);
+        }
+        else if (armyRoll <= 5) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 4);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Scout), 1);
+            // validation: 6 units above with average cost 14 food and 1150 resources
+            duration = 325 + RandomInt(-10, 16);
+        }
+    }
+    else if (buildType == e_buildType_HighTech) {
+        // next attack should be around 19 foodCost and 1100 resCost after about 340 seconds
+        armyRoll = RandomInt(1,2);
+        if (armyRoll <= 1) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, c_BWPU_Archon, 2);
+            // validation: 5 units above with average cost 14 food and 1250 resources
+            duration = 337 + RandomInt(-11, 16);
+        }
+        else if (armyRoll <= 2) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Carrier), 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Carrier, c_BWPU_Carrier), 1);
+            // validation: 4 units above with average cost 16 food and 1425 resources
+            duration = 368 + RandomInt(-12, 18);
+        }
+    }
+    else if (buildType == e_buildType_Special) {
+        // next attack should be around 20 foodCost and 1200 resCost after about 360 seconds
+        armyRoll = RandomInt(1,2);
+        if (armyRoll <= 1) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 4);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 4);
+            // validation: 10 units above with average cost 20 food and 1500 resources
+            duration = 397 + RandomInt(-13, 19);
+        }
+        else if (armyRoll <= 2) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_HighTemplar, 2);
+            AIAddToStockArmy(player, c_BWPU_Archon, 1);
+            // validation: 7 units above with average cost 16 food and 1400 resources
+            duration = 367 + RandomInt(-12, 18);
+        }
+    }
+    else if (buildType == e_buildType_Mixed) {
+        // next attack should be around 22 foodCost and 1300 resCost after about 380 seconds
+        armyRoll = RandomInt(1,5);
+        if (armyRoll <= 3) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Archon), 1);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 1);
+            // validation: 9 units above with average cost 20 food and 1625 resources
+            duration = 410 + RandomInt(-13, 20);
+        }
+        else if (armyRoll <= 4) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Archon), 1);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 1);
+            // validation: 8 units above with average cost 18 food and 1475 resources
+            duration = 384 + RandomInt(-12, 19);
+        }
+        else if (armyRoll <= 5) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Reaver, 1);
+            AIAddToStockArmy(player, c_BWPU_Archon, 1);
+            // validation: 6 units above with average cost 16 food and 1350 resources
+            duration = 361 + RandomInt(-12, 18);
+        }
+    }
+    else if (buildType == e_buildType_Air) {
+        // next attack should be around 13 foodCost and 1300 resCost after about 340 seconds
+        armyRoll = RandomInt(1,4);
+        if (armyRoll <= 3) {
+            AIAddToStockArmy(player, c_BWPU_Scout, 3);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 2);
+            // validation: 5 units above with average cost 13 food and 1550 resources
+            duration = 367 + RandomInt(-12, 18);
+        }
+        else if (armyRoll <= 4) {
+            AIAddToStockArmy(player, c_BWPU_Scout, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Carrier, c_BWPU_Carrier), 2);
+            // validation: 3 units above with average cost 15 food and 1550 resources
+            duration = 380 + RandomInt(-12, 19);
+        }
+    }
+    else {
+        return BWProtossLateArmyInitEasy(player, e_buildType_Core);
+    }
+
+    AISetUserInt(player, c_ldNextArmyRoll, armyRoll);
+    return duration;
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossFinalArmyInitEasy
+//--------------------------------------------------------------------------------------------------
+int BWProtossFinalArmyInitEasy (int player, int buildType) {
+    int armyRoll = 0;
+    int duration = 0;
+
+    if (buildType == e_buildType_Core) {
+        // next attack should be around 27 foodCost and 1600 resCost after about 290 seconds
+        armyRoll = RandomInt(1,4);
+        if (armyRoll <= 2) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 4);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 5);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Scout), 1);
+            // validation: 12 units above with average cost 26 food and 1925 resources
+            duration = 311 + RandomInt(-10, 15);
+        }
+        else if (armyRoll <= 3) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Scout), 1);
+            // validation: 10 units above with average cost 22 food and 1600 resources
+            duration = 277 + RandomInt(-9, 13);
+        }
+        else if (armyRoll <= 4) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 6);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Scout), 1);
+            // validation: 10 units above with average cost 22 food and 1750 resources
+            duration = 288 + RandomInt(-9, 14);
+        }
+    }
+    else if (buildType == e_buildType_HighTech) {
+        // next attack should be around 29 foodCost and 1700 resCost after about 310 seconds
+        armyRoll = RandomInt(1,2);
+        if (armyRoll <= 1) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 4);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Archon, 2);
+            // validation: 10 units above with average cost 24 food and 2000 resources
+            duration = 319 + RandomInt(-10, 15);
+        }
+        else if (armyRoll <= 2) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 4);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Carrier), 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Carrier, c_BWPU_Carrier), 1);
+            // validation: 8 units above with average cost 24 food and 2050 resources
+            duration = 323 + RandomInt(-10, 16);
+        }
+    }
+    else if (buildType == e_buildType_Special) {
+        // next attack should be around 30 foodCost and 1800 resCost after about 330 seconds
+        armyRoll = RandomInt(1,2);
+        if (armyRoll <= 1) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 4);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 6);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 4);
+            // validation: 14 units above with average cost 28 food and 2050 resources
+            duration = 343 + RandomInt(-11, 17);
+        }
+        else if (armyRoll <= 2) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 4);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_HighTemplar, 2);
+            AIAddToStockArmy(player, c_BWPU_Archon, 1);
+            // validation: 10 units above with average cost 22 food and 1850 resources
+            duration = 312 + RandomInt(-10, 15);
+        }
+    }
+    else if (buildType == e_buildType_Mixed) {
+        // next attack should be around 32 foodCost and 1900 resCost after about 330 seconds
+        armyRoll = RandomInt(1,4);
+        if (armyRoll <= 2) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 2);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Archon), 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Archon), 1);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 1);
+            // validation: 10 units above with average cost 24 food and 2025 resources
+            duration = 319 + RandomInt(-10, 15);
+        }
+        else if (armyRoll <= 3) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 3);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 1);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Archon), 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Reaver, c_BWPU_Archon), 1);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 2);
+            // validation: 10 units above with average cost 24 food and 2050 resources
+            duration = 321 + RandomInt(-10, 16);
+        }
+        else if (armyRoll <= 4) {
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Dragoon, 2);
+            AIAddToStockArmy(player, c_BWPU_Zealot, 1);
+            AIAddToStockArmy(player, c_BWPU_Reaver, 2);
+            AIAddToStockArmy(player, c_BWPU_Archon, 2);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 1);
+            // validation: 9 units above with average cost 26 food and 2350 resources
+            duration = 347 + RandomInt(-11, 17);
+        }
+    }
+    else if (buildType == e_buildType_Air) {
+        // next attack should be around 18 foodCost and 1800 resCost after about 310 seconds
+        armyRoll = RandomInt(1,3);
+        if (armyRoll <= 2) {
+            AIAddToStockArmy(player, c_BWPU_Scout, 5);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 1);
+            // validation: 6 units above with average cost 17 food and 2000 resources
+            duration = 320 + RandomInt(-10, 16);
+        }
+        else if (armyRoll <= 3) {
+            AIAddToStockArmy(player, c_BWPU_Scout, 2);
+            AIAddToStockArmy(player, c_BWPU_Corsair, 1);
+            AIAddToStockArmy(player, AIPickFrom2(c_BWPU_Carrier, c_BWPU_Carrier), 2);
+            // validation: 5 units above with average cost 20 food and 2150 resources
+            duration = 343 + RandomInt(-11, 17);
+        }
+    }
+    else {
+        return BWProtossFinalArmyInitEasy(player, e_buildType_Core);
+    }
+
+    AISetUserInt(player, c_ldNextArmyRoll, armyRoll);
+    return duration;
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossLateInitEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossLateInitEasy (int player) {
+    int lateLoop = AIGetUserInt(player, c_ldNumLateLoops);
+    int curPhase = c_ldPhaseLate;
+    int buildType = 0;
+
+    AIChooseNextLateGameBuild(player);
+    buildType = AIGetUserInt(player, c_lateGameBuildType);
+
+    if (lateLoop <= 0) { // First Late Loop
+        AISetupNextArmy (player, buildType, curPhase, BWProtossLateArmyInitEasy);
+    } else {
+        curPhase = c_ldPhaseFinal + lateLoop;
+        AISetupNextArmy (player, buildType, curPhase, BWProtossFinalArmyInitEasy);
+    }
+
+    AISetFlag(player, e_flagsScouting, true);
+    AISetFlag(player, e_flagsClearObs, true);
+    AISetFlag(player, e_flagsLateScout, true);
+    AISetFlag(player, e_flagsDetect, true);
+
+    AISetMainState(player, e_mainState_Late, e_mainSubState_Build);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossLateBuildEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossLateBuildEasy (int player) {
+    int lateLoop = AIGetUserInt(player, c_ldNumLateLoops);
+    int buildType = AIGetUserInt(player, c_lateGameBuildType);
+    int armyRoll = AIGetUserInt(player, c_ldNextArmyRoll);
+    int timeOut = AIGetUserInt(player, c_nextArmyTime);
+    bool nextState = false;
+
+    if (AIHasPlayerChangedCurrentLateGame(player)) {
+        AISetMainState(player, e_mainState_Late, e_mainSubState_Init);
+        return;
+    }
+
+    AIClearStock(player);
+
+    BWProtossBasicEconomy(player, c_ldPhaseLate, 16);
+    AISetStock( player, 3, c_BWPB_Pylon );
+    if (buildType == e_buildType_Air) {
+        AISetStock( player, 1, c_BWPU_Shuttle );
+    }
+    BWProtossBasicExpansion(player, c_ldPhaseLate, 8000, 2000);
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStockArmyScale(player, 0.35);
+
+    BWProtossGeneralBuild(player, c_ldPhaseLate);
+
+    AILDStockWorkers( player, 22, c_BWPU_Probe);
+
+    if (buildType == e_buildType_Core) {
+        if (BWProtossMacroExpand(player)) { return; }
+        AISetStockUnitNext( player, 3, c_BWPB_Gateway, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_RoboticsFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_Stargate, c_stockIdle );
+    }
+    else if (buildType == e_buildType_HighTech) {
+        if (BWProtossMacroExpand(player)) { return; }
+        AISetStockUnitNext( player, 3, c_BWPB_Gateway, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_RoboticsFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_Stargate, c_stockIdle );
+    }
+    else if (buildType == e_buildType_Special) {
+        if (BWProtossMacroExpand(player)) { return; }
+        AISetStockUnitNext( player, 3, c_BWPB_Gateway, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_RoboticsFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_Stargate, c_stockIdle );
+    }
+    else if (buildType == e_buildType_Mixed) {
+        if (BWProtossMacroExpand(player)) { return; }
+        AISetStockUnitNext( player, 3, c_BWPB_Gateway, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_RoboticsFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_Stargate, c_stockIdle );
+    }
+    else if (buildType == e_buildType_Air) {
+        if (BWProtossMacroExpand(player)) { return; }
+        AISetStockUnitNext( player, 1, c_BWPB_Gateway, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWPB_RoboticsFacility, c_stockIdle );
+        AISetStockUnitNext( player, 3, c_BWPB_Stargate, c_stockIdle );
+    }
+
+    AISetStock( player, 2, c_BWPU_Observer );
+
+    AISetStockArmyScale(player, 0.70);
+
+    AISetStock( player, 2, c_BWPU_Shuttle );
+    AISetStock( player, 3, c_BWPU_Observer );
+
+    AISetStockArmyScale(player, 1.00);
+
+    AILDStockWorkers( player, 50, c_BWPU_Probe);
+
+    if (lateLoop <= 0) { // First Late Loop
+        BWProtossUpgradesEasy(player, c_ldPhaseLate);
+        BWProtossTechUp(player, c_ldPhaseLate);
+    } else { // Remaining Loops
+        BWProtossUpgradesEasy(player, c_ldPhaseFinal);
+        BWProtossTechUp(player, c_ldPhaseFinal);
+    }
+
+    AIEnableStock(player);
+
+    AILDGeneralSharedLogic(player);
+
+    nextState = AITestTimeout(player, timeOut, e_mainState_Late, e_mainSubState_Init);
+    if (nextState) {
+        lateLoop += 1;
+        AISetUserInt(player, c_ldNumLateLoops, lateLoop);
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossOpenEasy (int player) {
+    int mainSubState = AIState(player, e_mainSubState);
+
+    if (mainSubState != e_mainSubState_Build) {
+        BWProtossOpenInitEasy(player);
+        mainSubState = AIState(player, e_mainSubState);
+    }
+
+    if (mainSubState == e_mainSubState_Build) { BWProtossOpenBuildEasy(player); }
+    else { ErrorMeleeScript(player, "Invalid Open MainSubState BWProtossEasy"); }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossMidEasy (int player) {
+    int mainSubState = AIState(player, e_mainSubState);
+
+    if (mainSubState != e_mainSubState_Build) {
+        BWProtossMidInitEasy(player);
+        mainSubState = AIState(player, e_mainSubState);
+    }
+
+    if (mainSubState == e_mainSubState_Build) { BWProtossMidBuildEasy(player);  }
+    else { ErrorMeleeScript(player, "Invalid Mid MainSubState BWProtossEasy"); }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossLateEasy
+//--------------------------------------------------------------------------------------------------
+void BWProtossLateEasy (int player) {
+    int mainSubState = AIState(player, e_mainSubState);
+
+    if (mainSubState != e_mainSubState_Build) {
+        BWProtossLateInitEasy(player);
+        mainSubState = AIState(player, e_mainSubState);
+    }
+
+    if (mainSubState == e_mainSubState_Build) { BWProtossLateBuildEasy(player);  }
+    else { ErrorMeleeScript(player, "Invalid Late MainSubState BWProtossEasy"); }
+}
+
