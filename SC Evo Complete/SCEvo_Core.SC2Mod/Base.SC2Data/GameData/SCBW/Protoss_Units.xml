@@ -176,10 +176,6 @@
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="HighTemplarSCBWHallucination@TimedLife"/>
     </CEffectApplyBehavior>
-    <CEffectApplyBehavior id="InterceptorSCBW@AB">
-        <EditorCategories value="Race:Protoss"/>
-        <Behavior value="CarrierInterceptorBombs"/>
-    </CEffectApplyBehavior>
     <CEffectDamage id="HighTemplarSCBWHallucination@KillHallucination">
         <ValidatorArray value="HighTemplarSCBWHallucination@KillHallucinationTargetFilters"/>
         <EditorCategories value="Race:Protoss"/>
@@ -288,8 +284,9 @@
             <Flags index="LeashRetarget" value="1"/>
         </InfoArray>
         <Alert value="TrainComplete"/>
-        <EffectArray index="Create" value="InterceptorSCBW@AB"/>
-        <EffectArray index="Death" value="InterceptorFate"/>
+        <EffectArray index="Create" value="InterceptorSCBW@CreateSet"/>
+        <EffectArray index="Launch" value="InterceptorSCBW@LaunchSwitch"/>
+        <EffectArray index="Return" value="InterceptorSCBW@HealSet"/>
         <MaxCount value="4"/>
     </CAbilArmMagazine>
     <CAbilEffectTarget id="CorsairSCBWDisruptionWeb">
@@ -5923,5 +5920,131 @@
         <Period value="0.571"/>
         <InitialEffect value="HighTemplarSCBWPsiStorm@DamageInitial"/>
         <PeriodicEffect value="HighTemplarSCBWPsiStorm@Damage"/>
+    </CBehaviorBuff>
+    <CEffectRemoveBehavior id="InterceptorSCBW@HealLifeRB">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorLink value="InterceptorSCBW@RegenerateLife"/>
+    </CEffectRemoveBehavior>
+    <CEffectSwitch id="InterceptorSCBW@LaunchSwitch">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="NotFullLife" Effect="InterceptorSCBW@HealLifeAB"/>
+        <CaseArray Validator="TargetLifeFull" Effect="InterceptorSCBW@HealLifeRB"/>
+    </CEffectSwitch>
+    <CEffectModifyUnit id="InterceptorSCBW@HealShields">
+        <EditorCategories value="Race:Protoss"/>
+        <VitalArray index="Shields">
+            <ChangeFraction value="1"/>
+        </VitalArray>
+    </CEffectModifyUnit>
+    <CEffectSet id="InterceptorSCBW@HealSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="InterceptorSCBW@HealShields"/>
+        <EffectArray value="InterceptorSCBW@HealLifeAB"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="InterceptorSCBW@ReturnSlowAB">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="InterceptorSCBW@ReturnSlow"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="InterceptorSCBW@ReturnHaltAB">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="InterceptorSCBW@ReturnHalt"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="InterceptorSCBW@CreateSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="InterceptorSCBW@ReturnDamagedAB"/>
+        <EffectArray value="InterceptorSCBW@ReturnSlowAB"/>
+        <EffectArray value="InterceptorSCBW@ReturnHaltAB"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="InterceptorSCBW@HealLifeAB">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="InterceptorSCBW@RegenerateLife"/>
+    </CEffectApplyBehavior>
+    <CEffectReturnMagazine id="InterceptorSCBW@Return">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Value="Target"/>
+    </CEffectReturnMagazine>
+    <CEffectApplyBehavior id="InterceptorSCBW@ReturnDamagedAB">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="InterceptorSCBW@ReturnDamaged"/>
+    </CEffectApplyBehavior>
+    <CValidatorUnitCompareSpeed id="InterceptorSCBW@IsMovingThreshold">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+        <Value value="0.4375"/>
+    </CValidatorUnitCompareSpeed>
+    <CValidatorLocationCompareRange id="InterceptorSCBW@CloseToCarrier">
+        <WhichLocation Value="TargetUnit"/>
+        <Compare value="LE"/>
+        <Range value="0.6667"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorLocationCompareRange id="InterceptorSCBW@RightNextToCarrier">
+        <WhichLocation Value="TargetUnit"/>
+        <Compare value="LE"/>
+        <Range value="0.3334"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorUnitCompareVital id="InterceptorSCBW@ShieldsLE10">
+        <ResultFailed value="TooMuchShields"/>
+        <Compare value="LE"/>
+        <Value value="10"/>
+        <Vital value="Shields"/>
+    </CValidatorUnitCompareVital>
+    <CBehaviorBuff id="InterceptorSCBW@ReturnSlow">
+        <InfoIcon value="Assets/Textures/btn-command-returncargo.dds"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <DisableValidatorArray value="InterceptorSCBW@IsMovingThreshold"/>
+        <DisableValidatorArray value="InterceptorSCBW@CloseToCarrier"/>
+        <DisableValidatorArray value="InterceptorNotAttacking"/>
+        <DisableValidatorArray value="InterceptorNotPatrolling"/>
+        <Modification MoveSpeedMaximum="1.875" DecelerationMultiplier="0.0625"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="InterceptorSCBW@ReturnHalt">
+        <InfoIcon value="Assets/Textures/btn-command-returncargo.dds"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <DisableValidatorArray value="InterceptorSCBW@IsMovingThreshold"/>
+        <DisableValidatorArray value="InterceptorSCBW@RightNextToCarrier"/>
+        <DisableValidatorArray value="InterceptorNotAttacking"/>
+        <DisableValidatorArray value="InterceptorNotPatrolling"/>
+        <Modification>
+            <AbilClassDisableArray index="CAbilMove" value="1"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="InterceptorSCBW@RegenerateLife">
+        <InfoIcon value="Assets/Textures/btn-ability-terran-heal-color.dds"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="NotFullLife"/>
+        <Period value="0.0625"/>
+        <PeriodicEffect value="InterceptorSCBW@Return"/>
+        <Modification>
+            <ModifyFlags index="DisableAbils" value="1"/>
+            <ModifyFlags index="DisableWeapons" value="1"/>
+            <ModifyFlags index="SuppressMoving" value="1"/>
+            <ModifyFlags index="SuppressTurning" value="1"/>
+            <StateFlags index="Invulnerable" value="1"/>
+            <StateFlags index="SuppressAttack" value="1"/>
+            <StateFlags index="NoDraw" value="1"/>
+            <StateFlags index="Uncommandable" value="1"/>
+            <StateFlags index="Undetectable" value="1"/>
+            <StateFlags index="Unradarable" value="1"/>
+            <StateFlags index="Unselectable" value="1"/>
+            <StateFlags index="Unstoppable" value="1"/>
+            <StateFlags index="Untargetable" value="1"/>
+            <VitalRegenArray index="Life" value="8"/>
+            <AbilClassDisableArray index="CAbilArmMagazine" value="1"/>
+            <AbilClassDisableArray index="CAbilAttack" value="1"/>
+            <AbilClassDisableArray index="CAbilMove" value="1"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="InterceptorSCBW@ReturnDamaged">
+        <InfoIcon value="Assets/Textures/btn-ability-zerg-fireroach-increasefiredamage.dds"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <DisableValidatorArray value="InterceptorSCBW@ShieldsLE10"/>
+        <Period value="0.0625"/>
+        <PeriodicEffect value="InterceptorSCBW@Return"/>
+        <Modification>
+            <ModifyFlags index="DisableWeapons" value="1"/>
+            <StateFlags index="SuppressAttack" value="1"/>
+            <AbilClassDisableArray index="CAbilAttack" value="1"/>
+            <BehaviorCategoriesEnable index="Passive" value="1"/>
+        </Modification>
     </CBehaviorBuff>
 </Catalog>
