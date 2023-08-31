@@ -1,5 +1,6 @@
 static const string NYDUS_TYPE = "NydusCanalSCBW";
 static trigger CargoTrig;
+static trigger DeathTrig;
 
 static string PeerNydusKey(unit u){
     return "NydusCanalSCBW."+IntToString(UnitGetTag(u))+".Peer";
@@ -27,8 +28,16 @@ static void DebugMsg(string s){
 
 static void RegisterNydus(unit u){
     TriggerAddEventUnitCargo(CargoTrig,UnitRefFromUnit(u),true);
+    TriggerAddEventUnitDied(DeathTrig,UnitRefFromUnit(u));
 }
 
+
+bool NydusCanalSCBW_DeathTrig(bool a, bool b){
+    unit source= EventUnit();
+    unit target = PeerNydusGet(source);
+    UnitKill(target);
+    return true;
+}
 
 bool NydusCanalSCBW_TeleportCargoTrig(bool a, bool b){
     unit source= EventUnit();
@@ -56,6 +65,8 @@ void NydusCanalSCBW_Init(){
     trigger t;
     t= TriggerCreate("NydusCanalSCBW_TeleportCargoTrig");
     CargoTrig = t;
+    t= TriggerCreate("NydusCanalSCBW_DeathTrig");
+    DeathTrig = t;
     t= TriggerCreate("NydusCanalSCBW_RegisterNydusTrig");
     TriggerAddEventUnitConstructProgress(t,null,c_unitProgressStageComplete);
     
