@@ -881,6 +881,14 @@ void BWProtossHDRecoveryStart (int player) {
 // BWProtossHDVitalUpgrades
 //--------------------------------------------------------------------------------------------------
 void BWProtossHDVitalUpgrades (int player) {
+    if (AITechCount(player, c_BWPU_Dragoon, c_techCountCompleteOnly) >= 4) {
+        AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    }
+
+    if (AITechCount(player, c_BWPU_Zealot, c_techCountCompleteOnly) >= 4) {
+        AISetStock( player, 1, c_BWPR_ZealotSCBWSpeedUpgrade );
+    }
+
     if (AITechCount(player, c_BWPU_Reaver, c_techCountCompleteOnly) >= 2) {
         AISetStock( player, 1, c_BWPR_ReaverSCBWHangarIncreaseUpgrade );
     }
@@ -1070,6 +1078,7 @@ void BWProtossHDDefenseMainTown (int player) {
     int pylonCount;
     int cannonCount;
     int obeliskCount;
+    int batteryAmount;
     int amount;
     int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
 
@@ -1101,6 +1110,13 @@ void BWProtossHDDefenseMainTown (int player) {
         AISetStockEx(player, mainTown, pylonCount, c_BWPB_Pylon, c_makeExpanPower, 0);
         return;
     }
+
+    // at this point AI should have enough to make its first battery
+    batteryAmount = AIGetBuildingCountInTown(player, mainTown, c_BWPB_ShieldBattery, c_techCountInProgressOrBetter);
+    if (batteryAmount == 0) {
+        AISetStockEx(player, mainTown, 1, c_BWPB_ShieldBattery, c_makeWall, 0);
+        return;
+    }
     
     amount = 3;
     if (foodUsed > 140) {
@@ -1115,6 +1131,12 @@ void BWProtossHDDefenseMainTown (int player) {
         return;
     }
 
+    // now we can build additional batteries
+    batteryAmount = amount;
+    if (batteryAmount < amount) {
+        AISetStockEx(player, mainTown, batteryAmount, c_BWPB_ShieldBattery, c_nearChokePoint, 0);
+        return;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1128,6 +1150,7 @@ void BWProtossHDDefenseOtherTowns (int player) {
     int power;
     int defense;
     int amount;
+    int batteryAmount;
     int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
 
     mainTown = AIGetMainTown(player);
@@ -1169,6 +1192,13 @@ void BWProtossHDDefenseOtherTowns (int player) {
             continue;
         }
 
+        // at this point AI should have enough to make its first battery
+        batteryAmount = AIGetBuildingCountInTown(player, town, c_BWPB_ShieldBattery, c_techCountInProgressOrBetter);
+        if (batteryAmount == 0) {
+            AISetStockEx(player, town, batteryAmount, c_BWPB_ShieldBattery, c_nearChokePoint, 0);
+            continue;
+        }
+
         amount = 3;
         if (foodUsed > 140) {
             if (AIHasRes(player,1200,0)) {
@@ -1179,6 +1209,13 @@ void BWProtossHDDefenseOtherTowns (int player) {
         // once the second pylon is done, make 2 more cannons
         if (defense < amount) {
             AISetStockEx(player, town, amount, c_BWPB_PhotonCannon, c_makeDefense, 0);
+            continue;
+        }
+
+        // now we can build additional batteries
+        batteryAmount = amount;
+        if (batteryAmount < amount) {
+            AISetStockEx(player, town, batteryAmount, c_BWPB_ShieldBattery, c_nearChokePoint, 0);
             continue;
         }
     }
