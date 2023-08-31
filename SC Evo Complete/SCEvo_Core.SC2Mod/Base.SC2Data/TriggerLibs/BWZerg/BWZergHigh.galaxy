@@ -1054,7 +1054,9 @@ void BWZergHDDefenseMainTown (int player) {
     int creepColonyCount;
     int sunkenColonyCount;
     int sporeColonyCount;
-    int amount;
+    int sporeAmount;
+    int sunkenAmount;
+    int totalAmount;
     int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
 
     mainTown = AIGetMainTown(player);
@@ -1070,31 +1072,30 @@ void BWZergHDDefenseMainTown (int player) {
         return;
     }
 
-    amount = 3;
+    sporeAmount = 2;
     if (foodUsed > 140) {
         if (AIHasRes(player,1200,0)) {
-            amount = 4;
+            sporeAmount = 3;
+        }
+    }
+    sunkenAmount = 2;
+    if (foodUsed > 140) {
+        if (AIHasRes(player,1200,0)) {
+            sunkenAmount = 3;
         }
     }
 
-    creepColonyInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_CreepColony_Alias, c_techCountCompleteOnly);
-    if (creepColonyInTown < amount) {
-        creepColonyCount = AITechCount(player, c_BWZB_CreepColony_Alias, c_techCountCompleteOnly) + 1;
-        AISetStockEx(player, mainTown, creepColonyCount, c_BWZB_CreepColony_Alias, c_makeDefense, 0);
-        return;
-    }
+    totalAmount = (sunkenAmount+sporeAmount);
 
     sunkenColonyInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_SunkenColony, c_techCountCompleteOnly);
-    if (sunkenColonyInTown < amount) {
-        sunkenColonyCount = AITechCount(player, c_BWZB_SunkenColony, c_techCountCompleteOnly) + 1;
-        AISetStockEx(player, mainTown, sunkenColonyCount, c_BWZB_SunkenColony, c_makeDefense, 0);
+    if (sunkenColonyInTown < sunkenAmount) {
+        AISetStockEx(player, mainTown, sunkenAmount, c_BWZB_SunkenColony, c_makeDefense, 0);
         return;
     }
 
     sporeColonyInTown = AIGetBuildingCountInTown(player, mainTown, c_BWZB_SporeColony, c_techCountCompleteOnly);
-    if (sporeColonyInTown < amount + 1) {
-        sporeColonyCount = AITechCount(player, c_BWZB_SporeColony, c_techCountCompleteOnly) + 1;
-        AISetStockEx(player, mainTown, sporeColonyCount, c_BWZB_SporeColony, c_makeResourceDefense, 0);
+    if (sporeColonyInTown < sporeAmount) {
+        AISetStockEx(player, mainTown, sporeAmount, c_BWZB_SporeColony, c_makeResourceDefense, 0);
         return;
     }
 }
@@ -1108,7 +1109,8 @@ void BWZergHDDefenseOtherTowns (int player) {
     int mainTown;
     int state;
     int minLeftInTown;
-    int amount;
+    int sporeAmount;
+    int sunkenAmount;
     int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
     //bool makeNydusNetwork = false;
 
@@ -1135,23 +1137,34 @@ void BWZergHDDefenseOtherTowns (int player) {
             continue;
         }
 
-        amount = 2;
+        sunkenAmount = 2;
+        sporeAmount = 2;
         if (foodUsed > 140) {
             if (AIHasRes(player,2000,0)) {
-                amount = 4;
+                sunkenAmount = 4;
+                sporeAmount = 2;
             } 
             else if (AIHasRes(player,1200,0)) {
-                amount = 3;
+                sunkenAmount = 3;
+                sporeAmount = 2;
             }
         }
 
-        AISetStockEx(player, town, amount, c_BWZB_CreepColony, c_makeDefense, 0);
+        if (AIGetBuildingCountInTown(player, town, c_BWZB_SunkenColony, c_techCountCompleteOnly) < sunkenAmount) {
+            AISetStockEx(player, town, 1, c_BWZB_CreepColony, c_makeDefense, 0);
+        }
         
-        AISetStockEx(player, town, amount, c_BWZB_SunkenColony, c_makeDefense, 0);
+        if (AIGetBuildingCountInTown(player, town, c_BWZB_SunkenColony, c_techCountCompleteOnly) < sunkenAmount) {
+            AISetStockEx(player, town, sunkenAmount, c_BWZB_SunkenColony, c_makeDefense, 0);
+        }
+
+        if (AIGetBuildingCountInTown(player, town, c_BWZB_SunkenColony, c_techCountCompleteOnly) < sporeAmount) {
+            AISetStockEx(player, town, 1, c_BWZB_CreepColony, c_makeResourceDefense, 0);
+        }
 
         // After making 2 spine crawler, create 2 spore crawlers in each non-main town
         if (AIGetBuildingCountInTown(player, town, c_BWZB_SunkenColony, c_techCountCompleteOnly) >= 2) {
-            AISetStockEx(player, town, amount, c_BWZB_SporeColony, c_makeResourceDefense, 0);
+            AISetStockEx(player, town, sporeAmount, c_BWZB_SporeColony, c_makeResourceDefense, 0);
         }
 
         //// Request 1 nydus worm be made in each non-main town
