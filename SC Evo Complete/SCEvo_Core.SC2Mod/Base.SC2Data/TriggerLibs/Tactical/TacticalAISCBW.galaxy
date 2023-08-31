@@ -618,14 +618,14 @@ order BWScienceVesselShieldedEMP (int player, unit aiUnit, unitgroup scanGroup) 
     
 
     loc = AIBestTargetPoint(
-        AIEffectGroup(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, scanGroup),
+        AIEffectGroup(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, EMPGroup),
         5, // min hits
         50, // damage base
         2.0, // score
         AIEffectFixed(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, c_fieldAreaRadius0) + 1.0,
         UnitGetPosition(aiUnit),
         AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWEMPShockwave, c_fieldRange0),
-        c_unitAttributeNone
+        c_unitAttributeShielded
     );
 
     if (loc == null) {
@@ -657,7 +657,7 @@ order BWScienceVesselEnergyEMP (int player, unit aiUnit, unitgroup scanGroup) {
     
 
     loc = AIBestTargetPoint(
-        AIEffectGroup(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, scanGroup),
+        AIEffectGroup(player, c_BWEF_ScienceVesselSCBWEMPShockwave_Search, EMPGroup),
         5, // min hits
         50, // damage base
         2.0, // score
@@ -2747,11 +2747,89 @@ void AIThinkDefilerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //--------------------------------------------------------------------------------------------------
 //  *** DRONE ***
 //--------------------------------------------------------------------------------------------------
+const int c_creepColonyBuildCooldown = c_tactTimerFirst;
+
+order AIOrderCreepColonyBuild (int player, unit aiUnit) {
+    order ord;
+    point p;
+
+    if (AIIsCampaign(player)) {
+        return null;
+    }
+
+    if (!AITactCooldownAllow(aiUnit, c_creepColonyBuildCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, "DroneSCBW@Build", 1);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    if (!AIHasRes(player,200,0)) {
+        return null;
+    }
+
+    Wait(RandomFixed(0.0, 30.0), c_timeGame);
+
+
+
+
+    // If any queued or in progress exist break
+    if (AITechCount(player, c_BWZB_CreepColony, c_techCountQueuedOnly) > 0) {
+        return null;
+    }
+
+    if (AITechCount(player, c_BWZB_CreepColony, c_techCountInProgressOnly) > 0) {
+        return null;
+    }
+
+    // Make sure the player can afford to build at least one and have enough for other units
+    if (!AIHasRes(player,200,0)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, "DroneSCBW@Build", 1);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    //  Don't cast if there is no creep point set for this player.
+    p = AIGetBestCreepSpot(player, aiUnit, 36);
+    if (p == null) {
+        return null;
+    }
+
+    OrderSetTargetPlacement(ord, p, aiUnit, c_BWZB_CreepColony);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("Building Colony"));
+
+    return ord;
+}
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkDroneSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+    fixed cooldown;
+    marker mark;
+
     //Burrow Down
     if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+
+    ord = AIOrderCreepColonyBuild(player, aiUnit);
+    if (ord != null) {
+        if (!AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 220.0;
+        }
+        else {
+            cooldown = 120.0;
+        }
+        AICastCooldown(aiUnit, ord, c_noMarker, c_castHold, c_creepColonyBuildCooldown, cooldown);
         return;
     }
 }
@@ -2799,7 +2877,7 @@ void AIThinkInfestedTerranSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     }
     
     // turn off automatically exploding on buildings
-    ord = BWToggleSuicideBuilding(player, aiUnit, scanGroup, mark);
+    ord = BWToggleSuicideBuilding(player, aiUnit, scanGroup, c_noMarker);
     if (ord != null) {
         AICast(aiUnit, ord, mark, c_castHold);
         return;
