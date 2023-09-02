@@ -479,7 +479,7 @@
     <CAbilArmMagazine id="ReaverSCBWHangar" parent="SCBW_ArmMagazine" Ammo1="ScarabSCBW">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Leash value="20"/>
-        <InfoArray index="Ammo1" Time="8">
+        <InfoArray index="Ammo1" Time="6.5625">
             <Flags index="AutoBuild" value="1"/>
             <Flags index="AutoBuildOn" value="1"/>
         </InfoArray>
@@ -548,11 +548,15 @@
         <Filters value="Hallucination;-"/>
     </CValidatorUnitFilters>
     <CValidatorPlayerRequirement id="ReaverSCBWHangar@Armed">
+        <ResultFailed value="CantAttackWithoutAmmo"/>
         <WhichPlayer Value="Caster"/>
+        <Find value="1"/>
         <Value value="ReaverSCBWHangar@Armed"/>
     </CValidatorPlayerRequirement>
     <CValidatorPlayerRequirement id="ReaverSCBWHangar@NotArmed">
+        <ResultFailed value="CantAttackWithoutAmmo"/>
         <WhichPlayer Value="Caster"/>
+        <Find value="1"/>
         <Value value="ReaverSCBWHangar@NotArmed"/>
     </CValidatorPlayerRequirement>
     <CRequirement id="CarrierSCBWHangar@Arm" parent="SCBW_AbilReq"/>
@@ -824,8 +828,8 @@
         <OperandArray index="0" value="ScarabSCBW@QoBAtUnit"/>
         <OperandArray index="1" value="10"/>
     </CRequirementLT>
-    <CRequirementGT id="ScarabSCBW@QoBAtUnitGT0">
-        <OperandArray index="0" value="ScarabSCBW@QoBAtUnit"/>
+    <CRequirementGT id="ScarabSCBW@CountAtUnitGT0">
+        <OperandArray index="0" value="ScarabSCBW@CountAtUnit"/>
         <OperandArray index="1" value="0"/>
     </CRequirementGT>
     <CRequirementLT id="ScarabSCBW@QoBAtUnitLT5">
@@ -844,7 +848,7 @@
         <OperandArray value="ScarabSCBW@QoBAtUnitLT5"/>
     </CRequirementAnd>
     <CRequirementAnd id="ReaverSCBWHangar@Armed">
-        <OperandArray value="ScarabSCBW@QoBAtUnitGT0"/>
+        <OperandArray value="ScarabSCBW@CountAtUnitGT0"/>
     </CRequirementAnd>
     <CRequirementAnd id="ReaverSCBWHangar@NotArmed">
         <OperandArray value="ScarabSCBW@NotCountAtUnit"/>
@@ -961,7 +965,9 @@
     <CRequirementNot id="DarkTemplarSCBW@NotQoBAtUnit" parent="SCBW_Not" x="DarkTemplarSCBW@QoBAtUnit"/>
     <CRequirementNot id="DarkTemplarSCBW@NotQoB" parent="SCBW_Not" x="DarkTemplarSCBW@QoB"/>
     <CRequirementCountUnit id="ScarabSCBW@Count" parent="SCBW_UnitCount" x="ScarabSCBW"/>
-    <CRequirementCountUnit id="ScarabSCBW@CountAtUnit" parent="SCBW_UnitCount" x="ScarabSCBW"/>
+    <CRequirementCountUnit id="ScarabSCBW@CountAtUnit" parent="SCBW_UnitCount" x="ScarabSCBW">
+        <Count State="CompleteOnlyAtUnit"/>
+    </CRequirementCountUnit>
     <CRequirementCountUnit id="ScarabSCBW@QoB" parent="SCBW_UnitQoB" x="ScarabSCBW"/>
     <CRequirementCountUnit id="ScarabSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="ScarabSCBW"/>
     <CRequirementNot id="ScarabSCBW@NotQoBAtUnit" parent="SCBW_Not" x="ScarabSCBW@QoBAtUnit"/>
@@ -1584,18 +1590,8 @@
         <IconArcLength value="3.250000"/>
     </CActorRange>
     <CActorUnit id="ScarabSCBW" parent="GenericUnitStandard" unitName="ScarabSCBW">
-        <DeathArray index="Normal" ModelLink="ReaverSCBWWeapon@Impact" SoundLink=""/>
-        <BarOffset value="25"/>
-        <BarWidth value="36"/>
         <HeroIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
-        <SoundArray index="Birth" value=""/>
-        <SoundArray index="Movement" value="InterceptorWeaponBirth"/>
-        <StatusBarFlags index="Shields" value="0"/>
-        <StatusBarFlags index="Life" value="0"/>
-        <StatusBarFlags index="Energy" value="0"/>
-        <StatusBarFlags index="Cargo" value="0"/>
-        <StatusBarFlags index="Progress" value="0"/>
         <UnitFlags index="ShowBlobShadow" value="0"/>
         <UnitIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
     </CActorUnit>
@@ -2248,12 +2244,12 @@
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <On Terms="WeaponStart.ReaverSCBWScarabsLaunch.AttackStart; AnimPlaying Birth" Send="AnimClear Birth"/>
-        <On Terms="Effect.ReaverSCBWWeapon@LM.Start; At Caster" Send="AnimPlay Attack Attack"/>
-        <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="AnimBracketStart Cover Cover,Start Cover Cover,End"/>
-        <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="TimerKill CoverDelay"/>
-        <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="TimerSet 5.000000 CoverDelay"/>
+        <On Terms="Effect.ReaverSCBWWeapon@CU.Start; At Caster" Send="AnimPlay Attack Attack"/>
+        <On Terms="Effect.ReaverSCBWWeapon@Set.Start; At Caster" Send="AnimBracketStart Cover Cover,Start Cover Cover,End"/>
+        <On Terms="Effect.ReaverSCBWWeapon@Set.Start; At Caster" Send="TimerKill CoverDelay"/>
+        <On Terms="Effect.ReaverSCBWWeapon@Set.Start; At Caster" Send="TimerSet 5.000000 CoverDelay"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create ReaverSCBW_Land"/>
-        <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="StatusSet Cover 1"/>
+        <On Terms="Effect.ReaverSCBWWeapon@Set.Start; At Caster" Send="StatusSet Cover 1"/>
         <On Terms="TimerExpired; TimerName CoverDelay" Send="AnimBracketStop Cover"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
@@ -2655,15 +2651,10 @@
         <VariationCount value="2"/>
     </CModel>
     <CModel id="ScarabSCBW" parent="Unit" Race="Protoss">
-        <Model value="Assets\Units\Test\InvisibleUnit\InvisibleUnit.m3"/>
-        <Occlusion value="Show"/>
-        <PlanetPanelCamera value="Star2CameraLow03"/>
-        <Radius value="0.250000"/>
-        <SelectionRadius value="0.294000"/>
-        <ShadowRadius value="0.294000"/>
-        <SquibTypeDefault value="Metal"/>
-        <TechPurchaseCamera value="Star2CameraLow03"/>
-        <UnitGlossaryCamera value="Star2CameraLow03"/>
+        <Model value="Assets\Effects\Protoss\Reaver_Missile\Reaver_Missile.m3"/>
+        <Radius value="0.125000"/>
+        <SelectionRadius value="0.125000"/>
+        <ShadowRadius value="0.125000"/>
     </CModel>
     <CModel id="ShuttleSCBW@Death" parent="WarpPrismDeathBase">
         <Model value="Assets\Units\Protoss\ShuttleSCBW\ShuttleSCBW@Death.m3"/>
@@ -4476,7 +4467,7 @@
         <DataRecord Entry="Requirement,ScarabSCBW"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnit"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitGT0"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@CountAtUnitGT0"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@NotQoBAtUnit"/>
@@ -4735,22 +4726,23 @@
         <FlagArray index="Unselectable" value="1"/>
         <FlagArray index="Untargetable" value="1"/>
         <FlagArray index="Invulnerable" value="1"/>
+        <FlagArray index="TurnBeforeMove" value="1"/>
+        <FlagArray index="AlwaysThreatens" value="1"/>
         <FlagArray index="AILifetime" value="1"/>
-        <FlagArray index="ArmySelect" value="1"/>
-        <EditorFlags index="NoPlacement" value="1"/>
-        <EditorFlags index="BlockStructures" value="0"/>
+        <FlagArray index="AISplash" value="1"/>
+        <FlagArray index="AICantAddToWave" value="1"/>
+        <FlagArray index="AIFleeDamageDisabled" value="1"/>
         <PlaneArray index="Ground" value="1"/>
-        <Collide index="Flying" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="Structure" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
         <Attributes index="Light" value="1"/>
         <Attributes index="Mechanical" value="1"/>
-        <LifeStart value="10"/>
-        <LifeMax value="10"/>
         <LifeArmorName value="Unit/LifeArmorName/ProtossPlating"/>
-        <Mover value="Fly"/>
         <Speed value="9"/>
-        <Acceleration value="1000"/>
-        <StationaryTurningRate value="999.8437"/>
-        <TurningRate value="999.8437"/>
+        <Acceleration value="4"/>
         <Height value="0.5"/>
         <CostCategory value="Army"/>
         <AttackTargetPriority value="20"/>
@@ -4760,6 +4752,7 @@
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
         <AbilArray Link="move"/>
+        <AbilArray Link="ScarabSCBW@Suicide"/>
         <WeaponArray Link="ScarabSCBWWeapon"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
@@ -4770,14 +4763,20 @@
         </CardLayouts>
         <Radius value="0.125"/>
         <SeparationRadius value="0.125"/>
-        <SubgroupPriority value="19"/>
-        <MinimapRadius value="0"/>
-        <AIEvalFactor value="0"/>
-        <Mass value="0.2"/>
+        <MinimapRadius value="0.125"/>
         <GlossaryPriority value="180"/>
         <CostResource index="Minerals" value="15"/>
         <BuildTime value="6.5625"/>
-        <GlossaryCategory value=""/>
+        <Deceleration value="2"/>
+        <LateralAcceleration value="115"/>
+        <Sight value="5"/>
+        <InnerRadius value="0.125"/>
+        <ScoreMake value="15"/>
+        <AINotifyEffect value="AIPurificationNovaDanger"/>
+        <AIEvaluateAlias value="DisruptorPhased"/>
+        <PushPriority value="9"/>
+        <DefaultAcquireLevel value="Defensive"/>
+        <Response value="Flee"/>
     </CUnit>
     <CUnit id="ShuttleSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
