@@ -1,5 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectApplyBehavior id="ScienceVesselSCBWDefensiveMatrix@ABData">
+        <EditorCategories value="Race:Terran"/>
+        <Behavior value="ScienceVesselSCBWDefensiveMatrix@Data"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="ScienceVesselSCBWDefensiveMatrix@Exhausted">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Source"/>
+        <BehaviorLink value="ScienceVesselSCBWDefensiveMatrix"/>
+    </CEffectRemoveBehavior>
+    <CEffectDamage id="ScienceVesselSCBWDefensiveMatrix@LeakDamage2">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactLocation Value="SourceUnit"/>
+        <Amount value="0">
+            <AccumulatorArray value="ScienceVesselSCBWDefensiveMatrix@DamageRemainder"/>
+        </Amount>
+        <ValidatorArray value="ScienceVesselSCBWDefensiveMatrix@NoShields"/>
+    </CEffectDamage>
+    <CEffectRemoveBehavior id="ScienceVesselSCBWDefensiveMatrix@RBData">
+        <EditorCategories value="Race:Terran"/>
+        <BehaviorLink value="ScienceVesselSCBWDefensiveMatrix@Data"/>
+    </CEffectRemoveBehavior>
+    <CEffectSet id="ScienceVesselSCBWDefensiveMatrix@Init">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="ScienceVesselSCBWDefensiveMatrix@ABData"/>
+        <EffectArray value="ScienceVesselSCBWDefensiveMatrix@UDInit"/>
+    </CEffectSet>
+    <CEffectSet id="ScienceVesselSCBWDefensiveMatrix@Final">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="ScienceVesselSCBWDefensiveMatrix@LeakDamage2"/>
+        <EffectArray value="ScienceVesselSCBWDefensiveMatrix@RBData"/>
+    </CEffectSet>
+    <CEffectModifyUnit id="ScienceVesselSCBWDefensiveMatrix@LeakDamage">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactUnit Value="Source"/>
+        <VitalArray index="Life">
+            <Change value="-0.5"/>
+        </VitalArray>
+    </CEffectModifyUnit>
+    <CEffectSet id="ScienceVesselSCBWDefensiveMatrix@DamageResponse">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="ScienceVesselSCBWDefensiveMatrix@LeakDamage"/>
+        <EffectArray value="ScienceVesselSCBWDefensiveMatrix@UDModify"/>
+    </CEffectSet>
+    <CEffectUserData id="ScienceVesselSCBWDefensiveMatrix@UDModify">
+        <EditorCategories value="Race:Terran"/>
+        <Key value="DefensiveMatrixShield"/>
+        <Amount value="0">
+            <AccumulatorArray value="ScienceVesselSCBWDefensiveMatrix@DamageInherited"/>
+        </Amount>
+        <SourceKey value="DefensiveMatrixShield"/>
+        <Operation value="Subtract"/>
+        <ValidateMax value="0">
+            <AccumulatorArray value="ScienceVesselSCBWDefensiveMatrix"/>
+        </ValidateMax>
+        <EffectFailure value="ScienceVesselSCBWDefensiveMatrix@Exhausted"/>
+        <TargetLocationType value="Unit"/>
+        <BehaviorScope Value="Source" Behavior="ScienceVesselSCBWDefensiveMatrix@Data"/>
+    </CEffectUserData>
     <CEffectUseCalldown id="GhostSCBWNuclearStrike@Calldown">
         <EditorCategories value="Race:Terran"/>
         <WhichLocation Value="TargetPoint"/>
@@ -52,27 +110,22 @@
         <EditorCategories value="Race:Terran"/>
         <Behavior value="ScienceVesselSCBWDefensiveMatrix"/>
     </CEffectApplyBehavior>
-    <CEffectApplyBehavior id="ScienceVesselSCBWDefensiveMatrix@ABDummy">
-        <EditorCategories value="Race:Terran"/>
-        <Behavior value="ScienceVesselSCBWDefensiveMatrix@Dummy"/>
-    </CEffectApplyBehavior>
     <CEffectUserData id="ScienceVesselSCBWDefensiveMatrix@UDInit">
-        <EditorCategories value=""/>
-        <Key value="ScienceVesselSCBWDefensiveMatrix"/>
-        <Amount value="0"/>
-        <SourceKey value="ScienceVesselSCBWDefensiveMatrix"/>
+        <Key value="DefensiveMatrixShield"/>
+        <Amount value="0">
+            <AccumulatorArray value="ScienceVesselSCBWDefensiveMatrix"/>
+        </Amount>
+        <SourceKey value="DefensiveMatrixShield"/>
         <Operation value="Set"/>
+        <TargetLocationType value="Unit"/>
+        <BehaviorScope Value="Target" Behavior="ScienceVesselSCBWDefensiveMatrix@Data"/>
     </CEffectUserData>
     <CEffectModifyUnit id="ScienceVesselSCBWDefensiveMatrix@ModifyUnit">
         <EditorCategories value="Race:Terran"/>
         <VitalArray index="Shields">
-            <ChangeFraction value="1"/>
+            <Change value="0.1"/>
         </VitalArray>
     </CEffectModifyUnit>
-    <CEffectRemoveBehavior id="ScienceVesselSCBWDefensiveMatrix@RBDummy">
-        <EditorCategories value="Race:Terran"/>
-        <BehaviorLink value="ScienceVesselSCBWDefensiveMatrix@Dummy"/>
-    </CEffectRemoveBehavior>
     <CEffectRemoveBehavior id="ScienceVesselSCBWDefensiveMatrix@RB">
         <EditorCategories value="Race:Terran"/>
         <BehaviorLink value="ScienceVesselSCBWDefensiveMatrix"/>
@@ -782,6 +835,11 @@
         <FidgetDelayMax value="10"/>
         <ConstructionMover value="Construction"/>
     </CAbilBuild>
+    <CValidatorEffectTreeUserData id="ScienceVesselSCBWDefensiveMatrix@NoShields">
+        <Compare value="LE"/>
+        <Key value="DefensiveMatrixShield"/>
+        <BehaviorScope Value="Source" Behavior="ScienceVesselSCBWDefensiveMatrix@Data"/>
+    </CValidatorEffectTreeUserData>
     <CValidatorCombine id="GhostSCBWCloak@Disable" parent="SCBW_Behavior"/>
     <CValidatorCombine id="GhostSCBWCloak@Remove" parent="SCBW_Behavior">
         <CombineArray value="CanSpendEnergy"/>
@@ -4002,9 +4060,6 @@
         </MotionPhases>
         <MotionPhases YawPitchRoll="MAX"/>
     </CMoverMissile>
-    <CAccumulatorEffectAmount id="ScienceVesselSCBWDefensiveMatrix">
-        <AmountType value="DamageInherited"/>
-    </CAccumulatorEffectAmount>
     <CSound id="GhostSCBWNuclearStrike@Target" parent="Combat">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Terran\GhostSCBW\GhostSCBWNuclearStrike@Target00.ogg"/>
@@ -5364,7 +5419,7 @@
         <DataRecord Entry="Actor,ScienceVesselSCBWDefensiveMatrix@Range"/>
         <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@UDInit"/>
         <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@RB"/>
-        <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix"/>
+        <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix@Remaining"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ScienceVesselSCBWEMPShockwave" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,ScienceVesselSCBWEMPShockwave"/>
@@ -6869,28 +6924,42 @@
         <TacticalAIThink value="AIThinkMedicSCBW"/>
         <ScoreResult value="BuildOrder"/>
     </CUnit>
+    <CBehaviorBuff id="ScienceVesselSCBWDefensiveMatrix@Data">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="ScienceVesselSCBWDefensiveMatrix">
         <Alignment value="Positive"/>
         <InfoIcon value="Assets\Textures\btn-ability-terran-defensivematrix.dds"/>
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
         <DisplayDuration index="Self" value="1"/>
         <DisplayDuration index="Ally" value="1"/>
-        <!--<RemoveValidatorArray value="hasShields"/>-->
         <Duration value="84"/>
+        <Modification>
+            <ModifyFlags index="Detected" value="1"/>
+            <StateFlags index="SuppressCloak" value="1"/>
+            <VitalMaxArray index="Shields" value="0.1"/>
+            <BehaviorLinkDisableArray value="GhostSCBWCloak"/>
+            <BehaviorLinkDisableArray value="WraithSCBWCloak"/>
+            <BehaviorLinkDisableArray value="GhostCloak"/>
+            <BehaviorLinkDisableArray value="WraithCloak"/>
+            <BehaviorLinkDisableArray value="CloakingFieldeffect"/>
+            <BehaviorLinkDisableArray value="PermanentlyCloaked"/>
+        </Modification>
         <DamageResponse>
-            <ClampMaximum value="0.5"/>
-            <Minimum value="0.5"/>
-            <ModifyLimit value="250"/>
+            <Handled value="ScienceVesselSCBWDefensiveMatrix@DamageResponse"/>
+            <ModifyFraction value="0"/>
             <ModifyMinimumDamage value="1"/>
+            <Priority value="100"/>
+            <HandledValue value="Original"/>
+            <ExcludeEffectArray value="ScienceVesselSCBWDefensiveMatrix@LeakDamage"/>
+            <ExcludeEffectArray value="ScienceVesselSCBWDefensiveMatrix@LeakDamage2"/>
+            <ProvideCategories index="Shield" value="1"/>
             <Chance value="1"/>
         </DamageResponse>
-    </CBehaviorBuff>
-    <CBehaviorBuff id="ScienceVesselSCBWDefensiveMatrix@Dummy">
-        <InfoFlags index="Hidden" value="1"/>
-        <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
-        <Modification>
-            <VitalMaxArray index="Shields" value="200"/>
-        </Modification>
+        <BuffFlags index="RefreshStack" value="1"/>
+        <InitialEffect value="ScienceVesselSCBWDefensiveMatrix@Init"/>
+        <FinalEffect value="ScienceVesselSCBWDefensiveMatrix@Final"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ScienceVesselSCBWIrradiate@Irradiated">
         <Alignment value="Negative"/>
@@ -7003,25 +7072,21 @@
         <Icon value="Assets\Textures\btn-ability-terran-cloak-color.dds"/>
         <Alert value="ResearchComplete"/>
         <Race value="Terr"/>
-        <ScoreAmount value="300"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <AffectedUnitArray value="Ghost"/>
+        <AffectedUnitArray value="WraithSCBW"/>
     </CUpgrade>
     <CUpgrade id="FirebatSCBWStimpack" parent="Research">
         <Icon value="Assets\Textures\btn-ability-terran-stimpack-color.dds"/>
         <Race value="Terr"/>
-        <ScoreAmount value="200"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <AffectedUnitArray value="MarineSCBW"/>
         <AffectedUnitArray value="FirebatSCBW"/>
     </CUpgrade>
     <CUpgrade id="GhostSCBWLockdown@Upgrade">
         <Icon value="Assets\Textures\btn-ability-nova-domination.dds"/>
         <Alert value="ResearchComplete"/>
         <Race value="Terr"/>
-        <ScoreAmount value="300"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
         <AffectedUnitArray value="Ghost"/>
@@ -7031,18 +7096,15 @@
         <Icon value="Assets\Textures\btn-ability-terran-cloak-color.dds"/>
         <Alert value="ResearchComplete"/>
         <Race value="Terr"/>
-        <ScoreAmount value="300"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <AffectedUnitArray value="Ghost"/>
+        <AffectedUnitArray value="GhostSCBW"/>
     </CUpgrade>
     <CUpgrade id="MarineSCBWStimpack" parent="Research">
         <Icon value="Assets\Textures\btn-ability-terran-stimpack-color.dds"/>
         <Race value="Terr"/>
-        <ScoreAmount value="200"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
         <AffectedUnitArray value="MarineSCBW"/>
-        <AffectedUnitArray value="FirebatSCBW"/>
     </CUpgrade>
 </Catalog>

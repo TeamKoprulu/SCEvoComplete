@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectUserData default="1" id="DamageIncoming">
+        <EditorCategories value=""/>
+        <Amount value="0">
+            <AccumulatorArray value="##x##"/>
+        </Amount>
+        <Key value="IncomingDamage"/>
+    </CEffectUserData>
     <CEffectDamage default="1" id="ExplosiveBaseDamageSCBW" parent="DU_WEAP">
         <AttributeFactor index="Light" value="-0.33"/>
         <AttributeFactor index="Armored" value="0.33"/>
@@ -10,6 +17,41 @@
         <AttributeFactor index="Armored" value="-0.5"/>
         <ShieldFactor value="1"/>
     </CEffectDamage>
+    <CEffectSet id="SiegeTankSCBWWeapon@Impact">
+        <EffectArray value="SiegeTankSCBWWeapon@DamageApply"/>
+        <EffectArray value="SiegeTankSCBWWeapon@Damage"/>
+    </CEffectSet>
+    <CEffectDamage id="SiegeTankSCBWWeapon@DamageUI" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran"/>
+        <AttributeFactor index="Light" value="-0.5"/>
+        <AttributeFactor index="Armored" value="-0.25"/>
+        <Kind value="Ranged"/>
+        <Amount value="30"/>
+        <Death value="Blast"/>
+        <DisplayFlags index="DisplayRounded" value="1"/>
+    </CEffectDamage>
+    <CEffectUserData id="SC1ImpactMarker">
+        <Key value="Type"/>
+        <Amount value="0">
+            <AccumulatorArray value="SC1ImpactMarker"/>
+        </Amount>
+        <ValidateMax value="3"/>
+        <BehaviorScope Value="Target"/>
+    </CEffectUserData>
+    <CEffectUserData id="SiegeTankSCBWSiegedWeapon@DamageApply" parent="DamageIncoming" x="SiegeTankSCBWSiegedWeapon@Damage"/>
+    <CEffectDamage id="DamageInterceptUpdate">
+        <EditorCategories value=""/>
+    </CEffectDamage>
+    <CEffectUserData id="HydraliskSCBWWeapon@DamageApply" parent="DamageIncoming" x="HydraliskSCBWWeapon@Damage"/>
+    <CEffectUserData id="SiegeTankSCBWWeapon@DamageApply" parent="DamageIncoming" x="SiegeTankSCBWWeapon@Damage"/>
+    <CEffectSet id="SiegeTankSCBWSiegedWeapon@ImpactDirect">
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageApply"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageDirect"/>
+    </CEffectSet>
+    <CEffectSet id="HydraliskSCBWWeapon@Impact">
+        <EffectArray value="HydraliskSCBWWeapon@DamageApply"/>
+        <EffectArray value="HydraliskSCBWWeapon@Damage"/>
+    </CEffectSet>
     <CEffectCreatePersistent id="LurkerSCBWWeapon@CP">
         <EditorCategories value="Race:Zerg"/>
         <WhichLocation Value="SourcePoint"/>
@@ -184,6 +226,12 @@
     <CEffectDamage id="DroneSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Zerg"/>
         <Amount value="5"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@MissDummy">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <AreaArray/>
+        <SearchFlags index="OffsetAreaByAngle" value="1"/>
     </CEffectDamage>
     <CEffectLaunchMissile id="SporeColonySCBWWeapon@LM">
         <EditorCategories value="Race:Zerg"/>
@@ -390,17 +438,23 @@
         <AttributeFactor index="Armored" value="0.3334"/>
         <ShieldFactor value="0.3334"/>
     </CEffectDamage>
-    <CEffectDamage id="HydraliskSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="HydraliskSCBWWeapon@Damage" parent="DU_WEAP_MISSILE">
         <EditorCategories value="Race:Zerg"/>
-        <Kind value="Ranged"/>
-        <Amount value="7.5"/>
-        <AttributeFactor index="Light" value="-0.3334"/>
-        <AttributeFactor index="Armored" value="0.3334"/>
-        <ShieldFactor value="0.3334"/>
+        <AttributeFactor index="Light" value="-0.5"/>
+        <AttributeFactor index="Armored" value="-0.25"/>
+        <Amount value="0">
+            <AccumulatorArray value="SC1_DamageFormula_Expl"/>
+        </Amount>
+    </CEffectDamage>
+    <CEffectDamage id="HydraliskSCBWWeapon@DamageUI" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Zerg"/>
+        <AttributeFactor index="Light" value="-0.5"/>
+        <AttributeFactor index="Armored" value="-0.25"/>
+        <Amount value="10"/>
     </CEffectDamage>
     <CEffectLaunchMissile id="HydraliskSCBWWeapon@LM">
         <EditorCategories value="Race:Zerg"/>
-        <ImpactEffect value="HydraliskSCBWWeapon@Damage"/>
+        <ImpactEffect value="HydraliskSCBWWeapon@Impact"/>
         <AmmoUnit value="HydraliskSCBWWeapon@Missile"/>
     </CEffectLaunchMissile>
     <CEffectCreatePersistent id="GoliathSCBWWeaponAir@CP">
@@ -492,8 +546,7 @@
     </CEffectDamage>
     <CEffectCreatePersistent id="FirebatSCBWWeapon@CP">
         <EditorCategories value="Race:Terran"/>
-        <WhichLocation Value="SourcePoint"/>
-        <OffsetVectorStartLocation Value="SourcePoint"/>
+        <WhichLocation Value="SourceUnit"/>
         <Flags index="Channeled" value="1"/>
         <PeriodCount value="3"/>
         <PeriodicEffectArray value="FirebatSCBWWeapon@Damage"/>
@@ -515,7 +568,7 @@
         <AttributeFactor index="Light" value="1"/>
         <AttributeFactor index="Armored" value="-0.5"/>
         <ShieldFactor value="1"/>
-        <KindSplash value="Splash"/>
+        <KindSplash value="Melee"/>
         <ImpactLocation Value="TargetPoint"/>
         <ExcludeArray Value="Outer"/>
     </CEffectDamage>
@@ -527,11 +580,12 @@
     <CEffectDamage id="SiegeTankSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Terran"/>
         <Kind value="Ranged"/>
-        <Amount value="22.5"/>
+        <Amount value="0">
+            <AccumulatorArray value="SC1_DamageFormula_Expl"/>
+        </Amount>
         <Death value="Blast"/>
-        <AttributeFactor index="Light" value="-0.3334"/>
-        <AttributeFactor index="Armored" value="0.3334"/>
-        <ShieldFactor value="0.3334"/>
+        <AttributeFactor index="Light" value="-0.5"/>
+        <AttributeFactor index="Armored" value="-0.25"/>
         <DisplayFlags index="DisplayRounded" value="1"/>
     </CEffectDamage>
     <CEffectApplyBehavior id="ArbiterSCBWCloakField@AB">
@@ -562,48 +616,83 @@
         <Movers Link="MissileDefault" IfRangeLTE="1"/>
         <Movers Link="ArbiterMPWeaponMissile" IfRangeLTE="4"/>
     </CEffectLaunchMissile>
-    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@Damage" parent="DU_WEAP">
-        <ValidatorArray value="SiegeTankSCBWSiegedWeapon@Damage"/>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageDirect" parent="DU_WEAP_SPLASH">
         <EditorCategories value="Race:Terran"/>
+        <AttributeFactor index="Light" value="-0.5"/>
+        <AttributeFactor index="Armored" value="-0.25"/>
+        <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <KindSplash value="Splash"/>
-        <Amount value="52.5"/>
+        <Amount value="0">
+            <AccumulatorArray value="SC1_DamageFormula_Expl"/>
+        </Amount>
+        <Death value="Blast"/>
+        <DisplayFlags index="DisplayRounded" value="1"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@Damage" parent="DU_WEAP_SPLASH">
+        <EditorCategories value="Race:Terran"/>
+        <DebugTrace value="1"/>
+        <ImpactUnitValidator value="SC1ImpactTargetValidatorFallback"/>
+        <AttributeFactor index="Light" value="-0.5"/>
+        <AttributeFactor index="Armored" value="-0.25"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="70"/>
         <Death value="Blast"/>
         <AreaArray Radius="0.3125" Fraction="1"/>
-        <AreaArray Radius="0.7812" Fraction="0.5"/>
-        <AreaArray Radius="1.25" Fraction="0.25"/>
+        <AreaArray Radius="0.7812" Fraction="0.5" Validator="NotBurrowed"/>
+        <AreaArray Radius="1.25" Fraction="0.25" Validator="NotBurrowed"/>
         <ExcludeArray Value="Target"/>
-        <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFilters value="Ground;Self,Light,Armored,Massive,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <SearchFlags index="OffsetByUnitRadius" value="0"/>
-        <AttributeFactor index="Light" value="-0.3334"/>
-        <AttributeFactor index="Armored" value="0.3334"/>
-        <ShieldFactor value="0.3334"/>
         <DisplayFlags index="DisplayRounded" value="1"/>
     </CEffectDamage>
-    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageDirect" parent="DU_WEAP">
-        <ValidatorArray value="SiegeTankSCBWSiegedWeapon@DamageDirect"/>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageLrg" parent="SiegeTankSCBWSiegedWeapon@Damage">
+        <Name value="Effect/Name/SiegeTankSCBWSiegedWeapon@DamageLrg"/>
+        <ImpactUnitValidator value="SC1ImpactTargetValidatorLrg"/>
+        <Amount value="0">
+            <AccumulatorArray value="SC1_DamageFormula_Expl"/>
+        </Amount>
+        <SearchFilters value="Ground,Massive;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageMed" parent="SiegeTankSCBWSiegedWeapon@Damage">
+        <Name value="Effect/Name/SiegeTankSCBWSiegedWeapon@DamageMed"/>
+        <ImpactUnitValidator value="SC1ImpactTargetValidatorMed"/>
+        <AreaArray index="1" Radius="0.7812" Fraction="0.625" Validator="NotBurrowed"/>
+        <AreaArray index="2" Radius="1.25" Fraction="0.4375" Validator="NotBurrowed"/>
+        <SearchFilters value="Ground,Armored;Massive,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Amount value="0">
+            <AccumulatorArray value="SC1_DamageFormula_Expl"/>
+        </Amount>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageSml" parent="SiegeTankSCBWSiegedWeapon@Damage">
+        <Name value="Effect/Name/SiegeTankSCBWSiegedWeapon@DamageSml"/>
+        <ImpactUnitValidator value="SC1ImpactTargetValidatorSml"/>
+        <Amount value="0">
+            <AccumulatorArray value="SC1_DamageFormula_Expl"/>
+        </Amount>
+        <AreaArray index="1" Radius="0.7812" Fraction="0.75" Validator="NotBurrowed"/>
+        <AreaArray index="2" Radius="1.25" Fraction="0.625" Validator="NotBurrowed"/>
+        <SearchFilters value="Ground,Light;Armored,Massive,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="SiegeTankSCBWSiegedWeapon@Miss">
         <EditorCategories value="Race:Terran"/>
-        <Kind value="Ranged"/>
-        <KindSplash value="Splash"/>
-        <Amount value="52.5"/>
-        <Death value="Blast"/>
-        <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
-        <AttributeFactor index="Light" value="-0.3334"/>
-        <AttributeFactor index="Armored" value="0.3334"/>
-        <ShieldFactor value="0.3334"/>
-        <DisplayFlags index="DisplayRounded" value="1"/>
-    </CEffectDamage>
-    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageDummy" parent="DU_WEAP">
+        <WhichLocation Effect="SiegeTankSCBWSiegedWeapon@Switch"/>
+        <OffsetVectorStartLocation Effect="SiegeTankSCBWSiegedWeapon@Switch" Value="TargetPoint"/>
+        <OffsetVectorEndLocation Value="CasterUnitOrPoint"/>
+        <InitialEffect value="SiegeTankSCBWSiegedWeapon@MissDummy"/>
+        <InitialOffset value="0,-1.1,0"/>
+        <FinalEffect value="SiegeTankSCBWSiegedWeapon@Impact"/>
+        <FinalOffset value="0,-1.1,0"/>
+    </CEffectCreatePersistent>
+    <CEffectSwitch id="SiegeTankSCBWSiegedWeapon@Switch">
         <EditorCategories value="Race:Terran"/>
-        <Kind value="Splash"/>
-        <KindSplash value="Splash"/>
-        <Amount value="52.5"/>
-        <Death value="Blast"/>
-        <AttributeFactor index="Light" value="-0.3334"/>
-        <AttributeFactor index="Armored" value="0.3334"/>
-        <ShieldFactor value="0.3334"/>
-        <DisplayFlags index="DisplayRounded" value="1"/>
-    </CEffectDamage>
+        <CaseArray Validator="UnderDarkSwarmCombine" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
+        <CaseArray Validator="TargetRadiusSmall" Effect="SiegeTankSCBWSiegedWeapon@Impact"/>
+        <CaseDefault value="SiegeTankSCBWSiegedWeapon@ImpactDirect"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSwitch>
     <CEffectUseMagazine id="CarrierSCBWWeapon@UM">
         <EditorCategories value="Race:Protoss"/>
         <AmmoEffect value="CarrierSCBWWeapon@Set"/>
@@ -806,10 +895,13 @@
         <Amount value="40"/>
         <Death value="Eviscerate"/>
     </CEffectDamage>
-    <CEffectSet id="SiegeTankSCBWSiegedWeapon@Set">
-        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageDirect"/>
+    <CEffectSet id="SiegeTankSCBWSiegedWeapon@Impact">
+        <EffectArray value="SC1ImpactMarker"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageApply"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageLrg"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageMed"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageSml"/>
         <EffectArray value="SiegeTankSCBWSiegedWeapon@Damage"/>
-        <EffectArray value="SiegeTankSCBWSiegedWeapon@MaelstromRounds"/>
     </CEffectSet>
     <CEffectApplyBehavior id="SpiderMineSCBW@ABInvulnerable">
         <ValidatorArray index="0" value="SpiderMineSCBW@ABInvulnerable"/>
