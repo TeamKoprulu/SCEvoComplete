@@ -6,9 +6,48 @@
     <CAccumulatorConstant id="3">
         <Amount value="3"/>
     </CAccumulatorConstant>
+    <CAccumulatorConstant id="CorsairSCBWWeapon@Damage">
+        <Amount value="3.75"/>
+    </CAccumulatorConstant>
     <CAccumulatorEffectAmount id="DamageAbsorbed">
         <AmountType value="Absorbed"/>
     </CAccumulatorEffectAmount>
+    <CAccumulatorConstant id="SunkenColonySCBWWeapon@Damage">
+        <Amount value="30"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="DragoonSCBWWeapon@Damage">
+        <Amount value="15"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="MissileTurretSCBWWeapon@Damage">
+        <Amount value="15"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="ScoutSCBWWeaponAir@Damage">
+        <Amount value="10.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="GhostSCBWWeapon@Damage">
+        <Amount value="5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="DevourerSCBWWeapon@Damage">
+        <Amount value="18.75"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="ArbiterSCBWWeapon@Damage">
+        <Amount value="7.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="InfestedTerranSCBWWeapon@Damage">
+        <Amount value="375"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="WraithSCBWWeaponAir@Damage">
+        <Amount value="15"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="GoliathSCBWWeaponGround@Damage">
+        <Amount value="10"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="GoliathSCBWWeaponAir@Damage">
+        <Amount value="7.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="VultureSCBWWeapon@Damage">
+        <Amount value="10"/>
+    </CAccumulatorConstant>
     <CAccumulatorArithmetic id="SC1_DamageFormula_Conc">
         <Parameters value="0">
             <AccumulatorArray value="SC1_IncomingDamage"/>
@@ -27,7 +66,7 @@
         <Operation value="Multiply"/>
     </CAccumulatorArithmetic>
     <CAccumulatorSwitch id="SC1_ShieldSwitch_Conc">
-        <CaseArray Validator="ShieldsGT0" Accumulator="SC1_FractionShields_Conc"/>
+        <CaseArray Validator="SC1_HasShieldsOrMatrix" Accumulator="SC1_FractionShields_Conc"/>
         <CaseDefault value="Zero"/>
     </CAccumulatorSwitch>
     <CAccumulatorEffectAmount id="ScienceVesselSCBWDefensiveMatrix@DamageInherited">
@@ -80,10 +119,9 @@
     </CAccumulatorArithmetic>
     <CAccumulatorSwitch id="SC1ImpactMarker">
         <MinAccumulation value="0"/>
-        <MaxAccumulation value="3"/>
-        <CaseArray Validator="UnitIsLarge" Accumulator="1"/>
-        <CaseArray Validator="UnitIsMedium" Accumulator="2"/>
-        <CaseArray Validator="UnitIsSmall" Accumulator="3"/>
+        <MaxAccumulation value="2"/>
+        <CaseArray Validator="UnitIsArmored" Accumulator="1"/>
+        <CaseArray Validator="UnitIsLight" Accumulator="2"/>
         <CaseDefault value="Zero"/>
     </CAccumulatorSwitch>
     <CAccumulatorArithmetic id="SC1_ShieldCombine">
@@ -96,7 +134,7 @@
         </Parameters>
     </CAccumulatorArithmetic>
     <CAccumulatorSwitch id="SC1_ShieldSwitch_Expl">
-        <CaseArray Validator="ShieldsGT0" Accumulator="SC1_FractionShields_Expl"/>
+        <CaseArray Validator="SC1_HasShieldsOrMatrix" Accumulator="SC1_FractionShields_Expl"/>
         <CaseDefault value="Zero"/>
     </CAccumulatorSwitch>
     <CAccumulatorConstant id="ScienceVesselSCBWDefensiveMatrix">
@@ -126,9 +164,9 @@
         <Operation value="Multiply"/>
     </CAccumulatorArithmetic>
     <CAccumulatorSwitch id="SC1_ShieldFactorSwitchAdd_Expl">
-        <CaseArray Validator="UnitIsMedium" Accumulator="SC1_ShieldFactor_Expl_Med"/>
-        <CaseArray Validator="UnitIsSmall" Accumulator="SC1_ShieldFactor_Expl_Sml"/>
-        <CaseDefault value="SC1_ShieldFactor_Expl_Lrg"/>
+        <CaseArray Validator="UnitIsArmored" Accumulator="SC1_ShieldFactor_Expl_Armored"/>
+        <CaseArray Validator="UnitIsLight" Accumulator="SC1_ShieldFactor_Expl_Light"/>
+        <CaseDefault value="SC1_ShieldFactor_Expl_Default"/>
     </CAccumulatorSwitch>
     <CAccumulatorArithmetic id="NukeDamageAccumulator">
         <Parameters value="0">
@@ -159,36 +197,35 @@
     </CAccumulatorEffectAmount>
     <CAccumulatorSwitch id="SC1_ShieldFactorSwitch_Expl">
         <ApplicationRule value="Multiply"/>
-        <CaseArray Validator="UnitIsLarge" Accumulator="SC1_ShieldFactor_Expl_Lrg"/>
-        <CaseArray Validator="UnitIsMedium" Accumulator="SC1_ShieldFactor_Expl_Med"/>
-        <CaseArray Validator="UnitIsSmall" Accumulator="SC1_ShieldFactor_Expl_Sml"/>
-        <CaseDefault value="Zero"/>
+        <CaseArray Validator="UnitIsArmored" Accumulator="SC1_ShieldFactor_Expl_Armored"/>
+        <CaseArray Validator="UnitIsLight" Accumulator="SC1_ShieldFactor_Expl_Light"/>
+        <CaseDefault value="SC1_ShieldFactor_Expl_Default"/>
     </CAccumulatorSwitch>
     <CAccumulatorSwitch id="SC1_ShieldFactorSwitch_Conc" parent="SC1_ShieldFactorSwitch_Expl">
-        <CaseArray index="0" Validator="UnitIsSmall" Accumulator="SC1_ShieldFactor_Conc_Sml"/>
-        <CaseArray index="1" Validator="UnitIsMedium" Accumulator="SC1_ShieldFactor_Conc_Med"/>
-        <CaseArray index="2" Validator="UnitIsLarge" Accumulator="SC1_ShieldFactor_Conc_Lrg"/>
+        <CaseArray index="0" Validator="UnitIsLight" Accumulator="SC1_ShieldFactor_Conc_Light"/>
+        <CaseArray index="1" Validator="UnitIsArmored" Accumulator="SC1_ShieldFactor_Conc_Armored"/>
+        <CaseDefault value="SC1_ShieldFactor_Conc_Default"/>
     </CAccumulatorSwitch>
-    <CAccumulatorConstant id="SC1_ShieldFactor_Expl_Lrg"/>
-    <CAccumulatorConstant id="SC1_ShieldFactor_Expl_Med" parent="SC1_ShieldFactor_Expl_Lrg">
-        <Amount value="0.3332"/>
+    <CAccumulatorConstant id="SC1_ShieldFactor_Expl_Default">
+        <Amount value="0.3334"/>
     </CAccumulatorConstant>
-    <CAccumulatorConstant id="SC1_ShieldFactor_Expl_Sml" parent="SC1_ShieldFactor_Expl_Lrg">
+    <CAccumulatorConstant id="SC1_ShieldFactor_Conc_Default" parent="SC1_ShieldFactor_Expl_Default">
         <Amount value="1"/>
     </CAccumulatorConstant>
-    <CAccumulatorConstant id="SC1_ShieldFactor_Conc_Lrg" parent="SC1_ShieldFactor_Expl_Lrg">
+    <CAccumulatorConstant id="SC1_ShieldFactor_Conc_Armored">
         <Amount value="3"/>
     </CAccumulatorConstant>
-    <CAccumulatorConstant id="SC1_ShieldFactor_Conc_Med" parent="SC1_ShieldFactor_Expl_Lrg">
+    <CAccumulatorConstant id="SC1_ShieldFactor_Conc_Light"/>
+    <CAccumulatorConstant id="SC1_ShieldFactor_Expl_Armored"/>
+    <CAccumulatorConstant id="SC1_ShieldFactor_Expl_Light">
         <Amount value="1"/>
     </CAccumulatorConstant>
     <CAccumulatorEffectAmount id="DamageInherited">
         <AmountType value="DamageInherited"/>
     </CAccumulatorEffectAmount>
     <CAccumulatorConstant id="HydraliskSCBWWeapon@Damage">
-        <Amount value="10"/>
+        <Amount value="7.5"/>
     </CAccumulatorConstant>
-    <CAccumulatorConstant id="SC1_ShieldFactor_Conc_Sml" parent="SC1_ShieldFactor_Expl_Lrg"/>
     <CAccumulatorVitals id="UnitVital_ShieldsCurr_Target">
         <VitalType value="Shields"/>
         <UnitSource Value="Target"/>
@@ -211,13 +248,19 @@
         <ModificationType value="PerUnitMaxVital"/>
         <Ratio value="1"/>
     </CAccumulatorVitals>
+    <CAccumulatorConstant id="FirebatSCBWWeapon@Damage">
+        <Amount value="4"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="ValkyrieSCBWWeapon@Damage">
+        <Amount value="4.5"/>
+    </CAccumulatorConstant>
     <CAccumulatorConstant id="Zero"/>
     <!-- Siege Tank -->
     <CAccumulatorConstant id="SiegeTankSCBWWeapon@Damage">
-        <Amount value="30"/>
+        <Amount value="22.5"/>
     </CAccumulatorConstant>
     <CAccumulatorConstant id="SiegeTankSCBWSiegedWeapon@Damage">
-        <Amount value="70"/>
+        <Amount value="52.5"/>
     </CAccumulatorConstant>
     <CAccumulatorUserData id="ScienceVesselSCBWDefensiveMatrix@Remaining">
         <MinAccumulation value="0"/>
