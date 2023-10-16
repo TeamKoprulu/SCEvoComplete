@@ -38,36 +38,16 @@
         <Value value="##unitName##"/>
         <WhichUnit Value="Source"/>
     </CValidatorUnitType>
-    <CValidatorEffectTreeUserData id="SC1ImpactMarker_Default">
-        <CheckExistence value="0"/>
-        <Key value="Type"/>
-        <BehaviorScope Value="Target"/>
-    </CValidatorEffectTreeUserData>
-    <CValidatorEffectTreeUserData id="SC1ImpactMarker_Armored">
-        <Key value="Type"/>
-        <Value value="1"/>
-        <BehaviorScope Value="Target"/>
-    </CValidatorEffectTreeUserData>
-    <CValidatorEffectTreeUserData id="SC1ImpactMarker_Light">
-        <Key value="Type"/>
-        <Value value="2"/>
-        <BehaviorScope Value="Target"/>
-    </CValidatorEffectTreeUserData>
-    <CValidatorCombine id="SC1ImpactTargetValidatorArmored">
-        <CombineArray value="NotUnderDarkSwarmCombine"/>
-        <CombineArray value="SC1ImpactMarker_Armored"/>
-        <Type value="And"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="SC1ImpactTargetValidatorLight">
-        <CombineArray value="NotUnderDarkSwarmCombine"/>
-        <CombineArray value="SC1ImpactMarker_Light"/>
-        <Type value="And"/>
-    </CValidatorCombine>
     <CValidatorCombine id="SC1_HasShieldsOrMatrix">
         <ResultFailed value="NotEnoughShields"/>
         <CombineArray value="ShieldsGT0"/>
         <CombineArray value="ScienceVesselSCBWDefensiveMatrix@HasShield"/>
     </CValidatorCombine>
+    <CValidatorLocationCompareRange id="SpiderMineSCBW@Unburrow">
+        <Compare value="LE"/>
+        <Range value="7"/>
+        <Pathing value="1"/>
+    </CValidatorLocationCompareRange>
     <CValidatorCombine id="UnderDarkSwarmCombine">
         <CombineArray value="NotUnderDarkSwarmCombine"/>
         <Negate value="1"/>
@@ -297,6 +277,7 @@
         <CombineArray value="NotMothershipCore"/>
         <CombineArray value="NotArbiterMP"/>
         <CombineArray value="ArbiterSCBW@Not"/>
+        <CombineArray value="IsNotSpiderMineSCBW"/>
     </CValidatorCombine>
     <CValidatorUnitType id="CommandCenter" parent="SCBW_Unit"/>
     <CValidatorUnitType id="CommandCenterFlying" parent="SCBW_Unit"/>
@@ -316,6 +297,7 @@
         <CombineArray value="NotUncommandable"/>
         <CombineArray value="SourceNotHidden"/>
         <CombineArray value="NotInterceptor"/>
+        <ResultFailed value="CantTargetThatUnit"/>
     </CValidatorCombine>
     <CValidatorCombine id="MarineSCBWStimpack@Tactical">
         <Type value="And"/>
@@ -488,6 +470,15 @@
         <Line index="2" Success="UltraliskSCBW@TacticalBurrowUltraliskThreatTest"/>
         <Line index="6" Success="UltraliskSCBW@TacticalBurrowUltraliskCampaignBullyUnburrow"/>
     </CValidatorFunction>
+    <CValidatorEffectTreeUserData id="SC1_DamagePassesShields">
+        <Compare value="LT"/>
+        <Key value="ShieldsParam"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorUnitCompareField id="SC1_ArmorUpdateCheck">
+        <WhichUnit Value="Caster"/>
+        <OtherUnit Value="Caster"/>
+        <ResultNoUnit value="OKPlaceholder"/>
+    </CValidatorUnitCompareField>
     <CValidatorUnitType id="ZerglingSCBW@TacticalBurrowZerglingBullyTest" parent="TacticalBurrowBullyTest" unitLink="Zergling">
         <Value value="ZerglingSCBW"/>
     </CValidatorUnitType>
@@ -595,9 +586,6 @@
     <CValidatorUnitCompareAttackPriority id="GhostSCBW@UnitThreatensGhost" parent="UnitThreatens" unitLink="Ghost">
         <AttackerAlternateType value="GhostSCBW"/>
     </CValidatorUnitCompareAttackPriority>
-    <CValidatorUnitFilters id="UnitIsNotLarge">
-        <Filters value="-;Massive"/>
-    </CValidatorUnitFilters>
     <CValidatorUnitFilters id="UnitIsNotArmored">
         <Filters value="-;Armored"/>
     </CValidatorUnitFilters>
@@ -606,9 +594,6 @@
     </CValidatorUnitFilters>
     <CValidatorUnitFilters id="UnitIsArmored">
         <Filters value="Armored;-"/>
-    </CValidatorUnitFilters>
-    <CValidatorUnitFilters id="UnitIsLarge">
-        <Filters value="Massive;-"/>
     </CValidatorUnitFilters>
     <CValidatorUnitFilters id="UnitIsNotLight">
         <Filters value="-;Light"/>
@@ -645,11 +630,6 @@
     <CValidatorUnitFilters id="IsNotLrgAndMed">
         <Filters value="-;Armored,Massive"/>
     </CValidatorUnitFilters>
-    <CValidatorCombine id="SC1ImpactTargetValidatorDefault">
-        <CombineArray value="NotUnderDarkSwarmCombine"/>
-        <CombineArray value="SC1ImpactMarker_Default"/>
-        <Type value="And"/>
-    </CValidatorCombine>
     <CValidatorUnitCompareVital id="ShieldsGT0">
         <ResultFailed value="NotEnoughShields"/>
         <Compare value="GT"/>

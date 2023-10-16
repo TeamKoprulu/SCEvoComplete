@@ -4,6 +4,7 @@
         <ValidatorArray value="ArbiterSCBWStasisField@AB"/>
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="ArbiterSCBWStasisField"/>
+        <KillHallucination value="1"/>
     </CEffectApplyBehavior>
     <CEffectEnumArea id="ArbiterSCBWStasisField@Search">
         <EditorCategories value="Race:Protoss"/>
@@ -56,7 +57,7 @@
     <CEffectEnumArea id="ArbiterSCBWRecall@Search">
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="TargetPoint"/>
-        <SearchFilters value="-;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Dead,Hidden,Invulnerable"/>
+        <SearchFilters value="-;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Dead,Hidden,Hallucination,Invulnerable"/>
         <AreaArray Radius="2.5" Effect="ArbiterSCBWRecall@SetInitial"/>
         <MinCount value="1"/>
     </CEffectEnumArea>
@@ -492,6 +493,7 @@
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="ArbiterSCBWStasisField@AB" parent="SCBW_Effect">
         <CombineArray value="NotFrenzied"/>
+        <CombineArray value="IsNotSpiderMineSCBW"/>
     </CValidatorCombine>
     <CValidatorCombine id="ArbiterSCBWRecall@Set" parent="SCBW_Effect">
         <CombineArray value="NotLarvaEgg"/>
@@ -1490,12 +1492,12 @@
         <HostSiteOps Ops="SOpShadow"/>
         <AutoScaleFactor value="0.450000"/>
     </CActorModel>
-    <CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalled" parent="SoundOneShot">
+    <!--CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalled" parent="SoundOneShot">
         <Terms value="Cap 1"/>
         <On Terms="Behavior.ArbiterSCBWRecall@Recalled.On" Send="Create"/>
         <Host Subject="_Selectable"/>
         <Sound value="ArbiterSCBWRecall@End"/>
-    </CActorSound>
+    </CActorSound-->
     <CActorModel id="ArbiterSCBWRecall@ImpactRecalling" parent="ModelAnimationStyleOneShot">
         <Terms value="Cap 1"/>
         <On Terms="Behavior.ArbiterSCBWRecall@Recalling.On" Send="Create"/>
@@ -1503,11 +1505,19 @@
         <HostSiteOps Ops="SOpShadow"/>
         <AutoScaleFactor value="0.450000"/>
     </CActorModel>
+    <!--CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalling" parent="SoundOneShot">-->
+    <!--        <Terms value="Cap 1"/>-->
+    <!--        <On Terms="Behavior.ArbiterSCBWRecall@Recalling.On" Send="Create"/>-->
+    <!--        <Host Subject="_Selectable"/>-->
+    <!--        <Sound value="ArbiterSCBWRecall@Start"/>-->
+    <!--    </CActorSound-->
     <CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalling" parent="SoundOneShot">
-        <Terms value="Cap 1"/>
-        <On Terms="Behavior.ArbiterSCBWRecall@Recalling.On" Send="Create"/>
-        <Host Subject="_Selectable"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CPDelayInital.Start; At Effect" Send="Create"/>
         <Sound value="ArbiterSCBWRecall@Start"/>
+    </CActorSound>
+    <CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalled" parent="SoundOneShot">
+        <On Terms="Effect.ArbiterSCBWRecall@CPDelayFinal.Start; At Effect" Send="Create"/>
+        <Sound value="ArbiterSCBWRecall@End"/>
     </CActorSound>
     <CActorSound id="ReaverSCBW@Land" parent="SoundOneShot"/>
     <CActorSound id="ArchonSCBW@Land" parent="SoundOneShot"/>
@@ -5921,6 +5931,7 @@
             <ModifyFlags index="EnableMove" value="1"/>
             <ModifyFlags index="HideChangeUI" value="1"/>
             <StateFlags index="Hallucination" value="1"/>
+            <StateFlags index="SuppressCloak" value="1"/>
             <StateFlags index="SuppressCombat" value="1"/>
             <StateFlags index="SuppressDetection" value="1"/>
             <StateFlags index="SuppressRadar" value="1"/>

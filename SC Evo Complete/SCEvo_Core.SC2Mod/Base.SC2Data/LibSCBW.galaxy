@@ -35,7 +35,42 @@ void libSCBW_InitCustomScript () {
     SCBW_main();
 }
 
+// Presets
+string libSCBW_ge_SC1_Cheats_Ident (int lp_val) {
+         if (lp_val == 1) { return "InstantBuild"; }
+    else if (lp_val == 2) { return "SCBW_Upgrade"; }
+    return null;
+}
+
 // Functions
+void libSCBW_gf_SC1_ArmorTrackerActivate () {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerAdd, true);
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpdate, true);
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpgrade, true);
+}
+
+void libSCBW_gf_SC1_ArmorTrackerUpdate (unit lp_target) {
+    // Automatic Variable Declarations
+    // Implementation
+    UnitBehaviorAdd(lp_target, "SC1_ArmorTracker", lp_target, 1);
+    UnitBehaviorEffectTreeSetUserData(lp_target, "SC1_ArmorTracker", "LifeArmor", UnitGetPropertyFixed(lp_target, c_unitPropLifeArmor, c_unitPropCurrent));
+    UnitBehaviorEffectTreeSetUserData(lp_target, "SC1_ArmorTracker", "ShieldArmor", UnitGetPropertyFixed(lp_target, c_unitPropShieldArmor, c_unitPropCurrent));
+}
+
+void libSCBW_gf_SC1_CheatEvent (trigger t, int lp_cheat) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventGeneric(t, libSCBW_ge_SC1_Cheats_Ident(lp_cheat));
+}
+
+string libSCBW_gf_SC1_CheatToString (int lp_cheat) {
+    // Automatic Variable Declarations
+    // Implementation
+    return libSCBW_ge_SC1_Cheats_Ident(lp_cheat);
+}
+
 void libSCBW_gf_OperationCwal (unit lp_unit, bool lp_construction) {
     // Variable Declarations
     int lv_i;
@@ -62,10 +97,312 @@ void libSCBW_gf_OperationCwal (unit lp_unit, bool lp_construction) {
 
 // Triggers
 //--------------------------------------------------------------------------------------------------
+// Trigger: DataInit
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_DataInit_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCBW_gf_SC1_ArmorTrackerActivate();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_DataInit_Init () {
+    libSCBW_gt_DataInit = TriggerCreate("libSCBW_gt_DataInit_Func");
+    TriggerAddEventMapInit(libSCBW_gt_DataInit);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SC1_ArmorTrackerAdd
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_ArmorTrackerAdd_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCBW_gf_SC1_ArmorTrackerUpdate(EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_ArmorTrackerAdd_Init () {
+    libSCBW_gt_SC1_ArmorTrackerAdd = TriggerCreate("libSCBW_gt_SC1_ArmorTrackerAdd_Func");
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerAdd, false);
+    TriggerAddEventUnitRegion(libSCBW_gt_SC1_ArmorTrackerAdd, null, RegionEntireMap(), true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SC1_ArmorTrackerUpdate
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_ArmorTrackerUpdate_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_effect;
+    unit lv_unit;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_effect = EventPlayerEffectUsed();
+    lv_unit = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+
+    // Conditions
+    if (testConds) {
+        if (!(((lv_effect == "SC1_ArmorTracker_Update") || (StringContains((lv_effect), "DamageApply", c_stringAnywhere, c_stringNoCase) == true)))) {
+            return false;
+        }
+
+        if (!((UnitIsValid(lv_unit) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCBW_gf_SC1_ArmorTrackerUpdate(lv_unit);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_ArmorTrackerUpdate_Init () {
+    libSCBW_gt_SC1_ArmorTrackerUpdate = TriggerCreate("libSCBW_gt_SC1_ArmorTrackerUpdate_Func");
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpdate, false);
+    TriggerAddEventPlayerEffectUsedFromScope(libSCBW_gt_SC1_ArmorTrackerUpdate, c_playerAny, "CEffectUserData");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SC1_ArmorTrackerUpgrade
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_ArmorTrackerUpgrade_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    unitgroup autoBBF6BE40_g;
+    int autoBBF6BE40_u;
+    unit autoBBF6BE40_var;
+
+    // Conditions
+    if (testConds) {
+        if (!((StringContains(CatalogFieldValueGet(c_gameCatalogUpgrade, EventUpgradeName(), "EditorCategories", c_playerAny), "ArmorBonus", c_stringAnywhere, c_stringNoCase) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    autoBBF6BE40_g = UnitGroup(null, EventPlayer(), RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+    autoBBF6BE40_u = UnitGroupCount(autoBBF6BE40_g, c_unitCountAll);
+    for (;; autoBBF6BE40_u -= 1) {
+        autoBBF6BE40_var = UnitGroupUnitFromEnd(autoBBF6BE40_g, autoBBF6BE40_u);
+        if (autoBBF6BE40_var == null) { break; }
+        libSCBW_gf_SC1_ArmorTrackerUpdate(autoBBF6BE40_var);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_ArmorTrackerUpgrade_Init () {
+    libSCBW_gt_SC1_ArmorTrackerUpgrade = TriggerCreate("libSCBW_gt_SC1_ArmorTrackerUpgrade_Func");
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpgrade, false);
+    TriggerAddEventUpgradeLevelChanged(libSCBW_gt_SC1_ArmorTrackerUpgrade, c_playerAny);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: CheatTracker
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_CheatTracker_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_cheat;
+    string lv_stringRemain;
+    string lv_match;
+    int lv_cheatIndex;
+    string lv_param;
+    string lv_param2;
+
+    // Automatic Variable Declarations
+    int auto5838152C_val;
+
+    // Variable Initialization
+    lv_cheat = StringCase(EventChatMessage(false), false);
+    lv_stringRemain = "";
+    lv_match = "";
+    lv_param = "";
+    lv_param2 = "";
+
+    // Conditions
+    if (testConds) {
+        if (!((GameIsOnline() == false))) {
+            return false;
+        }
+
+        if (!((GameCheatsEnabled(c_gameCheatCategoryPublic) == true))) {
+            return false;
+        }
+
+        if (!((lv_cheat != ""))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((StringContains(lv_cheat, "operation cwal", c_stringBegin, c_stringNoCase) == true)) {
+        lv_match = "operation cwal";
+        lv_cheatIndex = 1;
+    }
+    else if ((StringContains(lv_cheat, "instantbuild", c_stringBegin, c_stringNoCase) == true)) {
+        lv_match = "instantbuild";
+        lv_cheatIndex = 1;
+    }
+    else if ((StringContains(lv_cheat, "something for nothing", c_stringBegin, c_stringNoCase) == true)) {
+        lv_match = "something for nothing";
+        lv_cheatIndex = 2;
+    }
+    else if ((StringContains(lv_cheat, "upgradebw", c_stringBegin, c_stringNoCase) == true)) {
+        lv_match = "upgradebw";
+        lv_cheatIndex = 2;
+    }
+    else if (true) {
+        return false;
+    }
+    lv_param = TriggerEventParamName(libSCBW_gf_SC1_CheatToString(lv_cheatIndex), "PlayerParam");
+    lv_param2 = TriggerEventParamName(libSCBW_gf_SC1_CheatToString(lv_cheatIndex), "TriggeringPlayer");
+    DataTableSetInt(false, lv_param, EventPlayer());
+    DataTableSetInt(false, lv_param2, EventPlayer());
+    lv_stringRemain = StringReplaceWord(lv_cheat, lv_match, "", c_stringReplaceAll, c_stringNoCase);
+    auto5838152C_val = lv_cheatIndex;
+    if (auto5838152C_val == 1) {
+        if ((StringLength(lv_stringRemain) > 0)) {
+            DataTableSetInt(false, lv_param, StringToInt(StringWord(lv_stringRemain, 1)));
+        }
+
+        TriggerSendEvent(libSCBW_gf_SC1_CheatToString(lv_cheatIndex));
+    }
+    else if (auto5838152C_val == 2) {
+        if ((StringLength(lv_stringRemain) > 0)) {
+            DataTableSetInt(false, lv_param, StringToInt(StringWord(lv_stringRemain, 1)));
+        }
+
+        TriggerSendEvent(libSCBW_gf_SC1_CheatToString(lv_cheatIndex));
+    }
+    else {
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_CheatTracker_Init () {
+    libSCBW_gt_CheatTracker = TriggerCreate("libSCBW_gt_CheatTracker_Func");
+    TriggerAddEventChatMessage(libSCBW_gt_CheatTracker, c_playerAny, "", false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: UpgradeCheat
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_UpgradeCheat_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_entry;
+    string lv_instance;
+    string lv_dummy;
+    int lv_player;
+    int lv_triggeringPlayer;
+
+    // Automatic Variable Declarations
+    string autoEAAEF20D_userType;
+    int autoEAAEF20D_i;
+    string autoE944CE65_userType;
+    string autoE944CE65_instance;
+    string autoE944CE65_field;
+    int autoE944CE65_i;
+
+    // Variable Initialization
+    lv_entry = "";
+    lv_player = DataTableGetInt(false, TriggerEventParamName(libSCBW_gf_SC1_CheatToString(2), "PlayerParam"));
+    lv_triggeringPlayer = DataTableGetInt(false, TriggerEventParamName(libSCBW_gf_SC1_CheatToString(2), "TriggeringPlayer"));
+
+    // Conditions
+    if (testConds) {
+        if (!((GameIsOnline() == false))) {
+            return false;
+        }
+
+        if (!((GameCheatsEnabled(c_gameCheatCategoryPublic) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TextExpressionSetToken("Param/Expression/lib_SCBW_5413F530", "A", PlayerName(lv_player));
+    UIDisplayMessage(PlayerGroupSingle(lv_triggeringPlayer), c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_SCBW_5413F530"));
+    autoEAAEF20D_userType = "UpgradesCheat";
+    autoEAAEF20D_i = 1;
+    for ( ; autoEAAEF20D_i <= UserDataInstanceCount(autoEAAEF20D_userType) ; autoEAAEF20D_i += 1 ) {
+        lv_instance = UserDataInstance(autoEAAEF20D_userType, autoEAAEF20D_i);
+        autoE944CE65_userType = "UpgradesCheat";
+        autoE944CE65_instance = lv_instance;
+        autoE944CE65_field = "Upgrade";
+        autoE944CE65_i = 1;
+        for ( ; autoE944CE65_i <= UserDataFieldValueCount(autoE944CE65_userType,autoE944CE65_field) ; autoE944CE65_i += 1 ) {
+            lv_entry = UserDataGetGameLink(autoE944CE65_userType,autoE944CE65_instance,autoE944CE65_field, autoE944CE65_i);
+            if ((TechTreeUpgradeCount(lv_player, (lv_entry), c_techCountCompleteOnly) == 0)) {
+                TechTreeUpgradeAddLevel(lv_player, (lv_entry), 1);
+                break;
+            }
+
+        }
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_UpgradeCheat_Init () {
+    libSCBW_gt_UpgradeCheat = TriggerCreate("libSCBW_gt_UpgradeCheat_Func");
+    libSCBW_gf_SC1_CheatEvent(libSCBW_gt_UpgradeCheat, 2);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: OperationCwal Activate
 //--------------------------------------------------------------------------------------------------
 bool libSCBW_gt_OperationCwalActivate_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_triggeringPlayer;
+    text lv_onOff;
+    int lv_i;
+
     // Automatic Variable Declarations
+    const int autoAD16DA14_ae = 15;
+    const int autoAD16DA14_ai = 1;
     unitgroup auto0BEA55EB_g;
     int auto0BEA55EB_u;
     unit auto0BEA55EB_var;
@@ -73,23 +410,59 @@ bool libSCBW_gt_OperationCwalActivate_Func (bool testConds, bool runActions) {
     int auto9DD61595_u;
     unit auto9DD61595_var;
 
+    // Variable Initialization
+    lv_player = DataTableGetInt(false, TriggerEventParamName(libSCBW_gf_SC1_CheatToString(1), "PlayerParam"));
+    lv_triggeringPlayer = DataTableGetInt(false, TriggerEventParamName(libSCBW_gf_SC1_CheatToString(1), "TriggeringPlayer"));
+
+    // Conditions
+    if (testConds) {
+        if (!((GameIsOnline() == false))) {
+            return false;
+        }
+
+        if (!((GameCheatsEnabled(c_gameCheatCategoryPublic) == true))) {
+            return false;
+        }
+    }
+
     // Actions
     if (!runActions) {
         return true;
     }
 
-    libSCBW_gv_operationCwal = !(libSCBW_gv_operationCwal);
-    TriggerEnable(libSCBW_gt_OperationCwal_Train, libSCBW_gv_operationCwal);
-    TriggerEnable(libSCBW_gt_OperationCwal_Constuction, libSCBW_gv_operationCwal);
-    if ((libSCBW_gv_operationCwal == true)) {
-        auto0BEA55EB_g = UnitGroup(null, EventPlayer(), RegionEntireMap(), UnitFilter(0, (1 << (c_targetFilterUnderConstruction - 32)), (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    libSCBW_gv_operationCwal[lv_player] = !(libSCBW_gv_operationCwal[lv_player]);
+    if ((libSCBW_gv_operationCwal[lv_player] == true)) {
+        lv_onOff = StringExternal("Param/Value/lib_SCBW_F8267F6E");
+    }
+    else {
+        lv_onOff = StringExternal("Param/Value/lib_SCBW_19B4CC20");
+    }
+    TextExpressionSetToken("Param/Expression/lib_SCBW_EA340C89", "B", lv_onOff);
+    TextExpressionSetToken("Param/Expression/lib_SCBW_EA340C89", "A", PlayerName(lv_player));
+    UIDisplayMessage(PlayerGroupSingle(lv_triggeringPlayer), c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_SCBW_EA340C89"));
+    lv_i = 0;
+    for ( ; ( (autoAD16DA14_ai >= 0 && lv_i <= autoAD16DA14_ae) || (autoAD16DA14_ai < 0 && lv_i >= autoAD16DA14_ae) ) ; lv_i += autoAD16DA14_ai ) {
+        if ((libSCBW_gv_operationCwal[lv_i] == true)) {
+            TriggerEnable(libSCBW_gt_OperationCwal_Train, true);
+            TriggerEnable(libSCBW_gt_OperationCwal_Constuction, true);
+            break;
+        }
+
+        if ((lv_i >= 15)) {
+            TriggerEnable(libSCBW_gt_OperationCwal_Train, false);
+            TriggerEnable(libSCBW_gt_OperationCwal_Constuction, false);
+        }
+
+    }
+    if ((libSCBW_gv_operationCwal[lv_player] == true)) {
+        auto0BEA55EB_g = UnitGroup(null, lv_player, RegionEntireMap(), UnitFilter(0, (1 << (c_targetFilterUnderConstruction - 32)), (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
         auto0BEA55EB_u = UnitGroupCount(auto0BEA55EB_g, c_unitCountAll);
         for (;; auto0BEA55EB_u -= 1) {
             auto0BEA55EB_var = UnitGroupUnitFromEnd(auto0BEA55EB_g, auto0BEA55EB_u);
             if (auto0BEA55EB_var == null) { break; }
             libSCBW_gf_OperationCwal(auto0BEA55EB_var, true);
         }
-        auto9DD61595_g = UnitGroup(null, EventPlayer(), RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterUnderConstruction - 32)) | (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        auto9DD61595_g = UnitGroup(null, lv_player, RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterUnderConstruction - 32)) | (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
         auto9DD61595_u = UnitGroupCount(auto9DD61595_g, c_unitCountAll);
         for (;; auto9DD61595_u -= 1) {
             auto9DD61595_var = UnitGroupUnitFromEnd(auto9DD61595_g, auto9DD61595_u);
@@ -104,7 +477,7 @@ bool libSCBW_gt_OperationCwalActivate_Func (bool testConds, bool runActions) {
 //--------------------------------------------------------------------------------------------------
 void libSCBW_gt_OperationCwalActivate_Init () {
     libSCBW_gt_OperationCwalActivate = TriggerCreate("libSCBW_gt_OperationCwalActivate_Func");
-    TriggerAddEventCheatUsed(libSCBW_gt_OperationCwalActivate, c_playerAny, c_gameCheatFastBuild);
+    libSCBW_gf_SC1_CheatEvent(libSCBW_gt_OperationCwalActivate, 1);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -114,7 +487,7 @@ bool libSCBW_gt_OperationCwal_Train_Func (bool testConds, bool runActions) {
     // Automatic Variable Declarations
     // Conditions
     if (testConds) {
-        if (!((libSCBW_gv_operationCwal == true))) {
+        if (!((libSCBW_gv_operationCwal[UnitGetOwner(EventUnit())] == true))) {
             return false;
         }
     }
@@ -143,7 +516,7 @@ bool libSCBW_gt_OperationCwal_Constuction_Func (bool testConds, bool runActions)
     // Automatic Variable Declarations
     // Conditions
     if (testConds) {
-        if (!((libSCBW_gv_operationCwal == true))) {
+        if (!((libSCBW_gv_operationCwal[UnitGetOwner(EventUnitProgressUnit())] == true))) {
             return false;
         }
     }
@@ -165,6 +538,12 @@ void libSCBW_gt_OperationCwal_Constuction_Init () {
 }
 
 void libSCBW_InitTriggers () {
+    libSCBW_gt_DataInit_Init();
+    libSCBW_gt_SC1_ArmorTrackerAdd_Init();
+    libSCBW_gt_SC1_ArmorTrackerUpdate_Init();
+    libSCBW_gt_SC1_ArmorTrackerUpgrade_Init();
+    libSCBW_gt_CheatTracker_Init();
+    libSCBW_gt_UpgradeCheat_Init();
     libSCBW_gt_OperationCwalActivate_Init();
     libSCBW_gt_OperationCwal_Train_Init();
     libSCBW_gt_OperationCwal_Constuction_Init();

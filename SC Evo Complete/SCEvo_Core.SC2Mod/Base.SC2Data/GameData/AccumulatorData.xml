@@ -19,6 +19,9 @@
         <Parameters value="0">
             <AccumulatorArray value="SC1_ShieldSwitch_Expl"/>
         </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SC1_LifeArmor_Expl_Switch"/>
+        </Parameters>
     </CAccumulatorArithmetic>
     <CAccumulatorArithmetic id="SC1_DamageFormula_Conc_Param1">
         <Parameters value="0">
@@ -26,6 +29,9 @@
         </Parameters>
         <Parameters value="0">
             <AccumulatorArray value="SC1_ShieldSwitch_Conc"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SC1_LifeArmor_Conc_Switch"/>
         </Parameters>
     </CAccumulatorArithmetic>
     <CAccumulatorConstant id="SC1_Fraction_Conc_Default">
@@ -56,11 +62,45 @@
     <CAccumulatorConstant id="SC1_Fraction_Conc_Armored">
         <Amount value="0.25"/>
     </CAccumulatorConstant>
+    <CAccumulatorSwitch id="SC1_LifeArmor_Conc_Switch">
+        <CaseArray Validator="SC1_DamagePassesShields" Accumulator="SC1_LifeArmor_Conc"/>
+        <CaseDefault value="Zero"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorSwitch id="SC1_LifeArmor_Expl_Switch">
+        <CaseArray Validator="SC1_DamagePassesShields" Accumulator="SC1_LifeArmor_Expl"/>
+        <CaseDefault value="Zero"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorUserData id="SC1_ShieldArmor">
+        <Key value="ShieldArmor"/>
+        <BehaviorScope Value="Target" Behavior="SC1_ArmorTracker"/>
+    </CAccumulatorUserData>
     <CAccumulatorSwitch id="SC1_ShieldFactorSwitchAdd_Expl">
         <CaseArray Validator="UnitIsArmored" Accumulator="SC1_ShieldFactor_Expl_Armored"/>
         <CaseArray Validator="UnitIsLight" Accumulator="SC1_ShieldFactor_Expl_Light"/>
         <CaseDefault value="SC1_ShieldFactor_Expl_Default"/>
     </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SC1_ShieldsMinusIncomingDamage">
+        <Parameters value="0">
+            <AccumulatorArray value="SC1_ShieldCombine"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SC1_IncomingDamage"/>
+        </Parameters>
+        <Operation value="Subtract"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorSwitch id="SC1_ShieldsParam_Formula">
+        <CaseArray Validator="SC1_HasShieldsOrMatrix" Accumulator="SC1_ShieldsMinusIncomingDamage"/>
+        <CaseDefault value="Minus1"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SC1_ShieldsPlusShieldArmor">
+        <Parameters value="0">
+            <AccumulatorArray value="UnitVital_ShieldsCurr_Target"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SC1_ShieldArmor"/>
+        </Parameters>
+        <MinAccumulation value="0"/>
+    </CAccumulatorArithmetic>
     <CAccumulatorConstant id="SunkenColonySCBWWeapon@Damage">
         <Amount value="40"/>
     </CAccumulatorConstant>
@@ -165,17 +205,10 @@
         </Parameters>
         <Operation value="Multiply"/>
     </CAccumulatorArithmetic>
-    <CAccumulatorSwitch id="SC1ImpactMarker">
-        <MinAccumulation value="0"/>
-        <MaxAccumulation value="2"/>
-        <CaseArray Validator="UnitIsArmored" Accumulator="1"/>
-        <CaseArray Validator="UnitIsLight" Accumulator="2"/>
-        <CaseDefault value="Zero"/>
-    </CAccumulatorSwitch>
     <CAccumulatorArithmetic id="SC1_ShieldCombine">
         <MinAccumulation value="0"/>
         <Parameters value="0">
-            <AccumulatorArray value="UnitVital_ShieldsCurr_Target"/>
+            <AccumulatorArray value="SC1_ShieldsPlusShieldArmor"/>
         </Parameters>
         <Parameters value="0">
             <AccumulatorArray value="ScienceVesselSCBWDefensiveMatrix@Remaining"/>
@@ -312,5 +345,8 @@
     </CAccumulatorUserData>
     <CAccumulatorConstant id="1">
         <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="Minus1">
+        <Amount value="-1"/>
     </CAccumulatorConstant>
 </Catalog>
