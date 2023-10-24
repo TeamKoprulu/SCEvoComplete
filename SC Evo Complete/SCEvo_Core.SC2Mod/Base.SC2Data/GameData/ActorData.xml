@@ -344,6 +344,11 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorSiteOpIncoming id="WhiffOffsetDirectHost">
+        <HostImpact Subject="_ImpactGuide"/>
+        <HostIncoming Subject="::Main" Scope="Outer" Actor="Find"/>
+        <PullBack value="1.000000"/>
+    </CActorSiteOpIncoming>
     <CActorSite id="GenericAttackImpactSiteWhiff">
         <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow} 1 1"/>
         <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide} 1 1"/>
@@ -1053,17 +1058,22 @@
         <Sound value="SunkenColonySCBWWeapon@Launch"/>
     </CActorSound>
     <CActorAction id="SunkenColonySCBWWeapon@Action" parent="GenericAttackWhiff" effectAttack="SunkenColonySCBWWeapon@Impact">
-        <ImpactSiteOps Ops="SOpShadow SOpForwardLaunchGuide"/>
-        <ImpactMap index="None" Sound="SunkenColonySCBWWeapon@Impact"/>
+        <ImpactSiteOps Ops="SOpShadow SOpAttachOriginStationary"/>
+        <ImpactMap index="None" Model="SunkenColonySCBWWeapon@Impact" Sound="SunkenColonySCBWWeapon@Impact"/>
         <ShieldFlashType value="Full"/>
+        <ImpactModel value="SunkenColonySCBWWeapon@ImpactModel"/>
+        <Lifetime value="1.000000"/>
     </CActorAction>
-    <CActorModel id="SunkenColonySCBWWeapon@ImpactModel">
-        <Flags index="SuppressSaveLoad" value="1"/>
-        <On Terms="Effect.SunkenColonySCBWWeapon@Impact.Start; At Target" Send="Create"/>
+    <CActorModel id="SunkenColonySCBWWeapon@ImpactModel" parent="GenericAttackImpactModel">
+        <Inherits index="Visibility" value="0"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="HostSiteOpsSet ::Host {SOpShadow SOpAttachOrigin WhiffOffsetDirectHost} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
         <On Terms="ActorCreation" Send="$Birth 0 0.000000 0.000000 1.000000 AsDuration"/>
         <On Terms="AnimDone; AnimName Birth" Send="Destroy"/>
-        <HostSiteOps Ops="SOpShadow SOpAttachOriginStationary"/>
         <Model value="SunkenColonySCBWWeapon@Impact"/>
+        <AnimBlendTime value="0.000000"/>
     </CActorModel>
     <CActorAction id="SporeColonySCBWWeapon@Action" parent="GenericAttack" effectImpact="SporeColonySCBWWeapon@Damage" effectLaunch="SporeColonySCBWWeapon@LM">
         <LaunchAssets Sound="SporeColonySCBWWeapon@Launch"/>
@@ -1073,7 +1083,6 @@
     </CActorAction>
     <CActorMissile id="SporeColonySCBWWeapon@Missile" parent="GenericAttackMissile" unitName="SporeColonySCBWWeapon@Missile"/>
     <CActorModel id="DevourerSCBWWeapon@SporesModel" parent="ModelAnimationStyleContinuous">
-        <EditorCategories value=""/>
         <On Terms="Behavior.DevourerSCBWWeapon.On" Send="Create"/>
         <On Terms="Behavior.DevourerSCBWWeapon.Off" Send="AnimBracketStop BSD"/>
         <On Terms="ActorCreation; ScopeContains _UnitSmall" Send="Destroy"/>
