@@ -24,6 +24,14 @@ void libSCBW_InitVariables () {
 
 // Custom Script
 //--------------------------------------------------------------------------------------------------
+// Custom Script: Functions
+//--------------------------------------------------------------------------------------------------
+void DbgInternal(string message) {
+    TriggerDebugOutput(10, StringToText(message), true);
+    return;
+}
+
+//--------------------------------------------------------------------------------------------------
 // Custom Script: Main
 //--------------------------------------------------------------------------------------------------
 include "Script/SCBW"
@@ -43,12 +51,48 @@ string libSCBW_ge_SC1_Cheats_Ident (int lp_val) {
 }
 
 // Functions
-void libSCBW_gf_SC1_ArmorTrackerActivate () {
+void libSCBW_gf_SC1ToggleFeature (int lp_feature, bool lp_activateDeactivate) {
+    // Variable Declarations
+    bool lv_onOff;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Implementation
+    if ((lp_activateDeactivate == true)) {
+        lv_onOff = true;
+    }
+
+    if ((lp_feature == libSCBW_ge_SC1_Feature_SC1Cheats)) {
+        libSCBW_gv_SC1_CheatsActive = lv_onOff;
+        TriggerEnable(libSCBW_gt_SC1_CheatTracker, lv_onOff);
+    }
+    else if ((lp_feature == libSCBW_ge_SC1_Feature_CorrectedRefunds)) {
+        TriggerEnable(libSCBW_gt_SC1_Refund, lv_onOff);
+    }
+    else if ((lp_feature == libSCBW_ge_SC1_Feature_FractionalLifeArmor)) {
+        libSCBW_gf_SC1_ArmorTrackerActivate(lv_onOff);
+    }
+    else if ((lp_feature == libSCBW_ge_SC1_Feature_HighgroundAdvantage)) {
+        TriggerEnable(libSCBW_gt_SC1_HighgroundMiss_Add, lv_onOff);
+    }
+    else if ((lp_feature == libSCBW_ge_SC1_Feature_SC2toSC1UnitSwap)) {
+        libSCBW_gf_SC1_UnitSwap_Activate(lp_activateDeactivate);
+        TriggerEnable(libSCBW_gt_SC1_UnitSwap, lv_onOff);
+    }
+    else if ((lp_feature == libSCBW_ge_SC1_Feature_SC2toSC1UnitSwapErrorLoggingOnly)) {
+        libSCBW_gv_sC1_UnitSwap_ErrorLogOnly = lv_onOff;
+    }
+    else if (true) {
+    }
+}
+
+void libSCBW_gf_SC1_ArmorTrackerActivate (bool lp_onOff) {
     // Automatic Variable Declarations
     // Implementation
-    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerAdd, true);
-    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpdate, true);
-    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpgrade, true);
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerAdd, lp_onOff);
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpdate, lp_onOff);
+    TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpgrade, lp_onOff);
 }
 
 void libSCBW_gf_SC1_ArmorTrackerUpdate (unit lp_target) {
@@ -57,6 +101,34 @@ void libSCBW_gf_SC1_ArmorTrackerUpdate (unit lp_target) {
     UnitBehaviorAdd(lp_target, "SC1_ArmorTracker", lp_target, 1);
     UnitBehaviorEffectTreeSetUserData(lp_target, "SC1_ArmorTracker", "LifeArmor", UnitGetPropertyFixed(lp_target, c_unitPropLifeArmor, c_unitPropCurrent));
     UnitBehaviorEffectTreeSetUserData(lp_target, "SC1_ArmorTracker", "ShieldArmor", UnitGetPropertyFixed(lp_target, c_unitPropShieldArmor, c_unitPropCurrent));
+}
+
+void libSCBW_gf_SC1_UnitSwap_Activate (bool lp_activateDeactivate) {
+    // Automatic Variable Declarations
+    playergroup auto112B7167_g;
+    int auto112B7167_var;
+    playergroup auto0B2E2FFE_g;
+    int auto0B2E2FFE_var;
+
+    // Implementation
+    if ((lp_activateDeactivate == true)) {
+        auto0B2E2FFE_g = PlayerGroupAll();
+        auto0B2E2FFE_var = -1;
+        while (true) {
+            auto0B2E2FFE_var = PlayerGroupNextPlayer(auto0B2E2FFE_g, auto0B2E2FFE_var);
+            if (auto0B2E2FFE_var < 0) { break; }
+            PlayerAddResponse(auto0B2E2FFE_var, "SCBWUnitSwap");
+        }
+    }
+    else {
+        auto112B7167_g = PlayerGroupAll();
+        auto112B7167_var = -1;
+        while (true) {
+            auto112B7167_var = PlayerGroupNextPlayer(auto112B7167_g, auto112B7167_var);
+            if (auto112B7167_var < 0) { break; }
+            PlayerRemoveResponse(auto112B7167_var, "SCBWUnitSwap");
+        }
+    }
 }
 
 void libSCBW_gf_SC1_CheatEvent (trigger t, int lp_cheat) {
@@ -96,26 +168,6 @@ void libSCBW_gf_OperationCwal (unit lp_unit, bool lp_construction) {
 }
 
 // Triggers
-//--------------------------------------------------------------------------------------------------
-// Trigger: DataInit
-//--------------------------------------------------------------------------------------------------
-bool libSCBW_gt_DataInit_Func (bool testConds, bool runActions) {
-    // Automatic Variable Declarations
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    libSCBW_gf_SC1_ArmorTrackerActivate();
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void libSCBW_gt_DataInit_Init () {
-    libSCBW_gt_DataInit = TriggerCreate("libSCBW_gt_DataInit_Func");
-    TriggerAddEventMapInit(libSCBW_gt_DataInit);
-}
-
 //--------------------------------------------------------------------------------------------------
 // Trigger: SC1_ArmorTrackerAdd
 //--------------------------------------------------------------------------------------------------
@@ -231,9 +283,287 @@ void libSCBW_gt_SC1_ArmorTrackerUpgrade_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Trigger: CheatTracker
+// Trigger: SC1_HighgroundMiss_Add
 //--------------------------------------------------------------------------------------------------
-bool libSCBW_gt_CheatTracker_Func (bool testConds, bool runActions) {
+bool libSCBW_gt_SC1_HighgroundMiss_Add_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterAir) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitBehaviorAdd(EventUnit(), "SC1_MissChance", EventUnit(), 1);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_HighgroundMiss_Add_Init () {
+    libSCBW_gt_SC1_HighgroundMiss_Add = TriggerCreate("libSCBW_gt_SC1_HighgroundMiss_Add_Func");
+    TriggerEnable(libSCBW_gt_SC1_HighgroundMiss_Add, false);
+    TriggerAddEventUnitRegion(libSCBW_gt_SC1_HighgroundMiss_Add, null, RegionEntireMap(), true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SC1_Refund
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_Refund_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_owner;
+    int[4] lv_cost;
+    int lv_i;
+    int lv_index;
+    int lv_infoCount;
+    string lv_originUnit;
+    string lv_targetUnit;
+    string lv_ability;
+    int lv_count;
+    fixed lv_fraction;
+
+    // Automatic Variable Declarations
+    int auto5B7533DD_ae;
+    const int auto5B7533DD_ai = 1;
+    const int auto0D444168_ae = 3;
+    const int auto0D444168_ai = 1;
+    const int autoFED5C6F9_ae = 3;
+    const int autoFED5C6F9_ai = 1;
+
+    // Variable Initialization
+    lv_owner = UnitGetOwner(EventUnit());
+    lv_ability = AbilityCommandGetAbility(EventUnitAbility());
+    lv_count = 1;
+    lv_fraction = -1.0;
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsAlive(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!(((AbilityClass(lv_ability) == c_classIdCAbilMorph) || (AbilityClass(lv_ability) == c_classIdCAbilTrain) || (AbilityClass(lv_ability) == c_classIdCAbilResearch)))) {
+            return false;
+        }
+
+        if (!((CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "AbilityCategories[" + IntToString(0) + "]", c_playerAny) == "1"))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitTypeTestAttribute(UnitGetType(EventUnit()), c_unitAttributeStructure) == true)) {
+        lv_fraction = -0.75;
+    }
+
+    lv_originUnit = UnitGetType(EventUnit());
+    lv_infoCount = CatalogFieldValueCount(c_gameCatalogAbil, lv_ability, "InfoArray", c_playerAny);
+    if ((AbilityClass(lv_ability) == c_classIdCAbilMorph)) {
+        lv_targetUnit = (CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString((lv_infoCount - 1)) + "].Unit", c_playerAny));
+    }
+    else if (((AbilityClass(lv_ability) == c_classIdCAbilTrain) || (AbilityClass(lv_ability) == c_classIdCAbilResearch))) {
+        auto5B7533DD_ae = (lv_infoCount - 1);
+        lv_i = 0;
+        for ( ; ( (auto5B7533DD_ai >= 0 && lv_i <= auto5B7533DD_ae) || (auto5B7533DD_ai < 0 && lv_i >= auto5B7533DD_ae) ) ; lv_i += auto5B7533DD_ai ) {
+            if ((EventUnitAbility() == AbilityCommand(lv_ability, lv_i))) {
+                if ((AbilityClass(lv_ability) == c_classIdCAbilResearch)) {
+                    lv_index = lv_i;
+                    lv_fraction = -0.25;
+                }
+                else {
+                    lv_count = CatalogFieldValueCount(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString(lv_i) + "].Unit", c_playerAny);
+                    lv_targetUnit = (CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString(lv_i) + "].Unit[" + IntToString(0) + "]", c_playerAny));
+                }
+                break;
+            }
+
+        }
+        if ((CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "AbilityCategories[" + IntToString(2) + "]", c_playerAny) == "1")) {
+            UnitKill(EventUnit());
+        }
+
+    }
+    if ((AbilityClass(lv_ability) == c_classIdCAbilResearch)) {
+        lv_i = 0;
+        for ( ; ( (auto0D444168_ai >= 0 && lv_i <= auto0D444168_ae) || (auto0D444168_ai < 0 && lv_i >= auto0D444168_ae) ) ; lv_i += auto0D444168_ai ) {
+            lv_cost[lv_i] += CatalogFieldValueGetAsInt(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString(lv_index) + "].Resource[" + IntToString(lv_i) + "]", lv_owner);
+            CatalogFieldValueSet(c_gameCatalogEffect, "DummyResourceSpend", "Cost.Resource[" + IntToString(lv_i) + "]", lv_owner, IntToString(FixedToInt((lv_cost[lv_i] * lv_fraction))));
+        }
+    }
+    else {
+        lv_i = 0;
+        for ( ; ( (autoFED5C6F9_ai >= 0 && lv_i <= autoFED5C6F9_ae) || (autoFED5C6F9_ai < 0 && lv_i >= autoFED5C6F9_ae) ) ; lv_i += autoFED5C6F9_ai ) {
+            lv_cost[lv_i] += ((CatalogFieldValueGetAsInt(c_gameCatalogUnit, lv_targetUnit, "CostResource[" + IntToString(lv_i) + "]", lv_owner) * lv_count) - CatalogFieldValueGetAsInt(c_gameCatalogUnit, lv_originUnit, "CostResource[" + IntToString(lv_i) + "]", lv_owner));
+            CatalogFieldValueSet(c_gameCatalogEffect, "DummyResourceSpend", "Cost.Resource[" + IntToString(lv_i) + "]", lv_owner, IntToString(FixedToInt((lv_cost[lv_i] * lv_fraction))));
+        }
+    }
+    PlayerCreateEffectUnit(lv_owner, "DummyResourceSpend", EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_Refund_Init () {
+    libSCBW_gt_SC1_Refund = TriggerCreate("libSCBW_gt_SC1_Refund_Func");
+    TriggerEnable(libSCBW_gt_SC1_Refund, false);
+    TriggerAddEventUnitAbility(libSCBW_gt_SC1_Refund, null, null, c_unitAbilStageCancel, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SC1_UnitSwap
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_UnitSwap_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_u;
+    string lv_link;
+    string lv_replaceLink;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_u = EventPlayerEffectUsedUnit(c_effectUnitCaster);
+    lv_link = UnitGetType(lv_u);
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_u) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_u, UnitGetOwner(lv_u), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHallucination - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libNtve_gf_SendActorMessageToUnit(lv_u, libNtve_gf_Print(("Found " + (UnitGetType(lv_u)) + "#" + IntToString(UnitGetTag(lv_u)) + " Unit at [" + libNtve_gf_ConvertXYToString(Trunc(PointGetX(UnitGetPosition(lv_u))), Trunc(PointGetY(UnitGetPosition(lv_u)))) + "] ")));
+    if ((libSCBW_gv_sC1_UnitSwap_ErrorLogOnly == true)) {
+        return true;
+    }
+
+    // Replace Links
+    // Protoss
+    if (lv_link == "Nexus")             { lv_replaceLink = "NexusSCBW"; }
+    else if (lv_link == "Pylon")        { lv_replaceLink = "PylonSCBW"; }
+    else if (lv_link == "Assimilator")  { lv_replaceLink = "AssimilatorSCBW"; }
+    else if (lv_link == "AssimilatorRich")  { lv_replaceLink = "AssimilatorSCBW@Rich"; }
+    else if (lv_link == "Gateway")      { lv_replaceLink = "GatewaySCBW"; }
+    else if (lv_link == "Forge")        { lv_replaceLink = "ForgeSCBW"; }
+    else if (lv_link == "CyberneticsCore")  { lv_replaceLink = "CyberneticsCoreSCBW"; }
+    else if (lv_link == "ShieldBattery")    { lv_replaceLink = "ShieldBatterySCBW"; }
+    else if (lv_link == "PhotonCannon")     { lv_replaceLink = "PhotonCannonSCBW"; }
+    else if (lv_link == "RoboticsFacility") { lv_replaceLink = "RoboticsFacilitySCBW"; }
+    else if (lv_link == "RoboticsBay")      { lv_replaceLink = "RoboticsBaySCBW"; }
+    else if (lv_link == "TwilightCouncil")  { lv_replaceLink = "CitadelOfAdunSCBW"; }
+    else if (lv_link == "TemplarArchive")   { lv_replaceLink = "TemplarArchiveSCBW"; }
+    else if (lv_link == "Stargate")     { lv_replaceLink = "StargateSCBW"; }
+    else if (lv_link == "FleetBeacon")  { lv_replaceLink = "FleetBeaconSCBW"; }
+    else if (lv_link == "Probe")        { lv_replaceLink = "ProbeSCBW"; }
+    else if (lv_link == "Zealot")       { lv_replaceLink = "ZealotSCBW"; }
+    else if (lv_link == "Dragoon")      { lv_replaceLink = "DragoonSCBW"; }
+    else if (lv_link == "HighTemplar")  { lv_replaceLink = "HighTemplarSCBW"; }
+    else if (lv_link == "Archon")       { lv_replaceLink = "ArchonSCBW"; }
+    else if (lv_link == "DarkTemplar")  { lv_replaceLink = "DarkTemplarSCBW"; }
+    else if (lv_link == "DarkArchon")   { lv_replaceLink = "DarkArchonSCBW"; }
+    else if (lv_link == "WarpPrism")    { lv_replaceLink = "ShuttleSCBW"; }
+    else if (lv_link == "Reaver")       { lv_replaceLink = "ReaverSCBW"; }
+    else if (lv_link == "Observer")     { lv_replaceLink = "ObserverSCBW"; }
+    else if (lv_link == "Scout")        { lv_replaceLink = "ScoutSCBW"; }
+    else if (lv_link == "CorsairMP")    { lv_replaceLink = "CorsairSCBW"; }
+    else if (lv_link == "Carrier")      { lv_replaceLink = "CarrierSCBW"; }
+    else if (lv_link == "ArbiterMP")    { lv_replaceLink = "ArbiterSCBW"; }
+    // Terran
+    else if (lv_link == "SCV")          { lv_replaceLink = "SCVSCBW"; }
+    else if (lv_link == "Marine")       { lv_replaceLink = "MarineSCBW"; }
+    else if (lv_link == "Firebat")      { lv_replaceLink = "FirebatSCBW"; }
+    else if (lv_link == "Medic")        { lv_replaceLink = "MedicSCBW"; }
+    else if (lv_link == "Ghost")        { lv_replaceLink = "GhostSCBW"; }
+    else if (lv_link == "Vulture")      { lv_replaceLink = "VultureSCBW"; }
+    else if (lv_link == "SiegeTank")    { lv_replaceLink = "SiegeTankSCBW"; }
+    else if (lv_link == "SiegeTankSieged"){ lv_replaceLink = "SiegeTankSiegedSCBW"; }
+    else if (lv_link == "Goliath")      { lv_replaceLink = "GoliathSCBW"; }
+    else if (lv_link == "SpiderMine")   { lv_replaceLink = "SpiderMineSCBW"; }
+    else if (lv_link == "SpiderMineBurrowed")   { lv_replaceLink = "SpiderMineSCBW@Burrowed"; }
+    else if (lv_link == "Wraith")       { lv_replaceLink = "WraithSCBW"; }
+    else if (lv_link == "Medivac")      { lv_replaceLink = "DropshipSCBW"; }
+    else if (lv_link == "ScienceVessel"){ lv_replaceLink = "ScienceVesselSCBW"; }
+    else if (lv_link == "Battlecruiser")  { lv_replaceLink = "BattlecruiserSCBW"; }
+    else if (lv_link == "CommandCenter")  { lv_replaceLink = "CommandCenterSCBW"; }
+    else if (lv_link == "Refinery")     { lv_replaceLink = "RefinerySCBW"; }
+    else if (lv_link == "SupplyDepot")  { lv_replaceLink = "SupplyDepotSCBW"; }
+    else if (lv_link == "Barracks")  { lv_replaceLink = "BarracksSCBW"; }
+    else if (lv_link == "BarracksFlying")  { lv_replaceLink = "BarracksFlyingSCBW"; }
+    else if (lv_link == "EngineeringBay")  { lv_replaceLink = "EngineeringBaySCBW"; }
+    else if (lv_link == "Factory")  { lv_replaceLink = "FactorySCBW"; }
+    else if (lv_link == "Starport")  { lv_replaceLink = "StarportSCBW"; }
+    else if (lv_link == "Bunker")  { lv_replaceLink = "BunkerSCBW"; }
+    else if (lv_link == "MissileTurret")  { lv_replaceLink = "MissileTurretSCBW"; }
+    else if (lv_link == "Armory")  { lv_replaceLink = "ArmorySCBW"; }
+    else if (lv_link == "FusionCore")  { lv_replaceLink = "FusionCoreSCBW"; }
+    // Zerg
+    else if (lv_link == "Hatchery")  { lv_replaceLink = "HatcherySCBW"; }
+    else if (lv_link == "Lair")  { lv_replaceLink = "LairSCBW"; }
+    else if (lv_link == "Hive")  { lv_replaceLink = "HiveSCBW"; }
+    else if (lv_link == "SporeCrawler")  { lv_replaceLink = "SporeColonySCBW"; }
+    else if (lv_link == "SpineCrawler")  { lv_replaceLink = "SunkenColonySCBW"; }
+    else if (lv_link == "Extractor")  { lv_replaceLink = "ExtractorSCBW"; }
+    else if (lv_link == "ExtractorRich")  { lv_replaceLink = "ExtractorSCBW@Rich"; }
+    else if (lv_link == "SpawningPool")  { lv_replaceLink = "SpawningPoolSCBW"; }
+    else if (lv_link == "EvolutionChamber")  { lv_replaceLink = "EvolutionChamberSCBW"; }
+    else if (lv_link == "HydraliskDen")  { lv_replaceLink = "HydraliskDenSCBW"; }
+    else if (lv_link == "Spire")  { lv_replaceLink = "SpireSCBW"; }
+    else if (lv_link == "GreaterSpire")  { lv_replaceLink = "GreaterSpireSCBW"; }
+    else if (lv_link == "InfestationPit")  { lv_replaceLink = "QueensNestSCBW"; }
+    else if (lv_link == "RoachWarren")  { lv_replaceLink = "DefilerMoundSCBW"; }
+    else if (lv_link == "NydusCanal")  { lv_replaceLink = "NydusCanalSCBW"; }
+    else if (lv_link == "Larva")  { lv_replaceLink = "LarvaSCBW"; }
+    else if (lv_link == "Drone")  { lv_replaceLink = "DroneSCBW"; }
+    else if (lv_link == "Zergling")  { lv_replaceLink = "ZerglingSCBW"; }
+    else if (lv_link == "Overlord")  { lv_replaceLink = "OverlordSCBW"; }
+    else if (lv_link == "Hydralisk")  { lv_replaceLink = "HydraliskSCBW"; }
+    else if (lv_link == "Mutalisk")  { lv_replaceLink = "MutaliskSCBW"; }
+    else if (lv_link == "Scourge")  { lv_replaceLink = "ScourgeSCBW"; }
+    else if (lv_link == "QueenMP")  { lv_replaceLink = "QueenSCBW"; }
+    else if (lv_link == "Ultralisk")  { lv_replaceLink = "UltraliskSCBW"; }
+    else if (lv_link == "DefilerMP")  { lv_replaceLink = "DefilerSCBW"; }
+    else if (lv_link == "Broodling")  { lv_replaceLink = "BroodlingSCBW"; }
+    else if (lv_link == "InfestedTerran")  { lv_replaceLink = "InfestedTerranSCBW"; }
+    else {
+    }
+    if ((lv_replaceLink == null)) {
+        TriggerDebugOutput(1, StringExternal("Param/Value/lib_SCBW_3E8673A0"), false);
+    }
+    else {
+        libNtve_gf_ReplaceUnit(lv_u, lv_replaceLink, libNtve_ge_ReplaceUnitOptions_OldUnitsRelative);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_UnitSwap_Init () {
+    libSCBW_gt_SC1_UnitSwap = TriggerCreate("libSCBW_gt_SC1_UnitSwap_Func");
+    TriggerEnable(libSCBW_gt_SC1_UnitSwap, false);
+    TriggerAddEventPlayerEffectUsed(libSCBW_gt_SC1_UnitSwap, c_playerAny, "SCBWUnitSwapDummy");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SC1_CheatTracker
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_CheatTracker_Func (bool testConds, bool runActions) {
     // Variable Declarations
     string lv_cheat;
     string lv_stringRemain;
@@ -254,6 +584,10 @@ bool libSCBW_gt_CheatTracker_Func (bool testConds, bool runActions) {
 
     // Conditions
     if (testConds) {
+        if (!((libSCBW_gv_SC1_CheatsActive == true))) {
+            return false;
+        }
+
         if (!((GameIsOnline() == false))) {
             return false;
         }
@@ -317,15 +651,16 @@ bool libSCBW_gt_CheatTracker_Func (bool testConds, bool runActions) {
 }
 
 //--------------------------------------------------------------------------------------------------
-void libSCBW_gt_CheatTracker_Init () {
-    libSCBW_gt_CheatTracker = TriggerCreate("libSCBW_gt_CheatTracker_Func");
-    TriggerAddEventChatMessage(libSCBW_gt_CheatTracker, c_playerAny, "", false);
+void libSCBW_gt_SC1_CheatTracker_Init () {
+    libSCBW_gt_SC1_CheatTracker = TriggerCreate("libSCBW_gt_SC1_CheatTracker_Func");
+    TriggerEnable(libSCBW_gt_SC1_CheatTracker, false);
+    TriggerAddEventChatMessage(libSCBW_gt_SC1_CheatTracker, c_playerAny, "", false);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Trigger: UpgradeCheat
+// Trigger: SC1_UpgradeCheat
 //--------------------------------------------------------------------------------------------------
-bool libSCBW_gt_UpgradeCheat_Func (bool testConds, bool runActions) {
+bool libSCBW_gt_SC1_UpgradeCheat_Func (bool testConds, bool runActions) {
     // Variable Declarations
     string lv_entry;
     string lv_instance;
@@ -385,9 +720,9 @@ bool libSCBW_gt_UpgradeCheat_Func (bool testConds, bool runActions) {
 }
 
 //--------------------------------------------------------------------------------------------------
-void libSCBW_gt_UpgradeCheat_Init () {
-    libSCBW_gt_UpgradeCheat = TriggerCreate("libSCBW_gt_UpgradeCheat_Func");
-    libSCBW_gf_SC1_CheatEvent(libSCBW_gt_UpgradeCheat, 2);
+void libSCBW_gt_SC1_UpgradeCheat_Init () {
+    libSCBW_gt_SC1_UpgradeCheat = TriggerCreate("libSCBW_gt_SC1_UpgradeCheat_Func");
+    libSCBW_gf_SC1_CheatEvent(libSCBW_gt_SC1_UpgradeCheat, 2);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -538,12 +873,14 @@ void libSCBW_gt_OperationCwal_Constuction_Init () {
 }
 
 void libSCBW_InitTriggers () {
-    libSCBW_gt_DataInit_Init();
     libSCBW_gt_SC1_ArmorTrackerAdd_Init();
     libSCBW_gt_SC1_ArmorTrackerUpdate_Init();
     libSCBW_gt_SC1_ArmorTrackerUpgrade_Init();
-    libSCBW_gt_CheatTracker_Init();
-    libSCBW_gt_UpgradeCheat_Init();
+    libSCBW_gt_SC1_HighgroundMiss_Add_Init();
+    libSCBW_gt_SC1_Refund_Init();
+    libSCBW_gt_SC1_UnitSwap_Init();
+    libSCBW_gt_SC1_CheatTracker_Init();
+    libSCBW_gt_SC1_UpgradeCheat_Init();
     libSCBW_gt_OperationCwalActivate_Init();
     libSCBW_gt_OperationCwal_Train_Init();
     libSCBW_gt_OperationCwal_Constuction_Init();

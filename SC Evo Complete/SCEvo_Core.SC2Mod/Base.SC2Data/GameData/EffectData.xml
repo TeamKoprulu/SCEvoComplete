@@ -37,6 +37,11 @@
         <EffectArray value="SC1_ShieldsParam"/>
         <EffectArray value="##x##@DamageAccum"/>
     </CEffectSet>
+    <CEffectModifyPlayer id="DummyResourceSpend"/>
+    <CEffectDamage id="GhostSCBWWeapon@DamageAccum" parent="ConcussiveBaseDamageSCBW">
+        <EditorCategories value="Race:Terran"/>
+        <Kind value="Ranged"/>
+    </CEffectDamage>
     <CEffectUserData id="SC1_ArmorTracker_Update">
         <Amount value="0"/>
     </CEffectUserData>
@@ -69,6 +74,26 @@
             <AccumulatorArray value="FirebatSCBWWeapon@Damage"/>
         </Amount>
     </CEffectUserData>
+    <CEffectSet id="SiegeTankSCBWSiegedWeapon@InitialSet">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@MissChance"/>
+        <EffectArray value="SiegeTankSCBWSiegedWeapon@MissSwitch"/>
+    </CEffectSet>
+    <CEffectUserData id="SiegeTankSCBWSiegedWeapon@MissChance">
+        <ValidatorArray value="SC1_MissCheck"/>
+        <EditorCategories value="Race:Terran"/>
+        <Chance value="0.4687"/>
+        <Key value="Missed"/>
+        <SourceKey value="Missed"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectSwitch id="SiegeTankSCBWSiegedWeapon@MissSwitch">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Validator="UnderDarkSwarmCombine" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
+        <CaseArray Validator="SiegeTankSCBWSiegedWeapon@Missed" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
+        <CaseDefault value="SiegeTankSCBWSiegedWeapon@Switch"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSwitch>
     <CEffectDamage id="SiegeTankSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW">
         <EditorCategories value="Race:Terran"/>
         <Kind value="Ranged"/>
@@ -264,6 +289,8 @@
         <Amount value="20"/>
         <Death value="Blast"/>
         <SearchFlags index="SameCliff" value="0"/>
+        <Kind value="Melee"/>
+        <KindSplash value="Splash"/>
     </CEffectDamage>
     <CEffectEnumArea id="LurkerSCBWWeapon@Search">
         <ValidatorArray value="LurkerSCBWWeapon@Search"/>
@@ -681,12 +708,12 @@
     </CEffectCreatePersistent>
     <CEffectDamage id="ValkyrieSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW">
         <EditorCategories value="Race:Terran"/>
+        <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <AreaArray Radius="1.5" Fraction="1"/>
         <AreaArray Radius="2" Fraction="0.5"/>
         <AreaArray Radius="2.5" Fraction="0.25"/>
         <SearchFilters value="Air,Visible;Player,Ally,Neutral,Missile,Stasis,Dead,Invulnerable,Benign,Passive"/>
-        <Visibility value="Visible"/>
     </CEffectDamage>
     <CEffectLaunchMissile id="ValkyrieSCBWWeapon@LM">
         <EditorCategories value="Race:Terran"/>
@@ -696,10 +723,6 @@
     <CEffectDamage id="SCVSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Terran"/>
         <Amount value="5"/>
-    </CEffectDamage>
-    <CEffectDamage id="GhostSCBWWeapon@DamageAccum" parent="ConcussiveBaseDamageSCBW">
-        <EditorCategories value="Race:Terran"/>
-        <Kind value="Ranged"/>
     </CEffectDamage>
     <CEffectCreatePersistent id="FirebatSCBWWeapon@CP">
         <EditorCategories value="Race:Terran"/>
@@ -729,6 +752,7 @@
         <EditorCategories value="Race:Terran"/>
         <Kind value="Ranged"/>
         <Amount value="6"/>
+        <Flags index="Impact" value="1"/>
     </CEffectDamage>
     <CEffectApplyBehavior id="ArbiterSCBWCloakField@AB">
         <ValidatorArray index="0" value="ArbiterSCBWCloakField@AB"/>
@@ -777,8 +801,8 @@
     </CEffectDamage>
     <CEffectCreatePersistent id="SiegeTankSCBWSiegedWeapon@Miss">
         <EditorCategories value="Race:Terran"/>
-        <WhichLocation Effect="SiegeTankSCBWSiegedWeapon@Switch"/>
-        <OffsetVectorStartLocation Effect="SiegeTankSCBWSiegedWeapon@Switch" Value="TargetPoint"/>
+        <WhichLocation Effect="SiegeTankSCBWSiegedWeapon@InitialSet"/>
+        <OffsetVectorStartLocation Effect="SiegeTankSCBWSiegedWeapon@InitialSet" Value="TargetPoint"/>
         <OffsetVectorEndLocation Value="CasterUnitOrPoint"/>
         <InitialEffect value="SiegeTankSCBWSiegedWeapon@MissDummy"/>
         <InitialOffset value="0,-1.1,0"/>
@@ -787,7 +811,6 @@
     </CEffectCreatePersistent>
     <CEffectSwitch id="SiegeTankSCBWSiegedWeapon@Switch">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmCombine" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
         <CaseArray Validator="TargetRadiusSmall" Effect="SiegeTankSCBWSiegedWeapon@Impact"/>
         <CaseDefault value="SiegeTankSCBWSiegedWeapon@ImpactDirect"/>
         <TargetLocationType value="UnitOrPoint"/>
@@ -1193,52 +1216,4 @@
         <Kind value="Ranged"/>
         <Amount value="15"/>
     </CEffectDamage>
-    <CAccumulatorSwitch id="SC1_LifeArmor_Conc_Fraction">
-        <CaseArray Validator="UnitIsArmored" Accumulator="SC1_LifeArmor_Conc_Fraction_Armored"/>
-        <CaseArray Validator="UnitIsLight" Accumulator="SC1_LifeArmor_Conc_Fraction_Light"/>
-        <CaseDefault value="SC1_LifeArmor_Conc_Fraction_Default"/>
-        <ApplicationRule value="Multiply"/>
-    </CAccumulatorSwitch>
-    <CAccumulatorUserData id="SC1_LifeArmor">
-        <Key value="LifeArmor"/>
-        <BehaviorScope Value="Target" Behavior="SC1_ArmorTracker"/>
-    </CAccumulatorUserData>
-    <CAccumulatorConstant id="SC1_LifeArmor_Conc_Fraction_Default">
-        <Amount value="1"/>
-    </CAccumulatorConstant>
-    <CAccumulatorConstant id="SC1_LifeArmor_Conc_Fraction_Light"/>
-    <CAccumulatorArithmetic id="SC1_LifeArmor_Expl">
-        <Parameters value="0">
-            <AccumulatorArray value="SC1_LifeArmor"/>
-        </Parameters>
-        <Parameters value="0">
-            <AccumulatorArray value="SC1_LifeArmor_Expl_Fraction"/>
-        </Parameters>
-        <Operation value="Multiply"/>
-    </CAccumulatorArithmetic>
-    <CAccumulatorArithmetic id="SC1_LifeArmor_Conc">
-        <Parameters value="0">
-            <AccumulatorArray value="SC1_LifeArmor"/>
-        </Parameters>
-        <Parameters value="0">
-            <AccumulatorArray value="SC1_LifeArmor_Conc_Fraction"/>
-        </Parameters>
-        <Operation value="Multiply"/>
-    </CAccumulatorArithmetic>
-    <CAccumulatorSwitch id="SC1_LifeArmor_Expl_Fraction">
-        <CaseArray Validator="UnitIsArmored" Accumulator="SC1_LifeArmor_Expl_Fraction_Armored"/>
-        <CaseArray Validator="UnitIsLight" Accumulator="SC1_LifeArmor_Expl_Fraction_Light"/>
-        <CaseDefault value="SC1_LifeArmor_Expl_Fraction_Default"/>
-        <ApplicationRule value="Multiply"/>
-    </CAccumulatorSwitch>
-    <CAccumulatorConstant id="SC1_LifeArmor_Conc_Fraction_Armored">
-        <Amount value="3"/>
-    </CAccumulatorConstant>
-    <CAccumulatorConstant id="SC1_LifeArmor_Expl_Fraction_Default">
-        <Amount value="0.3334"/>
-    </CAccumulatorConstant>
-    <CAccumulatorConstant id="SC1_LifeArmor_Expl_Fraction_Armored"/>
-    <CAccumulatorConstant id="SC1_LifeArmor_Expl_Fraction_Light">
-        <Amount value="0.5"/>
-    </CAccumulatorConstant>
 </Catalog>

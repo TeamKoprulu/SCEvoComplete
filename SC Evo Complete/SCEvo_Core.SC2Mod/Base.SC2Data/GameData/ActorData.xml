@@ -5,6 +5,23 @@
             <AccumulatorArray value="War3_DamageLoss"/>
         </Fraction>
     </CEffectDamage>
+    <CActorAction default="1" id="GenericAttackImpact" parent="GenericAttack">
+        <On Terms="EffectActionCommence" Target="::HostImpactInternal" Send="Signal Impact"/>
+    </CActorAction>
+    <CActorAction default="1" id="GenericAttackWhiff" parent="GenericAttackImpact">
+        <ImpactModel value="GenericAttackImpactModelWhiff"/>
+        <ImpactModelReaction value="GenericAttackImpactModelReactionWhiff"/>
+    </CActorAction>
+    <CActorAction default="1" id="GenericAttackBulletWhiff" parent="GenericAttackImpact">
+        <ImpactModel value="GenericAttackImpactModelBulletWhiff"/>
+        <ImpactModelReaction value="GenericAttackImpactModelReactionWhiff"/>
+        <ImpactSound value="GenericAttackImpactSoundWhiff"/>
+    </CActorAction>
+    <CActorAction default="1" id="GenericAttackMissileWhiff" parent="GenericAttack">
+        <ImpactSite value="GenericAttackImpactSiteWhiffMissile"/>
+        <ImpactModelReaction value="GenericAttackImpactModelReactionWhiff"/>
+        <On Terms="EffectActionCenter" Target="::HostImpactInternal" Send="Signal Impact"/>
+    </CActorAction>
     <CActorUnit default="1" id="GenericBurrowerBaseSCBW" parent="GenericUnitBase">
         <On Terms="UnitBirth.##unitName##@Burrowed" Send="Create"/>
         <On Terms="UnitBirth.##unitName##@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
@@ -327,6 +344,95 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorSite id="GenericAttackImpactSiteWhiff">
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuideInverted SOpShadow} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+        <On Terms="Signal.*.Impact" Send="Destroy"/>
+        <HostSiteOps HoldRotation="1"/>
+    </CActorSite>
+    <CActorSiteOpIncoming id="WhiffOffsetDirect">
+        <HostImpact Subject="_ImpactGuide"/>
+        <HostIncoming Subject="_LaunchGuide" Scope="Outer" Actor="Find"/>
+        <PullBack value="1.000000"/>
+        <FreezePositionAtImpact value="1"/>
+    </CActorSiteOpIncoming>
+    <CActorModel id="GenericAttackImpactModelWhiff" parent="GenericAttackModel">
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuideInverted SOpShadow} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+    </CActorModel>
+    <CActorSite id="GenericAttackImpactSiteWhiffMissile">
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuideInverted SOpShadow} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+        <On Terms="Signal.*.Impact" Send="Destroy"/>
+        <HostSiteOps HoldRotation="1"/>
+    </CActorSite>
+    <CActorModel id="GenericAttackImpactModelBulletWhiff" parent="GenericAttackModel">
+        <On index="1" Terms="AnimBracketState.*.AfterClosing; !AnimBracketExitReason ModelSwap; AnimName BSD" Send="Destroy"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Small" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect WhiffOffsetRandomSmall SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Medium" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot25 WhiffOffsetRandomMedium SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Large" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot2 SOpMoveUpByDot2 WhiffOffsetRandomLarge SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Massive" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot5 WhiffOffsetRandomMassive SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="ModelSwap WhiffBeam"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="Create Bullet_Whiz"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="ModelSwapped" Send="$Birth"/>
+        <On Terms="ModelSwapped; ModelSwapTo WhiffBeam" Send="SetOpacity 0.400000"/>
+        <On Terms="AnimDone; AnimName Birth; HasStatus Missed" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+    </CActorModel>
+    <CActorSiteOpLocalOffset id="SOpMoveUpByDot75">
+        <LocalOffset value="0.000000,0.000000,0.750000"/>
+    </CActorSiteOpLocalOffset>
+    <CActorSiteOpRandomPointInCrossbar id="WhiffOffsetRandomMassive">
+        <HalfWidth value="1.300000"/>
+        <Distribution value="GaussianInverse"/>
+        <Variance value="0.430000"/>
+    </CActorSiteOpRandomPointInCrossbar>
+    <CActorSiteOpIncoming id="WhiffOffsetMissile">
+        <HostImpact Subject="_ImpactGuide"/>
+        <HostIncoming Subject="::Main" Scope="Missile" Actor="Find"/>
+        <PullBack value="1.000000"/>
+        <FreezePositionAtImpact value="1"/>
+        <Type value="Missile"/>
+    </CActorSiteOpIncoming>
+    <CActorSiteOpRandomPointInCrossbar id="WhiffOffsetRandomMedium">
+        <HalfWidth value="0.450000"/>
+        <Distribution value="GaussianInverse"/>
+        <Variance value="0.200000"/>
+    </CActorSiteOpRandomPointInCrossbar>
+    <CActorSiteOpRandomPointInCrossbar id="WhiffOffsetRandomLarge">
+        <HalfWidth value="0.750000"/>
+        <Distribution value="GaussianInverse"/>
+        <Variance value="0.300000"/>
+    </CActorSiteOpRandomPointInCrossbar>
+    <CActorSound id="Bullet_Whiz" parent="SoundOneShot"/>
+    <CActorModel id="GenericAttackImpactModelReactionWhiff" parent="GenericAttackModel">
+        <On Terms="Signal.*.Whiffed" Send="Destroy"/>
+        <Aliases value="_Whiff"/>
+    </CActorModel>
+    <CActorSound id="GenericAttackImpactSoundWhiff" parent="GenericAttackSound">
+        <On Terms="Signal.*.Whiffed" Send="Destroy"/>
+        <Aliases value="_Whiff"/>
+    </CActorSound>
+    <CActorSiteOpRandomPointInCrossbar id="WhiffOffsetRandomSmall">
+        <HalfWidth value="0.300000"/>
+        <Distribution value="GaussianInverse"/>
+        <Variance value="0.100000"/>
+    </CActorSiteOpRandomPointInCrossbar>
+    <CActorSimple id="Missed">
+        <Supporter Subject="_Unit"/>
+        <On Terms="Behavior.*.Evade" Send="Create"/>
+    </CActorSimple>
     <CActorModel id="PhotonCannonSCBW@SkinnablePlacementModel" parent="PlacementModel">
         <On Terms="ActorCreation" Send="Create PhotonCannonSCBW@ProtectRange"/>
         <On Terms="ActorDestruction" Target="PhotonCannonProtectRange" Send="Destroy"/>
@@ -762,6 +868,7 @@
         <Wireframe>
             <Image value="Assets\Textures\Wireframe-Zerg-BroodLordEgg.dds"/>
         </Wireframe>
+        <ModelFlags index="OutlineEmitter" value="1"/>
     </CActorUnit>
     <CActorUnit id="GuardianSCBWEgg" parent="GenericUnitMorph" unitName="GuardianSCBWEgg">
         <Aliases value="_UnitLarge"/>
@@ -787,6 +894,7 @@
         <Wireframe>
             <Image value="Assets\Textures\Wireframe-Zerg-BroodLordEgg.dds"/>
         </Wireframe>
+        <ModelFlags index="OutlineEmitter" value="1"/>
     </CActorUnit>
     <CActorSplat id="InfestedTerranSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="InfestedTerranSCBW"/>
     <CActorUnit id="InfestedTerranSCBW" parent="GenericBurrowerStandard" unitName="InfestedTerranSCBW">
@@ -944,7 +1052,7 @@
         <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="Create"/>
         <Sound value="SunkenColonySCBWWeapon@Launch"/>
     </CActorSound>
-    <CActorAction id="SunkenColonySCBWWeapon@Action" parent="GenericAttack" effectAttack="SunkenColonySCBWWeapon@Impact">
+    <CActorAction id="SunkenColonySCBWWeapon@Action" parent="GenericAttackWhiff" effectAttack="SunkenColonySCBWWeapon@Impact">
         <ImpactSiteOps Ops="SOpShadow SOpForwardLaunchGuide"/>
         <ImpactMap index="None" Sound="SunkenColonySCBWWeapon@Impact"/>
         <ShieldFlashType value="Full"/>
@@ -980,14 +1088,14 @@
         <ImpactMap index="None" Model="DevourerSCBWWeapon@Impact" Sound="DevourerSCBWWeapon@Impact"/>
     </CActorAction>
     <CActorMissile id="DevourerSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DevourerSCBWWeapon@Missile"/>
-    <CActorAction id="GuardianSCBWWeapon@Action" parent="GenericAttack" effectImpact="GuardianSCBWWeapon@Damage" effectLaunch="GuardianSCBWWeapon@LM">
+    <CActorAction id="GuardianSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="GuardianSCBWWeapon@Damage" effectLaunch="GuardianSCBWWeapon@LM">
         <LaunchAttachQuery Methods="AMFilterWeaponLeft"/>
         <LaunchAssets Sound="GuardianSCBWWeapon@Launch"/>
         <Missile value="GuardianSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="GuardianSCBWWeapon@Impact" Sound="GuardianSCBWWeapon@Impact"/>
     </CActorAction>
     <CActorMissile id="GuardianSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="GuardianSCBWWeapon@Missile"/>
-    <CActorAction id="MutaliskSCBWWeapon@Action" parent="GenericAttack" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@LM">
+    <CActorAction id="MutaliskSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@LM">
         <LaunchAssets Sound="MutaliskSCBWWeapon@Launch"/>
         <Missile value="MutaliskSCBWWeapon@Missile"/>
         <ImpactSite value="MutaliskAttackSegment1ImpactSite"/>
@@ -995,7 +1103,7 @@
         <ImpactPhysics Name="GlaveWurmImpact" MatchKeys="Basic" Physics="MutaliskAttackDeathForce"/>
         <ImpactPhysics Name="GlaveWurmImpactAir" MatchKeys="BasicAir" Physics="MutaliskAttackAirDeathForce"/>
     </CActorAction>
-    <CActorAction id="MutaliskSCBWWeapon@ActionBounce" parent="GenericAttack" effectImpact="MutaliskSCBWWeapon@BounceHitImpact" effectLaunch="MutaliskSCBWWeapon@BounceLM">
+    <CActorAction id="MutaliskSCBWWeapon@ActionBounce" parent="GenericAttackMissileWhiff" effectImpact="MutaliskSCBWWeapon@BounceHitImpact" effectLaunch="MutaliskSCBWWeapon@BounceLM">
         <LaunchAssets Sound=""/>
         <Missile value="MutaliskSCBWWeapon@Missile"/>
         <ImpactSite value="MutaliskAttackSegment1ImpactSite"/>
@@ -1109,6 +1217,7 @@
         </Wireframe>
         <HeroIcon value="Assets\Textures\btn-unit-zerg-devourerex3.dds"/>
         <UnitIcon value="Assets\Textures\btn-unit-zerg-devourerex3.dds"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
     </CActorUnit>
     <CActorUnit id="GuardianSCBW" parent="GenericUnitStandard" unitName="GuardianSCBW">
         <Aliases value="_UnitLarge"/>
@@ -1136,6 +1245,7 @@
         <Wireframe>
             <Image value="Assets\Textures\wireframe-zerg-primalzergguardian.dds"/>
         </Wireframe>
+        <ModelFlags index="OutlineEmitter" value="1"/>
     </CActorUnit>
     <CActorModel id="LurkerSCBWEgg@DeathRagdoll" parent="UnitDeathRagdoll"/>
     <CActorUnit id="LurkerSCBWEgg" parent="GenericUnitMorph" unitName="LurkerSCBWEgg">
@@ -1701,7 +1811,7 @@
         <Sound value="ZerglingSCBWWeapon@Launch"/>
     </CActorSound>
     <CActorSplat id="ZerglingSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="ZerglingSCBW"/>
-    <CActorAction id="HydraliskSCBWWeapon@Action" parent="GenericAttack" effectImpact="HydraliskSCBWWeapon@Impact" effectLaunch="HydraliskSCBWWeapon@LM">
+    <CActorAction id="HydraliskSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="HydraliskSCBWWeapon@Impact" effectLaunch="HydraliskSCBWWeapon@LM">
         <LaunchSiteOps Ops="SOpAttachHarness SOpForwardImpactGuide"/>
         <LaunchAttachQuery Methods="AMFilterWeaponSetA0"/>
         <LaunchAssets Model="HydraliskSCBWWeapon@Launch" Sound="HydraliskSCBWWeapon@Launch"/>
@@ -1805,7 +1915,7 @@
         <ActionFlags index="LaunchForceSite" value="1"/>
     </CActorAction>
     <CActorMissile id="BattlecruiserSCBWWeaponAir@Missile" parent="GenericAttackMissile" unitName="BattlecruiserSCBWWeaponAir@Missile"/>
-    <CActorAction id="BattlecruiserSCBWWeaponGround@Action" parent="GenericAttack" effectImpact="BattlecruiserSCBWWeaponGround@Damage" effectLaunch="BattlecruiserSCBWWeaponGround@LM">
+    <CActorAction id="BattlecruiserSCBWWeaponGround@Action" parent="GenericAttackMissileWhiff" effectImpact="BattlecruiserSCBWWeaponGround@Damage" effectLaunch="BattlecruiserSCBWWeaponGround@LM">
         <LaunchAttachQuery Methods="AMFilterWeaponSetA2"/>
         <LaunchAssets Sound="BattlecruiserSCBWWeaponGround@Launch"/>
         <Missile value="BattlecruiserSCBWWeaponGround@Missile"/>
@@ -1874,7 +1984,7 @@
         <ImpactMap index="None" Model="WraithSCBWWeaponAir@Impact" Sound="WraithSCBWWeaponAir@Impact"/>
     </CActorAction>
     <CActorMissile id="WraithSCBWWeaponAir@MissileRight" parent="GenericAttackMissile" unitName="WraithSCBWWeaponAir@MissileRight"/>
-    <CActorAction id="WraithSCBWWeaponGround@Action" parent="GenericAttack" effectImpact="WraithSCBWWeaponGround@Damage" effectLaunch="WraithSCBWWeaponGround@LM">
+    <CActorAction id="WraithSCBWWeaponGround@Action" parent="GenericAttackMissileWhiff" effectImpact="WraithSCBWWeaponGround@Damage" effectLaunch="WraithSCBWWeaponGround@LM">
         <LaunchAttachQuery Methods="AMFilterWeaponBottom"/>
         <LaunchAssets Sound="WraithSCBWWeaponGround@Launch"/>
         <Missile value="WraithSCBWWeaponGround@Missile"/>
@@ -1893,7 +2003,7 @@
         <ImpactPhysics Name="GoliathSCBWWeaponAir@Impact" MatchKeys="Basic" Physics="GoliathSCBWWeaponAir@Force"/>
     </CActorAction>
     <CActorMissile id="GoliathSCBWWeaponAir@Missile" parent="GenericAttackMissile" unitName="GoliathSCBWWeaponAir@Missile"/>
-    <CActorAction id="GoliathSCBWWeaponGround@Action" parent="GenericAttack" effectAttack="GoliathSCBWWeaponGround@Damage">
+    <CActorAction id="GoliathSCBWWeaponGround@Action" parent="GenericAttackBulletWhiff" effectAttack="GoliathSCBWWeaponGround@Damage">
         <LaunchAttachQuery Methods="AMFilterWeaponSetA0"/>
         <LaunchAssets Model="GoliathSCBWWeaponGround@Launch" Sound="GoliathSCBWWeaponGround@Launch"/>
         <ImpactMap index="None" Model="GoliathSCBWWeaponGround@Impact" Sound="GoliathSCBWWeaponGround@Impact"/>
@@ -1982,7 +2092,7 @@
         <On Terms="ProgressLevel.TerranConstructionSCBW@AttachedSmall.Stop; Level 6" Send="Destroy"/>
         <Sound value="Terran_ConstructionEndSmall"/>
     </CActorSound>
-    <CActorAction id="GhostSCBWWeapon@Attack" parent="GenericAttack" effectAttack="GhostSCBWWeapon@Impact">
+    <CActorAction id="GhostSCBWWeapon@Attack" parent="GenericAttackBulletWhiff" effectAttack="GhostSCBWWeapon@Impact">
         <LaunchAssets Model="GhostSCBWWeapon@Launch" Sound="GhostSCBWWeapon@Launch"/>
         <ContainerAssets Model="GhostSCBWWeapon@BunkerLaunch" Sound="GhostSCBWWeapon@BunkerLaunch"/>
         <ImpactMap index="None" Model="GhostSCBWWeapon@Impact" Sound="GhostSCBWWeapon@Impact"/>
@@ -2040,7 +2150,7 @@
         <Inherits index="Visibility" value="1"/>
         <ModelFlags index="AllowHitTest" value="0"/>
     </CActorModel>
-    <CActorAction id="MarineSCBWWeapon@Attack" parent="GenericAttack" effectAttack="MarineSCBWWeapon@Damage">
+    <CActorAction id="MarineSCBWWeapon@Attack" parent="GenericAttackBulletWhiff" effectAttack="MarineSCBWWeapon@Damage">
         <LaunchAssets Model="MarineSCBWWeapon@Launch" Sound="MarineSCBWWeapon@Launch"/>
         <ContainerAssets Model="MarineSCBWWeapon@BunkerLaunch" Sound="MarineSCBWWeapon@BunkerLaunch"/>
         <ImpactMap index="None" Model="MarineSCBWWeapon@Impact" Sound="MarineSCBWWeapon@Impact"/>
@@ -2051,7 +2161,7 @@
         <AcquisitionPitchHalfArc value="15.000000"/>
         <AccuracyHalfArc value="5.000000"/>
     </CActorAction>
-    <CActorAction id="SiegeTankSCBWWeapon@Attack" parent="GenericAttack" effectAttack="SiegeTankSCBWWeapon@Impact">
+    <CActorAction id="SiegeTankSCBWWeapon@Attack" parent="GenericAttackWhiff" effectAttack="SiegeTankSCBWWeapon@Impact">
         <LaunchAttachQuery Methods="AMFilterWeapon01 AMPatternRollingStripe"/>
         <LaunchAssets Model="SiegeTankSCBWWeapon@Launch" Sound="SiegeTankSCBWWeapon@Launch"/>
         <ImpactMap index="None" Model="SiegeTankSCBWWeapon@Impact" Sound="SiegeTankSCBWWeapon@Impact"/>
@@ -2065,7 +2175,7 @@
         <Model value="GenericAttackModel"/>
         <ModelFlags index="AllowHitTest" value="0"/>
     </CActorModel>
-    <CActorAction id="SiegeTankSCBWSiegedWeapon@Attack" parent="GenericAttack" effectAttack="SiegeTankSCBWSiegedWeapon@Impact">
+    <CActorAction id="SiegeTankSCBWSiegedWeapon@Attack" parent="GenericAttackWhiff" effectAttack="SiegeTankSCBWSiegedWeapon@Impact">
         <LaunchAssets Model="SiegeTankSCBWSiegedWeapon@Launch" Sound="SiegeTankSCBWSiegedWeapon@Launch"/>
         <ImpactSiteOps Ops="SOpActionCenter SOpTargetUnitZ" HoldPosition="1"/>
         <ImpactMap index="None" Model="SiegeTankSCBWSiegedWeapon@Impact" Sound="SiegeTankSCBWSiegedWeapon@Impact"/>
@@ -2133,7 +2243,7 @@
         <On Terms="Behavior.ArbiterSCBWCloakField@Effect.On" Send="Create"/>
     </CActorSound>
     <CActorSound id="ArbiterSCBWWeapon@Launch" parent="SoundOneShot"/>
-    <CActorAction id="ArbiterSCBWWeapon@Action" parent="GenericAttack" effectImpact="ArbiterSCBWWeapon@Impact" effectLaunch="ArbiterSCBWWeapon@LM">
+    <CActorAction id="ArbiterSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="ArbiterSCBWWeapon@Impact" effectLaunch="ArbiterSCBWWeapon@LM">
         <Missile value="ArbiterSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="ArbiterSCBWWeapon@Impact" Sound="ArbiterSCBWWeapon@Impact"/>
     </CActorAction>
@@ -2206,7 +2316,7 @@
         <On Terms="AnimBracketState.*.AfterClosing; AnimName BSDb" Send="Destroy"/>
         <Scale value="0.500000"/>
     </CActorBeamSimple>
-    <CActorAction id="DragoonSCBWWeapon@Action" parent="GenericAttack" effectImpact="DragoonSCBWWeapon@Impact" effectLaunch="DragoonSCBWWeapon@LM">
+    <CActorAction id="DragoonSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="DragoonSCBWWeapon@Impact" effectLaunch="DragoonSCBWWeapon@LM">
         <LaunchAssets Sound="DragoonSCBWWeapon@Launch"/>
         <Missile value="DragoonSCBWWeapon@Missile"/>
         <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
@@ -2235,9 +2345,6 @@
         <On Terms="ActorCreation" Target="::Creator" Send="Signal 1"/>
     </CActorModel>
     <CActorAction id="InterceptorSCBWWeapon@Action" parent="GenericAttackBase">
-        <On Terms="Effect.InterceptorSCBWWeapon@CP.Start; At Caster" Send="Create"/>
-        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
-        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Stop; At Caster; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
         <LaunchAttachQuery Methods="AMFilterWeapon"/>
         <LaunchAssets Sound="InterceptorSCBWWeapon@Launch"/>
         <Beam value="InterceptorSCBWWeapon@Beam"/>
@@ -2247,6 +2354,12 @@
         <DamagePhysics Name="InterceptorSCBWWeapon@Impact" MatchKeys="Basic" Physics="InterceptorAttackDeathForce"/>
         <DamagePhysics Name="InterceptorSCBWWeapon@Impact" MatchKeys="BasicAir" Physics="InterceptorAttackAirDeathForce"/>
         <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+        <ImpactSite value="GenericAttackImpactSiteWhiff"/>
+        <ImpactModelReaction value="GenericAttackImpactModelReactionWhiff"/>
+        <On Terms="EffectActionCenter" Target="::HostImpactInternal" Send="Signal Impact"/>
+        <On Terms="Effect.InterceptorSCBWWeapon@CP.Start; At Caster" Send="Create"/>
+        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Stop; At Caster; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
     </CActorAction>
     <CActorBeamSimple id="InterceptorSCBWWeapon@Beam">
         <Macros value="ActionTargetTeleportDestroy"/>
@@ -2263,7 +2376,7 @@
         <HostEndSiteOps Ops="SOpIncomingMissileDot25 SOpMoveBy1Dot5"/>
         <Radius value="0.500000"/>
     </CActorForceCylinder>
-    <CActorAction id="PhotonCannonSCBWWeapon@Action" parent="GenericAttack" effectImpact="PhotonCannonSCBWWeapon@Damage" effectLaunch="PhotonCannonSCBWWeapon@LM">
+    <CActorAction id="PhotonCannonSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="PhotonCannonSCBWWeapon@Damage" effectLaunch="PhotonCannonSCBWWeapon@LM">
         <LaunchAssets Sound="PhotonCannonSCBWWeapon@Launch"/>
         <Missile value="PhotonCannonSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="PhotonCannonSCBWWeapon@Impact" Sound="PhotonCannonSCBWWeapon@Impact"/>
@@ -2439,7 +2552,7 @@
     <CActorMissile id="ReaverSCBWWeapon@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="ReaverSCBWWeapon@Missile">
         <Macros value="GlobalLoopMacro"/>
     </CActorMissile>
-    <CActorAction id="ScoutSCBWWeaponGround@Action" parent="GenericAttack" effectLaunch="ScoutSCBWWeaponGround@Damage">
+    <CActorAction id="ScoutSCBWWeaponGround@Action" parent="GenericAttackWhiff" effectLaunch="ScoutSCBWWeaponGround@Damage">
         <LaunchAssets Model="ScoutSCBWWeaponGround@Launch" Sound="ScoutSCBWWeaponGround@Launch"/>
         <LaunchModel value="ScoutSCBWWeaponGround@Model"/>
         <ImpactMap index="None" Model="ScoutSCBWWeaponGround@Impact" Sound="ScoutSCBWWeaponGround@Impact"/>
@@ -2489,8 +2602,9 @@
             <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
         </Wireframe>
         <SoundArray index="Movement" value="SpiderMineSCBW@Seek"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
     </CActorUnit>
-    <CActorAction id="VultureSCBWWeapon@Action" parent="GenericAttack" effectImpact="VultureSCBWWeapon@Impact" effectLaunch="VultureSCBWWeapon@LM">
+    <CActorAction id="VultureSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="VultureSCBWWeapon@Impact" effectLaunch="VultureSCBWWeapon@LM">
         <LaunchAttachQuery Methods="VultureSCBWWeapon@AMPattern"/>
         <LaunchAssets Model="VultureSCBWWeapon@Launch" Sound="VultureSCBWWeapon@Launch"/>
         <Missile value="VultureSCBWWeapon@Missile"/>

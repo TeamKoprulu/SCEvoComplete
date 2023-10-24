@@ -38,16 +38,126 @@
         <Value value="##unitName##"/>
         <WhichUnit Value="Source"/>
     </CValidatorUnitType>
+    <CValidatorCombine id="DefendedToAttackerDistanceCheck">
+        <CombineArray value="SourceOrTargetInAir"/>
+        <CombineArray value="DefendedToAttackerDistance"/>
+    </CValidatorCombine>
+    <CValidatorLocationCompareRange id="DefendedToAttackerDistance">
+        <WhichLocation Value="SourceUnitOrPoint"/>
+        <Compare value="GT"/>
+        <Range value="2"/>
+        <Value Value="TargetUnitOrPoint"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorCombine id="DefenderInShrubOrHasShrubBuff">
+        <CombineArray value="TargetHasShrub"/>
+        <CombineArray value="TargetHasShrubBuff"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="SC1_MissCheck">
+        <CombineArray value="SC1_MissCheckShrubGround"/>
+        <CombineArray value="SC1_MissCheckHighGround"/>
+        <CombineArray value="SC1_MissCheckShrubAir"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="SC1_MissCheckAttacker">
+        <CombineArray value="UnderDarkSwarmCombine"/>
+        <CombineArray value="SC1_MissCheckShrubGround"/>
+        <CombineArray value="SC1_MissCheckHighGround"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="SC1_MissCheckShrubAir">
+        <Type value="And"/>
+        <CombineArray value="SourceIsAirFilter"/>
+        <CombineArray value="DefenderInShrubOrHasShrubBuff"/>
+    </CValidatorCombine>
+    <CValidatorEffectTreeUserData id="SiegeTankSCBWSiegedWeapon@Missed">
+        <Key value="Missed"/>
+        <Value value="1"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorCombine id="SourceOrTargetInAir">
+        <CombineArray value="SourceNotAir"/>
+        <CombineArray value="TargetNotAir"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorLocationShrub id="TargetHasShrub">
+        <WhichLocation Value="TargetUnitOrPoint"/>
+    </CValidatorLocationShrub>
     <CValidatorCombine id="SC1_HasShieldsOrMatrix">
         <ResultFailed value="NotEnoughShields"/>
         <CombineArray value="ShieldsGT0"/>
         <CombineArray value="ScienceVesselSCBWDefensiveMatrix@HasShield"/>
     </CValidatorCombine>
+    <CValidatorLocationCompareCliffLevel id="DefenderCliffLevelHigher">
+        <WhichLocation Value="TargetUnitOrPoint"/>
+        <OtherLocation Value="SourceUnitOrPoint"/>
+        <Compare value="GT"/>
+    </CValidatorLocationCompareCliffLevel>
+    <CValidatorCombine id="SC1_MissCheckHighGround">
+        <Type value="And"/>
+        <CombineArray value="SourceAndTargetNotAir"/>
+        <CombineArray value="DefenderCliffLevelHigher"/>
+        <CombineArray value="DefenderHeightCheck"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="SC1_MissCheckShrubGround">
+        <Type value="And"/>
+        <CombineArray value="SourceAndTargetNotAir"/>
+        <CombineArray value="DefenderInShrubOrHasShrubBuff"/>
+        <CombineArray value="DefendedToAttackerDistanceCheck"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="SourceAndTargetNotAir">
+        <Type value="And"/>
+        <CombineArray value="SourceNotAir"/>
+        <CombineArray value="TargetNotAir"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="TargetHasShrubBuff">
+        <Compare value="GT"/>
+        <Behavior value="InShrub"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitFilters id="SourceNotAir">
+        <WhichUnit Value="Source"/>
+        <Filters value="-;Air"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitFilters id="SourceIsAirFilter">
+        <WhichUnit Value="Source"/>
+        <Filters value="Air;-"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitFilters id="TargetNotAir">
+        <Filters value="-;Air"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitFilters id="TargetIsAirFilter">
+        <Filters value="Air;-"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitWeaponPlane id="TargetNotAirPlane">
+        <Find value="0"/>
+        <Plane value="Air"/>
+    </CValidatorUnitWeaponPlane>
     <CValidatorLocationCompareRange id="SpiderMineSCBW@Unburrow">
         <Compare value="LE"/>
         <Range value="7"/>
         <Pathing value="1"/>
     </CValidatorLocationCompareRange>
+    <CValidatorUnitCompareField id="TargetRadiusGTE1Dot0">
+        <Compare value="GE"/>
+        <Field value="Radius"/>
+        <Value value="1.0"/>
+    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareField id="TargetRadius_Massive">
+        <Compare value="GT"/>
+        <Field value="Radius"/>
+        <Value value="2.0"/>
+    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareField id="TargetRadius_Small">
+        <Compare value="LT"/>
+        <Field value="Radius"/>
+        <Value value="1"/>
+    </CValidatorUnitCompareField>
+    <CValidatorCombine id="TargetRadius_Medium">
+        <Type value="And"/>
+        <CombineArray value="TargetRadiusGTE1Dot0"/>
+        <CombineArray value="TargetRadiusLT1Dot5"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="TargetRadius_Large">
+        <Type value="And"/>
+        <CombineArray value="TargetRadiusGT1Dot5"/>
+        <CombineArray value="TargetRadiusLT2Dot0"/>
+    </CValidatorCombine>
     <CValidatorCombine id="UnderDarkSwarmCombine">
         <CombineArray value="NotUnderDarkSwarmCombine"/>
         <Negate value="1"/>
@@ -474,11 +584,13 @@
         <Compare value="LT"/>
         <Key value="ShieldsParam"/>
     </CValidatorEffectTreeUserData>
-    <CValidatorUnitCompareField id="SC1_ArmorUpdateCheck">
-        <WhichUnit Value="Caster"/>
-        <OtherUnit Value="Caster"/>
-        <ResultNoUnit value="OKPlaceholder"/>
-    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareHeight id="DefenderHeightCheck">
+        <OtherUnit Value="Source"/>
+        <Compare value="GT"/>
+        <TargetAdd value="1.6"/>
+        <CasterGroundHeight value="1"/>
+        <TargetGroundHeight value="1"/>
+    </CValidatorUnitCompareHeight>
     <CValidatorUnitType id="ZerglingSCBW@TacticalBurrowZerglingBullyTest" parent="TacticalBurrowBullyTest" unitLink="Zergling">
         <Value value="ZerglingSCBW"/>
     </CValidatorUnitType>
