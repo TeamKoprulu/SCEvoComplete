@@ -74,6 +74,7 @@ void libSCBW_gf_SC1ToggleFeature (int lp_feature, bool lp_activateDeactivate) {
         libSCBW_gf_SC1_ArmorTrackerActivate(lv_onOff);
     }
     else if ((lp_feature == libSCBW_ge_SC1_Feature_HighgroundAdvantage)) {
+        libSCBW_gf_SC1_HighgroundMiss_Activate(lp_activateDeactivate);
         TriggerEnable(libSCBW_gt_SC1_HighgroundMiss_Add, lv_onOff);
     }
     else if ((lp_feature == libSCBW_ge_SC1_Feature_SC2toSC1UnitSwap)) {
@@ -101,6 +102,36 @@ void libSCBW_gf_SC1_ArmorTrackerUpdate (unit lp_target) {
     UnitBehaviorAdd(lp_target, "SC1_ArmorTracker", lp_target, 1);
     UnitBehaviorEffectTreeSetUserData(lp_target, "SC1_ArmorTracker", "LifeArmor", UnitGetPropertyFixed(lp_target, c_unitPropLifeArmor, c_unitPropCurrent));
     UnitBehaviorEffectTreeSetUserData(lp_target, "SC1_ArmorTracker", "ShieldArmor", UnitGetPropertyFixed(lp_target, c_unitPropShieldArmor, c_unitPropCurrent));
+}
+
+void libSCBW_gf_SC1_HighgroundMiss_Activate (bool lp_activateDeactivate) {
+    // Automatic Variable Declarations
+    unitgroup auto17A0307A_g;
+    int auto17A0307A_u;
+    unit auto17A0307A_var;
+    unitgroup autoCF381F81_g;
+    int autoCF381F81_u;
+    unit autoCF381F81_var;
+
+    // Implementation
+    if ((lp_activateDeactivate == true)) {
+        autoCF381F81_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterAir) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+        autoCF381F81_u = UnitGroupCount(autoCF381F81_g, c_unitCountAll);
+        for (;; autoCF381F81_u -= 1) {
+            autoCF381F81_var = UnitGroupUnitFromEnd(autoCF381F81_g, autoCF381F81_u);
+            if (autoCF381F81_var == null) { break; }
+            UnitBehaviorAdd(autoCF381F81_var, "SC1_MissChance", autoCF381F81_var, 1);
+        }
+    }
+    else {
+        auto17A0307A_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
+        auto17A0307A_u = UnitGroupCount(auto17A0307A_g, c_unitCountAll);
+        for (;; auto17A0307A_u -= 1) {
+            auto17A0307A_var = UnitGroupUnitFromEnd(auto17A0307A_g, auto17A0307A_u);
+            if (auto17A0307A_var == null) { break; }
+            UnitBehaviorRemove(auto17A0307A_var, "SC1_MissChance", 1);
+        }
+    }
 }
 
 void libSCBW_gf_SC1_UnitSwap_Activate (bool lp_activateDeactivate) {
