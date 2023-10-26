@@ -90,10 +90,35 @@ void libSCBW_gf_SC1ToggleFeature (int lp_feature, bool lp_activateDeactivate) {
 
 void libSCBW_gf_SC1_ArmorTrackerActivate (bool lp_onOff) {
     // Automatic Variable Declarations
+    unitgroup autoEC8BC7E2_g;
+    int autoEC8BC7E2_u;
+    unit autoEC8BC7E2_var;
+    unitgroup auto41E7D108_g;
+    int auto41E7D108_u;
+    unit auto41E7D108_var;
+
     // Implementation
     TriggerEnable(libSCBW_gt_SC1_ArmorTrackerAdd, lp_onOff);
     TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpdate, lp_onOff);
     TriggerEnable(libSCBW_gt_SC1_ArmorTrackerUpgrade, lp_onOff);
+    if ((lp_onOff == true)) {
+        auto41E7D108_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+        auto41E7D108_u = UnitGroupCount(auto41E7D108_g, c_unitCountAll);
+        for (;; auto41E7D108_u -= 1) {
+            auto41E7D108_var = UnitGroupUnitFromEnd(auto41E7D108_g, auto41E7D108_u);
+            if (auto41E7D108_var == null) { break; }
+            libSCBW_gf_SC1_ArmorTrackerUpdate(auto41E7D108_var);
+        }
+    }
+    else {
+        autoEC8BC7E2_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
+        autoEC8BC7E2_u = UnitGroupCount(autoEC8BC7E2_g, c_unitCountAll);
+        for (;; autoEC8BC7E2_u -= 1) {
+            autoEC8BC7E2_var = UnitGroupUnitFromEnd(autoEC8BC7E2_g, autoEC8BC7E2_u);
+            if (autoEC8BC7E2_var == null) { break; }
+            UnitBehaviorRemove(autoEC8BC7E2_var, "SC1_ArmorTracker", 1);
+        }
+    }
 }
 
 void libSCBW_gf_SC1_ArmorTrackerUpdate (unit lp_target) {
@@ -174,11 +199,12 @@ string libSCBW_gf_SC1_CheatToString (int lp_cheat) {
     return libSCBW_ge_SC1_Cheats_Ident(lp_cheat);
 }
 
-void libSCBW_gf_OperationCwal (unit lp_unit, bool lp_construction) {
+void libSCBW_gf_OperationCwal (unit lp_unit, int lp_type) {
     // Variable Declarations
     int lv_i;
 
     // Automatic Variable Declarations
+    int auto1DB0A704_val;
     int auto91789F07_ae;
     const int auto91789F07_ai = 1;
 
@@ -186,8 +212,12 @@ void libSCBW_gf_OperationCwal (unit lp_unit, bool lp_construction) {
     lv_i = 1;
 
     // Implementation
-    if ((lp_construction == true)) {
+    auto1DB0A704_val = lp_type;
+    if (auto1DB0A704_val == libSCBW_ge_OperationCwal_Type_Construction) {
         UnitSetProgressComplete(lp_unit, 1, 99);
+    }
+    else if (auto1DB0A704_val == libSCBW_ge_OperationCwal_Type_Morph) {
+        UnitBehaviorAdd(lp_unit, "InstantMorph", lp_unit, 1);
     }
     else {
         auto91789F07_ae = UnitQueueItemCount(lp_unit, 1);
@@ -210,7 +240,7 @@ bool libSCBW_gt_SC1_ArmorTrackerAdd_Func (bool testConds, bool runActions) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
             return false;
         }
     }
@@ -324,7 +354,7 @@ bool libSCBW_gt_SC1_HighgroundMiss_Add_Func (bool testConds, bool runActions) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterAir) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
             return false;
         }
     }
@@ -403,6 +433,9 @@ bool libSCBW_gt_SC1_Refund_Func (bool testConds, bool runActions) {
     lv_infoCount = CatalogFieldValueCount(c_gameCatalogAbil, lv_ability, "InfoArray", c_playerAny);
     if ((AbilityClass(lv_ability) == c_classIdCAbilMorph)) {
         lv_targetUnit = (CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString((lv_infoCount - 1)) + "].Unit", c_playerAny));
+        if (true) {
+        }
+
     }
     else if (((AbilityClass(lv_ability) == c_classIdCAbilTrain) || (AbilityClass(lv_ability) == c_classIdCAbilResearch))) {
         auto5B7533DD_ae = (lv_infoCount - 1);
@@ -769,12 +802,9 @@ bool libSCBW_gt_OperationCwalActivate_Func (bool testConds, bool runActions) {
     // Automatic Variable Declarations
     const int autoAD16DA14_ae = 15;
     const int autoAD16DA14_ai = 1;
-    unitgroup auto0BEA55EB_g;
-    int auto0BEA55EB_u;
-    unit auto0BEA55EB_var;
-    unitgroup auto9DD61595_g;
-    int auto9DD61595_u;
-    unit auto9DD61595_var;
+    unitgroup auto4F590E5F_g;
+    int auto4F590E5F_u;
+    unit auto4F590E5F_var;
 
     // Variable Initialization
     lv_player = DataTableGetInt(false, TriggerEventParamName(libSCBW_gf_SC1_CheatToString(1), "PlayerParam"));
@@ -811,29 +841,32 @@ bool libSCBW_gt_OperationCwalActivate_Func (bool testConds, bool runActions) {
         if ((libSCBW_gv_operationCwal[lv_i] == true)) {
             TriggerEnable(libSCBW_gt_OperationCwal_Train, true);
             TriggerEnable(libSCBW_gt_OperationCwal_Constuction, true);
+            TriggerEnable(libSCBW_gt_OperationCwal_Morph, true);
             break;
         }
 
         if ((lv_i >= 15)) {
             TriggerEnable(libSCBW_gt_OperationCwal_Train, false);
             TriggerEnable(libSCBW_gt_OperationCwal_Constuction, false);
+            TriggerEnable(libSCBW_gt_OperationCwal_Morph, false);
         }
 
     }
     if ((libSCBW_gv_operationCwal[lv_player] == true)) {
-        auto0BEA55EB_g = UnitGroup(null, lv_player, RegionEntireMap(), UnitFilter(0, (1 << (c_targetFilterUnderConstruction - 32)), (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-        auto0BEA55EB_u = UnitGroupCount(auto0BEA55EB_g, c_unitCountAll);
-        for (;; auto0BEA55EB_u -= 1) {
-            auto0BEA55EB_var = UnitGroupUnitFromEnd(auto0BEA55EB_g, auto0BEA55EB_u);
-            if (auto0BEA55EB_var == null) { break; }
-            libSCBW_gf_OperationCwal(auto0BEA55EB_var, true);
-        }
-        auto9DD61595_g = UnitGroup(null, lv_player, RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterUnderConstruction - 32)) | (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-        auto9DD61595_u = UnitGroupCount(auto9DD61595_g, c_unitCountAll);
-        for (;; auto9DD61595_u -= 1) {
-            auto9DD61595_var = UnitGroupUnitFromEnd(auto9DD61595_g, auto9DD61595_u);
-            if (auto9DD61595_var == null) { break; }
-            libSCBW_gf_OperationCwal(auto9DD61595_var, false);
+        auto4F590E5F_g = UnitGroup(null, lv_player, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        auto4F590E5F_u = UnitGroupCount(auto4F590E5F_g, c_unitCountAll);
+        for (;; auto4F590E5F_u -= 1) {
+            auto4F590E5F_var = UnitGroupUnitFromEnd(auto4F590E5F_g, auto4F590E5F_u);
+            if (auto4F590E5F_var == null) { break; }
+            if ((ValidatorExecute("IsMorphing", auto4F590E5F_var, auto4F590E5F_var) == 0)) {
+                libSCBW_gf_OperationCwal(auto4F590E5F_var, libSCBW_ge_OperationCwal_Type_Morph);
+            }
+            else if ((UnitFilterMatch(auto4F590E5F_var, lv_player, UnitFilter(0, (1 << (c_targetFilterUnderConstruction - 32)), 0, 0)) == true)) {
+                libSCBW_gf_OperationCwal(auto4F590E5F_var, libSCBW_ge_OperationCwal_Type_Construction);
+            }
+            else if ((UnitFilterMatch(auto4F590E5F_var, lv_player, UnitFilter((1 << c_targetFilterStructure), 0, 0, 0)) == true)) {
+                libSCBW_gf_OperationCwal(auto4F590E5F_var, libSCBW_ge_OperationCwal_Type_Normal);
+            }
         }
     }
 
@@ -863,7 +896,7 @@ bool libSCBW_gt_OperationCwal_Train_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    libSCBW_gf_OperationCwal(EventUnit(), false);
+    libSCBW_gf_OperationCwal(EventUnit(), libSCBW_ge_OperationCwal_Type_Normal);
     return true;
 }
 
@@ -892,7 +925,7 @@ bool libSCBW_gt_OperationCwal_Constuction_Func (bool testConds, bool runActions)
         return true;
     }
 
-    libSCBW_gf_OperationCwal(EventUnitProgressUnit(), true);
+    libSCBW_gf_OperationCwal(EventUnitProgressUnit(), libSCBW_ge_OperationCwal_Type_Construction);
     return true;
 }
 
@@ -901,6 +934,42 @@ void libSCBW_gt_OperationCwal_Constuction_Init () {
     libSCBW_gt_OperationCwal_Constuction = TriggerCreate("libSCBW_gt_OperationCwal_Constuction_Func");
     TriggerEnable(libSCBW_gt_OperationCwal_Constuction, false);
     TriggerAddEventUnitConstructProgress(libSCBW_gt_OperationCwal_Constuction, null, c_unitProgressStageStart);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: OperationCwal_Morph
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_OperationCwal_Morph_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((libSCBW_gv_operationCwal[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((AbilityClass(AbilityCommandGetAbility(EventUnitAbility())) == c_classIdCAbilMorph))) {
+            return false;
+        }
+
+        if (!((CatalogFieldValueGet(c_gameCatalogAbil, AbilityCommandGetAbility(EventUnitAbility()), "AbilityCategories[" + IntToString(3) + "]", c_playerAny) == "1"))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCBW_gf_OperationCwal(EventUnit(), libSCBW_ge_OperationCwal_Type_Morph);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_OperationCwal_Morph_Init () {
+    libSCBW_gt_OperationCwal_Morph = TriggerCreate("libSCBW_gt_OperationCwal_Morph_Func");
+    TriggerEnable(libSCBW_gt_OperationCwal_Morph, false);
+    TriggerAddEventUnitAbility(libSCBW_gt_OperationCwal_Morph, null, null, c_unitAbilStageExecute, false);
 }
 
 void libSCBW_InitTriggers () {
@@ -915,6 +984,7 @@ void libSCBW_InitTriggers () {
     libSCBW_gt_OperationCwalActivate_Init();
     libSCBW_gt_OperationCwal_Train_Init();
     libSCBW_gt_OperationCwal_Constuction_Init();
+    libSCBW_gt_OperationCwal_Morph_Init();
 }
 
 //--------------------------------------------------------------------------------------------------
