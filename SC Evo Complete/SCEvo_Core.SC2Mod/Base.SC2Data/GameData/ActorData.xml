@@ -344,6 +344,46 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorModel id="GenericAttackImpactModelInheritOnce" parent="GenericAttackModel">
+        <InheritType value="OneShot"/>
+        <HostSiteOps HoldPosition="1" HoldRotation="1"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessMoveZerg">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Move; ValidatePlayer PlayerIsBWZe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessMoveTerran">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Move; ValidatePlayer PlayerIsBWTe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessMoveProtoss">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Move; ValidatePlayer PlayerIsBWPr" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessConfirmZerg">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Confirm; ValidatePlayer PlayerIsBWZe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessConfirmTerran">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Confirm; ValidatePlayer PlayerIsBWTe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessConfirmProtoss">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Confirm; ValidatePlayer PlayerIsBWPr" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessAttackZerg">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Attack; ValidatePlayer PlayerIsBWZe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessAttackTerran">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Attack; ValidatePlayer PlayerIsBWTe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessAttackProtoss">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Attack; ValidatePlayer PlayerIsBWPr" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessRallyZerg">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Rally; ValidatePlayer PlayerIsBWZe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessRallyTerran">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Rally; ValidatePlayer PlayerIsBWTe" Send="Create"/>
+    </CActorModel>
+    <CActorModel id="CommandUIHarnessRallyProtoss">
+        <On Terms="CommandUI.*.Birth; OrderDisplayType Rally; ValidatePlayer PlayerIsBWPr" Send="Create"/>
+    </CActorModel>
     <CActorSiteOpIncoming id="WhiffOffsetDirectHost">
         <HostImpact Subject="_ImpactGuide"/>
         <HostIncoming Subject="::Main" Scope="Outer" Actor="Find"/>
@@ -355,8 +395,7 @@
         <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
         <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
-        <On Terms="Signal.*.Impact" Send="Destroy"/>
-        <HostSiteOps HoldRotation="1"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Send="Destroy"/>
     </CActorSite>
     <CActorSiteOpIncoming id="WhiffOffsetDirect">
         <HostImpact Subject="_ImpactGuide"/>
@@ -377,8 +416,7 @@
         <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
         <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
-        <On Terms="Signal.*.Impact" Send="Destroy"/>
-        <HostSiteOps HoldRotation="1"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Send="Destroy"/>
     </CActorSite>
     <CActorModel id="GenericAttackImpactModelBulletWhiff" parent="GenericAttackModel">
         <On index="1" Terms="AnimBracketState.*.AfterClosing; !AnimBracketExitReason ModelSwap; AnimName BSD" Send="Destroy"/>
@@ -530,7 +568,6 @@
         <Model value="AssimilatorSCBW@Splat"/>
     </CActorSplat>
     <CActorModel id="DevourerSCBWWeapon@SporesModelSmall" parent="ModelAnimationStyleContinuous">
-        <EditorCategories value=""/>
         <On Terms="Behavior.DevourerSCBWWeapon.On; ScopeContains _UnitSmall" Send="Create"/>
         <On Terms="Behavior.DevourerSCBWWeapon.Off" Send="AnimBracketStop BSD"/>
         <Host Subject="_Unit"/>
@@ -538,7 +575,6 @@
         <AutoScaleFactor value="1.000000"/>
     </CActorModel>
     <CActorModel id="DevourerSCBWWeapon@SporesModelMedium" parent="ModelAnimationStyleContinuous">
-        <EditorCategories value=""/>
         <On Terms="Behavior.DevourerSCBWWeapon.On; ScopeContains _UnitMedium" Send="Create"/>
         <On Terms="Behavior.DevourerSCBWWeapon.Off" Send="AnimBracketStop BSD"/>
         <Host Subject="_Unit"/>
@@ -739,7 +775,7 @@
     </CActorSplat>
     <CActorForceSphere id="InfestedTerranSCBWWeapon@Force">
         <On Terms="ActorCreation" Send="Create BanelingAttackForceUp"/>
-        <On Terms="Effect.InfestedTerranSCBWWeapon@Search.Start; At Caster" Send="Create"/>
+        <On Terms="Effect.InfestedTerranSCBWWeapon@DamageSearch.Stop; At Caster" Send="Create"/>
         <HostSiteOps Ops="SOpShadow SOpRandomPointInCircleDot25"/>
         <Duration value="0.300000"/>
         <Magnitude value="16.000000,8.000000"/>
@@ -910,8 +946,8 @@
         <Macros value="PhysicsDeathsVoidGround"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
-        <On Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="Create"/>
-        <On Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
+        <On index="69" Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="Create"/>
+        <On index="70" Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
         <On Terms="UnitBirth.InfestedTerranSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW; MorphFrom InfestedTerranSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW@Burrowed; MorphFrom InfestedTerranSCBW" Send="TerrainSquibDeactivate"/>
@@ -1064,6 +1100,20 @@
         <ImpactModel value="SunkenColonySCBWWeapon@ImpactModel"/>
         <Lifetime value="1.000000"/>
     </CActorAction>
+    <CActorForceSphere id="SunkenColonySCBWWeapon@StabUpForce">
+        <Host Subject="::Creator"/>
+        <Field value="Directional"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="130.000000,60.000000"/>
+        <Radius value="0.600000,0.200000"/>
+    </CActorForceSphere>
+    <CActorForceSphere id="SunkenColonySCBWWeapon@StabForce">
+        <On Terms="Effect.SunkenColonySCBWWeapon@Impact.Start; At Effect" Send="Create"/>
+        <On Terms="ActorCreation" Send="Create SunkenColonySCBWWeapon@StabUpForce"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="25.000000,12.000000"/>
+        <Radius value="0.600000,0.200000"/>
+    </CActorForceSphere>
     <CActorModel id="SunkenColonySCBWWeapon@ImpactModel" parent="GenericAttackImpactModel">
         <Inherits index="Visibility" value="0"/>
         <On Terms="ActorCreation; ScopeContains Missed" Send="HostSiteOpsSet ::Host {SOpShadow SOpAttachOrigin WhiffOffsetDirectHost} 1 1"/>
@@ -1095,6 +1145,8 @@
         <LaunchAssets Sound="DevourerSCBWWeapon@Launch"/>
         <Missile value="DevourerSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="DevourerSCBWWeapon@Impact" Sound="DevourerSCBWWeapon@Impact"/>
+        <ImpactModel value="GenericAttackImpactModelInheritOnce"/>
+        <ImpactPhysics Name="AcidSpewImpact" MatchKeys="Basic" Physics="SporeCrawlerAttackForce"/>
     </CActorAction>
     <CActorMissile id="DevourerSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DevourerSCBWWeapon@Missile"/>
     <CActorAction id="GuardianSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="GuardianSCBWWeapon@Damage" effectLaunch="GuardianSCBWWeapon@LM">
@@ -1102,6 +1154,7 @@
         <LaunchAssets Sound="GuardianSCBWWeapon@Launch"/>
         <Missile value="GuardianSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="GuardianSCBWWeapon@Impact" Sound="GuardianSCBWWeapon@Impact"/>
+        <ImpactPhysics Name="AcidSpewImpact" MatchKeys="Basic" Physics="SporeCrawlerAttackForce"/>
     </CActorAction>
     <CActorMissile id="GuardianSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="GuardianSCBWWeapon@Missile"/>
     <CActorAction id="MutaliskSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@LM">
@@ -1927,7 +1980,7 @@
         <LaunchAssets Sound="BattlecruiserSCBWWeaponGround@Launch"/>
         <Missile value="BattlecruiserSCBWWeaponGround@Missile"/>
         <ImpactMap index="None" Model="BattlecruiserSCBWWeaponGround@Impact" Sound="BattlecruiserSCBWWeaponGround@Impact"/>
-        <ImpactPhysics Name="ATSImpact" MatchKeys="Basic" Physics="BattlecruiserAttackGroundForce"/>
+        <ImpactPhysics Name="ATSImpact" MatchKeys="Basic,Fire" Physics="BattlecruiserAttackGroundForce"/>
         <ActionFlags index="LaunchForceSite" value="1"/>
     </CActorAction>
     <CActorMissile id="BattlecruiserSCBWWeaponGround@Missile" parent="GenericAttackMissile" unitName="BattlecruiserSCBWWeaponGround@Missile"/>
@@ -2393,7 +2446,7 @@
     <CActorMissile id="PhotonCannonSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="PhotonCannonSCBWWeapon@Missile">
         <On Terms="UnitBirth" Send="AnimSetTimeScaleAbsolute Lifetime 1.000000"/>
     </CActorMissile>
-    <CActorAction id="ProbeSCBWWeapon@Action" parent="GenericAttack" effectAttack="ParticleBeam">
+    <CActorAction id="ProbeSCBWWeapon@Action" parent="GenericAttack" effectAttack="ProbeSCBWWeapon@Damage">
         <Beam value="ProbeSCBWWeapon@Beam"/>
         <ImpactMap index="None" Model="ProbeSCBWWeapon@Impact" Sound="ProbeSCBWWeapon@Impact"/>
         <ActionFlags index="LaunchForceSite" value="1"/>
@@ -2670,4 +2723,32 @@
         <HostEndSiteOps Ops="SOpForwardCasterPointInverted SOpMoveBy1" HoldPosition="1" HoldRotation="1"/>
         <Radius value="0.750000,0.150000"/>
     </CActorForceCylinder>
+    <CActorEventMacro id="PhysicsDeathsSwarmBase">
+        <On Terms="UnitDeathCustomize; KilledByEffect DamagePhysics" Send="DeathCustomize RagdollBasic"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {GhostSCBWNuclearStrike@Damage GhostSCBWNuclearStrike@DamageAccum}" Send="DeathCustomize RagdollNuke"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect MutaliskSCBWWeapon@Damage" Send="DeathCustomize RagdollAcid"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {BattlecruiserSCBWWeaponGround@Damage BattlecruiserSCBWWeaponAir@Damage}" Send="DeathCustomize RagdollFire"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="PhysicsDeathsSwarmGround" parent="PhysicsDeathsSwarmBase">
+        <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSiegedSCBWWeapon@DamageAccum SpiderMineSCBWWeapon@Damage ReaverSCBWWeapon@Damage}" Send="DeathCustomize RagdollSiegeTank"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {LurkerSCBWWeapon@Damage SunkenColonySCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {InfestedTerranSCBWWeapon@DamageExpl InfestedTerranSCBWWeapon@DamageSearch GuardianSCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="PhysicsDeathsSwarmAir" parent="PhysicsDeathsSwarmBase">
+        <On Terms="UnitDeathCustomize; KilledByEffect {ValkyrieSCBWWeapon@DamageAccum CorsairSCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {ScourgeSCBWWeapon@Damage DevourerSCBWWeapon@DamageAccum SporeColonySCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
+    </CActorEventMacro>
+    <CActorForceSphere id="SiegeTankSCBWSiegedWeapon@ImpactAttackForce" parent="SiegeTankSiegedForce">
+        <On index="0" Terms="ActorCreation" Send="Create SiegeTankSCBWSiegedWeapon@ImpactAttackUpForce"/>
+        <!--On Terms="Effect.SiegeTankSCBWSiegedWeapon@DamageAccum.Stop" Send="Create"/-->
+        <Host Subject="_ImpactGuide"/>
+        <HostSiteOps Ops="SOpMoveUpBy1 SOpRandomPointInSphereDot15"/>
+        <Magnitude value="40.000000,10.000000"/>
+        <Radius value="2.500000,0.200000"/>
+    </CActorForceSphere>
+    <CActorForceSphere id="SiegeTankSCBWSiegedWeapon@ImpactAttackUpForce" parent="SiegeTankSiegedUpForce">
+        <Host Subject="_ImpactGuide"/>
+        <Magnitude value="27.000000,10.000000"/>
+        <Radius value="2.500000,0.200000"/>
+    </CActorForceSphere>
 </Catalog>
