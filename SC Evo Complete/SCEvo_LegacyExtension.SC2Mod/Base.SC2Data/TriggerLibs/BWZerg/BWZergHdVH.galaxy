@@ -1,0 +1,2344 @@
+//==================================================================================================
+//  BWZerg Melee Hard - Very Hard
+//==================================================================================================
+
+// very similar to Very Hard builds, but with minor deliberate delays/weakness
+
+bool BWZergOpenRush6PoolHdVH (int player);                     // 6 pool BWZergling rush
+bool BWZergOpenRush10PoolHdVH (int player);                    // 10 pool BWZergling rush
+bool BWZergOpenTiming10HatchHdVH (int player);                // BWZergling + baneling build
+bool BWZergOpenTimingHydraHdVH (int player);                   // pure roach build
+bool BWZergOpenTimingLingHydraHdVH (int player);               // BWZergling + roach build
+bool BWZergOpenPowerMacroQuickExpGndHdVH (int player);         // 1v1 quick ground expansion
+bool BWZergOpenPowerMacroDefenseExpGndHdVH (int player);       // team game defensive ground expansion
+bool BWZergOpenAirOneBaseMutaHdVH (int player);                // single base "island" muta build
+bool BWZergOpenAirOneBaseDropHdVH (int player);                // single base "island" drop build
+bool BWZergOpenAirQuickExpandAirHdVH (int player);             // quick expand air build
+
+bool BWZergMidRushTimingLingBaneRoachHdVH (int player);        // continue the early pressure with ling/bane/roach
+bool BWZergMidRushTimingDefensiveExpandHdVH (int player);      // transition from early pressure to a macro game
+bool BWZergMidPowerPureMutaHdVH (int player);                  // 2 base muta harassment, with ling+static defense
+bool BWZergMidPowerLingBaneMutaHdVH (int player);              // attack with ling+bane+muta together
+bool BWZergMidPowerFoodCapRoachHdVH (int player);              // quick food cap roach rush
+bool BWZergMidPowerRoachInfestorHdVH (int player);             // standard 2-3 base roach + infestor
+bool BWZergMidPowerRoachHydraHdVH (int player);                // 2-3 base roach + hydra build
+bool BWZergMidPowerRoachRavagerHdVH (int player);              // 2 base roach+ravager build
+bool BWZergMidPowerSwarmHostHdVH (int player);                 // 2 base swarm host build
+bool BWZergMidPowerHydraLurkerHdVH (int player);               // 2-3 base lurker build
+bool BWZergMidMacroRoachHydraHdVH (int player);                // macro toward late game roach + hydra
+bool BWZergMidMacroRoachInfestorHdVH (int player);             // macro toward late game roach + infestor
+bool BWZergMidMacroHydraLurkerHdVH (int player);               // macro toward late game hyrda + lurker
+bool BWZergMidMacroUltraliskHdVH (int player);                 // macro toward late game ultralisk 
+bool BWZergMidMacroBroodlordHdVH (int player);                 // macro toward late game broodlord
+bool BWZergMidAirOneBaseMutaHdVH (int player);                 // continue single base "island" air build
+bool BWZergMidAirOneBaseDropHdVH (int player);                 // continue single base "island" drop build
+bool BWZergMidAirExpansionMutaHdVH (int player);               // quick expand air only attack
+bool BWZergMidAirExpansionMixedAirHdVH (int player);           // quick expand air only attack
+bool BWZergMidAirExpansionDropHdVH (int player);               // quick expand drop + air attack
+bool BWZergMidAirMacroHdVH (int player);                       // macro toward a large late game air force
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenHdVH
+//--------------------------------------------------------------------------------------------------
+void BWZergOpenHdVH (int player) {
+    bool done = false;
+    int buildIndex;
+
+    AIEarlyDefenseScouting(player);
+
+    // see if we need to switch builds
+    UpdateHDBWZergOpening(player);
+
+    buildIndex = AIGetUserInt(player, c_currentBuildIndex);
+    if (buildIndex == e_BWhdBuildIndex_ZOpenRush_6Pool)                     { done = BWZergOpenRush6PoolHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenRush_10Pool)               { done = BWZergOpenRush10PoolHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenTiming_LingBane)           { done = BWZergOpenTiming10HatchHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenTiming_Roach)              { done = BWZergOpenTimingHydraHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenTiming_LingRoach)          { done = BWZergOpenTimingLingHydraHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenPowerMacro_QuickExpGnd)    { done = BWZergOpenPowerMacroQuickExpGndHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenPowerMacro_DefenseExpGnd)  { done = BWZergOpenPowerMacroDefenseExpGndHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenAir_OneBaseMuta)           { done = BWZergOpenAirOneBaseMutaHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenAir_OneBaseDrop)           { done = BWZergOpenAirOneBaseDropHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZOpenAir_QuickExpandAir)        { done = BWZergOpenAirQuickExpandAirHdVH(player); }
+    else { ErrorMeleeScript(player, "Invalid Open BuildIndex BWZergHdVH"); }
+
+    if (done) {
+        BWZergHDInitMid(player); // Transition to MidGame
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidHdVH
+//--------------------------------------------------------------------------------------------------
+void BWZergMidHdVH (int player) {
+    bool done = false;
+    int buildIndex;
+    
+    // enable scouting as appropriate
+    if (AIGetUserInt(player, c_numGroundStartLocs) > 0) {
+        AIScoutingEnable(player, 15, c_BWZU_Drone);
+        AIEarlyDefenseScouting(player);
+    }
+    else {
+        AIScoutingEnable(player, 1, c_BWZU_Zergling);
+    }
+
+    // see if we need to switch builds
+    UpdateHDBWZergMidGame(player);
+    
+    buildIndex = AIGetUserInt(player, c_currentBuildIndex);
+    if (buildIndex == e_BWhdBuildIndex_ZMidRushTiming_LingBaneRoach)        { done = BWZergMidRushTimingLingBaneRoachHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidRushTiming_DefensiveExpand) { done = BWZergMidRushTimingDefensiveExpandHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_PureMuta)             { done = BWZergMidPowerPureMutaHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_LingBaneMuta)         { done = BWZergMidPowerLingBaneMutaHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_FoodCapRoach)         { done = BWZergMidPowerFoodCapRoachHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_RoachInfestor)        { done = BWZergMidPowerRoachInfestorHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_RoachHydra)           { done = BWZergMidPowerRoachHydraHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_RoachRavager)         { done = BWZergMidPowerRoachRavagerHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_SwarmHost)            { done = BWZergMidPowerSwarmHostHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidPower_HydraLurker)          { done = BWZergMidPowerHydraLurkerHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidMacro_RoachHydra)           { done = BWZergMidMacroRoachHydraHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidMacro_RoachInfestor)        { done = BWZergMidMacroRoachInfestorHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidMacro_HydraLurker)          { done = BWZergMidMacroHydraLurkerHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidMacro_Ultralisk)            { done = BWZergMidMacroUltraliskHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidMacro_Broodlord)            { done = BWZergMidMacroBroodlordHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidAir_OneBaseMuta)            { done = BWZergMidAirOneBaseMutaHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidAir_OneBaseDrop)            { done = BWZergMidAirOneBaseDropHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidAir_ExpansionMuta)          { done = BWZergMidAirExpansionMutaHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidAir_ExpansionMixedAir)      { done = BWZergMidAirExpansionMixedAirHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidAir_ExpansionDrop)          { done = BWZergMidAirExpansionDropHdVH(player); }
+    else if (buildIndex == e_BWhdBuildIndex_ZMidAir_Macro)                  { done = BWZergMidAirMacroHdVH(player); }
+    else { ErrorMeleeScript(player, "Invalid Mid BuildIndex BWZergHdVH"); }
+
+    if (done) {
+        BWZergHDInitLate(player); // Transition to LateGame
+    }
+}
+
+//==================================================================================================
+//  OPENINGS
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenRush6PoolHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenRush6PoolHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 14, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_CreepColony );
+    //Queen used to be here
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    
+    BWZergBasicDefenseStock(player);
+
+    if ( (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 14) && AIHasRes(player,350,0) ) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_SunkenColony );
+    AISetStock( player, 22, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 32, c_BWZU_Zergling );
+    AISetStock( player, 18, c_BWZU_Drone );
+    //Queen used to be here
+    AISetStock( player, 5, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 12, c_BWZU_Drone, 1, c_BWZB_SpawningPool, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWZU_Zergling, 2, 6, c_continuousMerge);
+
+    if (AIGetTime() < 270) {
+        if (AITechCount(player, c_BWZU_Zergling, c_techCountCompleteOnly) < 24) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenRush10PoolHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenRush10PoolHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 14, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 15, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_CreepColony );
+    //Queen used to be here
+    AISetStock( player, 10, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_SunkenColony );
+    
+    BWZergBasicDefenseStock(player);
+
+    if ( (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 14) && AIHasRes(player,350,0) ) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 24, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Drone );
+    //Queen used to be here x2
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 12, c_BWZU_Drone, 1, c_BWZB_SpawningPool, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWZU_Zergling, 2, 10, c_continuousMerge);
+
+    if (AIGetTime() < 270) {
+        if (AITechCount(player, c_BWZR_ZerglingSCBWSpeedUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenTiming10HatchHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenTiming10HatchHdVH (int player) {
+    AIClearStock(player);
+    
+    //This build is centered around Ling Bane
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+
+    if ( (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 14) && AIHasRes(player,350,0) ) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 14, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 15, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_CreepColony );
+    //Queen Used to be Here
+    AISetStock( player, 14, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 24, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 40, c_BWZU_Zergling );
+    AISetStock( player, 5, c_BWZU_Overlord );
+
+    if ( (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 14) && AIHasRes(player,350,0) ) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Drone );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 12, c_BWZU_Drone, 1, c_BWZU_Zergling, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWZU_Zergling, 4, 18, c_continuousMerge);
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWZU_Drone, c_techCountCompleteOnly) < 20) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenTimingHydraHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenTimingHydraHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 15, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 17, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 19, c_BWZU_Drone );
+    //Queen used to be here
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWZU_Hydralisk );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Hydralisk );
+    AISetStock( player, 5, c_BWZU_Overlord );
+
+    if ( (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 18) && AIHasRes(player,350,0) ) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 15, c_BWZU_Hydralisk );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Drone );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 12, c_BWZU_Drone, 1, c_BWZU_Zergling, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 1, 7, c_continuousMerge);
+
+    if (AIGetTime() < 330) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 14) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenTimingLingHydraHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenTimingLingHydraHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 15, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 17, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_CreepColony );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWZU_Hydralisk );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Hydralisk );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 14, c_BWZU_Zergling );
+
+    if ( (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 18) && AIHasRes(player,350,0) ) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 16, c_BWZU_Zergling );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Drone );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 12, c_BWZU_Drone, 1, c_BWZU_Zergling, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 1, 7, c_continuousMerge);
+    
+    if (AIGetTime() < 300) {
+        if (AITechCount(player, c_BWZU_Drone, c_techCountInProgressOrBetter) < 20) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenPowerMacroQuickExpGndHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenPowerMacroQuickExpGndHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 22, c_BWZU_Drone );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 16, c_BWZU_Drone, 1, c_BWZU_Zergling, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 150) {
+        if (AITechCount(player, c_BWZB_Hatchery_Alias, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenPowerMacroDefenseExpGndHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenPowerMacroDefenseExpGndHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 4, c_BWZU_Zergling );
+    AISetStock( player, 18, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Zergling );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 16, c_BWZU_Drone, 1, c_BWZU_Zergling, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 150) {
+        if (AITechCount(player, c_BWZB_Hatchery_Alias, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenAirOneBaseMutaHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenAirOneBaseMutaHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 6, c_BWZU_Mutalisk );
+    AISetStock( player, 4, c_BWZU_Scourge );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 8, c_BWZU_Mutalisk );
+    AISetStock( player, 6, c_BWZU_Scourge );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Mutalisk, 1, 5, c_continuousMerge);
+    
+    if (AIGetTime() < 330) {
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountCompleteOnly) < 6) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenAirOneBaseDropHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenAirOneBaseDropHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 17, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 10, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    AISetStock( player, 22, c_BWZU_Zergling );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 23, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWSpeedUpgrade );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    if (AITechCount(player, c_BWZR_OverlordSCBWTransportResearch, c_techCountCompleteOnly) > 1) {
+        AISetAttackStatus(player, c_BWZU_Zergling, 4, 8, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 300) {
+        if (AITechCount(player, c_BWZB_Spire_Alias, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZR_OverlordSCBWSpeedUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergOpenAirQuickExpandAirHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergOpenAirQuickExpandAirHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 19, c_BWZU_Drone );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    if (AIGetTime() < 150) {
+        if (AITechCount(player, c_BWZB_Hatchery_Alias, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//==================================================================================================
+//  MID GAME
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidRushTimingLingBaneRoachHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidRushTimingLingBaneRoachHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 14, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 15, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 10, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 26, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 28, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 32, c_BWZU_Zergling );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 8, c_BWZU_Hydralisk );
+
+    if (AITechCount(player, c_BWZU_Hydralisk, c_techCountQueuedOrBetter) >= 8) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 26, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    
+    BWZergHDDefaultExtraStock(player);
+
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Zergling, 2, 30, c_continuousMerge);
+    if (AITechCount(player, c_BWZU_Zergling, c_techCountCompleteOnly) >= 12) {
+        AISetAttackStatus(player, c_BWZU_Hydralisk, 1, 4, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidRushTimingDefensiveExpandHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidRushTimingDefensiveExpandHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 17, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 5, c_BWZU_Hydralisk );
+
+    BWZergHDEmergencyDetectionAntiAir(player);
+
+    if (AITechCount(player, c_BWZU_Hydralisk, c_techCountQueuedOrBetter) >= 5) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 22, c_BWZU_Drone );
+    
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 10, c_BWZU_Hydralisk );
+    AISetStock( player, 26, c_BWZU_Drone );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWZU_Zergling, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 1, 999, c_continuousMerge);
+
+    if (AIGetTime() < 300) {
+        if (AITechCount(player, c_BWZB_Hatchery_Alias, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerPureMutaHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerPureMutaHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_Extractor );
+
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 7, c_BWZU_Mutalisk );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 9, c_BWZU_Mutalisk );
+    AISetStock( player, 6, c_BWZU_Scourge );
+    AISetStock( player, 36, c_BWZU_Drone );
+    AISetStock( player, 10, c_BWZU_Mutalisk );
+    AISetStock( player, 38, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Mutalisk );
+    AISetStock( player, 10, c_BWZU_Scourge );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 14, c_BWZU_Mutalisk );
+    AISetStock( player, 12, c_BWZU_Scourge );
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWZU_Zergling, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Mutalisk, 1, 7, c_continuousMerge);
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountInProgressOrBetter) < 10) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerLingBaneMutaHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerLingBaneMutaHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 23, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 26, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Zergling );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Mutalisk );
+    AISetStock( player, 6, c_BWZU_Scourge );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 26, c_BWZU_Zergling );
+    AISetStock( player, 6, c_BWZU_Mutalisk );
+    AISetStock( player, 8, c_BWZU_Scourge );
+    AISetStock( player, 32, c_BWZU_Zergling );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 36, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Mutalisk );
+    AISetStock( player, 10, c_BWZU_Scourge );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 10, c_BWZU_Mutalisk );
+    AISetStock( player, 12, c_BWZU_Scourge );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Zergling, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Mutalisk, 2, 6, c_continuousMerge);
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountCompleteOnly) < 7) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerFoodCapRoachHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerFoodCapRoachHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 23, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 27, c_BWZU_Drone );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+    AISetStock( player, 33, c_BWZU_Drone );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 37, c_BWZU_Drone );
+    AISetStock( player, 16, c_BWZU_Hydralisk );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 41, c_BWZU_Drone );
+    AISetStock( player, 11, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 20, c_BWZU_Hydralisk );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    AISetStock( player, 44, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 13, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Hydralisk );
+    AISetStock( player, 14, c_BWZU_Overlord );
+    AISetStock( player, 28, c_BWZU_Hydralisk );
+    AISetStock( player, 15, c_BWZU_Overlord );
+    AISetStock( player, 32, c_BWZU_Hydralisk );
+    AISetStock( player, 16, c_BWZU_Overlord );
+    AISetStock( player, 36, c_BWZU_Hydralisk );
+    AISetStock( player, 17, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Hydralisk );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWZU_Zergling, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 1, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 450) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 32) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerRoachInfestorHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerRoachInfestorHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 25, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 3, c_BWZB_Extractor );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Hydralisk );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_QueensNest );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 36, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_DefilerMound );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZR_DefilerSCBWEnergyUpgrade );
+    AISetStock( player, 8, c_BWZU_Hydralisk );
+    AISetStock( player, 6, c_BWZU_Defiler );
+    AISetStock( player, 11, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Hydralisk );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Defiler );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Defiler, 2, 6, c_continuousMerge);
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWZU_Overlord, c_techCountInProgressOrBetter) < 11) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Defiler, c_techCountCompleteOnly) < 6) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerRoachHydraHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerRoachHydraHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 25, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 8, c_BWZU_Hydralisk );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 1, c_ZB_HydraliskDen );
+    AISetStock( player, 34, c_BWZU_Drone );
+    AISetStock( player, 10, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Hydralisk );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Hydralisk );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 28, c_BWZU_Hydralisk );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 14, c_continuousMerge);
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWZU_Overlord, c_techCountInProgressOrBetter) < 12) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountCompleteOnly) < 14) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerRoachRavagerHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerRoachRavagerHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 25, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 8, c_BWZU_Hydralisk );
+    AISetStock( player, 31, c_BWZU_Drone );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 35, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 18, c_BWZU_Hydralisk );
+    AISetStock( player, 11, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Hydralisk );
+    AISetStock( player, 39, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Hydralisk );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 14) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerSwarmHostHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerSwarmHostHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZB_Extractor );
+
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZR_LurkerSCBWResearch );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_QueensNest );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWZR_ZergSCBWBurrowResearch );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 31, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZU_Lurker );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Lurker );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 36, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Lurker );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWZU_Zergling, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Lurker, 2, 4, c_continuousMerge);
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWZU_Lurker, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Lurker, c_techCountCompleteOnly) < 4) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidPowerHydraLurkerHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidPowerHydraLurkerHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 25, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 3, c_BWZB_Extractor );
+    AISetStock( player, 33, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Hydralisk );
+    AISetStock( player, 35, c_BWZU_Drone );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 37, c_BWZU_Drone );
+    AISetStock( player, 13, c_BWZU_Hydralisk );
+    AISetStock( player, 1, c_BWZR_LurkerSCBWResearch );
+    AISetStock( player, 16, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 14, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Lurker );
+    AISetStock( player, 28, c_BWZU_Hydralisk );
+    AISetStock( player, 16, c_BWZU_Overlord );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Lurker, 2, 6, c_continuousMerge);
+    
+    if (AIGetTime() < 480) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 12) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Lurker, c_techCountCompleteOnly) < 6) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidMacroRoachHydraHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidMacroRoachHydraHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 3, c_BWZB_Extractor );
+    AISetStock( player, 2, c_BWZB_EvolutionChamber );
+    AISetStock( player, 36, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZR_ZergMissileAttacksSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWZR_ZergGroundCarapaceSCBW_Lvl1 );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 10, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZR_HydraliskSCBWRangeUpgrade );
+    AISetStock( player, 16, c_BWZU_Hydralisk );
+    AISetStock( player, 11, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Hydralisk );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 13, c_BWZU_Overlord );
+    AISetStock( player, 28, c_BWZU_Hydralisk );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge); 
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 12) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidMacroRoachInfestorHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidMacroRoachInfestorHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );    
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 36, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 37, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZB_EvolutionChamber );
+    AISetStock( player, 39, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_QueensNest );
+    AISetStock( player, 43, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZR_ZergMissileAttacksSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWZR_ZergGroundCarapaceSCBW_Lvl1 );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 44, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZR_QueenSCBWEnergyUpgrade );
+    AISetStock( player, 8, c_BWZU_Hydralisk );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 10, c_BWZU_Hydralisk );
+    AISetStock( player, 6, c_BWZU_Queen );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Hydralisk );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Queen, 1, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWZU_Queen, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidMacroHydraLurkerHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidMacroHydraLurkerHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 38, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Hydralisk );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZR_LurkerSCBWResearch );
+    AISetStock( player, 10, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZB_EvolutionChamber );
+    AISetStock( player, 42, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZR_ZergMissileAttacksSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWZR_ZergGroundCarapaceSCBW_Lvl1 );
+    AISetStock( player, 4, c_BWZU_Lurker );
+    AISetStock( player, 14, c_BWZU_Hydralisk );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZR_HydraliskSCBWRangeUpgrade );
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+    AISetStock( player, 13, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Lurker );
+    AISetStock( player, 20, c_BWZU_Hydralisk );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge); 
+    
+    if (AIGetTime() < 450) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Lurker, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZR_HydraliskSCBWRangeUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidMacroUltraliskHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidMacroUltraliskHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 37, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 42, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_QueensNest );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 8, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Hive );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 44, c_BWZU_Drone );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZU_Queen );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    AISetStock( player, 2, c_BWZB_EvolutionChamber );
+    AISetStock( player, 14, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_UltraliskCavern );
+    AISetStock( player, 24, c_BWZU_Zergling );
+    AISetStock( player, 16, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Ultralisk );
+    AISetStock( player, 1, c_BWZR_UltraliskSCBWArmorUpgrade );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 540) {
+        if (AITechCount(player, c_BWZU_Ultralisk, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZR_UltraliskSCBWArmorUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidMacroBroodlordHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidMacroBroodlordHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    
+    BWZergHDDefaultExtraStock(player);
+
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Zergling );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 22, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 27, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 29, c_BWZU_Drone );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 37, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 42, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_QueensNest );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Spire );
+    AISetStock( player, 8, c_BWZU_Hydralisk );
+    AISetStock( player, 9, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Hive );
+    AISetStock( player, 44, c_BWZU_Drone );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Hydralisk );
+    AISetStock( player, 12, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Devourer );
+    AISetStock( player, 14, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_GreaterSpire );
+    AISetStock( player, 2, c_BWZB_EvolutionChamber );
+    AISetStock( player, 24, c_BWZU_Zergling );
+    AISetStock( player, 8, c_BWZU_Devourer );
+    AISetStock( player, 16, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Guardian );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWZU_Hydralisk, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 540) {
+        if (AITechCount(player, c_BWZU_Guardian, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Devourer, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidAirOneBaseMutaHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidAirOneBaseMutaHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    
+    BWZergBasicDefenseStock(player);
+
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 19, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 6, c_BWZU_Mutalisk );
+    AISetStock( player, 4, c_BWZU_Scourge );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 8, c_BWZU_Mutalisk );
+    AISetStock( player, 6, c_BWZU_Scourge );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Mutalisk, 1, 5, c_continuousMerge);
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZR_OverlordSCBWTransportResearch, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidAirOneBaseDropHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidAirOneBaseDropHdVH (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 16, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    
+    BWZergBasicDefenseStock(player);
+    
+    AISetStock( player, 17, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 6, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 10, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    AISetStock( player, 22, c_BWZU_Zergling );
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 23, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWSpeedUpgrade );
+    AISetStock( player, 5, c_BWZU_Overlord );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 24, c_BWZU_Zergling );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZU_Hydralisk );
+    AISetStock( player, 4, c_BWZU_Mutalisk );
+    AISetStock( player, 4, c_BWZU_Scourge );
+    AISetStock( player, 26, c_BWZU_Drone );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    if (AITechCount(player, c_BWZR_OverlordSCBWTransportResearch, c_techCountCompleteOnly) > 0) {
+        AISetAttackStatus(player, c_BWZU_Zergling, 4, 16, c_continuousMerge);
+        AISetAttackStatus(player, c_BWZU_Mutalisk, 1, 4, c_continuousMerge);
+        AISetAttackStatus(player, c_BWZU_Scourge, 1, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWZU_Hydralisk, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidAirExpansionMutaHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidAirExpansionMutaHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 1, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 38, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 8, c_BWZU_Mutalisk );
+    AISetStock( player, 6, c_BWZU_Scourge );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 12, c_BWZU_Mutalisk );
+    AISetStock( player, 12, c_BWZU_Scourge );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    AISetStock( player, 10, c_BWZU_Overlord );
+    AISetStock( player, 14, c_BWZU_Mutalisk );
+    AISetStock( player, 14, c_BWZU_Scourge );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Mutalisk, 2, 8, c_continuousMerge);
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountInProgressOrBetter) < 12) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZR_OverlordSCBWTransportResearch, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidAirExpansionMixedAirHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidAirExpansionMixedAirHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 38, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Mutalisk );
+    AISetStock( player, 6, c_BWZU_Scourge );
+    AISetStock( player, 2, c_BWZU_Devourer );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZU_Devourer );
+    AISetStock( player, 8, c_BWZU_Mutalisk );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    AISetStock( player, 10, c_BWZU_Mutalisk );
+    AISetStock( player, 10, c_BWZU_Scourge );
+    AISetStock( player, 10, c_BWZU_Overlord );   
+    AISetStock( player, 6, c_BWZU_Devourer ); 
+
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWZU_Mutalisk, 2, 8, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Devourer, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountCompleteOnly) < 8) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Devourer, c_techCountCompleteOnly) < 4) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZR_OverlordSCBWTransportResearch, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidAirExpansionDropHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidAirExpansionDropHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 20, c_BWZU_Drone );
+    AISetStock( player, 24, c_BWZU_Drone );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 30, c_BWZU_Drone );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZR_ZerglingSCBWSpeedUpgrade );
+    AISetStock( player, 1, c_BWZR_ZergMeleeAttacksSCBW_Lvl1 );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 12, c_BWZU_Zergling );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 24, c_BWZU_Zergling );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    AISetStock( player, 40, c_BWZU_Zergling );
+    
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Spire );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 52, c_BWZU_Zergling );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    if (AITechCount(player, c_BWZR_OverlordSCBWTransportResearch, c_techCountCompleteOnly) > 1) {
+        AISetAttackStatus(player, c_BWZU_Zergling, 4, 40, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWZB_HydraliskDen, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZB_Spire, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZB_Extractor, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergMidAirMacroHdVH
+//--------------------------------------------------------------------------------------------------
+bool BWZergMidAirMacroHdVH (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWZB_Hatchery_Alias );
+    AISetStock( player, 6, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZU_Overlord );
+    AISetStock( player, 13, c_BWZU_Drone );
+    AISetStock( player, 2, c_BWZU_Overlord );
+    AISetStock( player, 17, c_BWZU_Drone );
+    
+    BWZergBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWZU_Drone, c_techCountQueuedOrBetter) >= 17) {
+        if (BWZergHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 2, c_BWZB_Extractor );
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 21, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Lair_Alias );
+    AISetStock( player, 3, c_BWZU_Overlord );
+    AISetStock( player, 32, c_BWZU_Drone );
+    AISetStock( player, 1, c_BWZB_Spire_Alias );
+    AISetStock( player, 4, c_BWZB_Extractor );
+    AISetStock( player, 4, c_BWZU_Overlord );
+    AISetStock( player, 38, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Overlord );
+    AISetStock( player, 40, c_BWZU_Drone );
+    AISetStock( player, 6, c_BWZU_Mutalisk );
+    AISetStock( player, 4, c_BWZU_Scourge );
+    AISetStock( player, 2, c_BWZU_Devourer );
+    AISetStock( player, 7, c_BWZU_Overlord );
+    AISetStock( player, 1, c_BWZB_EvolutionChamber );
+    AISetStock( player, 8, c_BWZU_Overlord );
+    AISetStock( player, 4, c_BWZU_Devourer );
+    AISetStock( player, 8, c_BWZU_Mutalisk );
+    AISetStock( player, 8, c_BWZU_Scourge );
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    AISetStock( player, 9, c_BWZU_Overlord );
+
+    BWZergHDEmergencyDetectionAntiAir(player);
+    BWZergHDDefaultExtraStock(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWZU_Mutalisk, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWZU_Devourer, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWZU_Mutalisk, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZU_Devourer, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+        if (AITechCount(player, c_BWZR_OverlordSCBWTransportResearch, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//==================================================================================================
+//  LATE GAME
+//==================================================================================================
+
+// Late Game is very similar to VyHd, but with delayed expanding and upgrading to make it weaker
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergLateHdVH
+//--------------------------------------------------------------------------------------------------
+void BWZergLateHdVH (int player) {
+    int armyCompareEstimate = AIArmyComparisonEstimate(player);
+    int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
+
+    // always enable scouting in the late game
+    AISetFlag(player, e_flagsScouting, true);
+    // calculate a limit on how much simultaneous teching can happen
+    AISetTechLimitLevels(player);
+
+
+// ****************** Start Restock ****************** //
+    AIClearStock(player);
+
+// Very basic recovery start
+    BWZergHDRecoveryStart(player);
+
+// Very basic farms & peons
+    AISetStockFarms( player, c_BWZU_Overlord, c_stockNormalFarms);
+    AISetStockPeons( player, 16, c_BWZU_Drone, c_stockMinPeons, c_stockAlways);
+
+// Desperate expand (we're about to run out of minerals/gas)
+    AIDefaultExpansion(player, c_BWZB_Hatchery, 3000, 1000, c_expandVitalHard);
+
+// Choose what type of endgame army we'd like to make
+    UpdateHDBWZergLateGameArmy(player);
+
+// Bare minimum army
+    if (foodUsed < 180) {
+        BWZergHDLateGameArmy(player, e_armyTypeMinimum);
+    }
+
+// Basic peons
+    AISetStockPeons( player, 24, c_BWZU_Drone, c_stockMinPeons, c_stockAlways);
+
+// Urgent early detection
+    if (AINeedsDetection(player)) {
+        AISetStock( player, 1, c_BWZR_OverlordSCBWSightUpgrade );
+    }
+
+// Barely adequete army including anti-air
+    if (foodUsed < 180) {
+        BWZergHDLateGameArmy(player, e_armyTypeBase);
+    }
+
+// Basic towns, farms, & peons
+    AIDefaultEconomy(player, c_BWZB_Hatchery_Alias, c_BWZB_Extractor, c_BWZU_Overlord, c_BWZU_Drone, 75, c_stockAlways);
+
+// Low expand (we're running low on minerals/gas)
+    AIAdjustedDefaultExpansion(player, c_BWZB_Hatchery, 6000, 2000, c_expandVitalHard, armyCompareEstimate);
+    
+// Minimum normal detection
+    if (AISuspectDetectionDanger(player, c_lateDetectionDangerTime)) {
+        AISetStock( player, 1, c_BWZR_OverlordSCBWSightUpgrade );
+    }
+
+// On an air map build at least one transport as long as we have some other units/army
+    if (AIGetUserInt(player, c_numGroundStartLocs) == 0) {
+        AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+    }
+
+// Nearly food capped units
+    if (foodUsed > 160) {
+        AISetStock( player, 1, c_BWZR_OverlordSCBWSpeedUpgrade );
+        AISetStock( player, 3, c_BWZR_OverlordSCBWSightUpgrade );
+
+        if (AIWantsMultipleTransport(player)) {
+            AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+        }
+
+        if (foodUsed >= 180) {
+            BWZergHDLateGameArmy(player, e_armyTypeMinimum);
+            BWZergHDLateGameArmy(player, e_armyTypeBase);
+        }
+    }
+
+// Basic small army
+    BWZergHDLateGameArmy(player, e_armyTypeSmall);
+
+// Basic production buildings
+    AISetStock( player, 1, c_BWZB_SpawningPool );
+    AISetStock( player, 1, c_BWZB_HydraliskDen );
+      
+// Normal expand
+    AIAdjustedDefaultExpansion(player, c_BWZB_Hatchery, 10000, 4000, c_expandNormalHard, armyCompareEstimate);
+   
+// Make Counter Units
+    BWZergHDMakeCounters(player);
+
+// Medium sized army
+    BWZergHDLateGameArmy(player, e_armyTypeMedium);
+
+// Vital upgrades
+    BWZergHDVitalUpgrades(player);
+    
+// Overseer to scout/detect
+    AISetStock( player, 1, c_BWZR_OverlordSCBWSightUpgrade );
+
+// Other towns defense
+    BWZergHDDefenseOtherTowns(player);
+    
+// Extra Queens/Hatcheries
+    BWZergHDDefaultExtraStock(player);
+
+// Large sized army
+    BWZergHDLateGameArmy(player, e_armyTypeLarge);
+
+// General upgrades
+    BWZergHDGeneralUpgrades(player);
+
+// Main base defense
+    BWZergHDDefenseMainTown(player);
+     
+// Multiple detectors & scouts & a transport
+    AISetStock( player, 1, c_BWZR_OverlordSCBWSightUpgrade);
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch );
+
+// Middle expand
+    AIAdjustedDefaultExpansion(player, c_BWZB_Hatchery, 15000, 6000, c_expandNormalHard, armyCompareEstimate);
+
+// Extra detection & scouts & transports
+    AISetStock( player, 1, c_BWZR_OverlordSCBWSightUpgrade);
+    AISetStock( player, 1, c_BWZR_OverlordSCBWTransportResearch);
+
+// Late expand
+    AIAdjustedDefaultExpansion(player, c_BWZB_Hatchery, 20000, 8000, c_expandNormalHard, armyCompareEstimate);
+
+// Extra research buildings
+    if (AIHasRes(player,500,400)) {
+        AISetStockUnitNext( player, 3, c_BWZB_EvolutionChamber, c_stockAlways );
+    }
+
+// Extra production buildings
+    AISetStockUnitNext( player, 1, c_BWZB_HydraliskDen,     c_stockAlways );
+    AISetStockUnitNext( player, 1, c_BWZB_Spire_Alias,      c_stockAlways );
+    AISetStockUnitNext( player, 1, c_BWZB_QueensNest,       c_stockAlways );
+    AISetStockUnitNext( player, 1, c_BWZB_Hive,             c_stockAlways );
+    AISetStockUnitNext( player, 1, c_BWZB_DefilerMound,     c_stockAlways );
+
+// Minor upgrades
+    BWZergHDMinorUpgrades(player);
+
+// Idle expand (very low priority, to prevent us from sitting around with idle peons)
+    AIAdjustedDefaultExpansion(player, c_BWZB_Hatchery, 30000, 10000, c_expandIdleHard, armyCompareEstimate);
+
+// Entire Army
+    BWZergHDLateGameArmy(player, e_armyTypeFull);
+
+    AIEnableStock(player);    
+// ****************** End Restock ****************** //
+
+}
