@@ -212,6 +212,27 @@ bool BWCargoDefend (int player, unit aiUnit, unitgroup scanGroup, int searchRang
     return true;
 }
 
+void AIBunkerSalvageSCBW(int player, unit aiUnit, unitgroup scanGroup) {
+    order ord;
+   
+    //There is no salvage ability in Legacy Mod
+    //ord = AICreateOrder(player, c_BWAB_BunkerSalvage, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return;
+    }
+
+    if (UnitGroupCount(scanGroup, c_unitCountAlive) > 0) {
+        return;
+    }
+
+    if (UnitCargoValue(aiUnit, c_unitCargoSpaceUsed) != 0) {
+        return;
+    }
+    
+    AICast(aiUnit, ord, c_noMarker, c_castHold);
+}
+
+
 //--------------------------------------------------------------------------------------------------
 //  *** BUNKER ***
 //--------------------------------------------------------------------------------------------------
@@ -219,6 +240,17 @@ bool BWCargoDefend (int player, unit aiUnit, unitgroup scanGroup, int searchRang
 //--------------------------------------------------------------------------------------------------
 void AIThinkBunkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     BWCargoDefend(player, aiUnit, scanGroup, 8, 10, c_nullString, c_BWAB_BunkerTransport);
+
+    //Implement Salvage?
+    //if (!AIIsCampaign(player)) {
+    //    if (AIPlayerDifficulty(player) >= c_skirHard_VH) {
+    //        if (AIGetTime() > 900.0) {
+    //            // bunkers aren't really useful after 15 minutes into a melee game
+    //            // just salvage them if they aren't currently in use
+    //            AIBunkerSalvageSCBW(player, aiUnit, scanGroup);
+    //        }
+    //    }
+    //}
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -306,6 +338,46 @@ order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker ma
 //{
 //
 //}
+
+const int c_BWMedicRestorationCooldown = c_tactTimerSecond;
+
+order AIOrderRestoration (int player, unit aiUnit, marker mark) {
+    order ord;
+    unitgroup group;
+    aifilter filter;
+    int i;
+    unit tmp_unit;
+
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        return null;
+    }
+	
+    if (!AITactCooldownAllow(aiUnit, c_BWMedicRestorationCooldown)) {
+        return null;
+    }
+
+    ord = AICreateOrder(player, c_BWAB_MedicSCBWRestoration, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return null;
+    }
+
+    group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
+    AIAbilityFixed(player, c_BWAB_MedicSCBWRestoration, c_fieldRange0) + 1, c_noMaxCount);
+
+    filter = AIFilter(player);
+    AISetFilterAlliance(filter, c_playerGroupAlly);
+    AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
+    group = AIGetFilterGroup(filter, group);
+    if (group == null) {
+        return null;
+    }
+
+    for (i = 1; i <= UnitGroupCount(group, c_unitCountAll); i += 1) {
+        tmp_unit = UnitGroupUnit(group, i);
+    }
+
+    return AIUnitGroupGetValidOrder(group, ord, aiUnit, c_forwards);
+}
 
 //--------------------------------------------------------------------------------------------------
 void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
@@ -548,9 +620,7 @@ order BWScienceVesselDefensiveMatrix (int player, unit aiUnit, marker mark) {
     }
 
     group = AIFindUnits(player, null, UnitGetPosition(aiUnit), 
-                        AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, c_fieldRange0) + 1,
-                        c_noMaxCount)
-    ;
+    AIAbilityFixed(player, c_BWAB_ScienceVesselSCBWDefensiveMatrix, c_fieldRange0) + 1, c_noMaxCount);
 
     filter = AIFilter(player);
     AISetFilterAlliance(filter, c_playerGroupAlly);
@@ -2303,7 +2373,7 @@ void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
         return;
     }
 
-    mark = AIMarker(aiUnit, c_MK_Parasite);
+    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWParasite);
     ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
     if (ord != null) {
         if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
