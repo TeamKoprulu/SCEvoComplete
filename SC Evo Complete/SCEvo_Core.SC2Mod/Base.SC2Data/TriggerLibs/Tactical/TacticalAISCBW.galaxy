@@ -271,7 +271,7 @@ void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 const int c_opticFlareCooldown = c_tactTimerFirst;
 const int c_opticFlareMinHealth = 70;
 
-order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
+order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker mark, marker gameMark ) {
     order ord;
     fixed damage;
     aifilter filterAI;
@@ -317,16 +317,21 @@ order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker ma
     
     AISetFilterLife(filterAI, c_opticFlareMinHealth, c_noMax);
     AISetFilterMelee(filterAI, c_onlyRanged);
-    AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_noBehaviorMax, "MedicSCBWOpticFlare");
+    AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_MedicSCBWOpticFlare_ABBlind);
     AISetFilterBits(filterAI, UnitFilterStr(AIAbilityStr(player, c_BWAB_MedicSCBWOpticFlare, c_fieldTargetFiltersAB)));
     AISetFilterRange(filterAI, aiUnit, AIAbilityFixed(player, c_BWAB_MedicSCBWOpticFlare, c_fieldRange0) + 1);
+    AISetFilterMarker(filterAI, c_noMarkersMin, c_noMarkersMax, mark);
     //AISetFilterCanAttackEnemy(filterAI, enemyGroundCount, enemyAirCount);
     targetGroup = AIGetFilterGroup(filterAI, scanGroup);
     if (targetGroup == null) {
         return null;
     }
 
-    targetGroup = AIGetFilterGroup(filterAI, scanGroup);
+    //  Since it's a missile, we also have to check the game-side marker
+    //
+    filterAI = AIFilter(player);
+    AISetFilterMarker(filterAI, c_noMarkersMin, c_noMarkersMax, gameMark);
+    targetGroup = AIGetFilterGroup(filterAI, targetGroup);
     if (targetGroup == null) {
         return null;
     }
@@ -382,6 +387,7 @@ order AIOrderRestoration (int player, unit aiUnit, marker mark) {
 //--------------------------------------------------------------------------------------------------
 void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     marker mark;
+    marker gameMark;
     order ord;
     int randomVal;
     fixed cooldown = 0.0;
@@ -391,11 +397,8 @@ void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     }
 
     mark = AIMarker(aiUnit, c_BWMK_MedicSCBWOpticFlare);
-    ord = AIOrderOpticFlare(player, aiUnit, scanGroup, mark);
-
-    if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
-        return;
-    }
+    gameMark = AIMarker(aiUnit, c_BWMK_GameMedicSCBWOpticFlare);
+    ord = AIOrderOpticFlare(player, aiUnit, scanGroup, mark, gameMark);
 
     if (ord != null) {
         if (AIIsCampaign(player)) {
@@ -403,8 +406,12 @@ void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
                 cooldown = 7.0;
             }
             else if (AIPlayerDifficulty(player) < c_campExpert) {
-                cooldown = 2.0;
+                cooldown = 3.0;
             }
+        }
+
+        if (!AITactCooldownAllow(aiUnit, c_opticFlareCooldown)) {
+            return;
         }
 
         AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_opticFlareCooldown, cooldown);
@@ -416,7 +423,7 @@ void AIThinkMedicSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //  *** GHOST ***
 //--------------------------------------------------------------------------------------------------
 
-const fixed c_LockdownMinVitality = 100;
+const fixed c_LockdownMinVitality = 70;
 
 order Lockdown (int player, unit aiUnit, unitgroup scanGroup, marker mark, marker gameMark, bool lowVitality) {
     order ord;
@@ -452,6 +459,7 @@ order Lockdown (int player, unit aiUnit, unitgroup scanGroup, marker mark, marke
     //  Apply filters to enemies
     //
     filter = AIFilter(player);
+    AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_GhostSCBWLockdown_AB);
     AISetFilterAlliance(filter, c_playerGroupEnemy);
     AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_GhostSCBWLockdown, c_fieldTargetFiltersAB)));
     AISetFilterRange(filter, aiUnit, AIAbilityFixed(player, c_BWAB_GhostSCBWLockdown, c_fieldRange0) + 1);
@@ -484,7 +492,7 @@ void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
     bool lowVitality;
 
-    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
+    if (AIPlayerDifficulty(player) >= c_campAdvanced) {
         // cloaking will be disabled by xml on campaign
         if (AIEvalTacticalData(aiUnit, null)) {
             return;
@@ -496,7 +504,7 @@ void AIThinkGhostSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     mark = AIMarker(aiUnit, c_BWMK_GhostSCBWLockdown);
     ord = Lockdown(player, aiUnit, scanGroup, mark, gameMark, lowVitality);
     if (ord != null) {
-        AICast(aiUnit, ord, mark, c_castRetreat);
+        AICast(aiUnit, ord, mark, c_castHold);
         return;
     }
 }
