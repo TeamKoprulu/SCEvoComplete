@@ -244,7 +244,7 @@
     </CEffectRemoveBehavior>
     <CEffectApplyBehavior id="MedicSCBWOpticFlare@ABBlind">
         <!--<ValidatorArray index="0" value="BlindingCloudABTargetFilters"/>-->
-        <EditorCategories value="Race:Zerg"/>
+        <EditorCategories value="Race:Terran"/>
         <Behavior value="MedicSCBWOpticFlare"/>
         <KillHallucination value="1"/>
     </CEffectApplyBehavior>
@@ -258,13 +258,12 @@
         <Effect value="MedicSCBWHeal@DummyCP"/>
     </CEffectDestroyPersistent>
     <CEffectLaunchMissile id="MedicSCBWOpticFlare@LM">
-        <EditorCategories value=""/>
+        <EditorCategories value="Race:Terran"/>
         <ImpactEffect value="MedicSCBWOpticFlare@Set"/>
         <AmmoUnit value="MedicSCBWOpticFlare@Missile"/>
     </CEffectLaunchMissile>
     <CEffectSet id="MedicSCBWOpticFlare@Set">
-        <ValidatorArray value=""/>
-        <EditorCategories value="Race:Zerg"/>
+        <EditorCategories value="Race:Terran"/>
         <EffectArray value="MedicSCBWOpticFlare@ABBlind"/>
     </CEffectSet>
     <CEffectApplyBehavior id="GhostSCBWLockdown@AB">
@@ -294,6 +293,19 @@
         <EditorCategories value="Race:Terran"/>
         <Behavior value="MarineSCBWStimpack"/>
     </CEffectApplyBehavior>
+    <CEffectDamage id="BattlecruiserSCBWYamato@Damage">
+        <EditorCategories value="Race:Terran"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <AttributeFactor index="Light" value="-0.3334"/>
+        <AttributeFactor index="Armored" value="0.3334"/>
+        <ShieldFactor value="0.3334"/>
+        <Visibility value="Visible"/>
+        <Flags index="Notification" value="1"/>
+        <Amount value="195"/>
+        <Death value="Blast"/>
+        <SearchFlags index="CallForHelp" value="1"/>
+    </CEffectDamage>
     <CEffectSet id="MedicSCBWHeal@Dummy"/>
     <CEffectCreatePersistent id="MedicSCBWHeal@DummyCP">
         <EditorCategories value="Race:Terran"/>
@@ -314,22 +326,9 @@
     <CEffectLaunchMissile id="BattlecruiserSCBWYamato@LM">
         <ValidatorArray index="0" value="BattlecruiserSCBWYamato@LM"/>
         <EditorCategories value="Race:Terran"/>
-        <ImpactEffect value="BattlecruiserSCBWYamato@Damage"/>
+        <ImpactEffect value="BattlecruiserSCBWYamato@Impact"/>
         <AmmoUnit value="BattlecruiserSCBWYamato@Missile"/>
     </CEffectLaunchMissile>
-    <CEffectDamage id="BattlecruiserSCBWYamato@Damage">
-        <EditorCategories value="Race:Terran"/>
-        <ResponseFlags index="Acquire" value="1"/>
-        <ResponseFlags index="Flee" value="1"/>
-        <Visibility value="Visible"/>
-        <Flags index="Notification" value="1"/>
-        <Amount value="195"/>
-        <Death value="Blast"/>
-        <SearchFlags index="CallForHelp" value="1"/>
-        <AttributeFactor index="Light" value="-0.3334"/>
-        <AttributeFactor index="Armored" value="0.3334"/>
-        <ShieldFactor value="0.3334"/>
-    </CEffectDamage>
     <CEffectCreateHealer id="SCVSCBW@Repair">
         <ValidatorArray value="SCVSCBW@Repair"/>
         <EditorCategories value="Race:Terran"/>
@@ -340,6 +339,23 @@
         <RechargeVitalRate value="1"/>
         <TimeFactor value="1"/>
     </CEffectCreateHealer>
+    <CEffectDamage id="BattlecruiserSCBWYamato@DamageAccum" parent="ExplosiveBaseDamageSCBW">
+        <EditorCategories value="Race:Terran"/>
+        <Visibility value="Visible"/>
+        <Kind value="Spell"/>
+        <Death value="Blast"/>
+    </CEffectDamage>
+    <CEffectUserData id="BattlecruiserSCBWYamato@DamageApply" parent="DamageIncoming">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="0">
+            <AccumulatorArray value="BattlecruiserSCBWYamato@Damage"/>
+        </Amount>
+    </CEffectUserData>
+    <CEffectSet id="BattlecruiserSCBWYamato@Impact">
+        <EffectArray value="BattlecruiserSCBWYamato@DamageApply"/>
+        <EffectArray value="SC1_ShieldsParam"/>
+        <EffectArray value="BattlecruiserSCBWYamato@DamageAccum"/>
+    </CEffectSet>
     <CAbilEffectTarget id="GhostSCBWNuclearStrike">
         <TechPlayer value="Owner"/>
         <Alignment value="Negative"/>
@@ -631,14 +647,14 @@
         <PlaceUnit value="SpiderMineSCBW"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="BattlecruiserSCBWYamato">
-        <TargetFilters value="Visible;Self,Missile,UnderConstruction,Dead,Hidden,Invulnerable"/>
+        <TargetFilters value="Visible;Self,Missile,Stasis,UnderConstruction,Dead,Hidden,Invulnerable"/>
         <Alignment value="Negative"/>
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
         <Effect index="0" value="BattlecruiserSCBWYamato@LM"/>
         <Flags index="AllowMovement" value="1"/>
         <Flags index="NoDeceleration" value="1"/>
         <Cost>
-            <Vital index="Energy" value="100"/>
+            <Vital index="Energy" value="150"/>
             <Cooldown Link="BattlecruiserSCBWYamato" TimeUse="0.8332"/>
         </Cost>
         <Range value="10"/>
@@ -1099,6 +1115,7 @@
         <EditorCategories value="Race:Terran"/>
         <Universal value="1"/>
         <DefaultButtonLayout Row="2"/>
+        <TooltipAppender Text="Button/Tooltip/BattlecruiserSCBWYamatoAppender"/>
     </CButton>
     <CButton id="BattlecruiserSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-battlecruiser@scbw.dds"/>
@@ -1776,7 +1793,7 @@
     <CActorSound id="ScienceVesselSCBWIrradiate@Impact" parent="SoundOneShot">
         <On Terms="Behavior.ScienceVesselSCBWIrradiate@Irradiated.On" Send="Create"/>
     </CActorSound>
-    <CActorAction id="BattlecruiserSCBWYamato@Action" parent="GenericAttack" effectImpact="BattlecruiserSCBWYamato@Damage" effectLaunch="BattlecruiserSCBWYamato@LM">
+    <CActorAction id="BattlecruiserSCBWYamato@Action" parent="GenericAttack" effectImpact="BattlecruiserSCBWYamato@Impact" effectLaunch="BattlecruiserSCBWYamato@LM">
         <LaunchAttachQuery Methods="AMFilterWeaponSetA2"/>
         <LaunchAssets Sound="BattlecruiserSCBWYamato@Launch"/>
         <Missile value="BattlecruiserSCBWYamato@Missile"/>
@@ -6696,8 +6713,8 @@
         <Collide index="ForceField" value="1"/>
         <Collide index="Locust" value="1"/>
         <Collide index="Small" value="1"/>
+        <Attributes index="Light" value="1"/>
         <Attributes index="Biological" value="1"/>
-        <Attributes index="Psionic" value="1"/>
         <LifeStart value="100"/>
         <LifeMax value="100"/>
         <LifeArmorName value="Unit/LifeArmorName/TerranInfantryArmor"/>
@@ -6836,7 +6853,6 @@
         <FlagArray index="AICaster" value="1"/>
         <FlagArray index="AIPressForwardDisabled" value="1"/>
         <Attributes index="Light" value="1"/>
-        <Attributes index="Psionic" value="1"/>
         <LifeStart value="45"/>
         <LifeMax value="45"/>
         <EnergyStart value="50"/>
@@ -7118,10 +7134,9 @@
         <InfoIcon value="Assets\Textures\btn-ability-nova-domination.dds"/>
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
         <!--<Duration value="0.625"/>-->
-        <Modification SightMaximum="1" WeaponRange="-20">
+        <Modification SightMaximum="1">
             <StateFlags index="SuppressDetection" value="1"/>
         </Modification>
-        <Duration value="15"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="MedicSCBWHeal@Disable">
         <Alignment value="Positive"/>
