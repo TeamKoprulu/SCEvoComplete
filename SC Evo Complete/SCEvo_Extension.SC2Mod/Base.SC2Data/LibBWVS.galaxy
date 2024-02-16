@@ -10,89 +10,6 @@ void libBWVS_InitLibraries () {
     libNtve_InitVariables();
 }
 
-// Functions
-void libBWVS_gf_RemoveGeysers () {
-    // Variable Declarations
-    unit lv_searchGeyser;
-    unit lv_targetGeyser;
-    fixed lv_distanceToClosestMineral;
-    unit lv_closestMineralToSearchGeyser;
-    unit lv_closestMineralToTargetGeyser;
-    unitgroup lv_mineralGroup;
-    int lv_r;
-
-    // Automatic Variable Declarations
-    unitgroup autoEABEE72C_g;
-    int autoEABEE72C_u;
-    unit autoEABEE72C_var;
-    unitgroup auto1D092848_g;
-    int auto1D092848_u;
-    unit auto1D092848_var;
-    unitgroup auto5DD3103C_g;
-    int auto5DD3103C_u;
-    unit auto5DD3103C_var;
-
-    // Variable Initialization
-    lv_mineralGroup = UnitGroupEmpty();
-
-    // Implementation
-    autoEABEE72C_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-    autoEABEE72C_u = UnitGroupCount(autoEABEE72C_g, c_unitCountAll);
-    for (;; autoEABEE72C_u -= 1) {
-        autoEABEE72C_var = UnitGroupUnitFromEnd(autoEABEE72C_g, autoEABEE72C_u);
-        if (autoEABEE72C_var == null) { break; }
-        UnitGroupAdd(lv_mineralGroup, autoEABEE72C_var);
-    }
-    auto1D092848_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-    auto1D092848_u = UnitGroupCount(auto1D092848_g, c_unitCountAll);
-    for (;; auto1D092848_u -= 1) {
-        auto1D092848_var = UnitGroupUnitFromEnd(auto1D092848_g, auto1D092848_u);
-        if (auto1D092848_var == null) { break; }
-        lv_searchGeyser = null;
-        lv_targetGeyser = null;
-        lv_closestMineralToTargetGeyser = null;
-        lv_closestMineralToSearchGeyser = null;
-        if (((UnitGetType(auto1D092848_var) == "RichVespeneGeyser") || (UnitGetType(auto1D092848_var) == "VespeneGeyser") || (UnitGetType(auto1D092848_var) == "ProtossVespeneGeyser") || (UnitGetType(auto1D092848_var) == "PurifierVespeneGeyser") || (UnitGetType(auto1D092848_var) == "ShakurasVespeneGeyser") || (UnitGetType(auto1D092848_var) == "SpacePlatformGeyser"))) {
-            lv_searchGeyser = auto1D092848_var;
-            auto5DD3103C_g = UnitGroup(null, c_playerAny, RegionCircle(UnitGetPosition(lv_searchGeyser), 16.0), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-            auto5DD3103C_u = UnitGroupCount(auto5DD3103C_g, c_unitCountAll);
-            for (;; auto5DD3103C_u -= 1) {
-                auto5DD3103C_var = UnitGroupUnitFromEnd(auto5DD3103C_g, auto5DD3103C_u);
-                if (auto5DD3103C_var == null) { break; }
-                if (((UnitGetType(auto5DD3103C_var) == "RichVespeneGeyser") || (UnitGetType(auto5DD3103C_var) == "VespeneGeyser") || (UnitGetType(auto5DD3103C_var) == "ProtossVespeneGeyser") || (UnitGetType(auto5DD3103C_var) == "PurifierVespeneGeyser") || (UnitGetType(auto5DD3103C_var) == "ShakurasVespeneGeyser") || (UnitGetType(auto5DD3103C_var) == "SpacePlatformGeyser"))) {
-                    if ((auto5DD3103C_var != lv_searchGeyser)) {
-                        lv_targetGeyser = auto5DD3103C_var;
-                        break;
-                    }
-
-                }
-
-            }
-            if ((lv_targetGeyser != null)) {
-                lv_closestMineralToSearchGeyser = UnitGroupClosestToPoint(lv_mineralGroup, UnitGetPosition(lv_searchGeyser));
-                lv_closestMineralToTargetGeyser = UnitGroupClosestToPoint(lv_mineralGroup, UnitGetPosition(lv_targetGeyser));
-                if ((DistanceBetweenPoints(UnitGetPosition(lv_targetGeyser), UnitGetPosition(lv_closestMineralToTargetGeyser)) == DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(lv_closestMineralToSearchGeyser)))) {
-                    lv_r = RandomInt(1, 2);
-                    if ((lv_r == 1)) {
-                        UnitRemove(lv_targetGeyser);
-                    }
-                    else {
-                        UnitRemove(lv_searchGeyser);
-                    }
-                }
-                else if ((DistanceBetweenPoints(UnitGetPosition(lv_targetGeyser), UnitGetPosition(lv_closestMineralToTargetGeyser)) > DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(lv_closestMineralToSearchGeyser)))) {
-                    UnitRemove(lv_targetGeyser);
-                }
-                else if ((DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(lv_closestMineralToSearchGeyser)) > DistanceBetweenPoints(UnitGetPosition(lv_targetGeyser), UnitGetPosition(lv_closestMineralToTargetGeyser)))) {
-                    UnitRemove(lv_searchGeyser);
-                }
-            }
-
-        }
-
-    }
-}
-
 // Triggers
 //--------------------------------------------------------------------------------------------------
 // Trigger: Race Initialization
@@ -113,7 +30,6 @@ bool libBWVS_gt_MapInitialization_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    libBWVS_gf_RemoveGeysers();
     auto05635F0B_g = PlayerGroupActive();
     lv_playerIndex = -1;
     while (true) {
