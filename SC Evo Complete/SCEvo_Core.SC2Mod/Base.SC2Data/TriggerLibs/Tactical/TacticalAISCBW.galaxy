@@ -269,7 +269,7 @@ void AIThinkMarineSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //  *** MEDIC ***
 //--------------------------------------------------------------------------------------------------
 const int c_opticFlareCooldown = c_tactTimerFirst;
-const int c_opticFlareMinHealth = 100;
+const int c_opticFlareMinHealth = 70;
 
 order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker mark) {
     order ord;
@@ -320,7 +320,7 @@ order AIOrderOpticFlare (int player, unit aiUnit, unitgroup scanGroup, marker ma
     AISetFilterBehaviorCount(filterAI, c_noBehaviorMin, c_noBehaviorMax, "MedicSCBWOpticFlare");
     AISetFilterBits(filterAI, UnitFilterStr(AIAbilityStr(player, c_BWAB_MedicSCBWOpticFlare, c_fieldTargetFiltersAB)));
     AISetFilterRange(filterAI, aiUnit, AIAbilityFixed(player, c_BWAB_MedicSCBWOpticFlare, c_fieldRange0) + 1);
-    AISetFilterCanAttackEnemy(filterAI, enemyGroundCount, enemyAirCount);
+    //AISetFilterCanAttackEnemy(filterAI, enemyGroundCount, enemyAirCount);
     targetGroup = AIGetFilterGroup(filterAI, scanGroup);
     if (targetGroup == null) {
         return null;
@@ -428,10 +428,6 @@ order Lockdown (int player, unit aiUnit, unitgroup scanGroup, marker mark, marke
     unitgroup threatGroup;
     int enemyGroundCount;
     int enemyAirCount;
-
-    if (AIIsCampaign(player)) {
-        return null;
-    }
     
     //  Create order and check validity
     //
@@ -1488,7 +1484,7 @@ void AIThinkArbiterSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
     fixed cooldown;
 
-    // fungal growth
+    // Stasis Field
     gameMark = AIMarker(aiUnit, c_BWMK_ArbiterSCBWGameStasisField);
     mark = AIMarker(aiUnit, c_BWMK_ArbiterSCBWStasisField);
     ord = BWStasis(player, aiUnit, mark, gameMark, scanGroup);
@@ -1549,9 +1545,10 @@ void AIThinkHighTemplarSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     bool lowVitality;
 
     //Psionic Storm
-    if (!AIIsCampaign(player) || AIPlayerDifficulty(player) >= c_campAdvanced) {
+    //AI can now use the Psi Storm in Campaign but requires additional changes
+    if (AIPlayerDifficulty(player) >= c_campAdvanced) {
         if (AITactCooldownAllow(aiUnit, c_BWPsiStormCooldown)) {
-            // psi storm
+            
             if (AIEvalTacticalData(aiUnit, null)) {        
                 if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campExpert) {
                     AISetCooldown(aiUnit, c_BWPsiStormCooldown, 5.0);
@@ -1666,10 +1663,6 @@ order BWFeedback (int player, unit aiUnit, unitgroup scanGroup, marker mark, boo
     aifilter filter;
     int minEnergy;
     unitgroup targetGroup;
-    
-    if (AIIsCampaign(player)) {
-        return null;
-    }
 
     ord = AICreateOrder(player, c_BWAB_DarkArchonSCBWFeedback, 0);
     if (!UnitOrderIsValid(aiUnit, ord)) {
@@ -1710,10 +1703,6 @@ order BWMindControl (int player, unit aiUnit, unitgroup scanGroup, marker mark, 
     unitgroup threatGroup;
     int enemyGroundCount;
     int enemyAirCount;
-
-    if (AIIsCampaign(player)) {
-        return null;
-    }
     
     //  Create order and check validity
     //
@@ -1743,7 +1732,7 @@ order BWMindControl (int player, unit aiUnit, unitgroup scanGroup, marker mark, 
     AISetFilterRange(filter, aiUnit, AIAbilityFixed(player, c_BWAB_DarkArchonSCBWMindControl, c_fieldRange0) + 1);
     AISetFilterLife(filter, c_BWMindControlMinVitality, c_noMax);
     AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
-    AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
+    //AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
     targetGroup = AIGetFilterGroup(filter, scanGroup);
     if (targetGroup == null) {
         return null;
@@ -1825,7 +1814,7 @@ void AIThinkDarkArchonSCBW (int player, unit aiUnit, unitgroup scanGroup) {
             cooldown = 15.0;
         }
         else {
-            cooldown = 0.0;
+            cooldown = 2.0;
         }
         AICastCooldown(aiUnit, ord, mark, c_castHold, c_maelstromCooldown, cooldown);
         return;
@@ -2343,12 +2332,12 @@ order BWQueenSpawnBroodlings (int player, unit aiUnit, unitgroup scanGroup, mark
         else if (UnitTypeTestAttribute(UnitGetType(unitToCheck), c_unitAttributeBiological) == true) {
             UnitGroupAdd(filterGroup, unitToCheck);
         }
-        else if (UnitGetType(unitToCheck) == c_BWPU_DarkArchon || UnitGetType(unitToCheck) == c_BWPU_DarkArchon) {
-            UnitGroupRemove(filterGroup, unitToCheck);
-        }
-        else if (UnitGetType(unitToCheck) == c_BWPU_Archon || UnitGetType(unitToCheck) == c_BWPU_Archon) {
-            UnitGroupRemove(filterGroup, unitToCheck);
-        }
+        //else if (UnitGetType(unitToCheck) == c_BWPU_DarkArchon || UnitGetType(unitToCheck) == c_BWPU_DarkArchon) {
+        //    UnitGroupRemove(filterGroup, unitToCheck);
+        //}
+        //else if (UnitGetType(unitToCheck) == c_BWPU_Archon || UnitGetType(unitToCheck) == c_BWPU_Archon) {
+        //    UnitGroupRemove(filterGroup, unitToCheck);
+        //}
     }
 
     return AIUnitGroupGetValidOrder(filterGroup, ord, aiUnit, c_forwards);
@@ -2373,19 +2362,6 @@ void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
         return;
     }
 
-    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWParasite);
-    ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
-    if (ord != null) {
-        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
-            cooldown = 20.0;
-        }
-        else {
-            cooldown = 10.0;
-        }
-        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
-        return;
-    }
-
     mark = AIMarker(aiUnit, c_BWMK_QueenSCBWEnsnare);
     ord = BWQueenEnsnare(player, aiUnit, scanGroup, mark);
     if (ord != null) {
@@ -2396,6 +2372,19 @@ void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
             cooldown = 5.0;
         }
         AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWEnsnareCooldown, cooldown);
+        return;
+    }
+
+    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWParasite);
+    ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
+    if (ord != null) {
+        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+            cooldown = 20.0;
+        }
+        else {
+            cooldown = 10.0;
+        }
+        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
         return;
     }
 }
@@ -2422,11 +2411,11 @@ order BWDarkSwarm (int player, unit aiUnit, unitgroup scanGroup) {
     }
     
     filter = AIFilter(player);
-    AISetFilterMelee(filter, c_onlyRanged);
+    //AISetFilterMelee(filter, c_onlyRanged);
     AISetFilterPlane(filter, c_planeGround);
     AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_DefilerSCBWDarkSwarm_AB);
     AISetFilterAlliance(filter, c_playerGroupAlly);
-    AISetFilterCanAttackAlly(filter, c_groundAlliesNearby, false);
+    //AISetFilterCanAttackAlly(filter, c_groundAlliesNearby, false);
     rangedGroup = AIGetFilterGroup(filter, scanGroup);
 
     loc = AIBestTargetPoint(
