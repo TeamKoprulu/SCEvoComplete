@@ -349,6 +349,38 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorEventMacro id="CarryAnim">
+        <On Terms="Effect.CarryHarvestableVespeneGeyserGasSetPalletSize.Start; At Source" Target="_VespenePallet" Send="SetScale 0.680000"/>
+        <On Terms="Effect.CarryHarvestableVespeneGeyserGasSetPalletSize.Start; At Source" Target="_VespenePallet" Send="SetTintColor 145,145,145"/>
+    </CActorEventMacro>
+    <CActorModel id="CarryHarvestableRichVespeneGeyserGas">
+        <Aliases value="_VespenePallet"/>
+    </CActorModel>
+    <CActorModel id="CarryHarvestableRichVespeneGeyserGasProtoss">
+        <Aliases value="_VespenePallet"/>
+    </CActorModel>
+    <CActorModel id="CarryHarvestableRichVespeneGeyserGasZerg">
+        <Aliases value="_VespenePallet"/>
+    </CActorModel>
+    <CActorModel id="CarryHarvestableVespeneGeyserGas">
+        <Aliases value="_VespenePallet"/>
+    </CActorModel>
+    <CActorModel id="CarryHarvestableVespeneGeyserGasProtoss">
+        <Aliases value="_VespenePallet"/>
+    </CActorModel>
+    <CActorModel id="CarryHarvestableVespeneGeyserGasZerg">
+        <Aliases value="_VespenePallet"/>
+    </CActorModel>
+    <CActorEventMacro id="GeyserExhausted">
+        <On Terms="Behavior.GeyserExhaustedHarvestable.On" Send="SetTintColor 255,170,170"/>
+        <On Terms="Behavior.GeyserExhaustedHarvestable.On" Send="AnimGroupApply B"/>
+        <On Terms="Behavior.GeyserExhaustedHarvestable.On" Send="AnimGroupRemove D"/>
+        <On Terms="UnitBirth.*.Normal" Send="TimerSet 0.100000 GeyserDepleteCheck"/>
+        <On Terms="UnitConstruction.*.Finish" Send="TimerSet 0.100000 GeyserDepleteCheck"/>
+        <On Terms="TimerExpired; TimerName GeyserDepleteCheck; ValidateUnit GeyserIsExhausted" Send="SetTintColor 255,170,170"/>
+        <On Terms="TimerExpired; TimerName GeyserDepleteCheck; ValidateUnit GeyserIsExhausted" Send="AnimGroupRemove D"/>
+        <On Terms="TimerExpired; TimerName GeyserDepleteCheck; ValidateUnit GeyserIsExhausted" Send="AnimGroupApply B"/>
+    </CActorEventMacro>
     <CActorModel id="GenericAttackImpactModelInheritOnce" parent="GenericAttackModel">
         <InheritType value="OneShot"/>
         <HostSiteOps HoldPosition="1" HoldRotation="1"/>
@@ -406,18 +438,31 @@
     <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
     <CActorUnit id="ProtossVespeneGeyser">
         <On index="71" Send="AnimPlay CoverStart Cover,Start PlayForever,NonLooping 0.000000 0.300000 22.200001 AsDuration"/>
+        <On index="80" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <On index="81" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <Macros value="GeyserExhausted"/>
     </CActorUnit>
     <CActorUnit id="PurifierVespeneGeyser">
         <On index="71" Send="AnimPlay CoverStart Cover,Start PlayForever,NonLooping 0.000000 0.300000 22.200001 AsDuration"/>
+        <On index="80" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <On index="81" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <Macros value="GeyserExhausted"/>
     </CActorUnit>
     <CActorUnit id="RichVespeneGeyser">
         <On index="71" Send="AnimPlay CoverStart Cover,Start PlayForever,NonLooping 0.000000 0.300000 22.200001 AsDuration"/>
+        <On index="80" Terms="Behavior.RawRichVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <On index="81" Terms="Behavior.RawRichVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <Macros value="GeyserExhausted"/>
     </CActorUnit>
     <CActorUnit id="ShakurasVespeneGeyser">
         <On index="71" Send="AnimPlay CoverStart Cover,Start PlayForever,NonLooping 0.000000 0.300000 22.200001 AsDuration"/>
+        <On index="80" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <On index="81" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <Macros value="GeyserExhausted"/>
     </CActorUnit>
     <CActorUnit id="SpacePlatformGeyser">
         <On index="71" Send="AnimPlay CoverStart Cover,Start PlayForever,NonLooping 0.000000 0.300000 22.200001 AsDuration"/>
+        <Macros value="GeyserExhausted"/>
     </CActorUnit>
     <CActorEventMacro id="CommandCenterSCBW@TerranPlayerDecalMacro">
         <On Terms="UnitBirth.CommandCenterSCBW; ValidateUnit NotCloaked" Send="TimerSet 0.125000 DecalDelay"/>
@@ -433,6 +478,9 @@
     <!--                                                                                         -->
     <CActorUnit id="VespeneGeyser">
         <On index="73" Send="AnimPlay CoverStart Cover,Start PlayForever,NonLooping 0.000000 0.300000 22.200001 AsDuration"/>
+        <On index="80" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <On index="81" Terms="Behavior.RawVespeneGeyserGas.Restore; ValidateUnit GeyserNotExhausted"/>
+        <Macros value="GeyserExhausted"/>
     </CActorUnit>
     <CActorSiteOpIncoming id="WhiffOffsetDirectHost">
         <HostImpact Subject="_ImpactGuide"/>
@@ -576,17 +624,20 @@
         <Length value="3.000000,0.500000"/>
         <Width value="2.000000"/>
     </CActorForceBox>
-    <CActorModel id="AssimilatorSCBW@Rich@Build" parent="ProtossBuildingSCBW@Build"/>
+    <CActorModel id="AssimilatorSCBW@RichBuild" parent="ProtossBuildingSCBW@Build"/>
     <CActorUnit id="AssimilatorSCBW@Rich" parent="ProtossBuildingSCBWNoPowerUser" unitName="AssimilatorSCBW@Rich">
         <Aliases value="_UnitHuge"/>
         <Macros value="ExtractAnim"/>
+        <Macros value="GeyserExhausted"/>
+        <On index="71" Terms="UnitConstruction.AssimilatorSCBW@Rich.Start" Send="Create AssimilatorSCBW@RichBuild"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Deplete" Send="SetTintColor 255,170,170"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Deplete" Send="AnimGroupRemove D"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Deplete" Send="AnimGroupApply B"/>
-        <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Restore" Send="SetTintColor 255,255,255"/>
-        <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Restore" Send="AnimGroupRemove B"/>
-        <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Restore" Send="AnimGroupApply D"/>
+        <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Restore; ValidateUnit GeyserNotExhausted" Send="SetTintColor 255,255,255"/>
+        <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Restore; ValidateUnit GeyserNotExhausted" Send="AnimGroupRemove B"/>
+        <On Terms="Behavior.HarvestableRichVespeneGeyserGasProtoss.Restore; ValidateUnit GeyserNotExhausted" Send="AnimGroupApply D"/>
         <On Terms="UnitDeathCustomize; ValidateUnit NoVespene" Send="DeathCustomize Empty"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit GeyserIsExhausted" Send="DeathCustomize Empty"/>
         <On Terms="UnitBirth.AssimilatorSCBW@Rich" Send="TimerSet 0.100000 HideGeyser"/>
         <On Terms="TimerExpired; TimerName HideGeyser" Send="Create GeyserBuildFinishCovered"/>
         <CreepHeightClass value="Small"/>
@@ -827,16 +878,18 @@
     </CActorSplat>
     <CActorForceSphere id="InfestedTerranSCBWWeapon@Force">
         <On Terms="ActorCreation" Send="Create BanelingAttackForceUp"/>
-        <On Terms="Effect.InfestedTerranSCBWWeapon@DamageSearch.Stop; At Caster" Send="Create"/>
+        <On Terms="Effect.InfestedTerranSCBWWeapon@Search.Stop; At Caster" Send="Create"/>
         <HostSiteOps Ops="SOpShadow SOpRandomPointInCircleDot25"/>
         <Duration value="0.300000"/>
         <Magnitude value="16.000000,8.000000"/>
         <Radius value="2.100000,0.300000"/>
     </CActorForceSphere>
+    <CActorAction id="InfestedTerranSCBWWeapon@ShieldHitterDirect" parent="AoESplashShieldHitter" effectHit="InfestedTerranSCBWWeapon@DamageAccum"/>
+    <CActorAction id="InfestedTerranSCBWWeapon@ShieldHitter" parent="AoESplashShieldHitter" effectHit="InfestedTerranSCBWWeapon@DamageSearch"/>
     <CActorModel id="InfestedTerranSCBWWeapon@Impact" parent="ModelAnimationStyleOneShot">
         <Inherits index="CloakEffect" value="1"/>
         <Inherits index="Visibility" value="1"/>
-        <On Terms="Effect.InfestedTerranSCBWWeapon@DamageExpl.Start" Send="Create"/>
+        <On Terms="Effect.InfestedTerranSCBWWeapon@Search.Start" Send="Create"/>
         <Host Subject="_Unit"/>
         <HostSiteOps Ops="SOpAttachCenter" HoldRotation="1"/>
         <AutoScaleFactor value="0.800000"/>
@@ -1268,26 +1321,6 @@
         <AcquisitionPitchHalfArc value="1.000000"/>
         <AccuracyHalfArc value="1.000000"/>
     </CActorAction>
-    <CActorStateMonitor id="MechaFlamesMediumBuilding2" parent="MechaFlames">
-        <On Terms="UnitCreation.NydusCanal" Send="Create"/>
-        <On Terms="UnitCreation.UltraliskCavern" Send="Create"/>
-        <On Terms="UnitCreation.BanelingNest" Send="Create"/>
-        <On Terms="UnitCreation.SpawningPool" Send="Create"/>
-        <On Terms="UnitCreation.EvolutionChamber" Send="Create"/>
-        <On Terms="UnitCreation.RoachWarren" Send="Create"/>
-        <On Terms="UnitCreation.InfestationPit" Send="Create"/>
-        <On Terms="UnitCreation.HydraliskDen" Send="Create"/>
-        <On Terms="UnitCreation.ExtractorSCBW" Send="Create"/>
-        <On Terms="UnitCreation.LurkerDenMP" Send="Create"/>
-        <On Terms="UnitCreation.Spire" Send="Create"/>
-        <On Terms="UnitCreation.GreaterSpire" Send="Create"/>
-        <On Terms="UnitCreation.SpineCrawler" Send="Create"/>
-        <On Terms="UnitCreation.SporeCrawler" Send="Create"/>
-        <On Terms="UnitCreation.SpineCrawlerUprooted" Send="Create"/>
-        <On Terms="UnitCreation.SporeCrawlerUprooted" Send="Create"/>
-        <On Terms="StateChange; StateValid Fire; ScopeContains _MechaFlame" Send="Create MechaFlameLoopMedium"/>
-        <On Terms="StateChange; !StateValid Fire" Target="MechaFlameLoopMedium" Send="Destroy"/>
-    </CActorStateMonitor>
     <CActorSound id="LurkerSCBWEgg@Birth" parent="SoundOneShot">
         <On Terms="AbilMorph.*.Start; MorphTo LurkerSCBWEgg" Send="Create"/>
     </CActorSound>
@@ -2598,11 +2631,6 @@
         <On Terms="UnitConstruction.TwilightCouncilSCBW.Start" Send="Create"/>
         <On Terms="UnitConstruction.CitadelOfAdunSCBW.Start" Send="Create"/>
     </CActorModel>
-    <CActorModel id="ProtossBuildingSCBW@BirthLarge" parent="ModelConstruction">
-        <Aliases value="_ProtossBuildModel"/>
-        <On Terms="ActorCreation" Send="Create ProtossBuildingSCBW@ConstructionAttachedLarge"/>
-        <On Terms="UnitConstruction.NexusSCBW.Start" Send="Create"/>
-    </CActorModel>
     <CActorSound id="ProtossBuildingSCBW@WarpStartSound" parent="SoundOneShot">
         <On Terms="Abil.ProbeSCBW@Build.BuiltStart" Send="Create"/>
         <On Terms="Abil.ProbeSCBW@BuildAdv.BuiltStart" Send="Create"/>
@@ -2847,7 +2875,7 @@
     <CActorEventMacro id="PhysicsDeathsSwarmGround" parent="PhysicsDeathsSwarmBase">
         <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSiegedSCBWWeapon@DamageAccum SpiderMineSCBWWeapon@Damage ReaverSCBWWeapon@Damage}" Send="DeathCustomize RagdollSiegeTank"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {LurkerSCBWWeapon@Damage SunkenColonySCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
-        <On Terms="UnitDeathCustomize; KilledByEffect {InfestedTerranSCBWWeapon@DamageExpl InfestedTerranSCBWWeapon@DamageSearch GuardianSCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {InfestedTerranSCBWWeapon@DamageAccum InfestedTerranSCBWWeapon@DamageSearch GuardianSCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
     </CActorEventMacro>
     <CActorEventMacro id="PhysicsDeathsSwarmAir" parent="PhysicsDeathsSwarmBase">
         <On Terms="UnitDeathCustomize; KilledByEffect {ValkyrieSCBWWeapon@DamageAccum CorsairSCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>

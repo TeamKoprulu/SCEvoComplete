@@ -1,5 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectTeleport id="ArbiterSCBWRecall@PlacementCheckTP">
+        <EditorCategories value="Race:Protoss"/>
+        <MinDistance value="0"/>
+        <SourceLocation Value="TargetUnit"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+    </CEffectTeleport>
+    <CEffectTeleport id="ArbiterSCBWRecall@PlacementCheckFail">
+        <EditorCategories value="Race:Protoss"/>
+        <SourceLocation Value="TargetUnit"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@SetInitial" Value="TargetPoint"/>
+        <TeleportFlags index="TestFog" value="0"/>
+    </CEffectTeleport>
+    <CEffectSwitch id="ArbiterSCBWRecall@PlacementCheck">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="ArbiterSCBWRecall@SourceNotPathable" Effect="ArbiterSCBWRecall@PlacementCheckFail"/>
+        <CaseArray Validator="ArbiterSCBWRecall@CrossChasmOrCliff" Effect="ArbiterSCBWRecall@PlacementCheckTP"/>
+    </CEffectSwitch>
+    <CEffectTeleport id="ArbiterSCBWRecall@TeleportAir">
+        <ValidatorArray value="TargetIsAir"/>
+        <EditorCategories value="Race:Protoss"/>
+        <PlacementArc value="360"/>
+        <PlacementAround Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <PlacementRange value="7"/>
+        <SourceLocation Effect="ArbiterSCBWRecall@Search" Value="TargetPoint"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+        <TeleportEffect value="ArbiterSCBWRecall@PlacementCheckAir"/>
+    </CEffectTeleport>
+    <CEffectTeleport id="ArbiterSCBWRecall@PlacementCheckAir">
+        <ValidatorArray value="LocationNotPlayable"/>
+        <EditorCategories value="Race:Protoss"/>
+        <SourceLocation Value="TargetUnit"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+    </CEffectTeleport>
+    <CEffectRemoveBehavior id="ArbiterSCBWRecall@ClearRecalls">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorCategories index="User7" value="1"/>
+    </CEffectRemoveBehavior>
+    <CEffectCreatePersistent id="ArbiterSCBWRecall@CPDelayInitial">
+        <ValidatorArray value="ArbiterSCBWRecall@Enum"/>
+        <ValidatorArray value="ArbiterSCBWRecall@ValidatorGround"/>
+        <EditorCategories value="Race:Protoss"/>
+        <InitialEffect value="ArbiterSCBWRecall@Search"/>
+        <ExpireDelay value="2"/>
+        <FinalEffect value="ArbiterSCBWRecall@CPDelayFinal"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="ArbiterSCBWRecall@EnumMagazineSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecall@ClearRecalls"/>
+        <EffectArray value="ArbiterSCBWRecall@ABRecalling"/>
+    </CEffectSet>
     <CEffectApplyBehavior id="ArbiterSCBWStasisField@AB">
         <ValidatorArray value="ArbiterSCBWStasisField@AB"/>
         <EditorCategories value="Race:Protoss"/>
@@ -28,6 +86,19 @@
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="ArbiterSCBWRecall@Recalled"/>
     </CEffectApplyBehavior>
+    <CEffectTeleport id="ArbiterSCBWRecall@Teleport">
+        <ValidatorArray value="TargetIsGround"/>
+        <EditorCategories value="Race:Protoss"/>
+        <PlacementArc value="360"/>
+        <PlacementAround Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <PlacementRange value="7"/>
+        <SourceLocation Effect="ArbiterSCBWRecall@Search" Value="TargetPoint"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+        <TeleportEffect value="ArbiterSCBWRecall@PlacementCheck"/>
+    </CEffectTeleport>
     <CEffectApplyBehavior id="ArbiterSCBWRecall@ABRecalling">
         <ValidatorArray index="0" value="ArbiterSCBWRecall@ABRecalling"/>
         <EditorCategories value="Race:Protoss"/>
@@ -41,42 +112,28 @@
     <CEffectSet id="ArbiterSCBWRecall@SetInitial">
         <ValidatorArray value="ArbiterSCBWRecall@Set"/>
         <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecall@ClearRecalls"/>
         <EffectArray value="ArbiterSCBWRecall@ABRecalling"/>
         <EffectArray value="ArbiterSCBWRecall@EnumMagazine"/>
     </CEffectSet>
     <CEffectEnumMagazine id="ArbiterSCBWRecall@EnumMagazine">
         <EditorCategories value="Race:Protoss"/>
-        <EffectExternal value="ArbiterMPRecallApplyPreRecallBehavior"/>
+        <EffectExternal value="ArbiterSCBWRecall@EnumMagazineSet"/>
     </CEffectEnumMagazine>
-    <CEffectCreatePersistent id="ArbiterSCBWRecall@CPDelayInital">
-        <EditorCategories value="Race:Protoss"/>
-        <InitialEffect value="ArbiterSCBWRecall@Search"/>
-        <ExpireDelay value="2"/>
-        <FinalEffect value="ArbiterSCBWRecall@CPDelayFinal"/>
-    </CEffectCreatePersistent>
     <CEffectEnumArea id="ArbiterSCBWRecall@Search">
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="TargetPoint"/>
-        <SearchFilters value="-;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Dead,Hidden,Hallucination,Invulnerable"/>
-        <AreaArray Radius="2.5" Effect="ArbiterSCBWRecall@SetInitial"/>
+        <SearchFilters value="-;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination"/>
+        <AreaArray Radius="2.12" Effect="ArbiterSCBWRecall@SetInitial"/>
         <MinCount value="1"/>
     </CEffectEnumArea>
     <CEffectSet id="ArbiterSCBWRecall@Set">
         <ValidatorArray value="ArbiterSCBWRecall@Set"/>
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="ArbiterSCBWRecall@Teleport"/>
+        <EffectArray value="ArbiterSCBWRecall@TeleportAir"/>
         <EffectArray value="ArbiterSCBWRecall@ABRecalled"/>
     </CEffectSet>
-    <CEffectTeleport id="ArbiterSCBWRecall@Teleport">
-        <EditorCategories value="Race:Protoss"/>
-        <PlacementArc value="360"/>
-        <PlacementAround Effect="ArbiterSCBWRecall@Search" Value="SourcePoint"/>
-        <PlacementRange value="15"/>
-        <SourceLocation Effect="ArbiterSCBWRecall@Search" Value="TargetPoint"/>
-        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourcePoint"/>
-        <TeleportFlags index="TestCliff" value="1"/>
-        <TeleportFlags index="TestFog" value="0"/>
-    </CEffectTeleport>
     <CEffectApplyBehavior id="CorsairSCBWDisruptionWeb@AB">
         <EditorCategories value="Race:Protoss"/>
         <ResponseFlags index="Flee" value="1"/>
@@ -175,6 +232,7 @@
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="HighTemplarSCBWHallucination@AB"/>
         <EffectArray value="HighTemplarSCBWHallucination@ABTimedLife"/>
+        <EffectArray value="HighTemplarSCBWHallucination@ReaverSCBWAmmo"/>
     </CEffectSet>
     <CEffectApplyBehavior id="HighTemplarSCBWHallucination@AB">
         <EditorCategories value="Race:Protoss"/>
@@ -267,7 +325,7 @@
     </CAbilEffectTarget>
     <CAbilEffectTarget id="ArbiterSCBWRecall" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
-        <Effect index="0" value="ArbiterSCBWRecall@CPDelayInital"/>
+        <Effect index="0" value="ArbiterSCBWRecall@CPDelayInitial"/>
         <Cost>
             <Vital index="Energy" value="150"/>
             <Charge Link=""/>
@@ -276,7 +334,7 @@
         <Range value="500"/>
         <Arc value="360"/>
         <CursorEffect value="ArbiterSCBWRecall@Search"/>
-        <AINotifyEffect value=""/>
+        <Flags index="Transient" value="1"/>
     </CAbilEffectTarget>
     <CAbilMerge id="ArchonSCBWMerge">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -480,7 +538,11 @@
         </Cost>
         <TargetFilters value="-;Self,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="15"/>
-        <PrepTime value="0.5"/>
+        <PrepTime value="0.0625"/>
+        <CastOutroTime value="0.5"/>
+        <UninterruptibleArray index="Cast" value="1"/>
+        <UninterruptibleArray index="Channel" value="1"/>
+        <UninterruptibleArray index="Finish" value="1"/>
     </CAbilEffectTarget>
     <CAbilArmMagazine id="ReaverSCBWHangar" parent="SCBW_ArmMagazine" Ammo1="ScarabSCBW">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -492,6 +554,43 @@
         <Alert value="TrainComplete"/>
         <MaxCount value="5"/>
     </CAbilArmMagazine>
+    <CValidatorLocationCrossCliff id="ArbiterSCBWRecall@CrossCliff">
+        <ResultFailed value="Error,Error/CantCrossCliffs"/>
+        <WhichLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <Find value="1"/>
+    </CValidatorLocationCrossCliff>
+    <CValidatorLocationEnumArea id="ArbiterSCBWRecall@Enum">
+        <ResultFailed value="CantFindEnoughTargets"/>
+        <AreaArray Radius="2.12" Validator="ArbiterSCBWRecall@Set"/>
+        <SearchFilters value="-;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination"/>
+    </CValidatorLocationEnumArea>
+    <CValidatorLocationEnumArea id="ArbiterSCBWRecall@EnumAir">
+        <ResultFailed value="CantFindPlacementLocation"/>
+        <AreaArray Radius="2.12" Validator="ArbiterSCBWRecall@Set"/>
+        <SearchFilters value="Air;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination"/>
+    </CValidatorLocationEnumArea>
+    <CValidatorCondition id="ArbiterSCBWRecall@ValidatorGround">
+        <ResultFailed value="CantFindPlacementLocation"/>
+        <IfArray Test="SourceNotPathable" Return="ArbiterSCBWRecall@EnumAir"/>
+    </CValidatorCondition>
+    <CValidatorCombine id="ArbiterSCBWRecall@PlacementCheck">
+        <Type value="And"/>
+        <CombineArray value="ArbiterSCBWRecall@SourceNotPathable"/>
+        <CombineArray value="ArbiterSCBWRecall@CrossChasmOrCliff"/>
+    </CValidatorCombine>
+    <CValidatorLocationPathable id="ArbiterSCBWRecall@SourceNotPathable">
+        <WhichLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <Find value="0"/>
+    </CValidatorLocationPathable>
+    <CValidatorCombine id="ArbiterSCBWRecall@CrossChasmOrCliff">
+        <CombineArray value="ArbiterSCBWRecall@CrossChasm"/>
+        <CombineArray value="ArbiterSCBWRecall@CrossCliff"/>
+    </CValidatorCombine>
+    <CValidatorLocationCrossChasm id="ArbiterSCBWRecall@CrossChasm">
+        <ResultFailed value="Error,Error/CantCrossCliffs"/>
+        <WhichLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <Find value="1"/>
+    </CValidatorLocationCrossChasm>
     <CValidatorUnitCompareBehaviorCount id="HighTemplarSCBWHallucination@Behavior">
         <Value value="1"/>
         <Behavior value="HighTemplarSCBWHallucination"/>
@@ -504,11 +603,17 @@
         <CombineArray value="NotLarvaEgg"/>
         <CombineArray value="NotLarva"/>
         <CombineArray value="NotAbducted"/>
+        <CombineArray value="LarvaSCBW@Not"/>
+        <CombineArray value="NotEggSCBW"/>
+        <CombineArray value="NotLurkerSCBWEgg"/>
     </CValidatorCombine>
     <CValidatorCombine id="ArbiterSCBWRecall@ABRecalling" parent="SCBW_Effect">
         <CombineArray value="NotLarvaEgg"/>
         <CombineArray value="NotLarva"/>
         <CombineArray value="NotAbducted"/>
+        <CombineArray value="LarvaSCBW@Not"/>
+        <CombineArray value="NotEggSCBW"/>
+        <CombineArray value="NotLurkerSCBWEgg"/>
     </CValidatorCombine>
     <CValidatorCombine id="HighTemplarSCBWPsiStorm@Damage" parent="SCBW_Effect">
         <CombineArray value="HighTemplarSCBWPsiStorm@DamageTargetFilters"/>
@@ -1467,8 +1572,8 @@
     </CActorModel>
     <CActorModel id="ArbiterSCBWRecall@SearchStart" parent="ModelAnimationStyleOneShot">
         <Terms value="Cap 1"/>
-        <On Terms="Effect.ArbiterSCBWRecall@CPDelayInital.Start" Send="Create"/>
-        <On Terms="Effect.ArbiterSCBWRecall@CPDelayInital.Stop" Send="Destroy"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CPDelayInitial.Start" Send="Create"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CPDelayInitial.Stop" Send="Destroy"/>
         <On Terms="ActorCreation" Send="AnimSetTimeScaleGlobal 3.000000"/>
         <HostSiteOps Ops="SOpShadow"/>
         <AutoScaleFactor value="0.350000"/>
@@ -1485,6 +1590,8 @@
         <On Terms="TimerExpired; TimerName ClearRecallOpacity; ValidateUnit NoRecallingBehaviors" Target="_Unit" Send="ClearOpacity 0.250000 MassRecallOpacity"/>
         <On Terms="TimerExpired; TimerName ClearRecallOpacity; ValidateUnit NoRecallingBehaviors" Target="_Unit" Send="ClearTintColor 0.250000 MassRecallTint"/>
         <On Terms="TimerExpired; TimerName ClearRecallOpacity; ValidateUnit NoRecallingBehaviors" Send="Destroy"/>
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalling.Off" Send="TimerSet 0.150000 ClearRecallOpacity"/>
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalled.On" Send="TimerKill ClearRecallOpacity"/>
     </CActorSimple>
     <CActorRange id="ArbiterSCBWRecall@Range" parent="RangeAbil" abil="ArbiterSCBWRecall">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
@@ -1517,7 +1624,7 @@
     <!--        <Sound value="ArbiterSCBWRecall@Start"/>-->
     <!--    </CActorSound-->
     <CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalling" parent="SoundOneShot">
-        <On Terms="Effect.ArbiterSCBWRecall@CPDelayInital.Start; At Effect" Send="Create"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CPDelayInitial.Start; At Effect" Send="Create"/>
         <Sound value="ArbiterSCBWRecall@Start"/>
     </CActorSound>
     <CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalled" parent="SoundOneShot">
@@ -4122,7 +4229,7 @@
         <DataRecord Entry="Effect,ArbiterSCBWRecall@EnumMagazine"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@SetInitial"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@CPDelayFinal"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPDelayInital"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPDelayInitial"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@Teleport"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalled"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalling"/>
@@ -4851,13 +4958,13 @@
             <LayoutButtons Face="WarpPrismLoad" Type="AbilCmd" AbilCmd="ShuttleSCBW@Transport,Load" Row="2" Column="2"/>
             <LayoutButtons Face="WarpPrismUnloadAll" Type="AbilCmd" AbilCmd="ShuttleSCBW@Transport,UnloadAt" Row="2" Column="3"/>
         </CardLayouts>
-        <Radius value="0.875"/>
+        <Radius value="0.5625"/>
         <SeparationRadius value="0.875"/>
         <ScoreMake value="200"/>
         <ScoreKill value="200"/>
         <ScoreResult value="BuildOrder"/>
         <SubgroupPriority value="69"/>
-        <MinimapRadius value="0.875"/>
+        <MinimapRadius value="1"/>
         <TacticalAIThink value="AIThinkShuttle"/>
         <AIEvalFactor value="0"/>
         <TechAliasArray value="Alias_WarpPrism"/>
@@ -4974,7 +5081,7 @@
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="HangarQueue5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
-        <Radius value="1.25"/>
+        <Radius value="1"/>
         <SeparationRadius value="1.25"/>
         <ScoreMake value="600"/>
         <ScoreKill value="600"/>
@@ -5044,12 +5151,12 @@
         </CardLayouts>
         <Radius value="1"/>
         <SeparationRadius value="0.75"/>
-        <InnerRadius value="0.75"/>
+        <InnerRadius value="0.5"/>
         <CargoSize value="4"/>
         <ScoreKill value="450"/>
         <ScoreResult value="BuildOrder"/>
         <SubgroupPriority value="45"/>
-        <MinimapRadius value="0.75"/>
+        <MinimapRadius value="1"/>
         <GlossaryPriority value="90"/>
         <GlossaryStrongArray value="MarineSCBW"/>
         <GlossaryStrongArray value="MutaliskSCBW"/>
@@ -5109,7 +5216,6 @@
             <LayoutButtons Face="CorsairSCBWDisruptionWeb" Type="AbilCmd" AbilCmd="CorsairSCBWDisruptionWeb,Execute" Row="2" Column="0"/>
             <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
-        <Radius value="0.75"/>
         <SeparationRadius value="0.75"/>
         <SubgroupPriority value="81"/>
         <MinimapRadius value="0.75"/>
@@ -5185,12 +5291,12 @@
         </CardLayouts>
         <Radius value="1"/>
         <SeparationRadius value="0.75"/>
-        <InnerRadius value="0.75"/>
+        <InnerRadius value="0.5"/>
         <CargoSize value="4"/>
         <ScoreKill value="500"/>
         <ScoreResult value="BuildOrder"/>
         <SubgroupPriority value="87"/>
-        <MinimapRadius value="0.75"/>
+        <MinimapRadius value="1"/>
         <GlossaryPriority value="100"/>
         <GlossaryStrongArray value="ScienceVesselSCBW"/>
         <GlossaryStrongArray value="DefilerSCBW"/>
@@ -5399,7 +5505,7 @@
         </CardLayouts>
         <Radius value="1"/>
         <SeparationRadius value="1"/>
-        <InnerRadius value="0.375"/>
+        <InnerRadius value="0.5"/>
         <CargoSize value="4"/>
         <ScoreMake value="500"/>
         <ScoreKill value="500"/>
@@ -5461,7 +5567,6 @@
             <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
         </CardLayouts>
-        <Radius value="0.75"/>
         <SeparationRadius value="0.75"/>
         <SubgroupPriority value="78"/>
         <MinimapRadius value="0.75"/>
@@ -5520,7 +5625,7 @@
             <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
         <SeparationRadius value="0.375"/>
-        <InnerRadius value="0.375"/>
+        <InnerRadius value="0.3125"/>
         <CargoSize value="2"/>
         <ScoreMake value="100"/>
         <ScoreKill value="100"/>
@@ -5735,7 +5840,7 @@
             <LayoutButtons Face="ArbiterSCBWRecall" Type="AbilCmd" AbilCmd="ArbiterSCBWRecall,Execute" Row="2" Column="0"/>
             <LayoutButtons Face="ArbiterSCBWStasisField" Type="AbilCmd" AbilCmd="ArbiterSCBWStasisField,Execute" Row="2" Column="1"/>
         </CardLayouts>
-        <Radius value="1"/>
+        <Radius value="0.6875"/>
         <SeparationRadius value="1"/>
         <SubgroupPriority value="96"/>
         <MinimapRadius value="0.75"/>
@@ -5849,10 +5954,6 @@
         <Duration value="65.5"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ArbiterSCBWRecall@Recalled">
-        <Cost>
-            <Charge Link="Behavior/Recalled"/>
-            <Cooldown Link="Behavior/Recalled"/>
-        </Cost>
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Duration value="2"/>
@@ -5868,18 +5969,8 @@
             <AbilLinkEnableArray value="CarrierRepairDroneHanger"/>
             <AbilLinkEnableArray value="BroodLordHangar"/>
         </Modification>
-        <DamageResponse>
-            <Cost>
-                <Charge Link="Behavior/Recalled"/>
-                <Cooldown Link="Behavior/Recalled"/>
-            </Cost>
-        </DamageResponse>
     </CBehaviorBuff>
     <CBehaviorBuff id="ArbiterSCBWRecall@Recalling">
-        <Cost>
-            <Charge Link="Behavior/Recalling"/>
-            <Cooldown Link="Behavior/Recalling"/>
-        </Cost>
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Duration value="2"/>
@@ -5896,12 +5987,8 @@
             <AbilLinkEnableArray value="CarrierRepairDroneHanger"/>
             <AbilLinkEnableArray value="BroodLordHangar"/>
         </Modification>
-        <DamageResponse>
-            <Cost>
-                <Charge Link="Behavior/Recalling"/>
-                <Cooldown Link="Behavior/Recalling"/>
-            </Cost>
-        </DamageResponse>
+        <BehaviorCategories index="User7" value="1"/>
+        <RemoveValidatorArray value="SCBW_CasterNotStasisNotStunnedNotDead"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="CorsairSCBWDisruptionWeb">
         <Alignment value="Negative"/>
@@ -5964,19 +6051,9 @@
             <DamageDealtMaximum index="Melee" value="0"/>
             <DamageDealtMaximum index="Ranged" value="0"/>
             <DamageDealtMaximum index="Splash" value="0"/>
-            <AbilClassEnableArray index="CAbilMorph" value="1"/>
-            <AbilClassEnableArray index="CAbilMorphPlacement" value="1"/>
             <AbilClassEnableArray index="CAbilStop" value="1"/>
-            <AbilLinkDisableArray value="MorphZerglingToBaneling"/>
-            <AbilLinkDisableArray value="DevourerAspect"/>
-            <AbilLinkDisableArray value="MorphToBroodLord"/>
-            <AbilLinkDisableArray value="LurkerAspect"/>
-            <AbilLinkDisableArray value="MorphToOverseer"/>
-            <AbilLinkDisableArray value="MorphQueen2"/>
-            <AbilLinkDisableArray value="MorphQueen3"/>
-            <AbilLinkDisableArray value="ThorCrippled"/>
-            <AbilLinkDisableArray value="ThorUncrippled"/>
-            <AbilLinkDisableArray value="PhasingMode"/>
+            <AbilClassDisableArray index="CAbilMorph" value="1"/>
+            <AbilClassDisableArray index="CAbilMorphPlacement" value="1"/>
         </Modification>
         <DamageResponse ModifyFraction="2">
             <Chance value="1"/>
