@@ -349,6 +349,18 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorAction id="DarkArchonSCBWWeapon@Action" parent="GenericAttack" effectAttack="DarkArchonSCBWWeapon@Damage">
+        <LaunchAssets Sound="DarkArchonSCBWWeapon@Launch"/>
+        <Beam value="DarkArchonSCBWWeapon@Beam"/>
+        <BeamScope value="Caster"/>
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeNoVizEnhance VoidRaySOpForwardLaunch"/>
+        <ImpactMap index="None" Model="" Sound="DarkArchonSCBWWeapon@Impact"/>
+        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+    </CActorAction>
+    <CActorBeamSimple id="DarkArchonSCBWWeapon@Beam" parent="BeamSimpleAnimationStyleOneShot">
+        <Macros value="ActionTargetTeleportDestroy"/>
+        <Scale value="0.500000"/>
+    </CActorBeamSimple>
     <CActorEventMacro id="CarryAnim">
         <On Terms="Effect.CarryHarvestableVespeneGeyserGasSetPalletSize.Start; At Source" Target="_VespenePallet" Send="SetScale 0.680000"/>
         <On Terms="Effect.CarryHarvestableVespeneGeyserGasSetPalletSize.Start; At Source" Target="_VespenePallet" Send="SetTintColor 145,145,145"/>
@@ -1427,13 +1439,13 @@
         <Macros value="ZergBurrowStandardAnimMacro"/>
         <On Terms="UnitBirth.DefilerSCBW@Burrowed" Send="Create"/>
         <On Terms="UnitBirth.DefilerSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
-        <On Terms="Abil.DefilerSCBWConsume.SourcePrepStart" Send="$Spell 0 -1.000000 -1.000000 0.400000 AsDuration"/>
-        <On Terms="Abil.DefilerSCBWConsume.SourcePrepStop" Send="AnimClear Spell"/>
-        <On Terms="Abil.DefilerSCBWDarkSwarm.SourcePrepStart" Send="$Spell,00 0 -1.000000 -1.000000 1.000000 AsDuration"/>
-        <On Terms="Abil.DefilerSCBWPlague.SourcePrepStart" Send="$Spell,01"/>
+        <On Terms="Abil.DefilerSCBWConsume.SourcePrepStart" Send="$Spell,01 NonLooping -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Abil.DefilerSCBWDarkSwarm.SourcePrepStart" Send="$Spell,01 NonLooping -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Abil.DefilerSCBWPlague.SourcePrepStart" Send="$Spell,00 NonLooping -1.000000 -1.000000 0.900000 AsTimeScale"/>
         <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create BurrowDownMedium"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create LurkerSCBW@Land"/>
+        <On Terms="UnitMovementUpdate.*.Walk; AnimPlayingName Spell" Send="AnimClear Spell"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="DefilerSCBW@Death" SoundLink="DefilerSCBW@Death"/>
@@ -1598,6 +1610,11 @@
         <On Terms="WeaponStart.UltraliskSCBWWeapon.AttackStart" Send="AnimBracketStart Attack Spell,A"/>
         <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Ultra_Land"/>
+        <On Terms="ActorCreation; ValidatePlayer UltraliskSCBWSpeedUpgrade; !ValidateUnit IsUltraliskSCBW@Burrowed" Send="Create UltraliskSCBWSpeedUpgrade"/>
+        <On Terms="Upgrade.UltraliskSCBWSpeedUpgrade.Add; !ValidateUnit IsUltraliskSCBW@Burrowed" Send="Create UltraliskSCBWSpeedUpgrade"/>
+        <On Terms="Upgrade.UltraliskSCBWSpeedUpgrade.Remove; !ValidateUnit IsUltraliskSCBW@Burrowed" Target="UltraliskSCBWSpeedUpgrade" Send="Destroy"/>
+        <On Terms="AbilMorph.UltraliskSCBW@BurrowUp.Finish; ValidatePlayer UltraliskSCBWSpeedUpgrade" Send="Create UltraliskSCBWSpeedUpgrade"/>
+        <On Terms="AbilMorph.UltraliskSCBW@BurrowDown.Start" Target="UltraliskSCBWSpeedUpgrade" Send="Destroy"/>
         <!--
                 <On Terms="WeaponStop.UltraliskSCBWWeapon.AttackStop" Send="AnimClear Attack"/>
                 <On Terms="WeaponStart.Ram.AttackStart" Send="AnimBracketStart Attack Spell"/>
@@ -1684,6 +1701,15 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
+    <CActorModel id="UltraliskSCBWSpeedUpgrade" parent="ModelAnimationStyleContinuous">
+        <Inherits index="BaseModelScale" value="1"/>
+        <Inherits index="Scale" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachTarget6"/>
+        <On Terms="ActorCreation" Send="SetTintColor {255,255,255 1.500000}"/>
+        <On Terms="ActorCreation" Send="SetOpacity 0.800000"/>
+    </CActorModel>
     <CActorModel id="OverlordSCBW@DeathRagdoll" parent="UnitDeathRagdollFlier">
         <On Terms="ActorCreation" Send="Create OverlordSCBW@DeathRagdollDetonationForce"/>
     </CActorModel>
@@ -2744,17 +2770,6 @@
     <CActorModel id="ShieldBatterySCBW@Build" parent="ProtossBuildingSCBW@Build"/>
     <CActorSplat id="TemplarArchiveSCBW@Splat" parent="GenericUnitSplat" unitName="TemplarArchiveSCBW"/>
     <CActorSplat id="CitadelOfAdunSCBW@Splat" parent="GenericUnitSplat" unitName="CitadelOfAdunSCBW"/>
-    <CActorAction id="ReaverSCBWWeapon@Action" parent="GenericAttack" effectImpact="ReaverSCBWWeapon@Damage" effectLaunch="ReaverSCBWWeapon@LM">
-        <LaunchAssets Sound="ReaverSCBWWeapon@Launch"/>
-        <Missile value="ReaverSCBWWeapon@Missile"/>
-        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
-        <ImpactMap index="None" Model="ReaverSCBWWeapon@Impact" Sound="ReaverSCBWWeapon@Explode"/>
-        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="ScarabExplosionForce"/>
-        <ShieldFlashType value="Header"/>
-    </CActorAction>
-    <CActorMissile id="ReaverSCBWWeapon@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="ReaverSCBWWeapon@Missile">
-        <Macros value="GlobalLoopMacro"/>
-    </CActorMissile>
     <CActorAction id="ScoutSCBWWeaponGround@Action" parent="GenericAttackWhiff" effectAttack="ScoutSCBWWeaponGround@Damage">
         <LaunchAssets Model="ScoutSCBWWeaponGround@Launch" Sound="ScoutSCBWWeaponGround@Launch"/>
         <ImpactMap index="None" Model="ScoutSCBWWeaponGround@Impact" Sound="ScoutSCBWWeaponGround@Impact"/>
@@ -2893,4 +2908,176 @@
         <Magnitude value="27.000000,10.000000"/>
         <Radius value="2.500000,0.200000"/>
     </CActorForceSphere>
+    <CActorSound id="DropshipSCBWSpeedBoost@On" parent="SoundOneShot">
+        <On Terms="Behavior.DropshipSCBWSpeedBoost.On" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="DropshipSCBWSpeedBoost@On2" parent="SoundOneShot">
+        <On Terms="Behavior.DropshipSCBWSpeedBoost.On" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="DropshipSCBWSpeedBoost@Movement" parent="SoundOneShot"/>
+    <CActorUnit id="QueenSCBWEnsnare@CreepDummy" parent="GenericUnitStandardNoAutoSoundLinks" unitName="QueenSCBWEnsnare@CreepDummy">
+        <Model value="Invisible"/>
+        <EditorModel value="Sphere"/>
+        <WalkAnimMoveSpeed value="0"/>
+        <StatusBarFlags index="Shields" value="0"/>
+        <StatusBarFlags index="Life" value="0"/>
+        <StatusBarFlags index="Energy" value="0"/>
+        <StatusBarFlags index="Cargo" value="0"/>
+        <StatusBarFlags index="Progress" value="0"/>
+        <StatusBarFlags index="Duration" value="0"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+    </CActorUnit>
+    <CActorSound id="Changeling_Death" parent="SoundOneShot">
+        <On Terms="UnitDeath.ChangelingMarineSCBW; PassChance 100.000000" Send="Create"/>
+        <On Terms="UnitDeath.ChangelingZealotSCBW; PassChance 100.000000" Send="Create"/>
+        <On Terms="UnitDeath.ChangelingZerglingSCBW; PassChance 100.000000" Send="Create"/>
+    </CActorSound>
+    <CActorUnit id="ChangelingMarineSCBW" parent="GenericUnitMorph" unitName="ChangelingMarineSCBW">
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <Model value="MarineSCBW"/>
+        <DeathArray index="Normal" ModelLink="ChangelingDeathMarine" SoundLink="Changling_Explode"/>
+        <BuildModel value="MarineSCBW@WarpIn"/>
+        <PortraitModel value="MarineSCBW@Portrait"/>
+        <WalkAnimMoveSpeed value="2.25"/>
+        <BarWidth value="36"/>
+        <BarOffset value="40"/>
+        <AcceptedHostedPropTransfers index="Scale" value="0"/>
+        <On Terms="ActorCreation" Send="SetLocalTintColor 255,128,255"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create ChangelingMarineSCBW_Land"/>
+        <On Terms="UnitDeath.ChangelingMarineSCBW" Target="_DeathModel" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        <On Terms="ActorCreation" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-marine@scbw.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-marine@scbw.dds"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-terran-marine@scbw.dds"/>
+        </GroupIcon>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-marine@scbw.dds"/>
+        </Wireframe>
+        <SoundArray index="Birth" value="MarineSCBW@Birth"/>
+        <SoundArray index="Ready" value="Changeling_MarineReady"/>
+        <SoundArray index="Help" value=""/>
+        <SoundArray index="What" value="Changeling_MarineWhat"/>
+        <SoundArray index="Yes" value="Changeling_MarineYes"/>
+        <SoundArray index="Attack" value="MarineSCBW@Attack"/>
+        <SoundArray index="Pissed" value="Changeling_MarinePissed"/>
+        <SoundArray index="Movement" value="MarineSCBW@Movement"/>
+        <SoundArray index="Turning" value="MarineSCBW@Turning"/>
+        <SoundArray index="Board" value="MarineSCBW@Board"/>
+        <SoundArray index="Click" value="MarineSCBW@Click"/>
+        <SoundArray index="ClickError" value="MarineSCBW@ClickError"/>
+        <SoundArray index="Highlight" value="MarineSCBW@Highlight"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <HighlightTooltip value="Unit/Name/MarineSCBW"/>
+        <Aliases value="_UnitSmall"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.600000"/>
+            <RangeDown value="0.600000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
+        </TerrainSquibs>
+        <StandAnimTurnTime value="5"/>
+    </CActorUnit>
+    <CActorSound id="ChangelingMarineSCBW_Land" parent="SoundOneShot"/>
+    <CActorUnit id="ChangelingZealotSCBW" parent="GenericUnitMorph" unitName="ChangelingZealotSCBW">
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <Model value="ZealotSCBW"/>
+        <DeathArray index="Normal" ModelLink="ChangelingDeathZealot" SoundLink="Changling_Explode"/>
+        <BuildModel value="ZealotSCBW@WarpIn"/>
+        <PortraitModel value="ZealotSCBW@Portrait"/>
+        <WalkAnimMoveSpeed value="2.25"/>
+        <BarWidth value="42"/>
+        <BarOffset value="40"/>
+        <AcceptedHostedPropTransfers index="Scale" value="0"/>
+        <On Terms="ActorCreation" Send="SetLocalTintColor 255,128,255"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create ChangelingZealotSCBW_Land"/>
+        <UnitIcon value="Assets\Textures\btn-unit-protoss-zealot@scbw.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-protoss-zealot@scbw.dds"/>
+        <WireframeShield>
+            <Image value="Assets\Textures\wireframe-protoss-zealot-shield01@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-zealot-shield02@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-zealot-shield03@scbw.dds"/>
+        </WireframeShield>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-protoss-zealot@scbw.dds"/>
+        </GroupIcon>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-protoss-zealot@scbw.dds"/>
+        </Wireframe>
+        <SoundArray index="Birth" value="ZealotSCBW@Birth"/>
+        <SoundArray index="Ready" value="Changeling_ZealotReady"/>
+        <SoundArray index="Help" value=""/>
+        <SoundArray index="What" value="Changeling_ZealotWhat"/>
+        <SoundArray index="Yes" value="Changeling_ZealotYes"/>
+        <SoundArray index="Attack" value="ZealotSCBW@Attack"/>
+        <SoundArray index="Pissed" value="Changeling_ZealotPissed"/>
+        <SoundArray index="Movement" value="ZealotSCBW@Movement"/>
+        <SoundArray index="Turning" value="ZealotSCBW@Turning"/>
+        <SoundArray index="Board" value="ZealotSCBW@Board"/>
+        <SoundArray index="Click" value="ZealotSCBW@Click"/>
+        <SoundArray index="ClickError" value="ZealotSCBW@ClickError"/>
+        <SoundArray index="Highlight" value="ZealotSCBW@Highlight"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
+        <HighlightTooltip value="Unit/Name/ZealotSCBW"/>
+        <Aliases value="_UnitSmall"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.600000"/>
+            <RangeDown value="0.600000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
+        </TerrainSquibs>
+    </CActorUnit>
+    <CActorSound id="ChangelingZealotSCBW_Land" parent="SoundOneShot"/>
+    <CActorUnit id="ChangelingZerglingSCBW" parent="GenericUnitMorph" unitName="ChangelingZerglingSCBW">
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <Model value="ZerglingSCBW"/>
+        <DeathArray index="Normal" ModelLink="ChangelingDeathZergling" SoundLink="Changling_Explode"/>
+        <PortraitModel value="ZerglingSCBW@Portrait"/>
+        <WalkAnimMoveSpeed value="3.1328"/>
+        <BarWidth value="36"/>
+        <BarOffset value="30"/>
+        <AcceptedHostedPropTransfers index="Scale" value="0"/>
+        <On Terms="ActorCreation" Send="SetLocalTintColor 255,128,255"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create ChangelingZerglingSCBW_Land"/>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-ZerglingSCBW.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-ZerglingSCBW.dds"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-zerg-zergling@scbw.dds"/>
+        </GroupIcon>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-zerg-zergling@scbw.dds"/>
+        </Wireframe>
+        <SoundArray index="Birth" value="ZerglingSCBW@Birth"/>
+        <SoundArray index="Ready" value="ZerglingSCBW@Ready"/>
+        <SoundArray index="Help" value="ZerglingSCBW@Help"/>
+        <SoundArray index="What" value="ZerglingSCBW@What"/>
+        <SoundArray index="Yes" value="ZerglingSCBW@Yes"/>
+        <SoundArray index="Attack" value="ZerglingSCBW@Attack"/>
+        <SoundArray index="Pissed" value="ZerglingSCBW@Pissed"/>
+        <SoundArray index="Movement" value="ZerglingSCBW@Movement"/>
+        <SoundArray index="Turning" value="ZerglingSCBW@Turning"/>
+        <SoundArray index="Board" value="ZerglingSCBW@Board"/>
+        <SoundArray index="Click" value="ZerglingSCBW@Click"/>
+        <SoundArray index="ClickError" value="ZerglingSCBW@ClickError"/>
+        <SoundArray index="Highlight" value="ZerglingSCBW@Highlight"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-groundcarapace-level0.dds"/>
+        <HighlightTooltip value="Unit/Name/ZerglingSCBW"/>
+        <Aliases value="_UnitSmall"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.600000"/>
+            <RangeDown value="0.600000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
+        </TerrainSquibs>
+    </CActorUnit>
+    <CActorSound id="ChangelingZerglingSCBW_Land" parent="SoundOneShot"/>
 </Catalog>

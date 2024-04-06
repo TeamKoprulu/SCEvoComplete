@@ -46,7 +46,6 @@ void libSCBW_InitCustomScript () {
 // Presets
 string libSCBW_ge_SC1_Cheats_Ident (int lp_val) {
          if (lp_val == 1) { return "InstantBuild"; }
-    else if (lp_val == 2) { return "SCBW_Upgrade"; }
     return null;
 }
 
@@ -718,14 +717,6 @@ bool libSCBW_gt_SC1_CheatTracker_Func (bool testConds, bool runActions) {
         lv_match = "instantbuild";
         lv_cheatIndex = 1;
     }
-    else if ((StringContains(lv_cheat, "something for nothing", c_stringBegin, c_stringNoCase) == true)) {
-        lv_match = "something for nothing";
-        lv_cheatIndex = 2;
-    }
-    else if ((StringContains(lv_cheat, "upgradebw", c_stringBegin, c_stringNoCase) == true)) {
-        lv_match = "upgradebw";
-        lv_cheatIndex = 2;
-    }
     else if (true) {
         return false;
     }
@@ -742,13 +733,6 @@ bool libSCBW_gt_SC1_CheatTracker_Func (bool testConds, bool runActions) {
 
         TriggerSendEvent(libSCBW_gf_SC1_CheatToString(lv_cheatIndex));
     }
-    else if (auto5838152C_val == 2) {
-        if ((StringLength(lv_stringRemain) > 0)) {
-            DataTableSetInt(false, lv_param, StringToInt(StringWord(lv_stringRemain, 1)));
-        }
-
-        TriggerSendEvent(libSCBW_gf_SC1_CheatToString(lv_cheatIndex));
-    }
     else {
     }
     return true;
@@ -759,74 +743,6 @@ void libSCBW_gt_SC1_CheatTracker_Init () {
     libSCBW_gt_SC1_CheatTracker = TriggerCreate("libSCBW_gt_SC1_CheatTracker_Func");
     TriggerEnable(libSCBW_gt_SC1_CheatTracker, false);
     TriggerAddEventChatMessage(libSCBW_gt_SC1_CheatTracker, c_playerAny, "", false);
-}
-
-//--------------------------------------------------------------------------------------------------
-// Trigger: SC1_UpgradeCheat
-//--------------------------------------------------------------------------------------------------
-bool libSCBW_gt_SC1_UpgradeCheat_Func (bool testConds, bool runActions) {
-    // Variable Declarations
-    string lv_entry;
-    string lv_instance;
-    string lv_dummy;
-    int lv_player;
-    int lv_triggeringPlayer;
-
-    // Automatic Variable Declarations
-    string autoEAAEF20D_userType;
-    int autoEAAEF20D_i;
-    string autoE944CE65_userType;
-    string autoE944CE65_instance;
-    string autoE944CE65_field;
-    int autoE944CE65_i;
-
-    // Variable Initialization
-    lv_entry = "";
-    lv_player = DataTableGetInt(false, TriggerEventParamName(libSCBW_gf_SC1_CheatToString(2), "PlayerParam"));
-    lv_triggeringPlayer = DataTableGetInt(false, TriggerEventParamName(libSCBW_gf_SC1_CheatToString(2), "TriggeringPlayer"));
-
-    // Conditions
-    if (testConds) {
-        if (!((GameIsOnline() == false))) {
-            return false;
-        }
-
-        if (!((GameCheatsEnabled(c_gameCheatCategoryPublic) == true))) {
-            return false;
-        }
-    }
-
-    // Actions
-    if (!runActions) {
-        return true;
-    }
-
-    TextExpressionSetToken("Param/Expression/lib_SCBW_5413F530", "A", PlayerName(lv_player));
-    UIDisplayMessage(PlayerGroupSingle(lv_triggeringPlayer), c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_SCBW_5413F530"));
-    autoEAAEF20D_userType = "UpgradesCheat";
-    autoEAAEF20D_i = 1;
-    for ( ; autoEAAEF20D_i <= UserDataInstanceCount(autoEAAEF20D_userType) ; autoEAAEF20D_i += 1 ) {
-        lv_instance = UserDataInstance(autoEAAEF20D_userType, autoEAAEF20D_i);
-        autoE944CE65_userType = "UpgradesCheat";
-        autoE944CE65_instance = lv_instance;
-        autoE944CE65_field = "Upgrade";
-        autoE944CE65_i = 1;
-        for ( ; autoE944CE65_i <= UserDataFieldValueCount(autoE944CE65_userType,autoE944CE65_field) ; autoE944CE65_i += 1 ) {
-            lv_entry = UserDataGetGameLink(autoE944CE65_userType,autoE944CE65_instance,autoE944CE65_field, autoE944CE65_i);
-            if ((TechTreeUpgradeCount(lv_player, (lv_entry), c_techCountCompleteOnly) == 0)) {
-                TechTreeUpgradeAddLevel(lv_player, (lv_entry), 1);
-                break;
-            }
-
-        }
-    }
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-void libSCBW_gt_SC1_UpgradeCheat_Init () {
-    libSCBW_gt_SC1_UpgradeCheat = TriggerCreate("libSCBW_gt_SC1_UpgradeCheat_Func");
-    libSCBW_gf_SC1_CheatEvent(libSCBW_gt_SC1_UpgradeCheat, 2);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1020,7 +936,6 @@ void libSCBW_InitTriggers () {
     libSCBW_gt_SC1_Refund_Init();
     libSCBW_gt_SC1_UnitSwap_Init();
     libSCBW_gt_SC1_CheatTracker_Init();
-    libSCBW_gt_SC1_UpgradeCheat_Init();
     libSCBW_gt_OperationCwalActivate_Init();
     libSCBW_gt_OperationCwal_Train_Init();
     libSCBW_gt_OperationCwal_Constuction_Init();

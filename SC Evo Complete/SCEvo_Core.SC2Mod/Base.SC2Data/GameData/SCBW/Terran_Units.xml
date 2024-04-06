@@ -17,6 +17,8 @@
         </Amount>
         <ValidatorArray value="ScienceVesselSCBWDefensiveMatrix@NoShields"/>
         <Flags index="NoVitalAbsorbShields" value="1"/>
+        <Kind value="NoProc"/>
+        <KindSplash value="NoProc"/>
     </CEffectDamage>
     <CEffectRemoveBehavior id="ScienceVesselSCBWDefensiveMatrix@RBData">
         <EditorCategories value="Race:Terran"/>
@@ -33,6 +35,8 @@
         <Flags index="NoVitalAbsorbShields" value="1"/>
         <Amount value="0.5"/>
         <Maximum value="0.5"/>
+        <Kind value="NoProc"/>
+        <KindSplash value="NoProc"/>
     </CEffectDamage>
     <CEffectSet id="ScienceVesselSCBWDefensiveMatrix@Final">
         <EditorCategories value="Race:Terran"/>
@@ -147,7 +151,7 @@
     </CEffectApplyBehavior>
     <CEffectEnumArea id="ScienceVesselSCBWIrradiate@SearchInitial">
         <EditorCategories value="Race:Terran"/>
-        <SearchFilters value="Biological;Structure,Dead,Hidden,Invulnerable"/>
+        <SearchFilters value="Biological;Structure,Stasis,Dead,Hidden,Invulnerable"/>
         <AreaArray Radius="2.5" Effect="ScienceVesselSCBWIrradiate@DamageInitial"/>
     </CEffectEnumArea>
     <CEffectDamage id="ScienceVesselSCBWIrradiate@DamageInitial">
@@ -155,7 +159,6 @@
         <ResponseFlags index="Acquire" value="1"/>
         <ResponseFlags index="Flee" value="1"/>
         <Amount value="10"/>
-        <SearchFilters value="Biological;Ally,Neutral,Structure,RawResource,HarvestableResource,Item,Dead,Hidden"/>
         <SearchFlags index="CallForHelp" value="1"/>
         <SearchFlags index="SameCliff" value="0"/>
     </CEffectDamage>
@@ -290,7 +293,7 @@
         <EditorCategories value="Race:Terran"/>
         <EffectArray value="VulturePlaceSpiderMineSCBW@Spawn"/>
         <!--<EffectArray value="ReplenishNanoConstructor"/>-->
-        <TargetLocationType value="UnitOrPoint"/>
+        <TargetLocationType value="Point"/>
     </CEffectSet>
     <CEffectApplyBehavior id="MarineSCBWStimpack@AB">
         <EditorCategories value="Race:Terran"/>
@@ -563,11 +566,16 @@
         </Cost>
         <TargetFilters value="-;Player,Ally,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="9"/>
-        <PrepTime value="0.5"/>
+        <PrepTime value="0.125"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="MedicSCBWOpticFlare" Requirements="MedicSCBWOpticFlare">
             <Flags index="UseDefaultButton" value="1"/>
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
+        <CastIntroTime value="0.4"/>
+        <FinishTime value="0.125"/>
+        <UninterruptibleArray index="Cast" value="1"/>
+        <UninterruptibleArray index="Channel" value="1"/>
+        <UninterruptibleArray index="Finish" value="1"/>
     </CAbilEffectTarget>
     <CAbilEffectInstant id="MarineSCBWStimpack">
         <AbilSetId value="Stimpack"/>
@@ -642,12 +650,12 @@
             </Charge>
         </Cost>
         <Placeholder value="SpiderMineSCBW"/>
-        <Range value="3"/>
+        <Range value="0.1"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="VulturePlaceSpiderMineSCBW" Requirements="VulturePlaceSpiderMineSCBW">
             <Flags index="UseDefaultButton" value="1"/>
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
-        <PlaceUnit value="SpiderMineSCBW"/>
+        <PlaceUnit value="SpiderMineSCBW@Burrowed"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="BattlecruiserSCBWYamato">
         <TargetFilters value="Visible;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
@@ -856,6 +864,26 @@
         <FidgetDelayMax value="10"/>
         <ConstructionMover value="Construction"/>
     </CAbilBuild>
+    <CAbilResearch id="MechPlating" parent="SCBW_ResearchLeveled" race="Terran">
+        <InfoArray index="Research1" Time="160">
+            <Resource index="Minerals" value="150"/>
+            <Resource index="Vespene" value="150"/>
+        </InfoArray>
+        <InfoArray index="Research2" Time="190">
+            <Resource index="Minerals" value="225"/>
+            <Resource index="Vespene" value="225"/>
+        </InfoArray>
+        <InfoArray index="Research3" Time="220">
+            <Resource index="Minerals" value="300"/>
+            <Resource index="Vespene" value="300"/>
+        </InfoArray>
+        <RefundFraction>
+            <Resource index="Minerals" value="-0.75"/>
+            <Resource index="Vespene" value="-0.75"/>
+            <Resource index="Terrazine" value="-0.75"/>
+            <Resource index="Custom" value="-0.75"/>
+        </RefundFraction>
+    </CAbilResearch>
     <CValidatorUnitCompareBehaviorCount id="ScienceVesselSCBWDefensiveMatrix@HasShield">
         <Compare value="GT"/>
         <Behavior value="ScienceVesselSCBWDefensiveMatrix"/>
@@ -966,6 +994,25 @@
         <EditorCategories value="Race:Terran,TechType:Unit"/>
         <CanBeSuppressed index="Use" value="0"/>
         <NodeArray index="Use" Link="MarineSCBW@CountUnitCompleteOnlyTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="MechPlating">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="MechPlating@Show"/>
+    </CRequirement>
+    <CRequirement id="MechPlating@Lvl1">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Use" Link="MechPlating@Lvl1"/>
+        <NodeArray index="Show" Link="MechPlating@Lvl1Show"/>
+    </CRequirement>
+    <CRequirement id="MechPlating@Lvl2">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Use" Link="MechPlating@Lvl2"/>
+        <NodeArray index="Show" Link="MechPlating@Lvl2Show"/>
+    </CRequirement>
+    <CRequirement id="MechPlating@Lvl3">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Use" Link="MechPlating@Lvl3"/>
+        <NodeArray index="Show" Link="MechPlating@Lvl3Show"/>
     </CRequirement>
     <CButton id="GhostSCBWNuclearStrike">
         <Icon value="Assets\Textures\btn-progression-hornerhan-14-nukefortelefrag.dds"/>
@@ -1145,7 +1192,7 @@
         <TintRacially value="1"/>
         <HotkeyAlias value="BunkerLoad"/>
         <Universal value="1"/>
-        <DefaultButtonLayout Row="2"/>
+        <DefaultButtonLayout Row="2" Column="2"/>
     </CButton>
     <CButton id="DropshipSCBW@UnloadAll">
         <Icon value="Assets\Textures\btn-ability-terran-unloadall.dds"/>
@@ -1154,7 +1201,7 @@
         <TintRacially value="1"/>
         <HotkeyAlias value="BunkerUnloadAll"/>
         <Universal value="1"/>
-        <DefaultButtonLayout Row="2" Column="1"/>
+        <DefaultButtonLayout Row="2" Column="3"/>
     </CButton>
     <CButton id="WraithSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-wraith.dds"/>
@@ -1261,6 +1308,27 @@
         <AlertIcon value="Assets\Textures\btn-unit-terran-marine@scbw.dds"/>
         <EditorCategories value="Race:Terran"/>
     </CButton>
+    <CButton id="MechPlating@Lvl1">
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <HotkeyAlias value="TerranShipPlatingSCBW"/>
+        <DefaultButtonLayout Column="1"/>
+    </CButton>
+    <CButton id="MechPlating@Lvl2">
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <HotkeyAlias value="TerranShipPlatingLevel1"/>
+        <DefaultButtonLayout Column="1"/>
+    </CButton>
+    <CButton id="MechPlating@Lvl3">
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <HotkeyAlias value="TerranShipPlatingLevel1"/>
+        <DefaultButtonLayout Column="1"/>
+    </CButton>
     <CRequirementAnd id="FirebatSCBWStimpack">
         <OperandArray value="StimpackSCBWResearch@Count"/>
     </CRequirementAnd>
@@ -1349,6 +1417,61 @@
     <CRequirementAllowUnit id="GhostSCBW@AllowUnit">
         <Link value="MedicSCBW"/>
     </CRequirementAllowUnit>
+    <CRequirementCountUpgrade id="MechPlating@Count" parent="SCBW_UpgradeCount" x="MechPlating"/>
+    <CRequirementAnd id="MechPlating@Lvl1"/>
+    <CRequirementCountUpgrade id="MechPlating@Lvl1Count" parent="SCBW_UpgradeCount" x="MechPlating@Lvl1">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementNot id="MechPlating@Lvl1NotQoB" parent="SCBW_Not" x="TerranShipPlatingSCBW@Lvl1QoB">
+        <OperandArray index="0" value="MechPlating@Lvl1QoB"/>
+    </CRequirementNot>
+    <CRequirementCountUpgrade id="MechPlating@Lvl1QoB" parent="SCBW_UpgradeQoB" x="MechPlating@Lvl1">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementAnd id="MechPlating@Lvl1Show">
+        <OperandArray value="MechPlating@Lvl1NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="MechPlating@Lvl2">
+        <OperandArray value="MechPlating@Lvl1Count"/>
+        <OperandArray value="ScienceFacilitySCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementCountUpgrade id="MechPlating@Lvl2Count" parent="SCBW_UpgradeCount" x="MechPlating@Lvl2">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementNot id="MechPlating@Lvl2NotQoB" parent="SCBW_Not" x="TerranShipPlatingSCBW@Lvl2QoB">
+        <OperandArray index="0" value="MechPlating@Lvl2QoB"/>
+    </CRequirementNot>
+    <CRequirementCountUpgrade id="MechPlating@Lvl2QoB" parent="SCBW_UpgradeQoB" x="MechPlating@Lvl2">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementAnd id="MechPlating@Lvl2Show">
+        <OperandArray value="MechPlating@Lvl1QoB"/>
+        <OperandArray value="MechPlating@Lvl2NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="MechPlating@Lvl3">
+        <OperandArray value="MechPlating@Lvl2Count"/>
+        <OperandArray value="ScienceFacilitySCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementCountUpgrade id="MechPlating@Lvl3Count" parent="SCBW_UpgradeCount" x="MechPlating@Lvl3">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementNot id="MechPlating@Lvl3NotQoB" parent="SCBW_Not" x="TerranShipPlatingSCBW@Lvl3QoB">
+        <OperandArray index="0" value="MechPlating@Lvl3QoB"/>
+    </CRequirementNot>
+    <CRequirementCountUpgrade id="MechPlating@Lvl3QoB" parent="SCBW_UpgradeQoB" x="MechPlating@Lvl3">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementAnd id="MechPlating@Lvl3Show">
+        <OperandArray value="MechPlating@Lvl2QoB"/>
+        <OperandArray value="MechPlating@Lvl3NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementCountUpgrade id="MechPlating@QoB" parent="SCBW_UpgradeQoB" x="MechPlating">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementEq id="MechPlating@Show">
+        <OperandArray index="0" value="MechPlating@QoB"/>
+        <OperandArray index="1" value="0"/>
+    </CRequirementEq>
     <CLight id="GoliathSCBW@Portrait" parent="default">
         <ToDInfoArray index="0" Id="GoliathSCBW@Portrait" AmbientColor="0.533333,0.074510,0.074510">
             <Param index="HDRExposure" value="1.480000"/>
@@ -2272,10 +2395,14 @@
         <On Terms="AbilTransport.DropshipSCBW@Transport.PassengerKilled; AbilTransport Thor" Target="::actor.Thor" Send="Signal Dead"/>
         <On Terms="UnitDeath" Target="::actor.Thor" Send="Signal Dead"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Medivac_Land"/>
-        <On Terms="UnitMovementUpdate.*.Walk; IsStatus Turbo 1" Send="Create Medivac_MovementAfterburner"/>
+        <!--On Terms="UnitMovementUpdate.*.Walk; IsStatus Turbo 1" Send="Create Medivac_MovementAfterburner"/-->
         <On Terms="AbilTransport.DropshipSCBW@Transport.TransportLoad; AbilTransport ThorAP" Send="Create ThorTransit"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="AbilTransport.DropshipSCBW@Transport.PassengerKilled; AbilTransport ThorAP" Target="::actor.Thor" Send="Signal Dead"/>
+        <!--On Terms="Behavior.DropshipSCBWSpeedBoost.On" Send="AnimPlay Turbo Spell,B"/-->
+        <On Terms="Behavior.DropshipSCBWSpeedBoost.On" Send="StatusSet Turbo 1"/>
+        <On Terms="Behavior.DropshipSCBWSpeedBoost.Off" Send="StatusSet Turbo 0"/>
+        <On Terms="UnitMovementUpdate.*.Walk; IsStatus Turbo 1" Send="Create DropshipSCBWSpeedBoost@Movement"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
             <ActorModel value="MedivacDeathRagdoll"/>
@@ -2776,10 +2903,11 @@
         <Macros value="PhysicsDeathsVoidGround"/>
         <On Terms="Abil.MedicSCBWHeal.SourceChannelStart" Send="$Spell PlayForever"/>
         <On Terms="Abil.MedicSCBWHeal.SourceChannelStop" Send="AnimClear Spell"/>
-        <On Terms="Abil.MedicSCBWRestoration.SourcePrepStart" Send="$Spell"/>
-        <On Terms="Abil.MedicSCBWOpticFlare.SourcePrepStart" Send="$Spell"/>
+        <On Terms="Abil.MedicSCBWRestoration.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Abil.MedicSCBWOpticFlare.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create MedicSCBW@Land"/>
+        <On Terms="UnitMovementUpdate.*.Walk; AnimPlayingName Spell" Send="AnimClear Spell"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollBasic"/>
         <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
@@ -3942,7 +4070,7 @@
         <Radius value="0.650000"/>
         <ScaleMax value="0.850000,0.850000,0.850000"/>
         <ScaleMin value="0.850000,0.850000,0.850000"/>
-        <SelectionRadius value="0.722000"/>
+        <SelectionRadius value="0.800000"/>
         <ShadowRadius value="0.722000"/>
         <SquibTypeDefault value="LightArmor"/>
         <TechPurchaseCamera value="Star2CameraMid05"/>
@@ -5297,6 +5425,10 @@
         <DataRecord Entry="Actor,BattlecruiserSCBWYamato@Range"/>
         <DataRecord Entry="Validator,BattlecruiserSCBWYamato@LM"/>
         <DataRecord Entry="Validator,BattlecruiserSCBWYamato@TargetFilters"/>
+        <DataRecord Entry="Effect,BattlecruiserSCBWYamato@Impact"/>
+        <DataRecord Entry="Effect,BattlecruiserSCBWYamato@DamageAccum"/>
+        <DataRecord Entry="Effect,BattlecruiserSCBWYamato@DamageApply"/>
+        <DataRecord Entry="Accumulator,BattlecruiserSCBWYamato@Damage"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="FirebatSCBWStimpack" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,FirebatSCBWStimpack"/>
@@ -5314,6 +5446,9 @@
         <DataRecord Entry="RequirementNode,FirebatSCBWStimpack"/>
         <DataRecord Entry="Sound,FirebatSCBWStimpack@Launch"/>
         <DataRecord Entry="Upgrade,FirebatSCBWStimpack"/>
+        <DataRecord Entry="Upgrade,FirebatSCBWStimpack"/>
+        <DataRecord Entry="Validator,FirebatSCBWStimpack@Tactical"/>
+        <DataRecord Entry="Validator,FirebatSCBWStimpack@TestBuff"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="GhostSCBWCloak" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,GhostSCBWCloak"/>
@@ -5331,6 +5466,7 @@
         <DataRecord Entry="RequirementNode,GhostSCBWCloak"/>
         <DataRecord Entry="Validator,GhostSCBWCloak@Remove"/>
         <DataRecord Entry="Validator,GhostSCBWCloak@Disable"/>
+        <DataRecord Entry="Upgrade,GhostSCBWCloak@Upgrade"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="GhostSCBWHoldFire" parent="TerranAbilSCBW">
         <EditorCategories value="DataGroup:Ability,DataFamily:Melee,Race:Terran,ObjectType:Unit"/>
@@ -5374,6 +5510,7 @@
         <DataRecord Entry="Model,GhostSCBWLockdown@Impact"/>
         <DataRecord Entry="Model,GhostSCBWLockdown@Glaze"/>
         <DataRecord Entry="Actor,GhostSCBWLockdown@Range"/>
+        <DataRecord Entry="Upgrade,GhostSCBWLockdown@Upgrade"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="GhostSCBWNuclearStrike" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,GhostSCBWNuclearStrike"/>
@@ -5450,6 +5587,13 @@
         <DataRecord Entry="Actor,MarineSCBWStimpack@StartImpact"/>
         <DataRecord Entry="Requirement,MarineSCBWStimpack"/>
         <DataRecord Entry="RequirementNode,MarineSCBWStimpack"/>
+        <DataRecord Entry="Upgrade,MarineSCBWStimpack"/>
+        <DataRecord Entry="Validator,MarineSCBWStimpack@Tactical"/>
+        <DataRecord Entry="Validator,MarineSCBWStimpack@Hostiles"/>
+        <DataRecord Entry="Validator,MarineSCBWStimpack@HostileSearchMedic"/>
+        <DataRecord Entry="Validator,MarineSCBWStimpack@HostileSearchWithMedic"/>
+        <DataRecord Entry="Validator,MarineSCBWStimpack@TestBuff"/>
+        <DataRecord Entry="Validator,MarineSCBWStimpack@HostileSearch"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="MedicSCBWHeal" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,MedicSCBWHeal"/>
@@ -5475,6 +5619,7 @@
         <DataRecord Entry="Effect,MedicSCBWHeal@Dummy"/>
         <DataRecord Entry="Requirement,MedicSCBWHeal"/>
         <DataRecord Entry="RequirementNode,MedicSCBWHeal"/>
+        <DataRecord Entry="Validator,MedicSCBWHeal@Healer"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="MedicSCBWOpticFlare" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,MedicSCBWOpticFlare"/>
@@ -5492,6 +5637,7 @@
         <DataRecord Entry="Unit,MedicSCBWOpticFlare@Missile"/>
         <DataRecord Entry="Requirement,MedicSCBWOpticFlare"/>
         <DataRecord Entry="RequirementNode,MedicSCBWOpticFlare"/>
+        <DataRecord Entry="Model,MedicSCBWOpticFlare@Impact"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="MedicSCBWRestoration" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,MedicSCBWRestoration"/>
@@ -5505,6 +5651,7 @@
         <DataRecord Entry="Model,MedicSCBWRestoration@Impact"/>
         <DataRecord Entry="Requirement,MedicSCBWRestoration"/>
         <DataRecord Entry="RequirementNode,MedicSCBWRestoration"/>
+        <DataRecord Entry="Actor,MedicSCBWRestoration@Range"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ScienceVesselSCBWDefensiveMatrix" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,ScienceVesselSCBWDefensiveMatrix"/>
@@ -5528,6 +5675,23 @@
         <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@UDInit"/>
         <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@RB"/>
         <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix@Remaining"/>
+        <DataRecord Entry="Behavior,ScienceVesselSCBWDefensiveMatrix@Data"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@ABData"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@Exhausted"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@LeakDamage2"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@RBData"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@Init"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@LeakDamage"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@Final"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@DamageResponse"/>
+        <DataRecord Entry="Effect,ScienceVesselSCBWDefensiveMatrix@UDModify"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBWDefensiveMatrix@HasShield"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBWDefensiveMatrix@NoShields"/>
+        <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix@DamageInherited"/>
+        <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix"/>
+        <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix@DamageRemainder"/>
+        <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix@RemainingSource"/>
+        <DataRecord Entry="Accumulator,ScienceVesselSCBWDefensiveMatrix@RemainingMultiply"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ScienceVesselSCBWEMPShockwave" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,ScienceVesselSCBWEMPShockwave"/>
@@ -5555,6 +5719,7 @@
         <DataRecord Entry="Validator,ScienceVesselSCBWEMPShockwave@Decloak@Disable"/>
         <DataRecord Entry="Validator,ScienceVesselSCBWEMPShockwave@ModifyUnit"/>
         <DataRecord Entry="Validator,ScienceVesselSCBWEMPShockwave@TargetFilters"/>
+        <DataRecord Entry="Actor,ScienceVesselSCBWEMPShockwave@Range"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ScienceVesselSCBWIrradiate" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,ScienceVesselSCBWIrradiate"/>
@@ -5598,6 +5763,8 @@
         <DataRecord Entry="RequirementNode,WraithSCBWCloak"/>
         <DataRecord Entry="Validator,WraithSCBWCloak@Remove"/>
         <DataRecord Entry="Validator,WraithSCBWCloak@Disable"/>
+        <DataRecord Entry="Behavior,WraithSCBWCloak"/>
+        <DataRecord Entry="Upgrade,WraithSCBWCloak@Upgrade"/>
     </CDataCollectionAbil>
     <CDataCollectionUnit id="BattlecruiserSCBW" parent="TerranShipSCBW">
         <DataRecord Entry="Actor,BattlecruiserSCBW"/>
@@ -5633,41 +5800,38 @@
         <DataRecord Entry="Requirement,BattlecruiserSCBW"/>
         <DataRecord Entry="RequirementNode,BattlecruiserSCBW"/>
         <DataRecord Entry="Sound,BattlecruiserSCBW@Death"/>
+        <DataRecord Entry="RequirementNode,BattlecruiserSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,BattlecruiserSCBW@Show"/>
+        <DataRecord Entry="Turret,BattlecruiserSCBW@Turret"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
         <UpgradeInfoWeapon index="1" DamagePerDice="3"/>
         <TechInfoUpgradeUsed value="BattlecruiserSCBWEnergyUpgrade"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="DropshipSCBW" parent="TerranShipSCBW">
         <DataRecord Entry="Abil,DropshipSCBW@Transport"/>
-        <DataRecord Entry="Actor,DropshipSCBW"/>
+        <DataRecord Entry="Actor,DropshipSCBW@UnloadDropAnim"/>
+        <DataRecord Entry="Actor,DropshipSCBW@SOpBanker"/>
+        <DataRecord Entry="Actor,DropshipSCBW@TransportAnim"/>
         <DataRecord Entry="Actor,DropshipSCBW@Land"/>
         <DataRecord Entry="Actor,DropshipSCBW@LoadSound"/>
         <DataRecord Entry="Actor,DropshipSCBW@UnloadSound"/>
-        <DataRecord Entry="Actor,DropshipSCBW@TransportAnim"/>
-        <DataRecord Entry="Actor,DropshipSCBW@SOpBanker"/>
-        <DataRecord Entry="Button,DropshipSCBW"/>
         <DataRecord Entry="Button,DropshipSCBW@Load"/>
         <DataRecord Entry="Button,DropshipSCBW@UnloadAll"/>
-        <DataRecord Entry="Light,DropshipSCBW@Portrait"/>
-        <DataRecord Entry="Model,DropshipSCBW"/>
-        <DataRecord Entry="Model,DropshipSCBW@Death"/>
         <DataRecord Entry="Model,DropshipSCBW@DeathRagdoll"/>
-        <DataRecord Entry="Model,DropshipSCBW@Portrait"/>
-        <DataRecord Entry="Sound,DropshipSCBW@Attack"/>
+        <DataRecord Entry="RequirementNode,DropshipSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,DropshipSCBW@Show"/>
         <DataRecord Entry="Sound,DropshipSCBW@Explode"/>
         <DataRecord Entry="Sound,DropshipSCBW@Help"/>
-        <DataRecord Entry="Sound,DropshipSCBW@Movement"/>
-        <DataRecord Entry="Sound,DropshipSCBW@Pissed"/>
-        <DataRecord Entry="Sound,DropshipSCBW@Ready"/>
-        <DataRecord Entry="Sound,DropshipSCBW@What"/>
         <DataRecord Entry="Sound,DropshipSCBW@Yes"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Attack"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Pissed"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Movement"/>
         <DataRecord Entry="Sound,DropshipSCBW@Land"/>
-        <DataRecord Entry="Sound,DropshipSCBW@Unload"/>
         <DataRecord Entry="Sound,DropshipSCBW@Load"/>
-        <DataRecord Entry="Unit,DropshipSCBW"/>
-        <DataRecord Entry="Actor,DropshipSCBW@UnloadDropAnim"/>
-        <DataRecord Entry="Requirement,DropshipSCBW"/>
-        <DataRecord Entry="RequirementNode,DropshipSCBW"/>
+        <DataRecord Entry="Sound,DropshipSCBW@Unload"/>
+        <TechInfoUpgradeUsed index="3" removed="1"/>
+        <TechInfoUpgradeUsed index="4" removed="1"/>
+        <TechInfoUpgradeUsed index="5" removed="1"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="FirebatSCBW" parent="TerranInfantrySCBW">
         <DataRecord Entry="Actor,FirebatSCBW"/>
@@ -5689,6 +5853,11 @@
         <DataRecord Entry="RequirementNode,FirebatSCBW@AllowUnit"/>
         <DataRecord Entry="Requirement,FirebatSCBW"/>
         <DataRecord Entry="RequirementNode,FirebatSCBW"/>
+        <DataRecord Entry="Actor,FirebatSCBW@Land"/>
+        <DataRecord Entry="RequirementNode,FirebatSCBW@Show"/>
+        <DataRecord Entry="Sound,FirebatSCBW@Land"/>
+        <DataRecord Entry="Tactical,FirebatSCBW"/>
+        <DataRecord Entry="Validator,FirebatSCBW@DamageFilters"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="GhostSCBW" parent="TerranInfantrySCBW">
         <DataRecord Entry="Actor,GhostSCBW"/>
@@ -5715,30 +5884,36 @@
         <DataRecord Entry="RequirementNode,GhostSCBW@AllowUnit"/>
         <DataRecord Entry="Requirement,GhostSCBW"/>
         <DataRecord Entry="RequirementNode,GhostSCBW"/>
+        <DataRecord Entry="Model,GhostSCBW@DeathBlast"/>
+        <DataRecord Entry="RequirementNode,GhostSCBW@Show"/>
+        <DataRecord Entry="Tactical,GhostSCBW@Cloak"/>
+        <DataRecord Entry="Tactical,GhostSCBW@Decloak"/>
+        <DataRecord Entry="Tactical,GhostSCBW@Tactical"/>
+        <DataRecord Entry="Validator,GhostSCBW@CloakOff"/>
+        <DataRecord Entry="Validator,GhostSCBW@CloakOn"/>
+        <DataRecord Entry="Validator,GhostSCBW@CloakThreatSearchEmpty"/>
+        <DataRecord Entry="Validator,GhostSCBW@UnitThreatensGhost"/>
+        <DataRecord Entry="Validator,GhostSCBW@SharedOn"/>
+        <DataRecord Entry="Validator,GhostSCBW@CloakThreatSearch"/>
         <TechInfoUpgradeUsed value="GhostSCBWEnergyUpgrade"/>
         <TechInfoUpgradeUsed value="GhostSCBWSightUpgrade"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="GoliathSCBW" parent="TerranVehicleSCBW">
-        <DataRecord Entry="Unit,GoliathSCBW"/>
-        <DataRecord Entry="Actor,GoliathSCBW"/>
-        <DataRecord Entry="Model,GoliathSCBW"/>
-        <DataRecord Entry="Model,GoliathSCBW@Death"/>
-        <DataRecord Entry="Model,GoliathSCBW@Portrait"/>
-        <DataRecord Entry="Sound,GoliathSCBW@Attack"/>
-        <DataRecord Entry="Sound,GoliathSCBW@Explode"/>
-        <DataRecord Entry="Sound,GoliathSCBW@Help"/>
-        <DataRecord Entry="Sound,GoliathSCBW@Movement"/>
-        <DataRecord Entry="Sound,GoliathSCBW@Pissed"/>
-        <DataRecord Entry="Sound,GoliathSCBW@Ready"/>
-        <DataRecord Entry="Sound,GoliathSCBW@What"/>
-        <DataRecord Entry="Sound,GoliathSCBW@Yes"/>
-        <DataRecord Entry="Button,GoliathSCBW"/>
-        <DataRecord Entry="Turret,GoliathSCBW@Turret"/>
+        <DataRecord Entry="Actor,GoliathSCBW@Land"/>
         <DataRecord Entry="Actor,GoliathSCBW@Death"/>
         <DataRecord Entry="Actor,GoliathSCBW@Turret"/>
-        <DataRecord Entry="Requirement,GoliathSCBW"/>
-        <DataRecord Entry="RequirementNode,GoliathSCBW"/>
+        <DataRecord Entry="RequirementNode,GoliathSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,GoliathSCBW@Show"/>
+        <DataRecord Entry="Sound,GoliathSCBW@Land"/>
+        <DataRecord Entry="Sound,GoliathSCBW@Explode"/>
+        <DataRecord Entry="Sound,GoliathSCBW@Help"/>
+        <DataRecord Entry="Sound,GoliathSCBW@Yes"/>
+        <DataRecord Entry="Sound,GoliathSCBW@Attack"/>
+        <DataRecord Entry="Sound,GoliathSCBW@Pissed"/>
+        <DataRecord Entry="Sound,GoliathSCBW@Movement"/>
+        <DataRecord Entry="Turret,GoliathSCBW@Turret"/>
         <TechInfoUpgradeUsed value="GoliathSCBWRangeUpgrade"/>
+        <UpgradeInfoWeapon index="1" DamagePerDice="2"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="KerriganSCBW" parent="TerranInfantrySCBW">
         <DataRecord Entry="Actor,KerriganSCBW"/>
@@ -5763,6 +5938,13 @@
         <DataRecord Entry="Sound,KerriganSCBW@Death"/>
         <DataRecord Entry="Unit,KerriganSCBW"/>
         <DataRecord Entry="RequirementNode,KerriganSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,KerriganSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,KerriganSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,KerriganSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,KerriganSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,KerriganSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,KerriganSCBW@NotQoB"/>
+        <DataRecord Entry="Unit,KerriganSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="MarineSCBW" parent="TerranInfantrySCBW">
         <TechInfoUpgradeUsed value="MarineSCBWRangeUpgrade"/>
@@ -5806,6 +5988,8 @@
         <DataRecord Entry="Sound,MarineSCBW@DeathFXBlast"/>
         <DataRecord Entry="Sound,MarineSCBW@StimPackVO"/>
         <DataRecord Entry="Unit,MarineSCBW"/>
+        <DataRecord Entry="RequirementNode,MarineSCBW@Show"/>
+        <DataRecord Entry="Tactical,MarineSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="MedicSCBW" parent="TerranInfantrySCBW">
         <DataRecord Entry="Actor,MedicSCBW"/>
@@ -5843,7 +6027,15 @@
         <DataRecord Entry="RequirementNode,MedicSCBW@AllowUnit"/>
         <DataRecord Entry="Requirement,MedicSCBW"/>
         <DataRecord Entry="RequirementNode,MedicSCBW"/>
+        <DataRecord Entry="Actor,MedicSCBW@Land"/>
+        <DataRecord Entry="RequirementNode,MedicSCBW@Show"/>
+        <DataRecord Entry="Sound,MedicSCBW@Land"/>
+        <DataRecord Entry="Validator,MedicSCBW@IsMedic"/>
+        <DataRecord Entry="Validator,MedicSCBW@MedicNearbyWillHeal"/>
+        <DataRecord Entry="Validator,MedicSCBW@MedivacWillHeal"/>
+        <DataRecord Entry="Validator,MedicSCBW@MedicHasEnergy"/>
         <TechInfoUpgradeUsed value="MedicSCBWEnergyUpgrade"/>
+        <TechInfoUpgradeUsed value="MarineSCBWStimpack"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="SCVSCBW" parent="TerranInfantrySCBW">
         <DataRecord Entry="Abil,SCVSCBW@Build"/>
@@ -5882,6 +6074,9 @@
         <DataRecord Entry="Requirement,SCVSCBW"/>
         <DataRecord Entry="RequirementNode,SCVSCBW"/>
         <DataRecord Entry="Button,SCVSCBW"/>
+        <DataRecord Entry="RequirementNode,SCVSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,SCVSCBW@Show"/>
+        <DataRecord Entry="Validator,SCVSCBW@Repair"/>
         <Pattern value="UnitBaseSCBWBuilder"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ScienceVesselSCBW" parent="TerranShipSCBW">
@@ -5906,6 +6101,23 @@
         <DataRecord Entry="Unit,ScienceVesselSCBW"/>
         <DataRecord Entry="Requirement,ScienceVesselSCBW"/>
         <DataRecord Entry="RequirementNode,ScienceVesselSCBW"/>
+        <DataRecord Entry="RequirementNode,ScienceVesselSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ScienceVesselSCBW@Show"/>
+        <DataRecord Entry="Tactical,ScienceVesselSCBW@DefensiveMatrix"/>
+        <DataRecord Entry="Tactical,ScienceVesselSCBW@TacticalEMP"/>
+        <DataRecord Entry="TargetFind,ScienceVesselSCBW@EMP"/>
+        <DataRecord Entry="TargetFind,ScienceVesselSCBW@EMPEMPBestPoint"/>
+        <DataRecord Entry="TargetFind,ScienceVesselSCBW@EMP2A"/>
+        <DataRecord Entry="Turret,ScienceVesselSCBW@Turret"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@EMPValidTargets"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@DefensiveMatrixHostileCheck"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@DefensiveMatrixHostileCheckLT75%"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@DefensiveMatrixHostileCheckLT60%"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@DefensiveMatrixHostileCheckLT40%"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@TacticalDefensiveMatrix"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@TacticalDefensiveMatrixHostileSearch40%"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@TacticalDefensiveMatrixHostileSearch60%"/>
+        <DataRecord Entry="Validator,ScienceVesselSCBW@TacticalDefensiveMatrixHostileSearch75%"/>
         <TechInfoUpgradeUsed value="ScienceVesselSCBWEnergyUpgrade"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
     </CDataCollectionUnit>
@@ -5955,6 +6167,16 @@
         <DataRecord Entry="Requirement,SiegeTankSCBW@Siege"/>
         <DataRecord Entry="RequirementNode,SiegeTankSCBW@Siege"/>
         <DataRecord Entry="RequirementNode,SiegeTankSCBW"/>
+        <DataRecord Entry="Actor,SiegeTankSCBW@Range"/>
+        <DataRecord Entry="RequirementNode,SiegeTankSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,SiegeTankSCBW@Show"/>
+        <DataRecord Entry="Tactical,SiegeTankSCBW"/>
+        <DataRecord Entry="Turret,SiegeTankSCBW"/>
+        <DataRecord Entry="Validator,SiegeTankSCBW@TacticalSiege"/>
+        <DataRecord Entry="Validator,SiegeTankSCBW@SiegeTankMinRangeHostileSearchEmpty"/>
+        <DataRecord Entry="Validator,SiegeTankSCBW@InCombatAndSiegeTankHostiles"/>
+        <DataRecord Entry="Validator,SiegeTankSCBW@HostileSearch"/>
+        <DataRecord Entry="Validator,SiegeTankSCBW@NotWantsToMoveOrEnemiesInRange"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="SiegeTankSCBWSieged" parent="TerranVehicleSCBW">
@@ -5969,6 +6191,11 @@
         <DataRecord Entry="Model,SiegeTankSCBWSieged@DeathRagdoll"/>
         <DataRecord Entry="Requirement,SiegeTankSCBWSieged"/>
         <DataRecord Entry="RequirementNode,SiegeTankSCBWSieged"/>
+        <DataRecord Entry="RequirementNode,SiegeTankSCBWSieged@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,SiegeTankSCBWSieged@Show"/>
+        <DataRecord Entry="Tactical,SiegeTankSCBWSieged"/>
+        <DataRecord Entry="Turret,SiegeTankSCBWSieged"/>
+        <DataRecord Entry="Validator,SiegeTankSCBWSieged@TacticalUnsiege"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="5"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ValkyrieSCBW" parent="TerranShipSCBW">
@@ -5989,6 +6216,9 @@
         <DataRecord Entry="Light,ValkyrieSCBW@Portrait"/>
         <DataRecord Entry="Requirement,ValkyrieSCBW"/>
         <DataRecord Entry="RequirementNode,ValkyrieSCBW"/>
+        <DataRecord Entry="Actor,ValkyrieSCBW@SOpBanker"/>
+        <DataRecord Entry="RequirementNode,ValkyrieSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ValkyrieSCBW@Show"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="VultureSCBW" parent="TerranVehicleSCBW">
         <DataRecord Entry="Actor,VultureSCBW"/>
@@ -6009,6 +6239,10 @@
         <DataRecord Entry="Unit,VultureSCBW"/>
         <DataRecord Entry="Requirement,VultureSCBW"/>
         <DataRecord Entry="RequirementNode,VultureSCBW"/>
+        <DataRecord Entry="Actor,VultureSCBW@Land"/>
+        <DataRecord Entry="RequirementNode,VultureSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,VultureSCBW@Show"/>
+        <DataRecord Entry="Sound,VultureSCBW@Land"/>
         <TechInfoUpgradeUsed value="VultureSCBWSpeedUpgrade"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="2"/>
     </CDataCollectionUnit>
@@ -6029,9 +6263,48 @@
         <DataRecord Entry="Button,WraithSCBW"/>
         <DataRecord Entry="Requirement,WraithSCBW"/>
         <DataRecord Entry="RequirementNode,WraithSCBW"/>
+        <DataRecord Entry="Actor,WraithSCBW@SOpBanker"/>
+        <DataRecord Entry="Model,WraithSCBW@Evade"/>
+        <DataRecord Entry="RequirementNode,WraithSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,WraithSCBW@Show"/>
+        <DataRecord Entry="Tactical,WraithSCBW"/>
         <UpgradeInfoWeapon index="1" DamagePerDice="2"/>
         <TechInfoUpgradeUsed value="WraithSCBWEnergyUpgrade"/>
     </CDataCollectionUnit>
+    <CDataCollectionUpgrade id="MechPlating" parent="TerranUpgradeLeveledSCBW">
+        <EditorCategories value="DataGroup:Research,DataFamily:Campaign,ObjectType:Unit,Race:Terran"/>
+        <DataRecord Entry="Abil,MechPlating"/>
+        <DataRecord Entry="Button,MechPlating"/>
+        <DataRecord Entry="Button,MechPlating@Lvl2"/>
+        <DataRecord Entry="Button,MechPlating@Lvl3"/>
+        <DataRecord Entry="Button,MechPlating@Lvl1"/>
+        <DataRecord Entry="Requirement,MechPlating"/>
+        <DataRecord Entry="Requirement,MechPlating@Lvl2"/>
+        <DataRecord Entry="Requirement,MechPlating@Lvl3"/>
+        <DataRecord Entry="Requirement,MechPlating@Lvl1"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Show"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl2"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl2Show"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl3"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl3Show"/>
+        <DataRecord Entry="RequirementNode,MechPlating@QoB"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Count"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl1QoB"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl2QoB"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl3QoB"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl1NotQoB"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl2NotQoB"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl3NotQoB"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl1Count"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl2Count"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl3Count"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl1Show"/>
+        <DataRecord Entry="RequirementNode,MechPlating@Lvl1"/>
+        <DataRecord Entry="Upgrade,MechPlating"/>
+        <DataRecord Entry="Upgrade,MechPlating@Lvl1"/>
+        <DataRecord Entry="Upgrade,MechPlating@Lvl2"/>
+        <DataRecord Entry="Upgrade,MechPlating@Lvl3"/>
+    </CDataCollectionUpgrade>
     <CTurret id="BattlecruiserSCBW@Turret">
         <YawArc value="90"/>
         <YawRate value="1999.8632"/>
@@ -6254,7 +6527,7 @@
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
             <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
-            <LayoutButtons Face="DropshipSCBW@Load" Type="AbilCmd" AbilCmd="DropshipSCBW@Transport,Load" Row="2" Column="0"/>
+            <LayoutButtons Face="DropshipSCBW@Load" Type="AbilCmd" AbilCmd="DropshipSCBW@Transport,Load" Row="2" Column="2"/>
         </CardLayouts>
         <Radius value="0.75"/>
         <SeparationRadius value="0.75"/>
@@ -6263,12 +6536,13 @@
         <ScoreResult value="BuildOrder"/>
         <SubgroupPriority value="60"/>
         <MinimapRadius value="1"/>
+        <TacticalAIThink value="AIThinkDropshipSCBW"/>
         <AIEvalFactor value="0.2"/>
         <GlossaryPriority value="185"/>
-        <TacticalAIThink value="AIThinkDropshipSCBW"/>
         <GlossaryWeakArray value="MissileTurretSCBW"/>
         <GlossaryWeakArray value="SporeColonySCBW"/>
         <GlossaryWeakArray value="PhotonCannonSCBW"/>
+        <GlossaryAlias value="DropshipSCBW"/>
     </CUnit>
     <CUnit id="GoliathSCBW" parent="TerranVehicleSCBW">
         <DeathRevealRadius value="3"/>
@@ -6514,6 +6788,7 @@
             <ChanceArray index="Turn" value="33"/>
         </Fidget>
         <TacticalAIThink value="AIThinkSCVSCBW"/>
+        <Collide index="Locust" value="0"/>
     </CUnit>
     <CUnit id="SiegeTankSCBW" parent="TerranVehicleSCBW">
         <DeathRevealRadius value="3"/>
@@ -6649,7 +6924,6 @@
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Ground" value="1"/>
         <Collide index="ForceField" value="1"/>
-        <Collide index="Locust" value="1"/>
         <Collide index="Small" value="1"/>
         <LifeStart value="80"/>
         <LifeMax value="80"/>
@@ -7009,6 +7283,7 @@
         <AbilArray Link="MedicSCBWHeal"/>
         <AbilArray Link="MedicSCBWOpticFlare"/>
         <AbilArray Link="MedicSCBWRestoration"/>
+        <AbilArray Link="MarineSCBWStimpack"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -7039,6 +7314,43 @@
         <GlossaryWeakArray value="MarineSCBW"/>
         <GlossaryWeakArray value="ZerglingSCBW"/>
         <GlossaryWeakArray value="ZealotSCBW"/>
+    </CUnit>
+    <CUnit id="ChangelingMarineSCBW" parent="MarineSCBW">
+        <Name value="Unit/Name/Changeling"/>
+        <Race value="Zerg"/>
+        <FlagArray index="NoScore" value="1"/>
+        <FlagArray index="AILifetime" value="1"/>
+        <FlagArray index="AIChangeling" value="1"/>
+        <FlagArray index="ArmySelect" value="0"/>
+        <Food value="0"/>
+        <CostResource index="Minerals" value="0"/>
+        <KillXP value="0"/>
+        <AbilArray index="1" Link="move"/>
+        <AbilArray index="2" removed="1"/>
+        <AbilArray index="3" removed="1"/>
+        <BehaviorArray Link="ChangelingDisable"/>
+        <CardLayouts index="0">
+            <LayoutButtons index="4" Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
+            <LayoutButtons index="5" Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+        </CardLayouts>
+        <CargoSize value="0"/>
+        <ScoreMake value="0"/>
+        <ScoreKill value="0"/>
+        <SubgroupPriority value="5"/>
+        <TacticalAIThink value="AIThinkChangelingMarine"/>
+        <LeaderAlias value="Changeling"/>
+        <HotkeyAlias value="Changeling"/>
+        <SelectAlias value="Changeling"/>
+        <SubgroupAlias value="Changeling"/>
+        <GlossaryCategory value=""/>
+        <GlossaryPriority value="0"/>
+        <GlossaryStrongArray index="0" removed="1"/>
+        <GlossaryStrongArray index="1" removed="1"/>
+        <GlossaryStrongArray index="2" removed="1"/>
+        <GlossaryWeakArray index="0" removed="1"/>
+        <GlossaryWeakArray index="1" removed="1"/>
+        <GlossaryWeakArray index="2" removed="1"/>
+        <HotkeyCategory value=""/>
     </CUnit>
     <CBehaviorBuff id="ScienceVesselSCBWDefensiveMatrix@Data">
         <InfoFlags index="Hidden" value="1"/>
@@ -7081,7 +7393,7 @@
         <Alignment value="Negative"/>
         <InfoIcon value="Assets\Textures\btn-upgrade-swann-irradiate.dds"/>
         <EditorCategories value="AbilityorEffectType:Units"/>
-        <Duration value="37.5"/>
+        <Duration value="34.5"/>
         <Period value="1"/>
         <PeriodicEffect value="ScienceVesselSCBWIrradiate@SearchPeriodic"/>
         <BehaviorCategories index="Restorable" value="1"/>
@@ -7186,6 +7498,27 @@
         </Modification>
         <DisableValidatorArray value="WraithSCBWCloak@Disable"/>
     </CBehaviorBuff>
+    <CUpgrade default="1" id="MechPlating" parent="SCBW_Upgrade">
+        <Race value="Terr"/>
+        <ScoreCount value="ArmorTechnologyCount"/>
+        <ScoreValue value="ArmorTechnologyValue"/>
+        <ScoreResult value="BuildOrder"/>
+        <EffectArray Operation="Set" Reference="Actor,DropshipSCBW,LifeArmorIcon" Value="##otherIcon##"/>
+        <EffectArray Operation="Set" Reference="Actor,WraithSCBW,LifeArmorIcon" Value="##otherIcon##"/>
+        <EffectArray Operation="Set" Reference="Actor,ValkyrieSCBW,LifeArmorIcon" Value="##otherIcon##"/>
+        <EffectArray Operation="Set" Reference="Actor,ScienceVesselSCBW,LifeArmorIcon" Value="##otherIcon##"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="##otherIcon##"/>
+        <EffectArray Operation="Set" Reference="Actor,VultureSCBW,LifeArmorIcon" Value="##icon##"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBW,LifeArmorIcon" Value="##icon##"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBWSieged,LifeArmorIcon" Value="##icon##"/>
+        <EffectArray Operation="Set" Reference="Actor,GoliathSCBW,LifeArmorIcon" Value="##icon##"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="##icon##"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmorLevel" Value="1"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmor" Value="{DataCollection,^ParamId^,UpgradeInfoUnitLifeArmorPerLevel}"/>
+        <EditorCategories value="Race:Terran,UpgradeType:ArmorBonus"/>
+        <BonusResourcePerLevel index="Minerals" value="75"/>
+        <BonusResourcePerLevel index="Vespene" value="75"/>
+    </CUpgrade>
     <CUpgrade id="WraithSCBWCloak@Upgrade">
         <Icon value="Assets\Textures\btn-ability-terran-cloak-color.dds"/>
         <Alert value="ResearchComplete"/>
@@ -7207,7 +7540,7 @@
         <Race value="Terr"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <AffectedUnitArray value="Ghost"/>
+        <AffectedUnitArray value="GhostSCBW"/>
         <LeaderAlias value="GhostSCBWCloak@Upgrade"/>
     </CUpgrade>
     <CUpgrade id="GhostSCBWCloak@Upgrade">
@@ -7224,6 +7557,83 @@
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
         <AffectedUnitArray value="MarineSCBW"/>
-        <AffectedUnitArray value="FirebatSCBW"/>
+    </CUpgrade>
+    <CUpgrade id="MechPlating@Lvl1" otherIcon="Assets\Textures\btn-upgrade-terran-shipplatinglevel1.dds" icon="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds">
+        <ScoreAmount value="300"/>
+        <LeaderLevel value="1"/>
+        <Flags index="IgnoreInvalidReferenceInTemplate" value="1"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <Race value="Terr"/>
+        <ScoreCount value="ArmorTechnologyCount"/>
+        <ScoreValue value="ArmorTechnologyValue"/>
+        <ScoreResult value="BuildOrder"/>
+        <EffectArray Operation="Set" Reference="Actor,DropshipSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,WraithSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,ValkyrieSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,ScienceVesselSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,VultureSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBWSieged,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,GoliathSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel1.dds"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmorLevel" Value="1"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmor" Value="{DataCollection,^ParamId^,UpgradeInfoUnitLifeArmorPerLevel}"/>
+        <EditorCategories value="Race:Terran,UpgradeType:ArmorBonus"/>
+        <DataCollection value="MechPlating"/>
+        <BonusResourcePerLevel index="Minerals" value="75"/>
+        <BonusResourcePerLevel index="Vespene" value="75"/>
+    </CUpgrade>
+    <CUpgrade id="MechPlating@Lvl2" otherIcon="Assets\Textures\btn-upgrade-terran-shipplatinglevel2.dds" icon="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds">
+        <ScoreAmount value="450"/>
+        <LeaderLevel value="2"/>
+        <Flags index="IgnoreInvalidReferenceInTemplate" value="1"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <Race value="Terr"/>
+        <ScoreCount value="ArmorTechnologyCount"/>
+        <ScoreValue value="ArmorTechnologyValue"/>
+        <ScoreResult value="BuildOrder"/>
+        <EffectArray Operation="Set" Reference="Actor,DropshipSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,WraithSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,ValkyrieSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,ScienceVesselSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,VultureSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBWSieged,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,GoliathSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel2.dds"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmorLevel" Value="1"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmor" Value="{DataCollection,^ParamId^,UpgradeInfoUnitLifeArmorPerLevel}"/>
+        <EditorCategories value="Race:Terran,UpgradeType:ArmorBonus"/>
+        <DataCollection value="MechPlating"/>
+        <BonusResourcePerLevel index="Minerals" value="75"/>
+        <BonusResourcePerLevel index="Vespene" value="75"/>
+    </CUpgrade>
+    <CUpgrade id="MechPlating@Lvl3" otherIcon="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" icon="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds">
+        <ScoreAmount value="600"/>
+        <LeaderLevel value="3"/>
+        <Flags index="IgnoreInvalidReferenceInTemplate" value="1"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <Race value="Terr"/>
+        <ScoreCount value="ArmorTechnologyCount"/>
+        <ScoreValue value="ArmorTechnologyValue"/>
+        <ScoreResult value="BuildOrder"/>
+        <EffectArray Operation="Set" Reference="Actor,DropshipSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,WraithSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,ValkyrieSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,ScienceVesselSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,VultureSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,SiegeTankSCBWSieged,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,GoliathSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <EffectArray Operation="Set" Reference="Actor,BattlecruiserSCBW,LifeArmorIcon" Value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmorLevel" Value="1"/>
+        <EffectArrayTemplate Reference="Unit,^ParamId^,LifeArmor" Value="{DataCollection,^ParamId^,UpgradeInfoUnitLifeArmorPerLevel}"/>
+        <EditorCategories value="Race:Terran,UpgradeType:ArmorBonus"/>
+        <DataCollection value="MechPlating"/>
+        <BonusResourcePerLevel index="Minerals" value="75"/>
+        <BonusResourcePerLevel index="Vespene" value="75"/>
     </CUpgrade>
 </Catalog>

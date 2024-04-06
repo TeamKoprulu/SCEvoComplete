@@ -44,9 +44,41 @@
         <Value value="##unitName##"/>
         <WhichUnit Value="Source"/>
     </CValidatorUnitType>
+    <CValidatorCombine id="ArchonSCBWWeapon@SplashValidator">
+        <Type value="And"/>
+        <CombineArray value="NotBurrowed"/>
+        <CombineArray value="ArchonSCBWWeapon@TargetCondition"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArchonSCBWWeapon@SplashInnerValidator">
+        <Type value="And"/>
+        <CombineArray value="NotUnderDarkSwarm"/>
+        <CombineArray value="TargetIsEnemyORNeutralSCBW"/>
+    </CValidatorCombine>
+    <CValidatorCondition id="ArchonSCBWWeapon@TargetCondition">
+        <IfArray Test="UnderDarkSwarmCombine" Return="CasterAttackingTargetSCBW"/>
+        <Else value="TargetIsEnemyORNeutralSCBW"/>
+    </CValidatorCondition>
     <CValidatorCombine id="CasterAttackingTargetORFirebatSCBW@DamageFilters">
         <CombineArray value="CasterAttackingTargetSCBW"/>
         <CombineArray value="FirebatSCBW@DamageFilters"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="SC1_MissCheckPrimary">
+        <Type value="And"/>
+        <CombineArray value="SC1_HasMissChance"/>
+        <CombineArray value="SC1_MissCheck"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="SC1_HasMissChance">
+        <Compare value="GT"/>
+        <Behavior value="SC1_MissChance"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="SCBW_TargetNotStasisNotStunnedNotDead">
+        <Type value="And"/>
+        <CombineArray value="SCBW_NotStasisNotStunned"/>
+        <CombineArray value="TargetNotDead"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="TargetIsEnemyORNeutralSCBW">
+        <CombineArray value="TargetIsEnemy"/>
+        <CombineArray value="TargetIsNeutral"/>
     </CValidatorCombine>
     <CValidatorUnitFilters id="FirebatSCBW@DamageFilters">
         <Filters value="-;Player"/>
@@ -170,7 +202,28 @@
     <CValidatorLocationInPlayableMapArea id="LocationNotPlayable">
         <Find value="0"/>
     </CValidatorLocationInPlayableMapArea>
-    <CValidatorEffectTreeUserData id="UnknownValidator"/>
+    <CValidatorPlayerRequirement id="UltraliskSCBWSpeedUpgrade">
+        <Find value="1"/>
+        <Value value="UltraliskSCBWSpeedUpgrade@Use"/>
+        <WhichUnit Value="Target"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorCombine id="UnderDarkSwarmMissCheck">
+        <Type value="And"/>
+        <CombineArray value="SC1_HasMissChance"/>
+        <CombineArray value="UnderDarkSwarmCombine"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ValkyrieSCBWWeapon@PersistentValidator">
+        <Type value="And"/>
+        <CombineArray value="ValkyrieSCBWWeapon@Range"/>
+        <CombineArray value="SCBW_CasterNotStasisNotStunnedNotDead"/>
+        <CombineArray value="TargetNotDead"/>
+        <CombineArray value="NotStasis"/>
+    </CValidatorCombine>
+    <CValidatorLocationCompareRange id="ValkyrieSCBWWeapon@Range">
+        <WhichLocation Value="TargetUnitOrPoint"/>
+        <Compare value="LE"/>
+        <Range value="7"/>
+    </CValidatorLocationCompareRange>
     <CValidatorPlayerRequirement id="VultureSCBWSpeedUpgrade">
         <Value value="VultureSCBWSpeedUpgrade"/>
     </CValidatorPlayerRequirement>
@@ -198,7 +251,7 @@
         <CombineArray value="SourceIsAirFilter"/>
         <CombineArray value="DefenderInShrubOrHasShrubBuff"/>
     </CValidatorCombine>
-    <CValidatorEffectTreeUserData id="SiegeTankSCBWSiegedWeapon@Missed">
+    <CValidatorEffectTreeUserData id="SCBWWeapon@Missed">
         <Key value="Missed"/>
         <Value value="1"/>
     </CValidatorEffectTreeUserData>
@@ -485,13 +538,6 @@
     <CValidatorCombine id="QueenSCBWSpawnBroodlings@CU" parent="SCBW_Effect">
         <CombineArray value="NotHallucinationTarget"/>
     </CValidatorCombine>
-    <CValidatorCombine id="ReaverSCBWWeapon@CP" parent="SCBW_Effect">
-        <CombineArray value="ReaverSCBWHangar@NotArmed"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="ReaverSCBWWeapon@Reveal@Disable" parent="SCBW_Behavior"/>
-    <CValidatorCombine id="ReaverSCBWWeapon@Reveal@Remove" parent="SCBW_Behavior">
-        <CombineArray value="NotCloaked"/>
-    </CValidatorCombine>
     <CValidatorCombine id="RequiresTerranSCBW">
         <ResultFailed value="MustTargetRace"/>
         <CombineArray value="IsTerranSCBW"/>
@@ -503,12 +549,6 @@
         <CombineArray value="HiddenCompareAB"/>
         <CombineArray value="NotVortexd"/>
         <CombineArray value="NotStasis"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="ReaverSCBWWeapon@Suicide" parent="SCBW_Effect">
-        <CombineArray value="CasterIsNotHidden"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="ReaverSCBWWeapon@CP@Periodic" parent="SCBW_Effect">
-        <CombineArray value="CasterNotDead"/>
     </CValidatorCombine>
     <CValidatorCombine id="CarrierSCBWWeapon@CP@Periodic" parent="SCBW_Effect">
         <CombineArray value="CasterNotDead"/>
@@ -542,6 +582,7 @@
         <CombineArray value="NotUncommandable"/>
         <CombineArray value="SourceNotHidden"/>
         <CombineArray value="NotInterceptor"/>
+        <CombineArray value="NotInterceptorSCBW"/>
         <ResultFailed value="CantTargetThatUnit"/>
     </CValidatorCombine>
     <CValidatorCombine id="MarineSCBWStimpack@Tactical">
@@ -885,4 +926,16 @@
         <Compare value="GT"/>
         <Vital value="Shields"/>
     </CValidatorUnitCompareVital>
+    <CValidatorUnitCompareField id="DisguiseAsMarineSCBW">
+        <Field value="Race"/>
+        <Value value="BWTe"/>
+    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareField id="DisguiseAsZealotSCBW">
+        <Field value="Race"/>
+        <Value value="BWPr"/>
+    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareField id="DisguiseAsZerglingSCBW">
+        <Field value="Race"/>
+        <Value value="BWZe"/>
+    </CValidatorUnitCompareField>
 </Catalog>

@@ -38,6 +38,61 @@
         <EffectArray value="SC1_ShieldsParam"/>
         <EffectArray value="##x##@DamageAccum"/>
     </CEffectSet>
+    <CEffectSwitch id="DisguiseEx3">
+        <CaseArray Validator="DisguiseAsMarineSCBW" Effect="DisguiseAsMarineSCBWCU"/>
+        <CaseArray Validator="DisguiseAsZealotSCBW" Effect="DisguiseAsZealotSCBWCU"/>
+        <CaseArray Validator="DisguiseAsZerglingSCBW" Effect="DisguiseAsZerglingSCBWCU"/>
+    </CEffectSwitch>
+    <CEffectSet id="ArchonSCBWWeapon@Impact">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArchonSCBWWeapon@Damage"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSet>
+    <CEffectDamage id="DarkArchonSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <Amount value="6"/>
+        <SearchFlags index="CallForHelp" value="0"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+        <SearchFlags index="OffsetAreaByAngle" value="0"/>
+    </CEffectDamage>
+    <CEffectSet id="ArchonSCBWWeapon@InitialSet">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="ArchonSCBWWeapon@MissChance"/>
+        <EffectArray value="ArchonSCBWWeapon@MissSwitch"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="ArchonSCBWWeapon@Miss">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Effect="ArchonSCBWWeapon@InitialSet"/>
+        <OffsetVectorStartLocation Effect="ArchonSCBWWeapon@InitialSet" Value="TargetPoint"/>
+        <OffsetVectorEndLocation Value="CasterUnitOrPoint"/>
+        <InitialEffect value="ArchonSCBWWeapon@MissDummy"/>
+        <InitialOffset value="0,-1.1,0"/>
+        <FinalEffect value="ArchonSCBWWeapon@Impact"/>
+        <FinalOffset value="0,-1.1,0"/>
+    </CEffectCreatePersistent>
+    <CEffectUserData id="ArchonSCBWWeapon@MissChance">
+        <ValidatorArray value="SC1_MissCheckPrimary"/>
+        <EditorCategories value="Race:Terran"/>
+        <Chance value="0.4687"/>
+        <Key value="Missed"/>
+        <SourceKey value="Missed"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectDamage id="ArchonSCBWWeapon@MissDummy">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <AreaArray/>
+        <SearchFlags index="OffsetAreaByAngle" value="1"/>
+    </CEffectDamage>
+    <CEffectSwitch id="ArchonSCBWWeapon@MissSwitch">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="ArchonSCBWWeapon@Miss"/>
+        <CaseArray Validator="SCBWWeapon@Missed" Effect="ArchonSCBWWeapon@Miss"/>
+        <CaseDefault value="ArchonSCBWWeapon@Impact"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSwitch>
     <CEffectSet id="CarryHarvestableVespeneGeyserGasInitial">
         <EffectArray value="CarryHarvestableVespeneGeyserGasSearchForGeyser"/>
     </CEffectSet>
@@ -194,7 +249,7 @@
         <EffectArray value="SiegeTankSCBWSiegedWeapon@MissSwitch"/>
     </CEffectSet>
     <CEffectUserData id="SiegeTankSCBWSiegedWeapon@MissChance">
-        <ValidatorArray value="SC1_MissCheck"/>
+        <ValidatorArray value="SC1_MissCheckPrimary"/>
         <EditorCategories value="Race:Terran"/>
         <Chance value="0.4687"/>
         <Key value="Missed"/>
@@ -203,8 +258,8 @@
     </CEffectUserData>
     <CEffectSwitch id="SiegeTankSCBWSiegedWeapon@MissSwitch">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmCombine" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
-        <CaseArray Validator="SiegeTankSCBWSiegedWeapon@Missed" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
+        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
+        <CaseArray Validator="SCBWWeapon@Missed" Effect="SiegeTankSCBWSiegedWeapon@Miss"/>
         <CaseDefault value="SiegeTankSCBWSiegedWeapon@Switch"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
@@ -849,6 +904,8 @@
         <PeriodicPeriodArray value="0.65"/>
         <PeriodicPeriodArray value="0.65"/>
         <PeriodicPeriodArray value="0.65"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodicValidator value="ValkyrieSCBWWeapon@PersistentValidator"/>
     </CEffectCreatePersistent>
     <CEffectDamage id="ValkyrieSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW">
         <EditorCategories value="Race:Terran"/>
@@ -1057,73 +1114,15 @@
         <Kind value="Ranged"/>
         <KindSplash value="Splash"/>
         <Amount value="30"/>
-        <AreaArray Radius="0.0937" Fraction="1"/>
-        <AreaArray Radius="0.4687" Fraction="0.5"/>
-        <AreaArray Radius="0.9375" Fraction="0.25"/>
+        <AreaArray Radius="0.0937" Fraction="1" Validator="ArchonSCBWWeapon@SplashInnerValidator"/>
+        <AreaArray Radius="0.4687" Fraction="0.5" Validator="ArchonSCBWWeapon@SplashValidator"/>
+        <AreaArray Radius="0.9375" Fraction="0.25" Validator="ArchonSCBWWeapon@SplashValidator"/>
         <ExcludeArray Value="Outer"/>
-        <ExcludeArray Value="Target"/>
-        <SearchFilters value="-;Player,Ally,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFilters value="-;Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <SearchFlags index="OffsetByUnitRadius" value="0"/>
         <SearchFlags index="SameCliff" value="0"/>
         <Visibility value="Visible"/>
     </CEffectDamage>
-    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABReveal">
-        <Behavior value="ReaverSCBWWeapon@Reveal"/>
-    </CEffectApplyBehavior>
-    <CEffectSet id="ReaverSCBWWeapon@Suicide">
-        <ValidatorArray value="ReaverSCBWWeapon@Suicide"/>
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@Damage"/>
-        <EffectArray value="Suicide"/>
-    </CEffectSet>
-    <CEffectDamage id="ReaverSCBWWeapon@Damage" parent="DU_WEAP">
-        <Kind value="Ranged"/>
-        <KindSplash value="Splash"/>
-        <Amount value="100"/>
-        <Death value="Blast"/>
-        <AreaArray Radius="0.625" Fraction="1"/>
-        <AreaArray Radius="1.25" Fraction="0.5" Validator="NotBurrowed"/>
-        <AreaArray Radius="1.875" Fraction="0.25" Validator="NotBurrowed"/>
-        <AreaArray Radius="1.5" Fraction="0.25"/>
-        <ExcludeArray Value="Target"/>
-        <SearchFilters value="Ground;Self,Player,Missile,Stasis,Dead,Hidden,Invulnerable"/>
-        <Visibility value="Visible"/>
-    </CEffectDamage>
-    <CEffectLaunchMissile id="ReaverSCBWWeapon@LM">
-        <EditorCategories value="Race:Protoss"/>
-        <ImpactEffect value="ReaverSCBWWeapon@Suicide"/>
-        <AmmoUnit value="ReaverSCBWWeapon@Missile"/>
-        <ImpactRange value="1"/>
-    </CEffectLaunchMissile>
-    <CEffectCreatePersistent id="ReaverSCBWWeapon@CP">
-        <ValidatorArray value="ReaverSCBWWeapon@CP"/>
-        <EditorCategories value="Race:Protoss"/>
-        <WhichLocation Value="TargetUnit"/>
-        <TimeScaleSource Value="Caster"/>
-        <Flags index="Channeled" value="1"/>
-        <PeriodCount value="1"/>
-        <PeriodicValidator value="ReaverSCBWWeapon@CP@Periodic"/>
-        <PeriodicEffectArray value="ReaverSCBWWeapon@Set"/>
-        <PeriodicPeriodArray value="0.75"/>
-    </CEffectCreatePersistent>
-    <CEffectSet id="ReaverSCBWWeapon@SetInitial">
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@CP"/>
-    </CEffectSet>
-    <CEffectSet id="ReaverSCBWWeapon@Set">
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@ABReveal"/>
-        <EffectArray value="ReaverSCBWWeapon@UM"/>
-        <EffectArray value="ReaverSCBWWeapon@LM"/>
-    </CEffectSet>
-    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABTimedLife">
-        <EditorCategories value="Race:Protoss"/>
-        <Behavior value="ReaverSCBWWeapon@TimedLife"/>
-    </CEffectApplyBehavior>
-    <CEffectUseMagazine id="ReaverSCBWWeapon@UM">
-        <EditorCategories value="Race:Protoss"/>
-        <AmmoEffect value="ReaverSCBWWeapon@ABTimedLife"/>
-    </CEffectUseMagazine>
     <CEffectDamage id="ScoutSCBWWeaponGround@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Protoss"/>
         <Visibility value="Visible"/>
@@ -1168,6 +1167,12 @@
         <EffectArray value="SC1_ShieldsParam"/>
         <EffectArray value="SiegeTankSCBWSiegedWeapon@DamageAccum"/>
     </CEffectSet>
+    <CEffectDamage id="FakeWeaponDummy" parent="DU_WEAP">
+        <ResponseFlags index="Acquire" value="0"/>
+        <ResponseFlags index="Flee" value="0"/>
+        <Visibility value="Hidden"/>
+        <Flags index="Notification" value="0"/>
+    </CEffectDamage>
     <CEffectApplyBehavior id="SpiderMineSCBW@ABInvulnerable">
         <ValidatorArray index="0" value="SpiderMineSCBW@ABInvulnerable"/>
         <EditorCategories value="Race:Terran"/>
@@ -1374,4 +1379,16 @@
         <Kind value="Ranged"/>
         <Amount value="15"/>
     </CEffectDamage>
+    <CEffectApplyBehavior id="DropshipSCBWSpeedBoost">
+        <EditorCategories value="Race:Terran"/>
+    </CEffectApplyBehavior>
+    <CEffectCreateUnit id="DisguiseAsZealotSCBWCU" parent="DisguiseEx3CU">
+        <SpawnUnit value="ChangelingZealotSCBW"/>
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="DisguiseAsMarineSCBWCU" parent="DisguiseEx3CU">
+        <SpawnUnit value="ChangelingMarineSCBW"/>
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="DisguiseAsZerglingSCBWCU" parent="DisguiseEx3CU">
+        <SpawnUnit value="ChangelingZerglingSCBW"/>
+    </CEffectCreateUnit>
 </Catalog>
