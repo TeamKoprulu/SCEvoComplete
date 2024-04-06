@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectDamage id="ScarabSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="SourceUnit"/>
+        <Visibility value="Visible"/>
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="100"/>
+        <Death value="Blast"/>
+        <AreaArray Radius="0.625" Fraction="1"/>
+        <AreaArray Radius="1.25" Fraction="0.5" Validator="NotBurrowed"/>
+        <AreaArray Radius="1.875" Fraction="0.25" Validator="NotBurrowed"/>
+        <AreaArray Radius="1.5" Fraction="0.25"/>
+        <ExcludeArray Value="Source"/>
+        <IncludeArray Value="Target"/>
+        <SearchFilters value="Ground;Self,Player,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CEffectDamage>
+    <CEffectSet id="ScarabSCBWWeapon@Impact">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ScarabSCBWWeapon@Damage"/>
+        <EffectArray value="Suicide"/>
+    </CEffectSet>
     <CEffectDamage id="HighTemplarSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Protoss"/>
         <Visibility value="Visible"/>
@@ -346,25 +367,17 @@
     </CEffectCreateUnit>
     <CEffectSet id="ReaverSCBWWeapon@CUSet">
         <EditorCategories value="Race:Protoss"/>
-        <CanBeBlocked value="1"/>
         <EffectArray value="ReaverSCBWWeapon@Attack"/>
         <EffectArray value="ApplyNeuraldUpgradesSet"/>
-        <EffectArray value="ReaverSCBWWeapon@Warning"/>
+        <EffectArray value="ReaverSCBWWeapon@WarningBuff"/>
         <EffectArray value="ReaverSCBWWeapon@TrackTargetPosition"/>
         <EffectArray value="ReaverSCBWWeapon@ScarabTrack"/>
         <EffectArray value="ReaverSCBWWeapon@KillsToCaster"/>
         <TargetLocationType value="Unknown"/>
     </CEffectSet>
-    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABReveal">
-        <Behavior value="ReaverSCBWWeapon@Reveal"/>
-    </CEffectApplyBehavior>
-    <CEffectSet id="ReaverSCBWWeapon@Suicide">
-        <ValidatorArray value="ReaverSCBWWeapon@Suicide"/>
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@Damage"/>
-        <EffectArray value="Suicide"/>
-    </CEffectSet>
     <CEffectDamage id="ReaverSCBWWeapon@Damage" parent="DU_WEAP">
+        <EditorCategories value="Race:Protoss"/>
+        <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <KindSplash value="Splash"/>
         <Amount value="100"/>
@@ -375,7 +388,6 @@
         <AreaArray Radius="1.5" Fraction="0.25"/>
         <ExcludeArray Value="Target"/>
         <SearchFilters value="Ground;Self,Player,Missile,Stasis,Dead,Hidden,Invulnerable"/>
-        <Visibility value="Visible"/>
     </CEffectDamage>
     <CEffectLaunchMissile id="ReaverSCBWWeapon@LM">
         <EditorCategories value="Race:Protoss"/>
@@ -383,6 +395,9 @@
         <AmmoUnit value="ReaverSCBWWeapon@Missile"/>
         <ImpactRange value="1"/>
     </CEffectLaunchMissile>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABReveal">
+        <Behavior value="ReaverSCBWWeapon@Reveal"/>
+    </CEffectApplyBehavior>
     <CEffectCreatePersistent id="ReaverSCBWWeapon@CP">
         <ValidatorArray value="ReaverSCBWWeapon@CP"/>
         <EditorCategories value="Race:Protoss"/>
@@ -394,6 +409,12 @@
         <PeriodicEffectArray value="ReaverSCBWWeapon@Set"/>
         <PeriodicPeriodArray value="0.75"/>
     </CEffectCreatePersistent>
+    <CEffectSet id="ReaverSCBWWeapon@Suicide">
+        <ValidatorArray value="ReaverSCBWWeapon@Suicide"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@Damage"/>
+        <EffectArray value="Suicide"/>
+    </CEffectSet>
     <CEffectSet id="ReaverSCBWWeapon@SetInitial">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="ReaverSCBWWeapon@CU"/>
@@ -460,6 +481,11 @@
         <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
         <Effect value="CancelAttackOrders"/>
     </CEffectEnumTrackedUnits>
+    <CEffectModifyUnit id="ReaverSCBWWeapon@SetCooldown">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactUnit Value="Caster"/>
+        <Weapon Weapon="ReaverSCBWWeapon" CooldownOperation="Max" CooldownAmount="0.501"/>
+    </CEffectModifyUnit>
     <CAbilEffectTarget id="ArbiterSCBWStasisField" parent="SCBW_AbilTarget">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <Effect index="0" value="ArbiterSCBWStasisField@Search"/>
@@ -808,7 +834,10 @@
         <CombineArray value="NotPointDefenseDrone"/>
         <CombineArray value="IsNotEgg"/>
         <CombineArray value="NotLarva"/>
+        <CombineArray value="NotLarvaSCBW"/>
+        <CombineArray value="NotEggSCBW"/>
         <CombineArray value="DarkArchonSCBWMindControl@PreventionNot"/>
+        <ResultFailed value="CantTargetThatUnit"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="DarkArchonSCBWMindControl@PreventionNot">
         <ResultFailed value="Error,Error/DarkArchonMindControlPrevention"/>
@@ -2900,7 +2929,11 @@
             <Image value="Assets\Textures\Wireframe-Protoss-DarkTemplar01-Shield03.dds"/>
         </WireframeShield>
     </CActorUnit>
-    <CActorAction id="ReaverSCBWWeapon@Action" parent="GenericAttack" effectImpact="ReaverSCBWWeapon@Damage" effectLaunch="ReaverSCBWWeapon@LM">
+    <CActorAction id="ReaverSCBWWeapon@Action" parent="GenericAttack" effectAttack="ReaverSCBWWeapon@SetInitial">
+        <LaunchAssets Sound="ReaverSCBWWeapon@Launch"/>
+        <ShieldFlashType value="None"/>
+    </CActorAction>
+    <CActorAction id="ReaverSCBWWeapon@ActionOld" parent="GenericAttack" effectImpact="ReaverSCBWWeapon@Damage" effectLaunch="ReaverSCBWWeapon@LM">
         <LaunchAssets Sound="ReaverSCBWWeapon@Launch"/>
         <Missile value="ReaverSCBWWeapon@Missile"/>
         <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
@@ -2911,6 +2944,21 @@
     <CActorMissile id="ReaverSCBWWeapon@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="ReaverSCBWWeapon@Missile">
         <Macros value="GlobalLoopMacro"/>
     </CActorMissile>
+    <CModel id="ReaverSCBWWeapon@ImpactUpgraded" parent="ImpactFX">
+        <Model value="Assets\Effects\Protoss\SardineS_ReaverMod\Reaver_Missile_Impact_NoDistortion_LightPurple_HalfWhite.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CModel id="ScarabSCBW@Upgraded" parent="Unit" Race="Protoss">
+        <Model value="Assets\Effects\Protoss\SardineS_ReaverMod\Reaver_Missile_LightPurple_OnlyParticlesAndMaterials_CastShadows.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraLow03"/>
+        <Radius value="0.250000"/>
+        <SelectionRadius value="0.294000"/>
+        <ShadowRadius value="0.250000"/>
+        <SquibTypeDefault value="Metal"/>
+        <TechPurchaseCamera value="Star2CameraLow03"/>
+        <UnitGlossaryCamera value="Star2CameraLow03"/>
+    </CModel>
     <CModel id="ReaverSCBWWeapon@Impact" parent="ImpactFX">
         <Model value="Assets\Effects\Protoss\ReaverAttackImpact@SCBWEffect\ReaverAttackImpact@SCBWEffect.m3"/>
         <EditorCategories value="Race:Protoss"/>
@@ -3040,12 +3088,12 @@
         <VariationCount value="2"/>
     </CModel>
     <CModel id="ScarabSCBW" parent="Unit" Race="Protoss">
-        <Model value="Assets\Units\Test\InvisibleUnit\InvisibleUnit.m3"/>
+        <Model value="Assets\Effects\Protoss\SardineS_ReaverMod\Reaver_Missile_ShadowsCast.m3"/>
         <Occlusion value="Show"/>
         <PlanetPanelCamera value="Star2CameraLow03"/>
         <Radius value="0.250000"/>
         <SelectionRadius value="0.294000"/>
-        <ShadowRadius value="0.294000"/>
+        <ShadowRadius value="0.250000"/>
         <SquibTypeDefault value="Metal"/>
         <TechPurchaseCamera value="Star2CameraLow03"/>
         <UnitGlossaryCamera value="Star2CameraLow03"/>
@@ -5408,6 +5456,7 @@
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
         <EditorFlags index="NoPalettes" value="1"/>
         <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="15"/>
     </CUnit>
     <CUnit id="ReaverSCBWWeapon@Missile" parent="MISSILE_INVULNERABLE">
         <Race value="BWPr"/>
@@ -5496,10 +5545,13 @@
         <FlagArray index="Uncommandable" value="1"/>
         <FlagArray index="Unselectable" value="1"/>
         <FlagArray index="Untargetable" value="1"/>
+        <FlagArray index="KillCredit" value="0"/>
         <FlagArray index="Invulnerable" value="1"/>
         <FlagArray index="AILifetime" value="1"/>
         <FlagArray index="AICantAddToWave" value="1"/>
+        <FlagArray index="Unstoppable" value="1"/>
         <FlagArray index="PlayerRevivable" value="0"/>
+        <FlagArray index="CameraFollow" value="0"/>
         <EditorFlags index="NoPlacement" value="1"/>
         <EditorFlags index="BlockStructures" value="0"/>
         <PlaneArray index="Ground" value="1"/>
@@ -5517,7 +5569,7 @@
         <ShieldsMax value="10"/>
         <Speed value="9"/>
         <Acceleration value="1000"/>
-        <StationaryTurningRate value="999.8437"/>
+        <StationaryTurningRate value="180"/>
         <TurningRate value="999.8437"/>
         <Height value="0.5"/>
         <CostCategory value="Army"/>
@@ -5536,8 +5588,8 @@
             <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
         </CardLayouts>
-        <Radius value="0.125"/>
-        <SeparationRadius value="0.125"/>
+        <Radius value="0.375"/>
+        <SeparationRadius value="0.375"/>
         <SubgroupPriority value="19"/>
         <MinimapRadius value="0"/>
         <AIEvalFactor value="0"/>
@@ -5547,7 +5599,14 @@
         <BuildTime value="6.5625"/>
         <GlossaryCategory value=""/>
         <HotkeyCategory value=""/>
-        <Sight value="5"/>
+        <Sight value="1"/>
+        <DeathRevealRadius value="1"/>
+        <PushPriority value="0"/>
+        <Deceleration value="0.0625"/>
+        <LateralAcceleration value="46.0625"/>
+        <BehaviorArray Link="ReaverSCBWWeapon@ScarabTimedLife"/>
+        <BehaviorArray Link="ReaverSCBWWeapon@NoOrders"/>
+        <InnerRadius value="0.375"/>
     </CUnit>
     <CUnit id="ShuttleSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -6624,19 +6683,19 @@
     <CBehaviorBuff id="ReaverSCBWWeapon@NoWeaponWhenScarabIsLive">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
-        <DisableValidatorArray value="ScarabIsLive"/>
+        <DisableValidatorArray value="ReaverSCBWWeapon@ScarabIsAlive"/>
         <Period value="0.5"/>
-        <RefreshEffect value="SetCooldown"/>
-        <PeriodicEffect value="SetCooldown"/>
+        <RefreshEffect value="ReaverSCBWWeapon@SetCooldown"/>
+        <PeriodicEffect value="ReaverSCBWWeapon@SetCooldown"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@Disabled">
         <Alignment value="Negative"/>
         <InfoIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
-        <Requirements value="ScarabNotArmed"/>
+        <Requirements value="ReaverSCBWHangar@NotArmed"/>
         <Period value="0.5"/>
-        <RefreshEffect value="SetCooldown"/>
-        <PeriodicEffect value="SetCooldown"/>
+        <RefreshEffect value="ReaverSCBWWeapon@SetCooldown"/>
+        <PeriodicEffect value="ReaverSCBWWeapon@SetCooldown"/>
     </CBehaviorBuff>
     <!--Attack delayed by .7s when unloaded from a Warp Prism.-->
     <CBehaviorBuff id="ReaverSCBWWeapon@ReaverDelay">
@@ -6652,18 +6711,18 @@
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@ScarabTimedLife">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <RemoveValidatorArray value="CasterNotDead"/>
         <Duration value="5.6"/>
-        <ExpireEffect value="ScarabKamikazeTarget"/>
-        <RemoveValidatorArray value="CasterIsAlive"/>
+        <ExpireEffect value="ScarabSCBWWeapon@Impact"/>
     </CBehaviorBuff>
-    <CBehaviorBuff id="ReaverSCBWWeapon@DieIfNoOrder">
+    <CBehaviorBuff id="ReaverSCBWWeapon@NoOrders">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <DisableValidatorArray value="CasterNotAttacking"/>
-        <DisableValidatorArray value="CasterIsNotMoving"/>
+        <DisableValidatorArray value="SCBWCasterIsNotMoving"/>
+        <RemoveValidatorArray value="CasterNotDead"/>
         <Period value="0.05"/>
         <PeriodCount value="1"/>
-        <PeriodicEffect value="ScarabKamikazeTarget"/>
-        <RemoveValidatorArray value="CasterIsAlive"/>
+        <PeriodicEffect value="ScarabSCBWWeapon@Impact"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@Reveal">
         <Alignment value="Negative"/>
