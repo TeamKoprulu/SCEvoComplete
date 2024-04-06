@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectDamage id="StingerMissileWeapon@Damage">
+        <EditorCategories value="Race:Terran"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <ImpactLocation Value="TargetUnit"/>
+        <ArmorReduction value="1"/>
+        <Flags index="Notification" value="1"/>
+        <Kind value="Ranged"/>
+        <Amount value="12"/>
+        <Visibility value="Visible"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="StingerMissileWeapon@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="StingerMissileWeapon@Damage"/>
+        <AmmoUnit value="StingerMissileWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="StingerWeapon@Damage" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="8"/>
+        <Visibility value="Visible"/>
+    </CEffectDamage>
+    <CLight id="Stinger@Portrait" parent="default">
+        <ToDInfoArray index="0" AmbientColor="0.176471,0.000000,0.094118">
+            <Param index="HDRExposure" value="1.480000"/>
+            <Param index="HDRBloomThreshold" value="1.950000"/>
+            <DirectionalLight index="Key">
+                <Color value="0.956863,0.827451,0.647059"/>
+                <ColorMultiplier value="1.350000"/>
+                <SpecColorMultiplier value="2.818000"/>
+                <Direction value="-0.258168,0.314299,-0.913545"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" ColorMultiplier="0.390000" Direction="-0.314456,0.917928,-0.241922"/>
+            <DirectionalLight index="Back" Color="0.439216,0.070588,0.003922" ColorMultiplier="0.500000" Direction="-0.738852,0.475064,-0.477925"/>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
+    </CLight>
+    <CActorAction id="StingerMissileWeapon@Attack" parent="GenericAttack" effectImpact="StingerMissileWeapon@Damage" effectLaunch="StingerMissileWeapon@LM">
+        <!--<LaunchAttachQuery Methods="AMFilterWeaponRight"/>-->
+        <LaunchAssets Sound="StingerMissileWeapon@Launch"/>
+        <Missile value="StingerMissileWeapon@Missile"/>
+        <ImpactMap index="None" Model="StingerMissileWeapon@Impact" Sound="StingerMissileWeapon@Impact"/>
+    </CActorAction>
+    <CActorMissile id="StingerMissileWeapon@Missile" parent="GenericAttackMissile" unitName="StingerMissileWeapon@Missile"/>
+    <CActorTurret id="Stinger@Turret">
+        <On Terms="TurretEnable.Stinger" Send="Create"/>
+    </CActorTurret>
+    <CActorAction id="StingerWeapon@Attack" parent="GenericAttack" effectAttack="StingerWeapon@Damage">
+        <LaunchAssets Model="StingerWeapon@Launch" Sound="StingerWeapon@Launch"/>
+        <ImpactMap index="None" Model="StingerWeapon@Impact" Sound="StingerWeapon@Impact"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactPhysics Name="GauseCannonImpact" MatchKeys="Basic" Physics="AutoTurretAttackDeathForce"/>
+        <ImpactAttachQuery Methods="AMFilterTargetVolumes AMPreferGround AMArcTestWeapon AMVolumesWeightedPick"/>
+    </CActorAction>
+    <CActorUnit id="Stinger" parent="GenericUnitBase" unitName="Stinger">
+        <Aliases value="_UnitMedium"/>
+        <Macros value="UnloadDropAnim"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="PhysicsDeathsVoidGround"/>
+        <On Terms="UnitMovementUpdate.*.Walk" Send="TimerSet 0.250000 KillBeam"/>
+        <On Terms="Abil.attack.ReadyStop" Send="TimerSet 0.250000 KillBeam"/>
+        <On Terms="TimerExpired; TimerName KillBeam" Target="HellionAttackBeam" Send="Destroy"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create Hellion_Land"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="Stinger@Death" SoundLink="Stinger@Explode"/>
+        <DeathCustoms ModelLink="Stinger@DeathRagdoll" Name="RagdollBasic">
+            <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
+        <PortraitModel value="Stinger@Portrait"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="1.000000"/>
+            <RangeDown value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleLargeVehicle"/>
+        </TerrainSquibs>
+        <BarOffset value="50"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-terran-stingerscbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-stinger@scbw.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel0.dds"/>
+        <SoundArray index="Ready" value="Stinger@Ready"/>
+        <SoundArray index="Help" value="Stinger@Help"/>
+        <SoundArray index="What" value="Stinger@What"/>
+        <SoundArray index="Yes" value="Stinger@Yes"/>
+        <SoundArray index="Attack" value="Stinger@Attack"/>
+        <SoundArray index="Pissed" value="Stinger@Pissed"/>
+        <SoundArray index="Movement" value="Stinger@Movement"/>
+        <UnitFlags index="StandAnimBirthVariation" value="0"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-stinger@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-stingerscbw.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CModel id="StingerMissileWeapon@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Terran\MagneticMineMissile\MagneticMineMissile.m3"/>
+        <EditorCategories value="Race:Terran"/>
+        <Occlusion value="Show"/>
+    </CModel>
+    <CModel id="StingerMissileWeapon@Impact" parent="LaunchFX">
+        <Model value="Assets\Effects\Terran\TerranSmallBlast\TerranSmallBlast.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
+    <CModel id="StingerWeapon@Impact" parent="ImpactFX">
+        <Model value="Assets\Effects\Terran\AutoTurretWeaponImpact\AutoTurretWeaponImpact.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
+    <CModel id="StingerWeapon@Launch" parent="LaunchFX">
+        <Model value="Assets\Effects\Terran\AutoTurretWeaponLaunch\AutoTurretWeaponLaunch.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
+    <CModel id="Stinger@Portrait" parent="Portrait" Race="Terran">
+        <Model value="Assets\Portraits\Terran\Stinger\Stinger@PortraitSCBW.m3"/>
+        <FacialController value="LocalizedData\Facial\HellionPortrait.fxa"/>
+        <Flags index="Facial" value="1"/>
+        <Image value="Assets\Textures\HellionPortrait_Static.dds"/>
+        <PausedParticleSystemBehavior value="Automatic"/>
+    </CModel>
+    <CModel id="Stinger" parent="Unit" Race="Terran">
+        <!--<RequiredAnims value="Assets\Units\Terran\Hellion_SwarmAnims\Hellion_SwarmAnims.m3a"/>-->
+        <AttachProps Id="Ref_TurretZ">
+            <Keys index="Turret" value="0"/>
+        </AttachProps>
+        <AttachProps Id="Ref_Weapon 01">
+            <Keys index="Weapon" value="0"/>
+        </AttachProps>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraMid06"/>
+        <!--<Radius value="0.650000"/>-->
+        <!--<SelectionRadius value="0.866400"/>-->
+        <!--<ShadowRadius value="0.866400"/>-->
+        <SquibTypeDefault value="Metal"/>
+        <TechPurchaseCamera value="TechPurchaseVehicle"/>
+        <Tipability value="0.750000"/>
+        <TipabilityLength value="0.600000"/>
+        <TipabilityWidth value="0.400000"/>
+        <UnitGlossaryCamera value="Star2CameraMid06"/>
+        <UnitGlossaryTeamColorIndex value="1"/>
+    </CModel>
+    <CModel id="Stinger@Death" parent="UnitDeath" Race="Terran">
+        <Model value="Assets\Units\Terran\Stinger\StingerDeath.m3"/>
+        <LowQualityModel value="TerranSmallUnitDeathLow"/>
+        <Occlusion value="Show"/>
+    </CModel>
+    <CModel id="Stinger@DeathRagdoll" parent="UnitDeathRagdoll" Race="Terran">
+        <Model value="Assets\Units\Terran\Stinger\StingerDeath.m3"/>
+        <PhysicsDeathMotionFactor value="1.100000,0.100000"/>
+    </CModel>
+    <CWeaponLegacy id="StingerMissileWeapon">
+        <EditorCategories value="Race:Terran"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel0.dds"/>
+        <DisplayEffect value="StingerMissileWeapon@Damage"/>
+        <TargetFilters value="Ground,Structure,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="1.8"/>
+        <Effect value="StingerMissileWeapon@LM"/>
+        <RandomDelayMin value="0.1"/>
+        <RandomDelayMax value="0.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="StingerWeapon">
+        <EditorCategories value="Race:Terran"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-hisecautotracking.dds"/>
+        <DisplayEffect value="StingerWeapon@Damage"/>
+        <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="6"/>
+        <Period value="0.8"/>
+        <Effect value="StingerWeapon@Damage"/>
+    </CWeaponLegacy>
+    <CMoverMissile id="StingerMissileWeapon@Missile">
+        <MotionPhases>
+            <Driver value="Guidance"/>
+            <Speed value="20"/>
+            <MaxSpeed value="20"/>
+            <YawPitchRoll value="MAX"/>
+        </MotionPhases>
+    </CMoverMissile>
+    <CSound id="StingerMissileWeapon@Launch" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\Reaper\Reaper_D8ChargeAttackLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Reaper\Reaper_D8ChargeAttackLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Reaper\Reaper_D8ChargeAttackLaunch2.wav"/>
+        <DupeDestroyCount value="5"/>
+        <Pitch value="3.000000,5.000000"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="StingerMissileWeapon@Impact" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Reaper_KD8ChargeExplosion01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaper_KD8ChargeExplosion02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaper_KD8ChargeExplosion03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaper_KD8ChargeExplosion04.wav" FacialGroup=""/>
+        <DupeMaximumMethod value="Replace"/>
+        <DupeMuteCount value="3"/>
+        <DupeThresholdPoints/>
+        <DupeThresholdPoints Count="3" Volume="-3.000000"/>
+        <DupePrioritization value="Oldest"/>
+        <Pitch value="-2.000000,2.000000"/>
+        <Volume value="3.000000,3.000000"/>
+    </CSound>
+    <CSound id="StingerWeapon@Impact" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\BulletImpacts\Terran_MultipleBulletAttackImpact0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\BulletImpacts\Terran_MultipleBulletAttackImpact1.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\BulletImpacts\Terran_MultipleBulletAttackImpact2.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\BulletImpacts\Terran_MultipleBulletAttackImpact3.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\BulletImpacts\Terran_MultipleBulletAttackImpact4.wav"/>
+        <Pitch value="-1.500000,1.500000"/>
+        <Volume value="-12.000000,-12.000000"/>
+    </CSound>
+    <CSound id="StingerWeapon@Launch" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\MutAmon_TychusAuto_Launch_01.wav"/>
+        <AssetArray File="Assets\Sounds\MutAmon_TychusAuto_Launch_02.wav"/>
+        <AssetArray File="Assets\Sounds\MutAmon_TychusAuto_Launch_03.wav"/>
+        <AssetArray File="Assets\Sounds\MutAmon_TychusAuto_Launch_04.wav"/>
+        <AssetArray File="Assets\Sounds\MutAmon_TychusAuto_Launch_05.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\MutAmon_TychusAuto_Launch_06.wav" FacialGroup=""/>
+        <Flags index="VariationFallback" value="0"/>
+        <DupeDestroyCount value="5"/>
+        <DupeMaximumMethod value="Replace"/>
+        <Pitch value="-1.000000,0.500000"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="Stinger@Attack" parent="TerranAck">
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack00.ogg" FacialAnim="Hellion_Attack00"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack01.ogg" FacialAnim="Hellion_Attack01"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack02.ogg" FacialAnim="Hellion_Attack02"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack03.ogg" FacialAnim="Hellion_Attack03"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack04.ogg" FacialAnim="Hellion_Attack04"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack05.ogg" FacialAnim="Hellion_Attack05"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack06.ogg" FacialAnim="Hellion_Attack06"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Attack07.ogg" FacialGroup=""/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="Stinger@Explode" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium4.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium5.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium6.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium7.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium8.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium9.wav" Pitch="-3.000000,3.000000"/>
+        <DupeDestroyCount value="5"/>
+    </CSound>
+    <CSound id="Stinger@Help" parent="Alert">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Help00.ogg" FacialAnim="Hellion_Help00"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Help01.ogg" FacialGroup=""/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Help02.ogg" FacialGroup=""/>
+        <Mode value="3DWorld"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="Stinger@Movement" parent="Movement">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement1.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement2.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement3.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement4.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement5.wav"/>
+        <DupeDestroyCount value="3"/>
+        <Pitch value="-1.000000,1.000000"/>
+        <Volume value="-9.000000,-9.000000"/>
+    </CSound>
+    <CSound id="Stinger@Pissed" parent="TerranAck">
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed00.ogg" FacialAnim="Hellion_Pissed00"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed01.ogg" FacialAnim="Hellion_Pissed01"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed02.ogg" FacialAnim="Hellion_Pissed02"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed03.ogg" FacialAnim="Hellion_Pissed03"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed04.ogg" FacialAnim="Hellion_Pissed04"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed05.ogg" FacialAnim="Hellion_Pissed05"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed06.ogg" FacialAnim="Hellion_Pissed06"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed07.ogg" FacialAnim="Hellion_Pissed07"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Pissed08.ogg" FacialAnim="Hellion_Pissed08"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="Stinger@Ready" parent="Ready">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Ready00.ogg" FacialAnim="Hellion_Ready00"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Ready01.ogg" FacialGroup=""/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Ready02.ogg" FacialGroup=""/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Ready03.ogg" FacialGroup=""/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="Stinger@What" parent="TerranAck">
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@What00.ogg" FacialAnim="Hellion_What00"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@What01.ogg" FacialAnim="Hellion_What01"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@What02.ogg" FacialAnim="Hellion_What02"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@What03.ogg" FacialAnim="Hellion_What03"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@What04.ogg" FacialAnim="Hellion_What04"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CSound id="Stinger@Yes" parent="TerranAck">
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes00.ogg" FacialAnim="Hellion_Yes00"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes01.ogg" FacialAnim="Hellion_Yes01"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes02.ogg" FacialAnim="Hellion_Yes02"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes03.ogg" FacialAnim="Hellion_Yes03"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes04.ogg" FacialAnim="Hellion_Yes04"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes05.ogg" FacialAnim="Hellion_Yes05"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes06.ogg" FacialAnim="Hellion_Yes06"/>
+        <AssetArray File="LocalizedData\Sounds\TerranUnitVO\StingerSCBW\StingerSCBW@Yes07.ogg" FacialAnim="Hellion_Yes07"/>
+        <Volume value="-1.000000,-1.000000"/>
+    </CSound>
+    <CDataCollectionAbil id="StingerMissileWeapon">
+        <EditorCategories value=""/>
+        <DataRecord Entry="Weapon,StingerMissileWeapon"/>
+        <DataRecord Entry="Actor,StingerMissileWeapon@Missile"/>
+        <DataRecord Entry="Actor,StingerMissileWeapon@Attack"/>
+        <DataRecord Entry="Effect,StingerMissileWeapon@LM"/>
+        <DataRecord Entry="Effect,StingerMissileWeapon@Damage"/>
+        <DataRecord Entry="Model,StingerMissileWeapon@Missile"/>
+        <DataRecord Entry="Model,StingerMissileWeapon@Impact"/>
+        <DataRecord Entry="Mover,StingerMissileWeapon@Missile"/>
+        <DataRecord Entry="Sound,StingerMissileWeapon@Launch"/>
+        <DataRecord Entry="Sound,StingerMissileWeapon@Impact"/>
+        <DataRecord Entry="Unit,StingerMissileWeapon@Missile"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="Stinger">
+        <EditorCategories value="DataGroup:Unit,Race:Terran,DataFamily:Campaign,ObjectType:Unit"/>
+        <DataRecord Entry="Actor,Stinger@Turret"/>
+        <DataRecord Entry="Actor,Stinger"/>
+        <DataRecord Entry="Light,Stinger@Portrait"/>
+        <DataRecord Entry="Model,Stinger@Death"/>
+        <DataRecord Entry="Model,Stinger@DeathRagdoll"/>
+        <DataRecord Entry="Model,Stinger@Portrait"/>
+        <DataRecord Entry="Model,Stinger"/>
+        <DataRecord Entry="Sound,Stinger@Explode"/>
+        <DataRecord Entry="Sound,Stinger@Ready"/>
+        <DataRecord Entry="Sound,Stinger@Help"/>
+        <DataRecord Entry="Sound,Stinger@What"/>
+        <DataRecord Entry="Sound,Stinger@Yes"/>
+        <DataRecord Entry="Sound,Stinger@Attack"/>
+        <DataRecord Entry="Sound,Stinger@Pissed"/>
+        <DataRecord Entry="Sound,Stinger@Movement"/>
+        <DataRecord Entry="Turret,Stinger"/>
+        <DataRecord Entry="Unit,Stinger"/>
+    </CDataCollectionUnit>
+    <CDataCollectionAbil id="StingerWeapon">
+        <EditorCategories value=""/>
+        <DataRecord Entry="Actor,StingerWeapon@Attack"/>
+        <DataRecord Entry="Effect,StingerWeapon@Damage"/>
+        <DataRecord Entry="Weapon,StingerWeapon"/>
+        <DataRecord Entry="Model,StingerWeapon@Launch"/>
+        <DataRecord Entry="Model,StingerWeapon@Impact"/>
+        <DataRecord Entry="Sound,StingerWeapon@Launch"/>
+        <DataRecord Entry="Sound,StingerWeapon@Impact"/>
+    </CDataCollectionAbil>
+    <CTurret id="Stinger">
+        <Idle value="ResetIfMoving"/>
+        <YawArc value="360"/>
+        <YawRate value="999.8437"/>
+        <Fidget DelayMax="30" DelayMin="10"/>
+    </CTurret>
+    <CUnit id="StingerMissileWeapon@Missile" parent="MISSILE">
+        <Race value="Terr"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Campaign"/>
+    </CUnit>
+    <CUnit id="Stinger">
+        <DeathRevealRadius value="3"/>
+        <Race value="Terr"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="AISplash" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Light" value="1"/>
+        <Attributes index="Mechanical" value="1"/>
+        <LifeStart value="130"/>
+        <LifeMax value="130"/>
+        <LifeArmorName value="Unit/LifeArmorName/TerranVehiclePlating"/>
+        <Speed value="3.8984"/>
+        <Acceleration value="1000"/>
+        <LateralAcceleration value="46"/>
+        <StationaryTurningRate value="1499.9414"/>
+        <Sight value="10"/>
+        <Food value="-2"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="125"/>
+        <RepairTime value="30"/>
+        <AttackTargetPriority value="22"/>
+        <DamageDealtXP value="1"/>
+        <DamageTakenXP value="1"/>
+        <KillXP value="30"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <WeaponArray Link="StingerWeapon" Turret="Stinger"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+        </CardLayouts>
+        <Radius value="0.625"/>
+        <SeparationRadius value="0.75"/>
+        <InnerRadius value="0.5"/>
+        <CargoSize value="2"/>
+        <ScoreMake value="100"/>
+        <ScoreKill value="100"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="12"/>
+        <MinimapRadius value="0.625"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <GlossaryCategory value="Unit/Category/TerranUnitsSCBW"/>
+        <GlossaryPriority value="90"/>
+        <GlossaryStrongArray value="ZerglingSCBW"/>
+        <GlossaryWeakArray value="DragoonSCBW"/>
+        <HotkeyCategory value="Unit/Category/TerranStorySCBW"/>
+        <LifeArmor value="1"/>
+    </CUnit>
+</Catalog>
