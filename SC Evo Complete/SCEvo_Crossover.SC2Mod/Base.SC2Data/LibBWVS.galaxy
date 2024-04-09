@@ -1,0 +1,104 @@
+include "TriggerLibs/NativeLib"
+
+include "LibBWVS_h"
+
+//--------------------------------------------------------------------------------------------------
+// Library: SCEvoExtension
+//--------------------------------------------------------------------------------------------------
+// External Library Initialization
+void libBWVS_InitLibraries () {
+    libNtve_InitVariables();
+}
+
+// Triggers
+//--------------------------------------------------------------------------------------------------
+// Trigger: Race Initialization
+//--------------------------------------------------------------------------------------------------
+bool libBWVS_gt_MapInitialization_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_playerIndex;
+
+    // Automatic Variable Declarations
+    playergroup auto05635F0B_g;
+    string autoFBC52526_val;
+    string auto0B73A5CD_val;
+    string auto2259B057_val;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    auto05635F0B_g = PlayerGroupActive();
+    lv_playerIndex = -1;
+    while (true) {
+        lv_playerIndex = PlayerGroupNextPlayer(auto05635F0B_g, lv_playerIndex);
+        if (lv_playerIndex < 0) { break; }
+        autoFBC52526_val = GameAttributePlayerValue("1", lv_playerIndex);
+        if (autoFBC52526_val == "0001") {
+            auto0B73A5CD_val = PlayerRace(lv_playerIndex);
+            if (auto0B73A5CD_val == ("Terr")) {
+                PlayerSetRace(lv_playerIndex, "BWTe");
+            }
+            else if (auto0B73A5CD_val == ("Prot")) {
+                PlayerSetRace(lv_playerIndex, "BWPr");
+            }
+            else if (auto0B73A5CD_val == ("Zerg")) {
+                PlayerSetRace(lv_playerIndex, "BWZe");
+            }
+            else {
+            }
+        }
+        else if (autoFBC52526_val == "0002") {
+            auto2259B057_val = PlayerRace(lv_playerIndex);
+            if (auto2259B057_val == ("BWTe")) {
+                PlayerSetRace(lv_playerIndex, "Terr");
+            }
+            else if (auto2259B057_val == ("BWPr")) {
+                PlayerSetRace(lv_playerIndex, "Prot");
+            }
+            else if (auto2259B057_val == ("BWZe")) {
+                PlayerSetRace(lv_playerIndex, "Zerg");
+            }
+            else {
+            }
+        }
+        else {
+        }
+        if ((PlayerType(lv_playerIndex) == c_playerTypeUser)) {
+            libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
+            libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
+        }
+
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libBWVS_gt_MapInitialization_Init () {
+    libBWVS_gt_MapInitialization = TriggerCreate("libBWVS_gt_MapInitialization_Func");
+    TriggerAddEventMapInit(libBWVS_gt_MapInitialization);
+}
+
+void libBWVS_InitTriggers () {
+    libBWVS_gt_MapInitialization_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+bool libBWVS_InitLib_completed = false;
+
+void libBWVS_InitLib () {
+    if (libBWVS_InitLib_completed) {
+        return;
+    }
+
+    libBWVS_InitLib_completed = true;
+
+    libBWVS_InitLibraries();
+    libBWVS_InitTriggers();
+}
+
