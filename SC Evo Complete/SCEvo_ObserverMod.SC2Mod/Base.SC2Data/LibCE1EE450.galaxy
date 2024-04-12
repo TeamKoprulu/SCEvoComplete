@@ -1,0 +1,132 @@
+include "TriggerLibs/NativeLib"
+
+include "LibCE1EE450_h"
+
+//--------------------------------------------------------------------------------------------------
+// Library: PlayerCams
+//--------------------------------------------------------------------------------------------------
+// External Library Initialization
+void libCE1EE450_InitLibraries () {
+    libNtve_InitVariables();
+}
+
+// Variable Initialization
+bool libCE1EE450_InitVariables_completed = false;
+
+void libCE1EE450_InitVariables () {
+    int init_i1;
+
+    if (libCE1EE450_InitVariables_completed) {
+        return;
+    }
+
+    libCE1EE450_InitVariables_completed = true;
+
+    for (init_i1 = 0; init_i1 <= 2; init_i1 += 1) {
+        libCE1EE450_gv_minimapFrustum.lv_ping[init_i1] = c_invalidPingId;
+    }
+    libCE1EE450_gv_minimapFrustumObs = PlayerGroupSingle(CatalogFieldValueGetAsInt(c_gameCatalogGameUI, "Dflt", "DefaultObservedPlayerId", c_playerAny));
+}
+
+// Functions
+void libCE1EE450_gf_RegisterCameraMoveEvent (trigger lp_trigger, int lp_playerId, int lp_cameraMoveReason) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventCameraMove(lp_trigger, lp_playerId, lp_cameraMoveReason);
+}
+
+// Triggers
+//--------------------------------------------------------------------------------------------------
+// Trigger: Minimap Frustum - Initialization
+//--------------------------------------------------------------------------------------------------
+bool libCE1EE450_gt_MinimapFrustumInitialization_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    const fixed lv_baseScale = 0.5;
+    const fixed lv_baseMapSize = 108.0;
+    fixed lv_mapScale;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((PlayerGroupCount(GameAttributePlayersForTeam(1)) == 1) && (PlayerGroupCount(GameAttributePlayersForTeam(2)) == 1)) {
+        libCE1EE450_gv_minimapFrustum.lv_active = true;
+        libCE1EE450_gv_minimapFrustum.lv_playerOne = PlayerGroupPlayer(GameAttributePlayersForTeam(1), 1);
+        libCE1EE450_gv_minimapFrustum.lv_playerTwo = PlayerGroupPlayer(GameAttributePlayersForTeam(2), 1);
+        lv_mapScale = (lv_baseMapSize / MaxF(libNtve_gf_WidthOfRegion(RegionPlayableMap()), libNtve_gf_HeightOfRegion(RegionPlayableMap())));
+        lv_mapScale = (lv_mapScale * lv_baseScale);
+        if ((PlayerType(libCE1EE450_gv_minimapFrustum.lv_playerOne) == c_playerTypeUser)) {
+            libNtve_gf_CreatePingFacingAngle(libCE1EE450_gv_minimapFrustumObs, "PingViewArea", CameraGetTarget(libCE1EE450_gv_minimapFrustum.lv_playerOne), libNtve_gf_ConvertPlayerColorToColor(PlayerGetColorIndex(libCE1EE450_gv_minimapFrustum.lv_playerOne, false)), 0.0, 270.0);
+            PingSetScale(PingLastCreated(), lv_mapScale);
+            libCE1EE450_gv_minimapFrustum.lv_ping[0] = PingLastCreated();
+            libCE1EE450_gf_RegisterCameraMoveEvent(libCE1EE450_gt_MinimapFrustumPlayerCameraMoved, libCE1EE450_gv_minimapFrustum.lv_playerOne, c_cameraMoveReasonAny);
+        }
+
+        if ((PlayerType(libCE1EE450_gv_minimapFrustum.lv_playerTwo) == c_playerTypeUser)) {
+            libNtve_gf_CreatePingFacingAngle(libCE1EE450_gv_minimapFrustumObs, "PingViewArea", CameraGetTarget(libCE1EE450_gv_minimapFrustum.lv_playerTwo), libNtve_gf_ConvertPlayerColorToColor(PlayerGetColorIndex(libCE1EE450_gv_minimapFrustum.lv_playerTwo, false)), 0.0, 270.0);
+            PingSetScale(PingLastCreated(), lv_mapScale);
+            libCE1EE450_gv_minimapFrustum.lv_ping[1] = PingLastCreated();
+            libCE1EE450_gf_RegisterCameraMoveEvent(libCE1EE450_gt_MinimapFrustumPlayerCameraMoved, libCE1EE450_gv_minimapFrustum.lv_playerTwo, c_cameraMoveReasonAny);
+        }
+
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libCE1EE450_gt_MinimapFrustumInitialization_Init () {
+    libCE1EE450_gt_MinimapFrustumInitialization = TriggerCreate("libCE1EE450_gt_MinimapFrustumInitialization_Func");
+    TriggerAddEventMapInit(libCE1EE450_gt_MinimapFrustumInitialization);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Minimap Frustum - Player Camera Moved
+//--------------------------------------------------------------------------------------------------
+bool libCE1EE450_gt_MinimapFrustumPlayerCameraMoved_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((EventPlayer() == libCE1EE450_gv_minimapFrustum.lv_playerOne)) {
+        PingSetPosition(libCE1EE450_gv_minimapFrustum.lv_ping[0], CameraGetTarget(libCE1EE450_gv_minimapFrustum.lv_playerOne));
+    }
+    else {
+        PingSetPosition(libCE1EE450_gv_minimapFrustum.lv_ping[1], CameraGetTarget(libCE1EE450_gv_minimapFrustum.lv_playerTwo));
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libCE1EE450_gt_MinimapFrustumPlayerCameraMoved_Init () {
+    libCE1EE450_gt_MinimapFrustumPlayerCameraMoved = TriggerCreate("libCE1EE450_gt_MinimapFrustumPlayerCameraMoved_Func");
+}
+
+void libCE1EE450_InitTriggers () {
+    libCE1EE450_gt_MinimapFrustumInitialization_Init();
+    libCE1EE450_gt_MinimapFrustumPlayerCameraMoved_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+bool libCE1EE450_InitLib_completed = false;
+
+void libCE1EE450_InitLib () {
+    if (libCE1EE450_InitLib_completed) {
+        return;
+    }
+
+    libCE1EE450_InitLib_completed = true;
+
+    libCE1EE450_InitLibraries();
+    libCE1EE450_InitVariables();
+    libCE1EE450_InitTriggers();
+}
+

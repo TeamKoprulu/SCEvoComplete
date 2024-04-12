@@ -1,0 +1,169 @@
+include "TriggerLibs/natives"
+
+//--------------------------------------------------------------------------------------------------
+// Library: BattleReport
+//--------------------------------------------------------------------------------------------------
+// Constants
+const fixed lib6F383DA1_gv_BATTLE_CUTOFF_LENGTH = 9.0;
+const int lib6F383DA1_gv_BATTLE_REPORT_DISPLAY_LENGTH = 18;
+const fixed lib6F383DA1_gv_BAR_GRAPH_WIDTH = 352.0;
+
+// Structures
+struct lib6F383DA1_gs_MVPUnitList {
+    string[32] lv_unitTypes;
+    fixed[32] lv_unitTypeDamage;
+    int lv_unitTypeCount;
+};
+
+struct lib6F383DA1_gs_ResourcesCollectedStats {
+    int lv_minerals;
+    int lv_gas;
+};
+
+struct lib6F383DA1_gs_ResourcesCollectedFrame {
+    int lv_container;
+    int[2] lv_minerals;
+    int[2] lv_gas;
+};
+
+struct lib6F383DA1_gs_BattleReportFrame {
+    bool lv_battleReportReadyToClear;
+    int lv_battleReportContainer;
+    int lv_showHideButton;
+    int lv_battleLengthTimer;
+    int lv_countdownWarningLabel;
+    int lv_countdownTimer;
+    int[2] lv_playerId;
+    int[2] lv_playerName;
+    int[2] lv_playerNameBG;
+    int[2] lv_playerRaceIcon;
+    int[2] lv_damageDealt;
+    int lv_healthbarFrame;
+    int[2] lv_healthbarCurrent;
+    int[2] lv_healthbarMVPUnitDmg;
+    int[2][12] lv_killedUnitButtons;
+    int[2][12] lv_killedUnitCountBG;
+    int[2][12] lv_killledUnitTypes;
+    int[2][12] lv_killedUnitCounts;
+    int[2] lv_killedUnitTypeCount;
+    int[2] lv_totalUnitsLost;
+    int[2] lv_mineralsLostBar;
+    int[2] lv_gasLostBar;
+    int[2] lv_mineralsLostIcon;
+    int[2] lv_gasLostIcon;
+    int[2] lv_suppliesLostIcon;
+    int[2] lv_mineralsLost;
+    int[2] lv_gasLost;
+    int[2] lv_suppliesLost;
+    int[2][10] lv_abilityButtons;
+    int[2][10] lv_abilityCountBG;
+    int[2][10] lv_abilityTypes;
+    int[2][10] lv_abilityTypeCounts;
+    int[2] lv_abilitiesUsed;
+    int[2] lv_mVPUnitTypeButtons;
+    int[2] lv_mVPUnitTypeIcon;
+    int[2] lv_mVPUnitTypeDmg;
+};
+
+struct lib6F383DA1_gs_BattleReportStats {
+    fixed lv_damageDealt;
+    string[16] lv_lostUnitTypes;
+    int[16] lv_lostUnitTypeCounts;
+    int lv_lostUnitTypeCount;
+    int lv_totalUnitsLost;
+    int lv_mineralsLost;
+    int lv_gasLost;
+    fixed lv_suppliesLost;
+    string[10] lv_abilitiesUsed;
+    string[10] lv_abilitiesUsedCustomImages;
+    string[10] lv_abilitiesUsedCustomTooltips;
+    int[10] lv_abilitiesUsedCounts;
+    int lv_abilitiesUsedCount;
+    unit[32] lv_purgatoryCasterUnits;
+    string[32] lv_purgatoryCasterAbils;
+    int[32] lv_purgatoryCasterAbilCastCount;
+    int lv_purgatoryCastsCount;
+    lib6F383DA1_gs_MVPUnitList lv_mvpUnitList;
+};
+
+struct lib6F383DA1_gs_BattleReport {
+    bool lv_playersAreFighting;
+    lib6F383DA1_gs_BattleReportStats[2] lv_playerBattleStats;
+    lib6F383DA1_gs_ResourcesCollectedStats[2] lv_playerResourcesCollected;
+    lib6F383DA1_gs_BattleReportFrame lv_UI;
+    lib6F383DA1_gs_ResourcesCollectedFrame lv_UI2;
+    int lv_battleLengthSeconds;
+    timer lv_battleEndingTimer;
+    timer lv_battleReportDisplayTimer;
+};
+
+// Variable Declarations
+fixed lib6F383DA1_gv_GAME_TICK;
+lib6F383DA1_gs_BattleReport lib6F383DA1_gv_battleReport;
+
+// Function Declarations
+void lib6F383DA1_gf_setPlayerRaceIcons (int lp_playerSlot, string lp_race);
+string lib6F383DA1_gf_ZeroPadInt (int lp_int, int lp_length);
+void lib6F383DA1_gf_startBattleTimer ();
+void lib6F383DA1_gf_updateBattleLengthTimerDisplay ();
+bool lib6F383DA1_gf_fightStarted ();
+bool lib6F383DA1_gf_isOKToClearReport ();
+void lib6F383DA1_gf_updateBattleReportValues ();
+void lib6F383DA1_gf_updateClearReportTimer ();
+void lib6F383DA1_gf_clearBattleReportData (int lp_playerSlot);
+void lib6F383DA1_gf_clearBattleReportUI (int lp_playerSlot);
+void lib6F383DA1_gf_updateMVPList (int lp_playerSlot, string lp_unitType, fixed lp_damage);
+void lib6F383DA1_gf_updateMVPUnitTypeStats (int lp_playerSlot, int lp_mvpUnitIndex);
+void lib6F383DA1_gf_updateMVPUnitTypeBarGraph (int lp_playerSlot, fixed lp_newBarWidth);
+void lib6F383DA1_gf_updateMVPUnitTypeBarGraphs ();
+void lib6F383DA1_gf_updateMVPUnitTypeStatsDisplay (int lp_playerSlot, string lp_image, text lp_percentStr, text lp_name);
+int lib6F383DA1_gf_getMVPUnitTypeSlotIndex (int lp_playerSlot);
+int lib6F383DA1_gf_getMVPUnitSlot (int lp_pID, string lp_unitType);
+int lib6F383DA1_gf_getNextOpenMVPSlot (int lp_pID);
+fixed lib6F383DA1_gf_getMVPUnitDamage (int lp_playerSlot, int lp_mvpUnitIndex);
+fixed lib6F383DA1_gf_getPlayerDamageDealt (int lp_playerSlot);
+fixed lib6F383DA1_gf_getTotalDamageDealt ();
+void lib6F383DA1_gf_updateResourcesLostDisplay (int lp_playerSlot);
+void lib6F383DA1_gf_updateResourcesLostGraphs (int lp_playerSlot, fixed lp_totalResourcesLost, int lp_maxBarWidth);
+void lib6F383DA1_gf_addUnitKilled (int lp_pID, string lp_unitType);
+void lib6F383DA1_gf_updateUnitsLostButtons (int lp_pID, string lp_unitType, int lp_index);
+void lib6F383DA1_gf_refreshUnitsLostButtons (int lp_playerSlot);
+string lib6F383DA1_gf_removeStringFromUnitType (string lp_unitType, string lp_string);
+int lib6F383DA1_gf_getKilledUnitSlot (int lp_pID, string lp_unitType);
+int lib6F383DA1_gf_getNextOpenUnitSlot (int lp_pID);
+fixed lib6F383DA1_gf_getTotalResourcesLost ();
+bool lib6F383DA1_gf_hasAbilityDealingDamage (string lp_unitType);
+bool lib6F383DA1_gf_isCocoon (string lp_unitType);
+bool lib6F383DA1_gf_isStructure (string lp_unitType);
+bool lib6F383DA1_gf_isChangeling (string lp_unitType);
+bool lib6F383DA1_gf_lostUnitSlotIsFilled (int lp_pID, int lp_slotIndex);
+bool lib6F383DA1_gf_killedUnitTypeExistsInSlot (int lp_pID, int lp_slotIndex, string lp_unitType);
+bool lib6F383DA1_gf_unitIsAllowed (unit lp_unit);
+void lib6F383DA1_gf_updateDamageDisplay (int lp_playerSlot, fixed lp_maxBarWidth);
+void lib6F383DA1_gf_catchDamageDealingAbility (int lp_playerSlot, string lp_unitType, string lp_damageEffect);
+void lib6F383DA1_gf_addAbilityUsed (int lp_playerSlot, string lp_abil, string lp_customImage, string lp_customTooltip);
+void lib6F383DA1_gf_updateAbilityUsedButtons (int lp_playerSlot, int lp_index, string lp_abil, string lp_customImage, string lp_customTooltip);
+void lib6F383DA1_gf_refreshAbilityUsedButtons (int lp_playerSlot);
+int lib6F383DA1_gf_getAbilityUsedSlot (int lp_pID, string lp_abil);
+int lib6F383DA1_gf_getNextOpenAbilitySlot (int lp_pID);
+string lib6F383DA1_gf_convertDamageEffectToAbility (string lp_dmgEffect);
+bool lib6F383DA1_gf_isAbilHallucination (string lp_abil);
+bool lib6F383DA1_gf_abilityIsAllowed (string lp_abi);
+bool lib6F383DA1_gf_abilitiesUsedIsEmpty (int lp_playerSlot);
+int lib6F383DA1_gf_HookupFrame (int lp_frameType, string lp_frame);
+int lib6F383DA1_gf_OppositePlayerSlot (int lp_playerSlot);
+text lib6F383DA1_gf_PlayerNameColored (int lp_player);
+
+// Trigger Declarations
+trigger lib6F383DA1_gt_InitUI;
+trigger lib6F383DA1_gt_ForbidPlayerAccess;
+trigger lib6F383DA1_gt_SetBattleStarted;
+trigger lib6F383DA1_gt_SetBattleEnded;
+trigger lib6F383DA1_gt_SetBattleReportOKtoClear;
+trigger lib6F383DA1_gt_TrackUnitKills;
+trigger lib6F383DA1_gt_TrackDamage;
+trigger lib6F383DA1_gt_TrackAbility;
+
+// Library Initialization
+void lib6F383DA1_InitVariables ();
+

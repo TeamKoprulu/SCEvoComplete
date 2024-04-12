@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Desc>
+    <Constant name="ContainerWidth" val="790"/>
+    <Constant name="ShopifyLogoWhite" val="Assets\Textures\shopify_logo_white.dds"/>
+    <Constant name="TitleText"   val="Battle Report"/>
+
+    <Frame type="Frame" name="GameUI/UIContainer/FullscreenUpperContainer" file="GameUI">
+        
+        <!--~~~~~~~~~~~~~~~~~~~~~~-->
+        <!-- Toggle UI Controller -->
+        <!--~~~~~~~~~~~~~~~~~~~~~~-->
+        <Frame type="Button" name="ShowHideUI">
+            <Anchor side="Top"  relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Height val="0"/>
+            <Width  val="0"/>
+            <Toggleable val="True"/>
+            <Toggled val="True"/>
+            <Shortcut val="Shift + B"/>
+
+            <Animation name="Show">
+                <Event event="Normal" action="Reset,Play" />
+                <Controller type="Fade" end="Pause" frame="$BattleReport">
+                    <Key type="Curve" time="0"     value="0" />
+                    <Key type="Curve" time="0.125" value="255" />
+                </Controller>
+                <Controller type="Anchor" end="Pause" side="Top" relative="true" frame="$BattleReport">
+                    <Key type="Curve" time="0"     value="30" inout="Linear" />
+                    <Key type="Curve" time="0.125" value="0"   inout="Slow,Linear" />
+                </Controller>
+                <Controller type="Visibility" end="Pause" frame="$BattleReport">
+                    <Key type="Bool" time="0.0"    value="True"/>
+                </Controller>
+            </Animation>
+            
+            <Animation name="Hide">
+                <Event event="Toggled" action="Reset,Play"/>
+                <Controller type="Fade" end="Pause" frame="$BattleReport">
+                    <Key type="Curve" time="0"     value="255" />
+                    <Key type="Curve" time="0.125" value="0" />
+                </Controller>
+                <Controller type="Anchor" end="Pause" side="Top" relative="true" frame="$BattleReport">
+                    <Key type="Curve" time="0"     value="0"   inout="Linear" />
+                    <Key type="Curve" time="0.125" value="30" inout="Slow,Linear" />
+                </Controller>
+                <Controller type="Visibility" end="Pause" frame="$BattleReport">
+                    <Key type="Bool" time="0"      value="True" />
+                    <Key type="Bool" time="0.125"  value="False"/>
+                </Controller>
+            </Animation>
+        </Frame>
+
+
+
+        <!--~~~~~~~~~~~~~~~~~-->
+        <!-- Container frame -->
+        <!--~~~~~~~~~~~~~~~~~-->
+        <Frame type="Frame" name="BattleReport">
+            <Anchor side="Top" relative="$parent" pos="Mid" offset="-50" />
+            <Anchor side="Left" relative="$parent" pos="Mid" offset="0" />
+            <Anchor side="Bottom" relative="$parent" pos="Mid" offset="0" />
+            <Anchor side="Right" relative="$parent" pos="Mid" offset="0" />
+            <Width  val="#ContainerWidth" />
+            <Height val="640" />
+            <Handle val="BattleReport"/>
+            <Visible val="False"/>
+
+            <!--                                        -->
+            <!-- Background Frame [from Blizz Template] -->
+            <!--                                        -->
+            <Frame type="Frame" name="Background" template="StandardExtendedExperienceTemplates/StandardSizeExtendedExperienceTemplate">
+                <Unclipped val="True"/>
+                <Alpha val="224"/>
+                <Frame type="Image" name="FullscreenBlackoutImage">
+                    <Visible val="false"/>
+                </Frame>
+                <Frame type="Image" name="ScanlinesLeft">
+                    <Unclipped val="True"/>
+                </Frame>
+                <Frame type="Image" name="ScanlinesRight">
+                    <Unclipped val="True"/>
+                </Frame>
+                <Frame type="Frame" name="BackgroundContainer">
+                    <Unclipped val="True"/>
+                </Frame>
+                <Frame type="Frame" name="AnchorFrame">
+                    <Anchor side="Top" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Bottom" relative="$parent" pos="Mid" offset="-15"/>
+                    <Width val="800"/>
+                    <Height val="660"/>
+                </Frame>
+            </Frame>
+
+            <!-- ~~~~~~~~~~~~~~~~~~ -->
+            <!-- Title / Logo Frame -->
+            <!-- ~~~~~~~~~~~~~~~~~~ -->
+            <Frame type="Frame" name="TitleFrame">
+                <Anchor side="Top"   relative="$parent" pos="Min" offset="0" />
+                <Anchor side="Left"  relative="$parent" pos="Min" offset="15" />
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-15" />
+                <Height val="55" />
+
+                <!-- Background -->
+                <Frame type="Frame" name="BackgroundFrame">
+                    <Anchor relative="$parent"/>
+
+                    <Frame type="Image" name="Fill">
+                        <Anchor side="Top"   relative="$parent" pos="Min" offset="7" />
+                        <Anchor side="Bottom" relative="$parent" pos="Max" offset="-7" />
+                        <Anchor side="Left"  relative="$parent" pos="Min" offset="7" />
+                        <Anchor side="Right" relative="$parent" pos="Max" offset="-7" />
+                        <Color val="000000"/>
+                        <Alpha val="200"/>
+                    </Frame>
+
+                    <Frame type="Image" name="Border">
+                        <Anchor relative="$parent"/>
+                        <Texture val="Assets\Textures\ui_glues_pageassets_listheaderbackground.dds"/>
+                        <TextureType val="NineSlice"/>
+                    </Frame>
+                </Frame>
+
+                <!-- TEMP                                     - -->
+                <!-- TEMP - Countdown label for reset allowed - -->
+                <!-- TEMP                                     - -->
+                <Frame type="Label" name="EndingLabel">
+                    <Anchor side="Top"    relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Bottom" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right"  relative="$parent" pos="Max" offset="-65" />
+                    <Text val="Next battle in" />
+                    <Width val="120"/>
+                    <Style val="brNextBattle"/>
+                    <Visible val="False"/>
+                </Frame>
+                <Frame type="Label" name="EndingValue">
+                    <Anchor side="Top"    relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Bottom" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Left"   relative="$parent/EndingLabel" pos="Max" offset="-11"/>
+                    <Text val="0:00" />
+                    <Width val="50" />
+                    <Style val="brNextBattle"/>
+                    <Visible val="False"/>
+                </Frame>
+
+                <!-- Shopify Logo Image -->
+                <Frame type="Image" name="ShopifyLogo">
+                    <Anchor side="Top"    relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Bottom" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right"  relative="$parent" pos="Max" offset="0" />
+                    <Texture val="#ShopifyLogoWhite"/>
+                    <Width val="178"  />
+                    <Height val="75" />
+                    <Visible val="False"/>
+                </Frame>
+
+                <!-- Powered By Label -->
+                <Frame type="Label" name="PoweredBy">
+                    <Anchor side="Top"    relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Bottom" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent/ShopifyLogo" pos="Min" offset="0" />
+                    <Width  val="100" />
+                    <Style val="brPoweredBy" />
+                    <Text val="powered by"/>
+                    <Visible val="False"/>
+                </Frame>
+
+                <!-- Header Title Label -->
+                <Frame type="Label" name="Title">
+                    <Anchor side="Top"   relative="$parent" pos="Min" offset="2" />
+                    <Anchor side="Left"  relative="$parent" pos="Mid" offset="0" />
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0" />
+                    <Height val="50" />
+                    <Style val="WatcherTitle" />
+                    <Text val="#TitleText"/>
+                </Frame>
+
+                
+                <!-- Battle Length Timer -->
+                <Frame type="Frame" name="BattleLengthFrame">
+                    <Anchor side="Top"   relative="$parent" pos="Min" offset="0"/>
+                    <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+                    <Width  val="125" />
+                    <Height val="75" />
+                    
+                    <!-- Value -->
+                    <Frame type="Label" name="Value">
+                        <Anchor side="Top"    relative="$parent" pos="Min" offset="15"/>
+                        <Anchor side="Left"   relative="$parent" pos="Min" offset="0"/>
+                        <Width val="100"/>
+                        <Text val="0:00" />
+                        <Style val="brBattleLength"/>
+                    </Frame>
+
+                    <!-- Blurred background -->
+                    <!-- 
+                        <Frame type="BlurFrame" name="Blur">
+                            <Anchor relative="$parent"/>
+                            <BlurAmount val="1"/>
+                            <RenderType val="LDR"/>
+                
+                            <Frame type="Image" name="Background">
+                                <Anchor relative="$parent"/>
+                                <Color val="255,0,0,0"/>
+                                <Alpha val="192" />
+                            </Frame>
+                        </Frame>            
+                    -->    
+                </Frame>
+            </Frame>
+            
+
+            <!-- Divider (Horiztonal) -->
+            <Frame type="Image" name="SeparatorH" template="brTemplates/Separator">
+                <Anchor side="Top" relative="$parent/PlayerName1/Blur/Header" pos="Max" offset="0"/>
+                <Width val="{$parent/@Width}" />
+                <Height val="2" />
+            </Frame>
+
+            <!-- Divider (Vertical) -->
+            <Frame type="Image" name="SeparatorV" template="brTemplates/Separator">
+                <Anchor side="Top" relative="$parent/PlayerName1" pos="Min" offset="0"/>
+                <Width val="2" />
+                <Height val="700" />
+                <Visible val="False"/>
+            </Frame>
+
+
+
+            <!-- Player 1 Name -->
+            <Frame type="Frame" name="PlayerName1" template="brTemplates/PlayerHeader">
+                <Anchor side="Left"  relative="$parent" pos="Min" offset="15"/>
+                <Anchor side="Right" relative="$parent/SeparatorV" pos="Min" offset="0"/>
+                <Height val="40" />
+
+                <Frame type="Image" name="RaceIcon">
+                    <Anchor side="Left"  relative="$parent" pos="Min" offset="20"/>
+                    <Anchor side="Top"   relative="$parent/pName" pos="Min" offset="-11" />
+                    <Texture val="#Black"/>
+                </Frame>
+
+                <Frame type="Frame" name="Blur">
+                    <Frame type="Image" name="Header">
+                        <Texture val="Assets/Textures/ui_battlenet_glues_standardtabs_righttab_mask.dds"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+            <!-- Player 2 Name -->
+            <Frame type="Frame" name="PlayerName2" template="brTemplates/PlayerHeader">
+                <Anchor side="Left"  relative="$parent/SeparatorV" pos="Max" offset="0"/>
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-15"/>
+                <Height val="40" />
+
+                <Frame type="Image" name="RaceIcon">
+                    <Anchor side="Right" relative="$parent" pos="Max" offset="-20"/>
+                    <Anchor side="Top"   relative="$parent/pName" pos="Min" offset="-11" />
+                    <Texture val="#Black"/>
+                </Frame>
+            </Frame>
+
+
+
+
+            <!-- Player 1 Report Frame -->
+            <Frame type="Frame" name="PlayerReport1" template="brTemplates/ReportFrame">
+                <Anchor side="Left"  relative="$parent" pos="Min" offset="15"/>
+                <Anchor side="Right" relative="$parent/SeparatorV" pos="Min" offset="0"/>
+
+                <Frame type="Label" name="DmgLabel" template="brTemplates/ReportStat">
+                    <Anchor side="Top"   relative="$parent" pos="Min" offset="15"/>
+                    <Anchor side="Left"  relative="$parent" pos="Min" offset="0"/>
+                    <Text val=""/>
+                </Frame>
+                <Frame type="Label" name="DmgValue" template="brTemplates/ReportStat">
+                    <Anchor side="Top"  relative="$parent/$parent/GraphsFrame/DamageDealtBarGraph" pos="Min" offset="0"/>
+                    <Anchor side="Left" relative="$parent/ResourcesLostFrame/ResourcesLostGas" pos="Min" offset="0"/>
+                    <Text val="0 (0.00%)" />
+                    <Style val="brReportStatLeft"/>
+                    <Options val="ScaleToPreventTruncation"/>
+                </Frame>
+
+                <Frame type="Frame" name="MVPUnitType">
+                    <Anchor side="Left" relative="$parent/AbilityButtons/Abil06" pos="Min" offset="0"/>
+                    <Visible val="False"/>
+                    
+                    <Frame type="Button" name="MVPUnitTypeButton">
+                        <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+                    </Frame>
+                    <Frame type="Label" name="MVPUnitTypeDamageLabel">
+                        <Anchor side="Left" relative="$parent/MVPUnitTypeButton" pos="Max" offset="0"/>
+                        <Visible val="False"/>
+                    </Frame>
+                    <Frame type="Label" name="MVPUnitTypeDamageValue">
+                        <Style val="brReportStatRight"/>
+                        <Anchor side="Left" relative="$parent/MVPUnitTypeButton" pos="Min" offset="-215"/>
+                        <Visible val="False"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+            <!-- Player 2 Report Frame -->
+            <Frame type="Frame" name="PlayerReport2" template="brTemplates/ReportFrame">
+                <Anchor side="Left"  relative="$parent/SeparatorV" pos="Min" offset="2"/>
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-15"/>
+
+                <!-- Units Lost -->
+                <!-- 
+                    <Frame type="Frame" name="UnitButtons">
+                        <Frame type="Button" name="Unit01">
+                            <Anchor side="Left" relative="$parent" pos="Max" offset="-69"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit02">
+                            <Anchor side="Left" relative="$parent/Unit01" pos="Min" offset="-69"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit03">
+                            <Anchor side="Left" relative="$parent/Unit02" pos="Min" offset="-69"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit04">
+                            <Anchor side="Left" relative="$parent/Unit03" pos="Min" offset="-69"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit05">
+                            <Anchor side="Left" relative="$parent/Unit04" pos="Min" offset="-69"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit06">
+                            <Anchor side="Left" relative="$parent/Unit05" pos="Min" offset="-69"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit07">
+                            <Anchor side="Top"  relative="$parent/Unit01" pos="Max" offset="5"/>
+                            <Anchor side="Left" relative="$parent/Unit01" pos="Min" offset="0"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit08">
+                            <Anchor side="Top"  relative="$parent/Unit01" pos="Max" offset="5"/>
+                            <Anchor side="Left" relative="$parent/Unit02" pos="Min" offset="0"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit09">
+                            <Anchor side="Top"  relative="$parent/Unit01" pos="Max" offset="5"/>
+                            <Anchor side="Left" relative="$parent/Unit03" pos="Min" offset="0"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit10">
+                            <Anchor side="Top"  relative="$parent/Unit01" pos="Max" offset="5"/>
+                            <Anchor side="Left" relative="$parent/Unit04" pos="Min" offset="0"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit11">
+                            <Anchor side="Top"  relative="$parent/Unit01" pos="Max" offset="5"/>
+                            <Anchor side="Left" relative="$parent/Unit05" pos="Min" offset="0"/>
+                        </Frame>
+                        <Frame type="Button" name="Unit12">
+                            <Anchor side="Top"  relative="$parent/Unit01" pos="Max" offset="5"/>
+                            <Anchor side="Left" relative="$parent/Unit06" pos="Min" offset="0"/>
+                        </Frame>
+                    </Frame>
+                -->
+
+                <!-- Abilities Used -->
+                <!--
+                <Frame type="Frame" name="AbilityButtons">
+                    <Frame type="Button" name="Abil01">
+                        <Anchor side="Left" relative="$parent" pos="Max" offset="-69"/>
+                    </Frame>
+                    <Frame type="Button" name="Abil02">
+                        <Anchor side="Left" relative="$parent/Abil01" pos="Min" offset="-69"/>
+                    </Frame>
+                    <Frame type="Button" name="Abil03">
+                        <Anchor side="Left" relative="$parent/Abil02" pos="Min" offset="-69"/>
+                    </Frame>
+                    <Frame type="Button" name="Abil04" template="brTemplates/UnitLostButton">
+                        <Anchor side="Left" relative="$parent/Abil03" pos="Min" offset="-69"/>
+                    </Frame>
+                    <Frame type="Button" name="Abil05" template="brTemplates/UnitLostButton">
+                        <Anchor side="Left" relative="$parent/Abil04" pos="Min" offset="-69"/>
+                    </Frame>
+                    <Frame type="Button" name="Abil06" template="brTemplates/UnitLostButton">
+                        <Anchor side="Left" relative="$parent/Abil05" pos="Min" offset="-69"/>
+                    </Frame>
+                </Frame>
+                -->
+
+                <Frame type="Frame" name="UnitButtons">
+                    <Anchor side="Left" relative="$parent" pos="Min" offset="15"/>
+                    <Anchor side="Right" relative="$parent" pos="Max" offset="-25"/>
+                </Frame>
+
+                <!-- Damage Dealt -->
+                <Frame type="Label" name="DmgLabel" template="brTemplates/ReportStat">
+                    <Anchor side="Top"  relative="$parent" pos="Min" offset="25"/>
+                    <Anchor side="Left" relative="$parent" pos="Min" offset="25"/>
+                    <Text val=""/>
+                </Frame>
+                <Frame type="Label" name="DmgValue" template="brTemplates/ReportStat">
+                    <Anchor side="Top"  relative="$parent/$parent/GraphsFrame/DamageDealtBarGraph" pos="Min" offset="0"/>
+                    <Anchor side="Right" relative="$parent/ResourcesLostFrame/ResourcesLostGas" pos="Max" offset="0"/>
+                    <Text val="0 (0.00%)" />
+                    <Style val="brReportStatRight"/>
+                    <Options val="ScaleToPreventTruncation"/>
+                </Frame>
+
+                <!-- Resources Lost -->
+                <Frame type="Frame" name="ResourcesLostFrame">
+                    <Frame type="Image" name="ResourcesLostMinerals">
+                        <Anchor side="Left" relative="$parent"  pos="0"      offset="0"/>
+                        <Anchor side="Right" relative="$parent" pos="1.5" offset="0"/>
+                    </Frame>
+                    <Frame type="Label" name="ResourcesLostMineralsValue">
+                        <Anchor side="Left" relative="$parent/ResourcesLostMinerals" pos="Min" offset="-125"/>
+                        <Style val="brResourceValueRight"/>
+                    </Frame>
+                    <Frame type="Image" name="ResourcesLostGas">
+                    </Frame>
+                    <Frame type="Label" name="ResourcesLostGasValue">
+                        <Anchor side="Left" relative="$parent/ResourcesLostGas" pos="Min" offset="-125"/>
+                        <Style val="brResourceValueRight"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+
+            <!--                                         -->
+            <!-- 12/16/2020                              -->
+            <!-- NEW - Single Bar Graph for Damage Dealt -->
+            <!--       and Resources Lost                -->
+            <Frame type="BlurFrame" name="GraphsFrame">
+                <Anchor relative="$parent"/>
+                <BlurAmount val="0.5"/>
+                <RenderType val="LDR"/>
+                <Alpha val="224"/>
+
+                <!-- Damage Bar Graph -->
+                <Frame type="Frame" name="DamageDealtBarGraph">
+                    <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/DmgLabel" pos="Max" offset="5"/>
+                    <Anchor side="Left" relative="$parent/$parent/PlayerReport1/DmgValue" pos="Max" offset="10"/>
+                    <Anchor side="Right" relative="$parent/$parent/PlayerReport2/DmgValue" pos="Min" offset="-15"/>
+                    <Height val="30"/>
+                    <RenderPriority val="515"/>
+    
+                    <Frame type="Image" name="Player1Graph">
+                        <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+                        <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                        <Height val="30"/>
+                        <Width val="0"/>
+                        <Texture val="#HealthbarRed"/>
+                        <TextureType val="Border"/>
+                        <Desaturated val="True"/>
+                        <DesaturationColor val="255,255,0,0"/>
+                        <Visible val="False"/>
+                    </Frame>
+                    <Frame type="Image" name="Player2Graph">
+                        <Anchor side="Right" relative="$parent" pos="Max" offset="0"/>
+                        <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                        <Height val="30"/>
+                        <Width val="0"/>
+                        <Texture val="#HealthbarRed"/>
+                        <TextureType val="Border"/>
+                        <Desaturated val="True"/>
+                        <DesaturationColor val="255,0,0,255"/>
+                        <Visible val="False"/>
+                    </Frame>
+                </Frame>
+
+                <!-- Minerals Bar Graph -->
+                <Frame type="Frame" name="MineralsLostBarGraph">
+                    <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/ResourcesLostLabel" pos="Max" offset="5"/>
+                    <Anchor side="Left" relative="$parent/DamageDealtBarGraph" pos="Min" offset="0"/>
+                    <Anchor side="Right" relative="$parent/DamageDealtBarGraph" pos="Max" offset="0"/>
+                    <Height val="30"/>
+                    <RenderPriority val="515"/>
+    
+                    <Frame type="Image" name="Player1Graph">
+                        <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+                        <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                        <Height val="30"/>
+                        <Width val="0" />
+                        <Texture val="#HealthbarRed"/>
+                        <TextureType val="Border"/>
+                        <Desaturated val="True"/>
+                        <DesaturationColor val="255,255,0,0"/>
+                        <Visible val="False"/>
+                    </Frame>
+                    <Frame type="Image" name="Player2Graph">
+                        <Anchor side="Right" relative="$parent" pos="Max" offset="0"/>
+                        <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                        <Height val="30"/>
+                        <Width val="0" />
+                        <Texture val="#HealthbarRed"/>
+                        <TextureType val="Border"/>
+                        <Desaturated val="True"/>
+                        <DesaturationColor val="255,0,0,255"/>
+                        <Visible val="False"/>
+                    </Frame>
+                </Frame>
+
+                
+                <!-- Gas Bar Graph -->
+                <Frame type="Frame" name="GasLostBarGraph">
+                    <Anchor side="Top" relative="$parent/MineralsLostBarGraph" pos="Max" offset="15"/>
+                    <Anchor side="Left" relative="$parent/DamageDealtBarGraph" pos="Min" offset="0"/>
+                    <Anchor side="Right" relative="$parent/DamageDealtBarGraph" pos="Max" offset="0"/>
+                    <Height val="30"/>
+                    <RenderPriority val="515"/>
+    
+                    <Frame type="Image" name="Player1Graph">
+                        <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+                        <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                        <Height val="30"/>
+                        <Width val="0" />
+                        <Texture val="#HealthbarRed"/>
+                        <TextureType val="Border"/>
+                        <Desaturated val="True"/>
+                        <DesaturationColor val="255,255,0,0"/>
+                        <Visible val="False"/>
+                    </Frame>
+                    <Frame type="Image" name="Player2Graph">
+                        <Anchor side="Right" relative="$parent" pos="Max" offset="0"/>
+                        <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                        <Height val="30"/>
+                        <Width val="0" />
+                        <Texture val="#HealthbarRed"/>
+                        <TextureType val="Border"/>
+                        <Desaturated val="True"/>
+                        <DesaturationColor val="255,0,0,255"/>
+                        <Visible val="False"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+            
+
+            <Frame type="Frame" name="SubtitlesFrame">
+                <Anchor relative="$parent"/>
+                <RenderPriority val="515"/>
+
+                <!-- Units Lost Label -->
+                <Frame type="Label" name="UnitsKilledLabel" template="brTemplates/ReportStat">
+                    <Anchor side="Top"   relative="$parent/$parent/PlayerName1" pos="Max" offset="15"/>
+                    <Anchor side="Left"  relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Text val="Units Killed"/>
+                    <Style val="brReportStatTitle"/>
+                </Frame>
+
+                <!-- Resources Lost Label -->
+                <Frame type="Label" name="ResourcesLostLabel" template="brTemplates/ReportStat">
+                    <Anchor side="Top"   relative="$parent/$parent/PlayerReport1/UnitButtons" pos="Max" offset="15"/>
+                    <Anchor side="Left"  relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Text val="Resources Destroyed"/>
+                    <Style val="brReportStatTitle"/>
+                    <Width val="250"/>
+                </Frame>
+
+                <!-- Damage Dealt Label -->
+                <Frame type="Label" name="DmgLabel" template="brTemplates/ReportStat">
+                    <Anchor side="Top"   relative="$parent/$parent/PlayerReport1/ResourcesLostFrame/ResourcesLostGas" pos="Max" offset="15"/>
+                    <Anchor side="Left"  relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Text val="Damage Dealt"/>
+                    <Style val="brReportStatTitle"/>
+                </Frame>
+
+                <!-- Abilities Used Label -->
+                <Frame type="Label" name="AbilitiesUsedLabel" template="brTemplates/ReportStat">
+                    <Anchor side="Top"   relative="$parent/$parent/GraphsFrame/DamageDealtBarGraph" pos="Max" offset="20"/>
+                    <Anchor side="Left"  relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Text val="Abilities Used"/>
+                    <Style val="brReportStatTitle"/>
+                </Frame>
+
+                <!-- Biggest Damage Dealer Label -->
+                <Frame type="Label" name="MVPUnitTypeLabel" template="brTemplates/ReportStat">
+                    <Anchor side="Top"   relative="$parent/$parent/PlayerReport1/AbilityButtons" pos="Max" offset="15"/>
+                    <Anchor side="Left"  relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Text val="Biggest Damage Dealer"/>
+                    <Style val="brReportStatTitle"/>
+                    <Width val="250"/>
+                </Frame>
+            </Frame>
+
+
+        </Frame>
+    </Frame>
+
+</Desc>
