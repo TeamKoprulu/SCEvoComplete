@@ -10,19 +10,56 @@ void libBWVS_InitLibraries () {
     libNtve_InitVariables();
 }
 
+// Functions
+void libBWVS_gf_SetPlayerRaceToBW (int lp_player) {
+    // Automatic Variable Declarations
+    string autoB5E16CCE_val;
+
+    // Implementation
+    autoB5E16CCE_val = PlayerRace(lp_player);
+    if (autoB5E16CCE_val == ("Terr")) {
+        PlayerSetRace(lp_player, "BWTe");
+    }
+    else if (autoB5E16CCE_val == ("Prot")) {
+        PlayerSetRace(lp_player, "BWPr");
+    }
+    else if (autoB5E16CCE_val == ("Zerg")) {
+        PlayerSetRace(lp_player, "BWZe");
+    }
+    else {
+    }
+}
+
+void libBWVS_gf_SetPlayerRaceToSC2 (int lp_player) {
+    // Automatic Variable Declarations
+    string autoE7A228AF_val;
+
+    // Implementation
+    autoE7A228AF_val = PlayerRace(lp_player);
+    if (autoE7A228AF_val == ("BWTe")) {
+        PlayerSetRace(lp_player, "Terr");
+    }
+    else if (autoE7A228AF_val == ("BWPr")) {
+        PlayerSetRace(lp_player, "Prot");
+    }
+    else if (autoE7A228AF_val == ("BWZe")) {
+        PlayerSetRace(lp_player, "Zerg");
+    }
+    else {
+    }
+}
+
 // Triggers
 //--------------------------------------------------------------------------------------------------
 // Trigger: Race Initialization
 //--------------------------------------------------------------------------------------------------
-bool libBWVS_gt_MapInitialization_Func (bool testConds, bool runActions) {
+bool libBWVS_gt_RaceInitialization_Func (bool testConds, bool runActions) {
     // Variable Declarations
     int lv_playerIndex;
 
     // Automatic Variable Declarations
-    playergroup auto05635F0B_g;
-    string autoFBC52526_val;
-    string auto0B73A5CD_val;
-    string auto2259B057_val;
+    playergroup auto72BB7BA3_g;
+    string auto6A2B9E65_val;
 
     // Variable Initialization
 
@@ -31,41 +68,33 @@ bool libBWVS_gt_MapInitialization_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    auto05635F0B_g = PlayerGroupActive();
+    auto72BB7BA3_g = PlayerGroupActive();
     lv_playerIndex = -1;
     while (true) {
-        lv_playerIndex = PlayerGroupNextPlayer(auto05635F0B_g, lv_playerIndex);
+        lv_playerIndex = PlayerGroupNextPlayer(auto72BB7BA3_g, lv_playerIndex);
         if (lv_playerIndex < 0) { break; }
-        autoFBC52526_val = GameAttributePlayerValue("1", lv_playerIndex);
-        if (autoFBC52526_val == "0001") {
-            auto0B73A5CD_val = PlayerRace(lv_playerIndex);
-            if (auto0B73A5CD_val == ("Terr")) {
-                PlayerSetRace(lv_playerIndex, "BWTe");
-            }
-            else if (auto0B73A5CD_val == ("Prot")) {
-                PlayerSetRace(lv_playerIndex, "BWPr");
-            }
-            else if (auto0B73A5CD_val == ("Zerg")) {
-                PlayerSetRace(lv_playerIndex, "BWZe");
-            }
-            else {
-            }
+        auto6A2B9E65_val = GameAttributePlayerValue("1", lv_playerIndex);
+        if (auto6A2B9E65_val == "0001") {
+            libBWVS_gf_SetPlayerRaceToBW(lv_playerIndex);
         }
-        else if (autoFBC52526_val == "0002") {
-            auto2259B057_val = PlayerRace(lv_playerIndex);
-            if (auto2259B057_val == ("BWTe")) {
-                PlayerSetRace(lv_playerIndex, "Terr");
-            }
-            else if (auto2259B057_val == ("BWPr")) {
-                PlayerSetRace(lv_playerIndex, "Prot");
-            }
-            else if (auto2259B057_val == ("BWZe")) {
-                PlayerSetRace(lv_playerIndex, "Zerg");
+        else if (auto6A2B9E65_val == "0002") {
+            libBWVS_gf_SetPlayerRaceToSC2(lv_playerIndex);
+        }
+        else if (auto6A2B9E65_val == "0003") {
+            if ((RandomInt(0, 1) == 1)) {
+                libBWVS_gf_SetPlayerRaceToBW(lv_playerIndex);
             }
             else {
+                libBWVS_gf_SetPlayerRaceToSC2(lv_playerIndex);
             }
         }
         else {
+            if ((RandomInt(0, 1) == 1)) {
+                libBWVS_gf_SetPlayerRaceToBW(lv_playerIndex);
+            }
+            else {
+                libBWVS_gf_SetPlayerRaceToSC2(lv_playerIndex);
+            }
         }
         if ((PlayerType(lv_playerIndex) == c_playerTypeUser)) {
             libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
@@ -77,13 +106,13 @@ bool libBWVS_gt_MapInitialization_Func (bool testConds, bool runActions) {
 }
 
 //--------------------------------------------------------------------------------------------------
-void libBWVS_gt_MapInitialization_Init () {
-    libBWVS_gt_MapInitialization = TriggerCreate("libBWVS_gt_MapInitialization_Func");
-    TriggerAddEventMapInit(libBWVS_gt_MapInitialization);
+void libBWVS_gt_RaceInitialization_Init () {
+    libBWVS_gt_RaceInitialization = TriggerCreate("libBWVS_gt_RaceInitialization_Func");
+    TriggerAddEventMapInit(libBWVS_gt_RaceInitialization);
 }
 
 void libBWVS_InitTriggers () {
-    libBWVS_gt_MapInitialization_Init();
+    libBWVS_gt_RaceInitialization_Init();
 }
 
 //--------------------------------------------------------------------------------------------------
