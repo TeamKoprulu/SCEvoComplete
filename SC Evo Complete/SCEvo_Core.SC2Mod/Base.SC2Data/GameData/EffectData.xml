@@ -38,6 +38,31 @@
         <EffectArray value="SC1_ShieldsParam"/>
         <EffectArray value="##x##@DamageAccum"/>
     </CEffectSet>
+    <CEffectCreatePersistent id="SpiderMineSCBWWeapon@InvisCP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnit"/>
+        <OffsetVectorEndLocation Value="TargetUnit"/>
+        <Flags index="EffectFailure" value="1"/>
+        <Flags index="PersistUntilDestroyed" value="1"/>
+        <InitialEffect value="SpiderMineSCBWWeapon@InvisCasterMarker"/>
+        <FinalEffect value="SpiderMineSCBWWeapon@InvisCPFinal"/>
+        <PeriodicValidator value="SpiderMineSCBWWeapon@InvisPersistentValidator"/>
+        <PeriodicEffectArray value="SpiderMineSCBWWeapon@InvisTargeting"/>
+        <PeriodicPeriodArray value="0.0625"/>
+    </CEffectCreatePersistent>
+    <CEffectSwitch id="SpiderMineSCBWWeapon@InvisCPFinal">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Validator="SpiderMineSCBWWeapon@InvisRangeCheckNegate" Effect="SpiderMineSCBWWeapon@Impact"/>
+    </CEffectSwitch>
+    <CEffectApplyBehavior id="SpiderMineSCBWWeapon@InvisTargetMarker">
+        <EditorCategories value="Race:Terran"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="SpiderMineSCBWWeapon@InvisEnumSet">
+        <ValidatorArray value="SpiderMineSCBWWeapon@InvisEnumSetTargetFilters"/>
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="SpiderMineSCBWWeapon@InvisTargetMarker"/>
+        <EffectArray value="SpiderMineSCBWWeapon@InvisCP"/>
+    </CEffectSet>
     <CEffectSwitch id="DisguiseEx3">
         <CaseArray Validator="DisguiseAsMarineSCBW" Effect="DisguiseAsMarineSCBWCU"/>
         <CaseArray Validator="DisguiseAsZealotSCBW" Effect="DisguiseAsZealotSCBWCU"/>
@@ -154,19 +179,45 @@
         <EffectArray value="RefineryRichSearch"/>
         <EffectArray value="GeyserExhaustedCheck"/>
     </CEffectSet>
+    <CEffectDamage id="SpiderMineSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW">
+        <EditorCategories value="Race:Terran"/>
+        <AINotifyFlags index="HurtFriend" value="1"/>
+        <AINotifyFlags index="HurtEnemy" value="1"/>
+        <AINotifyFlags index="MajorDanger" value="1"/>
+        <Visibility value="Visible"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
+        <Death value="Blast"/>
+        <AreaArray Radius="1.5625" Fraction="1"/>
+        <AreaArray Radius="2.3437" Fraction="0.5"/>
+        <AreaArray Radius="3.125" Fraction="0.25"/>
+        <ExcludeArray Value="Outer"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="Ground;Self,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+        <SearchFlags index="OffsetAreaByAngle" value="0"/>
+    </CEffectDamage>
     <CEffectDamage id="TerranBuildingSCBW@BurnoutDamage">
         <EditorCategories value="Race:Terran"/>
         <Flags index="NoKillCredit" value="1"/>
         <Amount value="1"/>
     </CEffectDamage>
-    <CEffectIssueOrder id="SpiderMineSCBWWeapon@InvisibleTargeting">
+    <CEffectIssueOrder id="SpiderMineSCBWWeapon@InvisTargeting">
         <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Caster"/>
+        <Abil value="move"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <Player Value="Caster"/>
         <Target Value="TargetPoint"/>
     </CEffectIssueOrder>
-    <CEffectEnumArea id="SpiderMineSCBWWeapon@EnumInvis">
+    <CEffectEnumArea id="SpiderMineSCBWWeapon@InvisEnum">
         <EditorCategories value="Race:Terran"/>
-        <SearchFilters value="Ground,Cloaked;Structure,Hover,Missile,Buried,Stasis,Dead,Hidden,Invulnerable"/>
-        <AreaArray Radius="4" Effect="SpiderMineSCBWWeapon@InvisibleTargeting"/>
+        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Buried,Stasis,Dead,Hidden,Invulnerable"/>
+        <TargetSorts>
+            <SortArray value="TSDistanceToTarget"/>
+        </TargetSorts>
+        <AreaArray Radius="4" Effect="SpiderMineSCBWWeapon@InvisEnumSet"/>
+        <MaxCount value="1"/>
     </CEffectEnumArea>
     <CEffectRemoveBehavior id="CommandCenterSCBW@ComsatRemoveAttached">
         <BehaviorLink value="ComsatStationSCBW@Attached"/>
@@ -304,6 +355,12 @@
         <TargetLocation Value="TargetPoint"/>
         <TeleportFlags index="TestFog" value="0"/>
     </CEffectTeleport>
+    <CEffectUserData id="SpiderMineSCBWWeapon@DamageApply" parent="DamageIncoming">
+        <EditorCategories value="Race:Terran"/>
+        <Amount value="0">
+            <AccumulatorArray value="SpiderMineSCBWWeapon@Damage"/>
+        </Amount>
+    </CEffectUserData>
     <CEffectSet id="WraithSCBWWeaponAir@Impact">
         <EffectArray value="WraithSCBWWeaponAir@DamageApply"/>
         <EffectArray value="SC1_ShieldsParam"/>
@@ -1206,18 +1263,17 @@
         <KindSplash value="Splash"/>
         <Amount value="94"/>
         <Death value="Blast"/>
-        <AreaArray Radius="1.5625" Fraction="1"/>
-        <AreaArray Radius="2.3437" Fraction="0.5" Validator="NotBurrowed"/>
-        <AreaArray Radius="3.125" Fraction="0.25" Validator="NotBurrowed"/>
         <ExcludeArray Value="Outer"/>
         <ExcludeArray Value="Target"/>
         <SearchFilters value="Ground;Self,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <SearchFlags index="OffsetByUnitRadius" value="0"/>
         <SearchFlags index="OffsetAreaByAngle" value="0"/>
     </CEffectDamage>
-    <CEffectSet id="SpiderMineSCBWWeapon@Set">
+    <CEffectSet id="SpiderMineSCBWWeapon@Impact">
         <EditorCategories value="Race:Terran"/>
-        <EffectArray value="SpiderMineSCBWWeapon@Damage"/>
+        <EffectArray value="SpiderMineSCBWWeapon@DamageApply"/>
+        <EffectArray value="SC1_ShieldsParam"/>
+        <EffectArray value="SpiderMineSCBWWeapon@DamageAccum"/>
         <EffectArray value="Suicide"/>
     </CEffectSet>
     <CEffectLaunchMissile id="WraithSCBWWeaponAir@LMLeft">
