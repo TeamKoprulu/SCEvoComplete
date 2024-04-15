@@ -1225,6 +1225,33 @@ text lib6F383DA1_gf_PlayerNameColored (int lp_player) {
 
 // Triggers
 //--------------------------------------------------------------------------------------------------
+// Trigger: BattleReport Init
+//--------------------------------------------------------------------------------------------------
+bool lib6F383DA1_gt_BattleReportInit_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerExecute(lib6F383DA1_gt_InitUI, true, true);
+    TriggerExecute(lib6F383DA1_gt_ForbidPlayerAccess, true, true);
+    TriggerEnable(lib6F383DA1_gt_SetBattleStarted, true);
+    TriggerEnable(lib6F383DA1_gt_SetBattleEnded, true);
+    TriggerEnable(lib6F383DA1_gt_SetBattleReportOKtoClear, true);
+    TriggerEnable(lib6F383DA1_gt_TrackUnitKills, true);
+    TriggerEnable(lib6F383DA1_gt_TrackDamage, true);
+    TriggerEnable(lib6F383DA1_gt_TrackAbility, true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void lib6F383DA1_gt_BattleReportInit_Init () {
+    lib6F383DA1_gt_BattleReportInit = TriggerCreate("lib6F383DA1_gt_BattleReportInit_Func");
+    TriggerAddEventMapInit(lib6F383DA1_gt_BattleReportInit);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: Hookup UI
 //--------------------------------------------------------------------------------------------------
 bool lib6F383DA1_gt_InitUI_Func (bool testConds, bool runActions) {
@@ -1563,6 +1590,8 @@ bool lib6F383DA1_gt_TrackUnitKills_Func (bool testConds, bool runActions) {
         lv_killedUnitType = (lib6F383DA1_gf_removeStringFromUnitType(lv_killedUnitType, "Burrowed"));
         lv_killedUnitType = (lib6F383DA1_gf_removeStringFromUnitType(lv_killedUnitType, "SiegeMode"));
         lv_killedUnitType = (lib6F383DA1_gf_removeStringFromUnitType(lv_killedUnitType, "Cocoon"));
+        lv_killedUnitType = (lib6F383DA1_gf_removeStringFromUnitType(lv_killedUnitType, "@Burrowed"));
+        lv_killedUnitType = (lib6F383DA1_gf_removeStringFromUnitType(lv_killedUnitType, "Sieged"));
         if ((EventUnitDamageDeathCheck(c_deathTypeRemove) == true)) {
             return true;
         }
@@ -1741,6 +1770,7 @@ void lib6F383DA1_gt_TrackAbility_Init () {
 }
 
 void lib6F383DA1_InitTriggers () {
+    lib6F383DA1_gt_BattleReportInit_Init();
     lib6F383DA1_gt_InitUI_Init();
     lib6F383DA1_gt_ForbidPlayerAccess_Init();
     lib6F383DA1_gt_SetBattleStarted_Init();
