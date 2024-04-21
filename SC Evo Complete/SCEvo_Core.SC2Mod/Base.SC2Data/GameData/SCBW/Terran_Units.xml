@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectEnumTransport id="ScienceVesselSCBWIrradiate@IterateTransportPeriodic">
+        <SearchFilters value="Biological;Structure,RawResource,HarvestableResource,Buried,Stasis,Dead,Invulnerable,Outer"/>
+        <Effect value="ScienceVesselSCBWIrradiate@DamagePeriodic"/>
+        <CheckOuter value="1"/>
+    </CEffectEnumTransport>
+    <CEffectSwitch id="ScienceVesselSCBWIrradiate@Switch">
+        <CaseArray Validator="SCBW_TargetIsBuried" Effect="ScienceVesselSCBWIrradiate@DamagePeriodic"/>
+        <CaseArray Validator="InsideTransport" Effect="ScienceVesselSCBWIrradiate@IterateTransportPeriodic"/>
+        <CaseDefault value="ScienceVesselSCBWIrradiate@SearchPeriodic"/>
+    </CEffectSwitch>
+    <CEffectSwitch id="ScienceVesselSCBWIrradiate@SwitchInitial">
+        <CaseArray Validator="SCBW_TargetIsBuried" Effect="ScienceVesselSCBWIrradiate@DamageInitial"/>
+        <CaseDefault value="ScienceVesselSCBWIrradiate@SearchInitial"/>
+    </CEffectSwitch>
     <CEffectSet id="VulturePlaceSpiderMineSCBW@SpawnSet">
         <EditorCategories value="Race:Terran"/>
         <EffectArray value="KillsToCaster"/>
@@ -149,15 +163,16 @@
         <!--<EffectArray value="ScienceVesselSCBWDefensiveMatrix@RBDummy"/>-->
     </CEffectSet>
     <CEffectApplyBehavior id="ScienceVesselSCBWIrradiate@AB">
-        <ValidatorArray index="0" value=""/>
         <EditorCategories value="Race:Terran"/>
         <Behavior value="ScienceVesselSCBWIrradiate@Irradiated"/>
         <KillHallucination value="1"/>
     </CEffectApplyBehavior>
     <CEffectEnumArea id="ScienceVesselSCBWIrradiate@SearchInitial">
         <EditorCategories value="Race:Terran"/>
-        <SearchFilters value="Biological;Structure,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFilters value="Biological;Structure,RawResource,HarvestableResource,Buried,Stasis,Dead,Hidden,Invulnerable"/>
         <AreaArray Radius="2.5" Effect="ScienceVesselSCBWIrradiate@DamageInitial"/>
+        <ExcludeArray Value="Outer"/>
+        <IncludeArray Value="Target"/>
     </CEffectEnumArea>
     <CEffectDamage id="ScienceVesselSCBWIrradiate@DamageInitial">
         <EditorCategories value="Race:Terran"/>
@@ -166,21 +181,25 @@
         <Amount value="10"/>
         <SearchFlags index="CallForHelp" value="1"/>
         <SearchFlags index="SameCliff" value="0"/>
+        <ValidatorArray value="ScienceVesselSCBWIrradiate@DamageFilters"/>
     </CEffectDamage>
     <CEffectDamage id="ScienceVesselSCBWIrradiate@DamagePeriodic">
         <EditorCategories value="Race:Terran"/>
         <ResponseFlags index="Flee" value="1"/>
         <Amount value="7"/>
+        <ValidatorArray value="ScienceVesselSCBWIrradiate@DamageFilters"/>
     </CEffectDamage>
     <CEffectEnumArea id="ScienceVesselSCBWIrradiate@SearchPeriodic">
         <EditorCategories value="Race:Terran"/>
         <ResponseFlags index="Flee" value="1"/>
-        <SearchFilters value="Biological;Structure,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFilters value="Biological;Structure,RawResource,HarvestableResource,Buried,Stasis,Dead,Hidden,Invulnerable"/>
         <AreaArray Radius="2.5" Effect="ScienceVesselSCBWIrradiate@DamagePeriodic"/>
+        <ExcludeArray Value="Outer"/>
+        <IncludeArray Value="Target"/>
     </CEffectEnumArea>
     <CEffectSet id="ScienceVesselSCBWIrradiate@Set">
         <EditorCategories value="Race:Terran"/>
-        <EffectArray value="ScienceVesselSCBWIrradiate@SearchInitial"/>
+        <EffectArray value="ScienceVesselSCBWIrradiate@SwitchInitial"/>
         <EffectArray value="ScienceVesselSCBWIrradiate@AB"/>
     </CEffectSet>
     <CEffectApplyBehavior id="ScienceVesselSCBWEMPShockwave@ABDecloak">
@@ -1911,6 +1930,10 @@
         <On Terms="ActorCreation" Send="SetTintColor 0,255,0"/>
         <On Terms="ActorCreation" Send="SetOpacity 0.750000"/>
         <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="Effect.ScienceVesselSCBWIrradiate@Switch.Start; At Target; ValidateUnit SCBW_TargetIsBuried" Send="StatusSet BurrowFade 1"/>
+        <On Terms="Behavior.ScienceVesselSCBWIrradiate@Irradiated.On; ValidateUnit SCBW_TargetIsBuried" Send="StatusSet BurrowFade 1"/>
+        <On Terms="Effect.ScienceVesselSCBWIrradiate@Switch.Start; At Target; HasStatus BurrowFade; !ValidateUnit SCBW_TargetIsBuried" Send="ClearOpacity 0.500000 BurrowFade"/>
+        <On Terms="StatusSet.*.BurrowFade; IsStatus BurrowFade 1" Send="SetOpacity 0.000000 0.500000 BurrowFade"/>
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
     </CActorModel>
@@ -7385,7 +7408,7 @@
         <EditorCategories value="AbilityorEffectType:Units"/>
         <Duration value="34.5"/>
         <Period value="1"/>
-        <PeriodicEffect value="ScienceVesselSCBWIrradiate@SearchPeriodic"/>
+        <PeriodicEffect value="ScienceVesselSCBWIrradiate@Switch"/>
         <BehaviorCategories index="Restorable" value="1"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ScienceVesselSCBWEMPShockwave@Decloak">
