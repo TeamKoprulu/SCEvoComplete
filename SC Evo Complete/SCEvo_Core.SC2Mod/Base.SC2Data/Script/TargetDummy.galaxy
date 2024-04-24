@@ -15,7 +15,7 @@ fixed[gv_targetDummyCount_C + 1] gv_targetDummyDamageTakenSinceLastUpdate;
 bool gv_targetDummyDoNotUpdateNumbers;
 timer gv_targetDummyHideUITimer;
 
-void gf_TargetDummyRespawn (int lp_targetDummyIndex);
+void gf_TargetDummyRespawn (int index, string type, point position);
 void gf_TargetDummyUpdateDamageUI ();
 // void gf_TargetDummyLeashbacktoStartingPoint (int lp_dummyIndex);
 int gf_TargetDummyGetIndexfromUnit (unit lp_targetDummyUnit);
@@ -28,11 +28,14 @@ trigger gt_TargetDummyDies;
 trigger gt_TargetDummyHideUITimerExpired;
 
 trigger auto_gf_TargetDummyRespawn_Trigger = null;
-int auto_gf_TargetDummyRespawn_lp_targetDummyIndex;
+static point gv_TargetDummyRespawn_Position;
+static string  gv_TargetDummyRespawn_Type;
+static int gv_TargetDummyRespawn_Index;
 
-void gf_TargetDummyRespawn (int lp_targetDummyIndex) {
-    auto_gf_TargetDummyRespawn_lp_targetDummyIndex = lp_targetDummyIndex;
-
+void gf_TargetDummyRespawn (int index, string type, point position) {
+    gv_TargetDummyRespawn_Position = position;
+    gv_TargetDummyRespawn_Type = type;
+    gv_TargetDummyRespawn_Index = index;
     if (auto_gf_TargetDummyRespawn_Trigger == null) {
         auto_gf_TargetDummyRespawn_Trigger = TriggerCreate("auto_gf_TargetDummyRespawn_TriggerFunc");
     }
@@ -43,15 +46,15 @@ void gf_TargetDummyRespawn (int lp_targetDummyIndex) {
 
 
 bool auto_gf_TargetDummyRespawn_TriggerFunc (bool testConds, bool runActions) {
-    int lp_targetDummyIndex = auto_gf_TargetDummyRespawn_lp_targetDummyIndex;
-
-
+    string type = gv_TargetDummyRespawn_Type;
+    point position = gv_TargetDummyRespawn_Position;
+    int index = gv_TargetDummyRespawn_Index;
     Wait(4.8125, c_timeGame);
-    libNtve_gf_CreateUnitsWithDefaultFacing(1, "TargetDummy", c_unitCreateIgnorePlacement, 0, gv_targetDummyLocation[lp_targetDummyIndex]);
-    gv_targetDummyUnit[lp_targetDummyIndex] = UnitLastCreated();
+    libNtve_gf_CreateUnitsWithDefaultFacing(1, type, c_unitCreateIgnorePlacement, 0, position);
+    gv_targetDummyUnit[index] = UnitLastCreated();
     TriggerAddEventUnitDamaged(gt_TargetDummyTakesDamage, UnitRefFromUnit(UnitLastCreated()), c_unitDamageTypeAny, c_unitDamageEither, null);
-    ActorSend(libNtve_gf_MainActorofUnit(gv_targetDummyUnit[lp_targetDummyIndex]), "SetScale 0.300000");
-    ActorSend(libNtve_gf_MainActorofUnit(gv_targetDummyUnit[lp_targetDummyIndex]), "SetScale 1.000000 0.018750");
+    ActorSend(libNtve_gf_MainActorofUnit(gv_targetDummyUnit[index]), "SetScale 0.300000");
+    ActorSend(libNtve_gf_MainActorofUnit(gv_targetDummyUnit[index]), "SetScale 1.000000 0.018750");
     Wait(0.1875, c_timeGame);
     // libNtve_gf_KillModel(lv_eggactor);
     return true;
@@ -96,13 +99,6 @@ bool auto_gf_TargetDummyUpdateDamageUI_TriggerFunc (bool testConds, bool runActi
     // gf_TryMeModePanelShowHide2(true);
     return true;
 }
-
-// void gf_TargetDummyLeashbacktoStartingPoint (int lp_dummyIndex) {
-//     // Automatic Variable Declarations
-//     // Implementation
-//     FloatingCombatElementCreateTextAtUnit(PlayerGroupAll(), "FloatingCombatElements/FloatingCombatAmountReadable", "", gv_targetDummyUnit[lp_dummyIndex], StringExternal("Param/Value/F83A9144"), libNtve_gv_FloatingCombatTextAutoRandomSeed);
-//     UnitSetPosition(gv_targetDummyUnit[lp_dummyIndex], gv_targetDummyStartLocation[lp_dummyIndex], false);
-// }
 
 int gf_TargetDummyGetIndexfromUnit (unit lp_targetDummyUnit) {
     // Variable Declarations
@@ -312,7 +308,11 @@ bool gt_TargetDummyDies_Func (bool testConds, bool runActions) {
 
     // Conditions
     if (testConds) {
-        if (!((UnitGetType(EventUnit()) == "TargetHeroDummy"))) {
+        if (    UnitGetType(EventUnit()) != "TargetDummy" ||
+                UnitGetType(EventUnit()) != "TargetDummyFlying"||
+                UnitGetType(EventUnit()) != "TargetDummyLight" ||
+                UnitGetType(EventUnit()) != "TargetDummyArmored"||
+                UnitGetType(EventUnit()) != "TargetDummyMassive") {
             return false;
         }
     }
@@ -323,7 +323,7 @@ bool gt_TargetDummyDies_Func (bool testConds, bool runActions) {
     }
 
     lv_index = gf_TargetDummyGetIndexfromUnit(EventUnit());
-    gf_TargetDummyRespawn(lv_index);
+    gf_TargetDummyRespawn(lv_index, UnitGetType(EventUnit()), UnitGetPosition(EventUnit()));
     return true;
 }
 
