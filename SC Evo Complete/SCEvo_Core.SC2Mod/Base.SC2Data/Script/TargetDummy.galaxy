@@ -1,0 +1,407 @@
+const int gv_targetDummyCount_C = 4;
+const fixed gv_targetDummyOutOfCombatTime_C = 3.0;
+
+fixed[gv_targetDummyCount_C + 1][5] gv_targetDummyHealthSnapshots;
+fixed gv_targetDummyDamageLastSecond;
+fixed gv_targetDummyDamageTotal;
+unit[gv_targetDummyCount_C + 1] gv_targetDummyUnit;
+region[gv_targetDummyCount_C + 1] gv_targetDummyLeashRegion;
+point[gv_targetDummyCount_C + 1] gv_targetDummyLocation;
+point[gv_targetDummyCount_C + 1] gv_targetDummyStartLocation;
+timer gv_targetDummyAnyDummyInCombatTimer;
+timer gv_targetDummyResetTimer;
+bool gv_targetDummyRespawnAllowed;
+fixed[gv_targetDummyCount_C + 1] gv_targetDummyDamageTakenSinceLastUpdate;
+bool gv_targetDummyDoNotUpdateNumbers;
+timer gv_targetDummyHideUITimer;
+
+void gf_TargetDummyRespawn (int lp_targetDummyIndex);
+void gf_TargetDummyUpdateDamageUI ();
+// void gf_TargetDummyLeashbacktoStartingPoint (int lp_dummyIndex);
+int gf_TargetDummyGetIndexfromUnit (unit lp_targetDummyUnit);
+trigger gt_TargetDummyInitialize;
+trigger gt_TargetDummyQuarterlyUpdate;
+trigger gt_TargetDummyTakesDamage;
+trigger gt_TargetDummyResetTimerExpired;
+trigger gt_TargetDummyDies;
+// trigger gt_TargetDummyLeavesItsArea;
+trigger gt_TargetDummyHideUITimerExpired;
+
+trigger auto_gf_TargetDummyRespawn_Trigger = null;
+int auto_gf_TargetDummyRespawn_lp_targetDummyIndex;
+
+void gf_TargetDummyRespawn (int lp_targetDummyIndex) {
+    auto_gf_TargetDummyRespawn_lp_targetDummyIndex = lp_targetDummyIndex;
+
+    if (auto_gf_TargetDummyRespawn_Trigger == null) {
+        auto_gf_TargetDummyRespawn_Trigger = TriggerCreate("auto_gf_TargetDummyRespawn_TriggerFunc");
+    }
+
+    TriggerExecute(auto_gf_TargetDummyRespawn_Trigger, false, false);
+}
+
+
+
+bool auto_gf_TargetDummyRespawn_TriggerFunc (bool testConds, bool runActions) {
+    int lp_targetDummyIndex = auto_gf_TargetDummyRespawn_lp_targetDummyIndex;
+
+
+    Wait(4.8125, c_timeGame);
+    libNtve_gf_CreateUnitsWithDefaultFacing(1, "TargetDummy", c_unitCreateIgnorePlacement, 0, gv_targetDummyLocation[lp_targetDummyIndex]);
+    gv_targetDummyUnit[lp_targetDummyIndex] = UnitLastCreated();
+    TriggerAddEventUnitDamaged(gt_TargetDummyTakesDamage, UnitRefFromUnit(UnitLastCreated()), c_unitDamageTypeAny, c_unitDamageEither, null);
+    ActorSend(libNtve_gf_MainActorofUnit(gv_targetDummyUnit[lp_targetDummyIndex]), "SetScale 0.300000");
+    ActorSend(libNtve_gf_MainActorofUnit(gv_targetDummyUnit[lp_targetDummyIndex]), "SetScale 1.000000 0.018750");
+    Wait(0.1875, c_timeGame);
+    // libNtve_gf_KillModel(lv_eggactor);
+    return true;
+}
+
+trigger auto_gf_TargetDummyUpdateDamageUI_Trigger = null;
+
+void gf_TargetDummyUpdateDamageUI () {
+    if (auto_gf_TargetDummyUpdateDamageUI_Trigger == null) {
+        auto_gf_TargetDummyUpdateDamageUI_Trigger = TriggerCreate("auto_gf_TargetDummyUpdateDamageUI_TriggerFunc");
+    }
+
+    TriggerExecute(auto_gf_TargetDummyUpdateDamageUI_Trigger, false, false);
+}
+
+bool auto_gf_TargetDummyUpdateDamageUI_TriggerFunc (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_itDummy;
+    fixed lv_dPSTotal;
+    fixed lv_damageTotal;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Implementation
+    if ((gv_targetDummyDoNotUpdateNumbers == true)) {
+        return true;
+    }
+    UIClearMessages(PlayerGroupActive(), c_messageAreaDebug);
+    if ((TimerGetElapsed(gv_targetDummyAnyDummyInCombatTimer) < 1.0)) {
+        // libNtve_gf_SetDialogItemText(gv_tryMeModePanel.lv_dummyDPSLabel, StringExternal("Param/Value/2A10360B"), PlayerGroupAll());
+    }
+    else {
+        lv_dPSTotal = (gv_targetDummyDamageTotal / TimerGetElapsed(gv_targetDummyAnyDummyInCombatTimer));
+        UIDisplayMessage(PlayerGroupActive(), c_messageAreaDebug, StringToText("DPS: ")+FixedToTextAdvanced(lv_dPSTotal, c_formatNumberStyleNormal, true, 1, 1));
+        // libNtve_gf_SetDialogItemText(gv_tryMeModePanel.lv_dummyDPSLabel, FixedToTextAdvanced(lv_dPSTotal, c_formatNumberStyleNormal, true, 1, 1), PlayerGroupAll());
+    }
+    UIDisplayMessage(PlayerGroupActive(), c_messageAreaDebug, StringToText("DamageTotal: ")+FixedToTextAdvanced(gv_targetDummyDamageTotal, c_formatNumberStyleNormal, true, 1, 1));
+    UIDisplayMessage(PlayerGroupActive(), c_messageAreaDebug, StringToText("LastSecond: ")+FormatNumber(FixedToInt(gv_targetDummyDamageLastSecond)));
+    // libNtve_gf_SetDialogItemText(gv_tryMeModePanel.lv_dummyDamageLabel, FixedToTextAdvanced(gv_targetDummyDamageTotal, c_formatNumberStyleNormal, true, 1, 1), PlayerGroupAll());
+    // libNtve_gf_SetDialogItemText(gv_tryMeModePanel.lv_dummyDPSLastSecondLabel, FormatNumber(FixedToInt(gv_targetDummyDamageLastSecond)), PlayerGroupAll());
+    // gf_TryMeModePanelShowHide2(true);
+    return true;
+}
+
+// void gf_TargetDummyLeashbacktoStartingPoint (int lp_dummyIndex) {
+//     // Automatic Variable Declarations
+//     // Implementation
+//     FloatingCombatElementCreateTextAtUnit(PlayerGroupAll(), "FloatingCombatElements/FloatingCombatAmountReadable", "", gv_targetDummyUnit[lp_dummyIndex], StringExternal("Param/Value/F83A9144"), libNtve_gv_FloatingCombatTextAutoRandomSeed);
+//     UnitSetPosition(gv_targetDummyUnit[lp_dummyIndex], gv_targetDummyStartLocation[lp_dummyIndex], false);
+// }
+
+int gf_TargetDummyGetIndexfromUnit (unit lp_targetDummyUnit) {
+    // Variable Declarations
+    int lv_index;
+
+    // Automatic Variable Declarations
+    const int auto71EB8F08_ae = gv_targetDummyCount_C;
+    const int auto71EB8F08_ai = 1;
+
+    // Variable Initialization
+
+    // Implementation
+    lv_index = 1;
+    for ( ; ( (auto71EB8F08_ai >= 0 && lv_index <= auto71EB8F08_ae) || (auto71EB8F08_ai < 0 && lv_index >= auto71EB8F08_ae) ) ; lv_index += auto71EB8F08_ai ) {
+        if ((lp_targetDummyUnit == gv_targetDummyUnit[lv_index])) {
+            return lv_index;
+        }
+
+    }
+    return 0;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Target Dummy Initialize
+//--------------------------------------------------------------------------------------------------
+bool gt_TargetDummyInitialize_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int i;
+
+    // Automatic Variable Declarations
+    const int autoE6A36205_ae = gv_targetDummyCount_C;
+    const int autoE6A36205_ai = 1;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    for (i = 0; i <= gv_targetDummyCount_C; i += 1) {
+        if(gv_targetDummyUnit[i] == null || !UnitIsAlive(gv_targetDummyUnit[i])){
+            if(!UnitIsValid(gf_UserTagExecutionGetEventUnit())){ return false; }
+            gv_targetDummyUnit[i] = gf_UserTagExecutionGetEventUnit();
+            gf_UserTagExecutionClearEventUnit();
+            TriggerAddEventUnitDamaged(gt_TargetDummyTakesDamage, UnitRefFromUnit(gv_targetDummyUnit[i]), c_unitDamageTypeAny, c_unitDamageEither, null);
+            break;
+        }
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_TargetDummyInitialize_Init () {
+    gt_TargetDummyInitialize = TriggerCreate("gt_TargetDummyInitialize_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Target Dummy Quarterly Update
+//--------------------------------------------------------------------------------------------------
+bool gt_TargetDummyQuarterlyUpdate_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    fixed lv_damageTaken;
+    fixed lv_lv_DamageLastSecond;
+    fixed lv_lv_HealingLastSecond;
+    int lv_i;
+    int lv_targetDummiesnotinCombat;
+
+    // Automatic Variable Declarations
+    const int auto68DB66F4_ae = gv_targetDummyCount_C;
+    const int auto68DB66F4_ai = 1;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_i = 0;
+    for ( ; ( (auto68DB66F4_ai >= 0 && lv_i <= auto68DB66F4_ae) || (auto68DB66F4_ai < 0 && lv_i >= auto68DB66F4_ae) ) ; lv_i += auto68DB66F4_ai ) {
+        gv_targetDummyHealthSnapshots[lv_i][4] = gv_targetDummyHealthSnapshots[lv_i][3];
+        gv_targetDummyHealthSnapshots[lv_i][3] = gv_targetDummyHealthSnapshots[lv_i][2];
+        gv_targetDummyHealthSnapshots[lv_i][2] = gv_targetDummyHealthSnapshots[lv_i][1];
+        gv_targetDummyHealthSnapshots[lv_i][1] = gv_targetDummyHealthSnapshots[lv_i][0];
+        gv_targetDummyHealthSnapshots[lv_i][0] = UnitGetPropertyFixed(gv_targetDummyUnit[lv_i], c_unitPropLife, c_unitPropCurrent);
+
+        if (((gv_targetDummyHealthSnapshots[lv_i][4] - gv_targetDummyHealthSnapshots[lv_i][0]) > 0.0)) {
+            lv_lv_DamageLastSecond += (gv_targetDummyHealthSnapshots[lv_i][4] - gv_targetDummyHealthSnapshots[lv_i][0]);
+        }
+
+        if ((UnitGetType(gv_targetDummyUnit[lv_i]) == "HealingHeroDummy") && ((gv_targetDummyHealthSnapshots[lv_i][4] - gv_targetDummyHealthSnapshots[lv_i][0]) < 0.0)) {
+            lv_lv_HealingLastSecond += (-1.0 * (gv_targetDummyHealthSnapshots[lv_i][4] - gv_targetDummyHealthSnapshots[lv_i][0]));
+        }
+
+        if ((UnitIsValid(gv_targetDummyUnit[lv_i]) == true)) {
+            if ((gv_targetDummyHealthSnapshots[lv_i][0] < gv_targetDummyHealthSnapshots[lv_i][1])) {
+                if ((TimerGetElapsed(gv_targetDummyAnyDummyInCombatTimer) == 0.0)) {
+                    TimerStart(gv_targetDummyAnyDummyInCombatTimer, c_timerDurationInfinite, false, c_timeGame);
+                }
+
+                TimerRestart(gv_targetDummyResetTimer);
+                libNtve_gf_StopTimer(gv_targetDummyHideUITimer);
+                gv_targetDummyRespawnAllowed = false;
+                gf_TargetDummyUpdateDamageUI();
+            }
+            else {
+                lv_targetDummiesnotinCombat += 1;
+            }
+        }
+        else{ lv_targetDummiesnotinCombat += 1; }
+
+    }
+    gv_targetDummyDamageLastSecond = lv_lv_DamageLastSecond;
+    // gv_healingDummyHealingLastSecond = lv_lv_HealingLastSecond;
+    if ((lv_targetDummiesnotinCombat == gv_targetDummyCount_C) && (TimerGetElapsed(gv_targetDummyAnyDummyInCombatTimer) == 0.0)) {
+        TimerStart(gv_targetDummyResetTimer, gv_targetDummyOutOfCombatTime_C, false, c_timeGame);
+
+    }
+    else {
+        gv_targetDummyDoNotUpdateNumbers = false;
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_TargetDummyQuarterlyUpdate_Init () {
+    gt_TargetDummyQuarterlyUpdate = TriggerCreate("gt_TargetDummyQuarterlyUpdate_Func");
+    TriggerAddEventTimePeriodic(gt_TargetDummyQuarterlyUpdate, 0.25, c_timeGame);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Target Dummy Takes Damage
+//--------------------------------------------------------------------------------------------------
+bool gt_TargetDummyTakesDamage_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gv_targetDummyDamageTotal += EventUnitDamageAmount();
+    gf_TargetDummyUpdateDamageUI();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_TargetDummyTakesDamage_Init () {
+    gt_TargetDummyTakesDamage = TriggerCreate("gt_TargetDummyTakesDamage_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Target Dummy Reset Timer Expired
+//--------------------------------------------------------------------------------------------------
+bool gt_TargetDummyResetTimerExpired_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_itDummy;
+
+    // Automatic Variable Declarations
+    const int autoCA115165_ae = gv_targetDummyCount_C;
+    const int autoCA115165_ai = 1;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gv_targetDummyDoNotUpdateNumbers = true;
+    TimerRestart(gv_targetDummyAnyDummyInCombatTimer);
+    TimerPause(gv_targetDummyAnyDummyInCombatTimer, true);
+    TimerRestart(gv_targetDummyResetTimer);
+    TimerPause(gv_targetDummyResetTimer, true);
+    gv_targetDummyDamageTotal = 0.0;
+    gv_targetDummyRespawnAllowed = true;
+    lv_itDummy = 1;
+    for ( ; ( (autoCA115165_ai >= 0 && lv_itDummy <= autoCA115165_ae) || (autoCA115165_ai < 0 && lv_itDummy >= autoCA115165_ae) ) ; lv_itDummy += autoCA115165_ai ) {
+        if ((UnitIsValid(gv_targetDummyUnit[lv_itDummy]) == true)) {
+            UnitSetPropertyFixed(gv_targetDummyUnit[lv_itDummy], c_unitPropLifePercent, 100.0);
+            // FloatingCombatElementCreateTextAtUnit(PlayerGroupAll(), "FloatingCombatElements/FloatingCombatAmountReadable", "", gv_targetDummyUnit[lv_itDummy], StringExternal("Param/Value/E6197E2C"), libNtve_gv_FloatingCombatTextAutoRandomSeed);
+            gv_targetDummyDamageTakenSinceLastUpdate[lv_itDummy] = 0.0;
+            // gf_TargetDummyLeashbacktoStartingPoint(lv_itDummy);
+        }
+
+    }
+    TimerStart(gv_targetDummyHideUITimer, 2.0, false, c_timeGame);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_TargetDummyResetTimerExpired_Init () {
+    gt_TargetDummyResetTimerExpired = TriggerCreate("gt_TargetDummyResetTimerExpired_Func");
+    TriggerAddEventTimer(gt_TargetDummyResetTimerExpired, gv_targetDummyResetTimer);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Target Dummy Dies
+//--------------------------------------------------------------------------------------------------
+bool gt_TargetDummyDies_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_index;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitGetType(EventUnit()) == "TargetHeroDummy"))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_index = gf_TargetDummyGetIndexfromUnit(EventUnit());
+    gf_TargetDummyRespawn(lv_index);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_TargetDummyDies_Init () {
+    gt_TargetDummyDies = TriggerCreate("gt_TargetDummyDies_Func");
+    TriggerAddEventUnitDied(gt_TargetDummyDies, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Target Dummy Leaves Its Area
+//--------------------------------------------------------------------------------------------------
+// bool gt_TargetDummyLeavesItsArea_Func (bool testConds, bool runActions) {
+//     // Variable Declarations
+//     int lv_dummyIndex;
+
+//     // Automatic Variable Declarations
+//     // Variable Initialization
+
+//     // Conditions
+//     if (testConds) {
+//         if (!((UnitGetType(EventUnit()) == "TargetHeroDummy"))) {
+//             return false;
+//         }
+//     }
+
+//     // Actions
+//     if (!runActions) {
+//         return true;
+//     }
+
+//     lv_dummyIndex = gf_TargetDummyGetIndexfromUnit(EventUnit());
+//     if ((libNtve_gf_UnitInRegion(gv_targetDummyUnit[lv_dummyIndex], gv_targetDummyLeashRegion[lv_dummyIndex]) == false)) {
+//         gf_TargetDummyLeashbacktoStartingPoint(lv_dummyIndex);
+//     }
+
+//     return true;
+// }
+
+//--------------------------------------------------------------------------------------------------
+// void gt_TargetDummyLeavesItsArea_Init () {
+//     gt_TargetDummyLeavesItsArea = TriggerCreate("gt_TargetDummyLeavesItsArea_Func");
+//     // TriggerAddEventUnitBehaviorChangeFromCategory(gt_TargetDummyLeavesItsArea, null, c_behaviorCategoryStun, c_unitBehaviorChangeDeactivate);
+//     // TriggerAddEventUnitBehaviorChangeFromCategory(gt_TargetDummyLeavesItsArea, null, c_behaviorCategoryPushOrPull, c_unitBehaviorChangeDeactivate);
+//     // TriggerAddEventUnitBehaviorChange(gt_TargetDummyLeavesItsArea, null, "StitchesGorgePostGorgeTargetEjection", c_unitBehaviorChangeDeactivate);
+// }
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Target Dummy Hide UI Timer Expired
+//--------------------------------------------------------------------------------------------------
+bool gt_TargetDummyHideUITimerExpired_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    // gf_TryMeModePanelShowHide2(false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_TargetDummyHideUITimerExpired_Init () {
+    gt_TargetDummyHideUITimerExpired = TriggerCreate("gt_TargetDummyHideUITimerExpired_Func");
+    TriggerAddEventTimer(gt_TargetDummyHideUITimerExpired, gv_targetDummyHideUITimer);
+}
+
+void TargetDummyInit () {
+    gv_targetDummyAnyDummyInCombatTimer = TimerCreate();
+    gv_targetDummyResetTimer = TimerCreate();
+    gv_targetDummyRespawnAllowed = true;
+    gv_targetDummyHideUITimer = TimerCreate();
+    gt_TargetDummyInitialize_Init();
+    gt_TargetDummyQuarterlyUpdate_Init();
+    gt_TargetDummyTakesDamage_Init();
+    gt_TargetDummyResetTimerExpired_Init();
+    gt_TargetDummyDies_Init();
+    // gt_TargetDummyLeavesItsArea_Init();
+    gt_TargetDummyHideUITimerExpired_Init();
+    TriggerExecute(gt_TargetDummyInitialize, true, true);
+}

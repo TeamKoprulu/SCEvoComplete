@@ -1,0 +1,53 @@
+
+trigger gt_UserTagExecution_Trigger;
+const string c_UserTagTrigger_DataTable = "$INTERNAL_USERTAG_";
+// UserTag InitFunction Runner
+
+void gf_UserTagExecution(unit inUnit) {
+    string func;
+    trigger trig;
+    if(UnitIsValid(inUnit)){
+        func = CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(inUnit), "UserTag", c_playerAny);
+        if(func != null && func != ""){
+            trig = TriggerCreate(func);
+            if(trig != null){
+                DataTableSetUnit(true, c_UserTagTrigger_DataTable+"UNIT", inUnit);
+                TriggerExecute(trig, false, true);
+                return;
+            }
+            TriggerDebugOutput(0, StringToText(TriggerGetFunction(TriggerGetCurrent())+ "> Could not create trigger from UserTag field for unit " + UnitGetType(inUnit)), false);
+        }
+    }
+    return;
+}
+
+unit gf_UserTagExecutionGetEventUnit() {
+    return DataTableGetUnit(true, c_UserTagTrigger_DataTable+"UNIT");
+}
+void gf_UserTagExecutionClearEventUnit() {
+    DataTableValueRemove(true, c_UserTagTrigger_DataTable+"UNIT");
+}
+
+void gf_UserTagExecuteForUnitGroup(unitgroup group) {
+    int i;
+    unit tmp_unit;
+    for (i = 1; i <= UnitGroupCount(group, c_unitCountAll); i += 1) {
+        tmp_unit = UnitGroupUnit(group, i);
+        gf_UserTagExecution(tmp_unit);
+    }
+    return;
+}
+
+bool gt_UserTagExecution_Func(bool test_conds, bool run_actions) {
+    gf_UserTagExecution(EventUnitCreatedUnit());
+    return true;
+}
+
+void UserTagExecution_Init(){
+    // Runs execution of scripts if they are defined under UserTag on the unit data.
+    if (gt_UserTagExecution_Trigger == null){
+        gf_UserTagExecuteForUnitGroup(UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0));
+        gt_UserTagExecution_Trigger = TriggerCreate("gt_UserTagExecution_Func");
+        TriggerAddEventUnitCreated(gt_UserTagExecution_Trigger, null, null, null);
+    }
+}
