@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectSet id="InterceptorSCBW@ReturnSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="InterceptorSCBW@HealSet"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="InterceptorSCBW@NotLaunchableAB">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="InterceptorSCBW@NotLaunchable"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="InterceptorSCBW@NotLaunchableRB">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorLink value="InterceptorSCBW@NotLaunchable"/>
+    </CEffectRemoveBehavior>
     <CEffectApplyBehavior id="ReaverSCBWWeapon@HallucinationScarab">
         <ValidatorArray index="0" value="CasterIsHallucinated"/>
         <Behavior value="HighTemplarSCBWHallucination"/>
@@ -602,11 +614,10 @@
         <EditorCategories value="Race:Protoss"/>
         <BehaviorLink value="InterceptorSCBW@RegenerateLife"/>
     </CEffectRemoveBehavior>
-    <CEffectSwitch id="InterceptorSCBW@LaunchSwitch">
+    <CEffectRemoveBehavior id="InterceptorSCBW@HealShieldsRB">
         <EditorCategories value="Race:Protoss"/>
-        <CaseArray Validator="NotFullLife" Effect="InterceptorSCBW@HealLifeAB"/>
-        <CaseArray Validator="TargetLifeFull" Effect="InterceptorSCBW@HealLifeRB"/>
-    </CEffectSwitch>
+        <BehaviorLink value="InterceptorSCBW@RegenerateShields"/>
+    </CEffectRemoveBehavior>
     <CEffectModifyUnit id="InterceptorSCBW@HealShields">
         <EditorCategories value="Race:Protoss"/>
         <VitalArray index="Shields">
@@ -615,7 +626,7 @@
     </CEffectModifyUnit>
     <CEffectSet id="InterceptorSCBW@HealSet">
         <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="InterceptorSCBW@HealShields"/>
+        <EffectArray value="InterceptorSCBW@HealShieldsAB"/>
         <EffectArray value="InterceptorSCBW@HealLifeAB"/>
     </CEffectSet>
     <CEffectApplyBehavior id="InterceptorSCBW@ReturnSlowAB">
@@ -635,6 +646,10 @@
     <CEffectApplyBehavior id="InterceptorSCBW@HealLifeAB">
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="InterceptorSCBW@RegenerateLife"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="InterceptorSCBW@HealShieldsAB">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="InterceptorSCBW@RegenerateShields"/>
     </CEffectApplyBehavior>
     <CEffectReturnMagazine id="InterceptorSCBW@Return">
         <EditorCategories value="Race:Protoss"/>
@@ -688,8 +703,7 @@
         </InfoArray>
         <Alert value="TrainComplete"/>
         <EffectArray index="Create" value="InterceptorSCBW@CreateSet"/>
-        <EffectArray index="Launch" value="InterceptorSCBW@LaunchSwitch"/>
-        <EffectArray index="Return" value="InterceptorSCBW@HealSet"/>
+        <EffectArray index="Return" value="InterceptorSCBW@ReturnSet"/>
         <MaxCount value="4"/>
     </CAbilArmMagazine>
     <CAbilEffectTarget id="CorsairSCBWDisruptionWeb">
@@ -886,6 +900,14 @@
         <Alert value="TrainComplete"/>
         <MaxCount value="5"/>
     </CAbilArmMagazine>
+    <CValidatorUnitCompareBehaviorCount id="InterceptorSCBW@NotRepairing">
+        <Compare value="GT"/>
+        <Behavior value="InterceptorSCBW@RegenerateLife"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareVital id="InterceptorSCBW@LifeLT20">
+        <Compare value="LT"/>
+        <Value value="20"/>
+    </CValidatorUnitCompareVital>
     <CValidatorCombine id="MindControlledOrNeuraled">
         <ResultFailed value="Error,Error/DarkArchonMindControlPrevention"/>
         <CombineArray value="DarkArchonSCBWMindControl"/>
@@ -6010,7 +6032,6 @@
     </CUnit>
     <CUnit id="InterceptorSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="Uncommandable" value="1"/>
-        <FlagArray index="Unselectable" value="1"/>
         <FlagArray index="Untargetable" value="1"/>
         <FlagArray index="AIThreatGround" value="1"/>
         <FlagArray index="AIThreatAir" value="1"/>
@@ -7000,6 +7021,42 @@
         <GlossaryWeakArray index="2" removed="1"/>
         <HotkeyCategory value=""/>
     </CUnit>
+    <CBehaviorBuff id="InterceptorSCBW@RegenerateShields">
+        <InfoFlags index="Hidden" value="1"/>
+        <InfoIcon value="Assets/Textures/btn-ability-terran-heal-color.dds"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="ShieldsNotFull"/>
+        <InitialEffect value="InterceptorSCBW@NotLaunchableAB"/>
+        <Modification>
+            <VitalRegenArray index="Shields" value="30"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="InterceptorSCBW@NotLaunchable">
+        <InfoFlags index="Hidden" value="1"/>
+        <InfoIcon value="Assets/Textures/btn-ability-terran-heal-color.dds"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="InterceptorSCBW@VitalityCondition"/>
+        <Modification>
+            <ModifyFlags index="DisableAbils" value="1"/>
+            <ModifyFlags index="DisableWeapons" value="1"/>
+            <ModifyFlags index="SuppressMoving" value="1"/>
+            <ModifyFlags index="SuppressTurning" value="1"/>
+            <StateFlags index="SuppressAttack" value="1"/>
+            <StateFlags index="NoDraw" value="1"/>
+            <StateFlags index="Uncommandable" value="1"/>
+            <StateFlags index="Undetectable" value="1"/>
+            <StateFlags index="Unradarable" value="1"/>
+            <StateFlags index="Unselectable" value="1"/>
+            <StateFlags index="Unstoppable" value="1"/>
+            <StateFlags index="Untargetable" value="1"/>
+            <StateFlags index="Resistant" value="1"/>
+            <AbilClassDisableArray index="CAbilArmMagazine" value="1"/>
+            <AbilClassDisableArray index="CAbilAttack" value="1"/>
+            <AbilClassDisableArray index="CAbilMove" value="1"/>
+        </Modification>
+        <Period value="0.0625"/>
+        <PeriodicEffect value="InterceptorSCBW@Return"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@NotInsideTransport">
         <InfoFlags index="Hidden" value="1"/>
         <RemoveValidatorArray value="NotInsideTransport"/>
@@ -7335,28 +7392,11 @@
         <InfoIcon value="Assets/Textures/btn-ability-terran-heal-color.dds"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <RemoveValidatorArray value="NotFullLife"/>
-        <Period value="0.0625"/>
-        <PeriodicEffect value="InterceptorSCBW@Return"/>
         <Modification>
-            <ModifyFlags index="DisableAbils" value="1"/>
-            <ModifyFlags index="DisableWeapons" value="1"/>
-            <ModifyFlags index="SuppressMoving" value="1"/>
-            <ModifyFlags index="SuppressTurning" value="1"/>
-            <StateFlags index="Invulnerable" value="1"/>
-            <StateFlags index="SuppressAttack" value="1"/>
-            <StateFlags index="NoDraw" value="1"/>
-            <StateFlags index="Uncommandable" value="1"/>
-            <StateFlags index="Undetectable" value="1"/>
-            <StateFlags index="Unradarable" value="1"/>
-            <StateFlags index="Unselectable" value="1"/>
-            <StateFlags index="Unstoppable" value="1"/>
-            <StateFlags index="Untargetable" value="1"/>
             <VitalRegenArray index="Life" value="8"/>
-            <AbilClassDisableArray index="CAbilArmMagazine" value="1"/>
-            <AbilClassDisableArray index="CAbilAttack" value="1"/>
-            <AbilClassDisableArray index="CAbilMove" value="1"/>
         </Modification>
         <InfoFlags index="Hidden" value="1"/>
+        <InitialEffect value="InterceptorSCBW@NotLaunchableAB"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="InterceptorSCBW@ReturnDamaged">
         <InfoIcon value="Assets/Textures/btn-ability-zerg-fireroach-increasefiredamage.dds"/>
