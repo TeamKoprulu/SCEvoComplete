@@ -55,10 +55,37 @@
         <CombineArray value="ShieldsNotFull"/>
         <CombineArray value="InterceptorSCBW@LifeLT20"/>
     </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="MedicSCBWOpticFlare@BlindedSource">
+        <WhichUnit Value="Source"/>
+        <Compare value="GT"/>
+        <Behavior value="MedicSCBWOpticFlare"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="SCBW_SourceViperBlindingCloud">
+        <WhichUnit Value="Source"/>
+        <Compare value="GT"/>
+        <Behavior value="BlindingCloud"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="SCBW_IsBlindedSource">
+        <CombineArray value="MedicSCBWOpticFlare@BlindedSource"/>
+        <CombineArray value="SCBW_SourceViperBlindingCloud"/>
+    </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="SCBW_NoDOTCategory">
         <Categories index="User15" value="1"/>
         <BehaviorAlignment value="Negative"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorLocationCompareRange id="SpiderMineSCBW@RangeBlinded">
+        <Compare value="LE"/>
+        <Range value="0.8"/>
+        <Pathing value="1"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorUnitCompareBehaviorCount id="MedicSCBWOpticFlare@Blinded">
+        <Compare value="GT"/>
+        <Behavior value="MedicSCBWOpticFlare"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCondition id="SpiderMineSCBW@RangeCondition">
+        <IfArray Test="SCBW_IsBlindedSource" Return="SpiderMineSCBW@RangeBlinded"/>
+        <Else value="SpiderMineSCBW@Range"/>
+    </CValidatorCondition>
     <CValidatorUnitCompareOrderCount id="VulturePlaceSpiderMineSCBW@CasterHasLE1Order">
         <WhichUnit Effect="VulturePlaceSpiderMineSCBW@SpawnSet"/>
         <Compare value="LE"/>
@@ -97,6 +124,7 @@
     </CValidatorUnitFilters>
     <CValidatorCombine id="SpiderMineSCBW@Burrow">
         <Type value="And"/>
+        <CombineArray value="SpiderMineSCBW@RangeCondition"/>
         <CombineArray value="TargetNotChangeling"/>
         <CombineArray value="NotSpiderMineSCBW"/>
     </CValidatorCombine>
@@ -478,7 +506,7 @@
     </CValidatorUnitWeaponPlane>
     <CValidatorCombine id="SpiderMineSCBW@Unburrow">
         <Type value="And"/>
-        <CombineArray value="SpiderMineSCBW@Range"/>
+        <CombineArray value="SpiderMineSCBW@RangeCondition"/>
         <CombineArray value="SCBWAttackNotSuppressed"/>
         <CombineArray value="IsNotDisguisedChangeling"/>
         <CombineArray value="NotSpiderMineSCBW"/>
