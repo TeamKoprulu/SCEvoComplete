@@ -3133,4 +3133,48 @@
         </TerrainSquibs>
     </CActorUnit>
     <CActorSound id="ChangelingZerglingSCBW_Land" parent="SoundOneShot"/>
+    <CActorModel id="SCBW_HallucinationDeathLarge" parent="ModelAnimationStyleOneShot">
+        <On Terms="ActorCreation" Send="Create SCBW_HallucinationDeathLargeSound"/>
+        <Host Subject="_Selectable"/>
+        <Model value="HallucinationDeath"/>
+        <Scale value="1.500000"/>
+    </CActorModel>
+    <CActorModel id="SCBW_HallucinationDeathMedium" parent="ModelAnimationStyleOneShot">
+        <On Terms="ActorCreation" Send="Create SCBW_HallucinationDeathMediumSound"/>
+        <Host Subject="_Selectable"/>
+        <Model value="HallucinationDeath"/>
+    </CActorModel>
+    <CActorModel id="SCBW_HallucinationDeathSmall" parent="ModelAnimationStyleOneShot">
+        <On Terms="ActorCreation" Send="Create SCBW_HallucinationDeathSmallSound"/>
+        <Host Subject="_Selectable"/>
+        <Model value="HallucinationDeath"/>
+        <Scale value="0.600000"/>
+    </CActorModel>
+    <CActorSound id="SCBW_HallucinationDeathLargeSound" parent="SoundOneShot">
+        <Sound value="Sentry_HallucinationDeathLarge"/>
+    </CActorSound>
+    <CActorSound id="SCBW_HallucinationDeathMediumSound" parent="SoundOneShot">
+        <Sound value="Sentry_HallucinationDeathMedium"/>
+    </CActorSound>
+    <CActorSound id="SCBW_HallucinationDeathSmallSound" parent="SoundOneShot">
+        <Sound value="Sentry_HallucinationDeathSmall"/>
+    </CActorSound>
+    <CActorSimple id="SCBW_HallucinationController">
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit RequiresTerran" Send="Create"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit RequiresZerg" Send="Create"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit RequiresNeut" Send="Create"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit HallucinationTargetRadius_Large" Send="StatusSet Size 2"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit HallucinationTargetRadius_Medium" Send="StatusSet Size 1"/>
+        <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit HallucinationTargetRadius_Small" Send="StatusSet Size 0"/>
+        <On Terms="UnitDeath; ValidateUnit IsHallucinationSCBW IncludeDerivedSnapshot" Send="Signal Death"/>
+        <On Terms="Signal.*.Death; IsStatus Size 2" Send="Create SCBW_HallucinationDeathLarge"/>
+        <On Terms="Signal.*.Death; IsStatus Size 1" Send="Create SCBW_HallucinationDeathMedium"/>
+        <On Terms="Signal.*.Death; IsStatus Size 0" Send="Create SCBW_HallucinationDeathSmall"/>
+        <On Terms="Signal.*.Death" Send="TimerSet 0.000000 Delay"/>
+        <On Terms="TimerExpired; TimerName Delay" Target="_DeathModel" Send="Destroy Immediate"/>
+        <On Terms="TimerExpired; TimerName Delay" Target="_DeathVoice" Send="SoundSetMuted 1 0"/>
+        <On Terms="TimerExpired; TimerName Delay" Target="_DeathVoice" Send="Destroy Immediate"/>
+        <On Terms="TimerExpired; TimerName Delay" Target="UnitDeathSound" Send="SoundSetMuted 1 0"/>
+        <On Terms="TimerExpired; TimerName Delay" Target="UnitDeathSound" Send="Destroy Immediate"/>
+    </CActorSimple>
 </Catalog>
