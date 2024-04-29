@@ -909,17 +909,19 @@
     </CActorSplat>
     <CActorForceSphere id="InfestedTerranSCBWWeapon@Force">
         <On Terms="ActorCreation" Send="Create BanelingAttackForceUp"/>
-        <On Terms="Effect.InfestedTerranSCBWWeapon@DamageAccum.Stop; At Caster" Send="Create"/>
+        <On Terms="Effect.InfestedTerranSCBWWeapon@DamageAccum.Stop; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
         <HostSiteOps Ops="SOpShadow SOpRandomPointInCircleDot25"/>
         <Duration value="0.300000"/>
         <Magnitude value="16.000000,8.000000"/>
         <Radius value="2.100000,0.300000"/>
     </CActorForceSphere>
-    <CActorAction id="InfestedTerranSCBWWeapon@ShieldHitter" parent="AoESplashShieldHitter" effectHit="InfestedTerranSCBWWeapon@DamageAccum"/>
+    <CActorAction id="InfestedTerranSCBWWeapon@ShieldHitter" parent="AoESplashShieldHitter" effectHit="InfestedTerranSCBWWeapon@DamageAccum">
+        <On index="0" Terms="Effect.InfestedTerranSCBWWeapon@DamageAccum.Start; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+    </CActorAction>
     <CActorModel id="InfestedTerranSCBWWeapon@Impact" parent="ModelAnimationStyleOneShot">
         <Inherits index="CloakEffect" value="1"/>
         <Inherits index="Visibility" value="1"/>
-        <On Terms="Effect.InfestedTerranSCBWWeapon@DamageAccum.Start" Send="Create"/>
+        <On Terms="Effect.InfestedTerranSCBWWeapon@DamageAccum.Start; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
         <Host Subject="_Unit"/>
         <HostSiteOps Ops="SOpAttachCenter" HoldRotation="1"/>
         <AutoScaleFactor value="0.800000"/>
@@ -1346,6 +1348,7 @@
         <AcquisitionYawHalfArc value="1.000000"/>
         <AcquisitionPitchHalfArc value="1.000000"/>
         <AccuracyHalfArc value="1.000000"/>
+        <On index="5" Terms="Effect.ScourgeSCBWWeapon@Damage.Start; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
     </CActorAction>
     <CActorSound id="LurkerSCBWEgg@Birth" parent="SoundOneShot">
         <On Terms="AbilMorph.*.Start; MorphTo LurkerSCBWEgg" Send="Create"/>
@@ -1559,9 +1562,8 @@
     </CActorSound>
     <CActorUnit id="ScourgeSCBW" parent="GenericUnitStandard" unitName="ScourgeSCBW">
         <Aliases value="_UnitSmall"/>
-        <On Terms="WeaponStart.Suicide.AttackStart" Send="StatusSet DeathSuicide 1"/>
-        <On Terms="UnitDeathCustomize; IsStatus DeathSuicide 0" Send="Create ScourgeDeathNormalSound"/>
-        <On Terms="UnitDeathCustomize; IsStatus DeathSuicide 1" Send="Create ScourgeDeathSuicideSound"/>
+        <On Terms="WeaponStart.ScourgeSCBWWeapon.AttackStart" Send="StatusSet DeathSuicide 1"/>
+        <On Terms="UnitDeathCustomize; IsStatus DeathSuicide 1" Send="DeathCustomize Variation0"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="ScourgeSCBW@Death" SoundLink="ScourgeSCBW@Death"/>
         <PortraitModel value="ScourgeSCBW@Portrait"/>
@@ -1582,6 +1584,7 @@
             <Image value="Assets\Textures\wireframe-zerg-scourge.dds"/>
         </Wireframe>
         <HeroIcon value="Assets\Textures\btn-unit-zerg-scourge.dds"/>
+        <DeathCustoms ModelLink="Invisible" SoundLink="SCBW_Silent" Name="Variation0"/>
     </CActorUnit>
     <CActorSound id="UltraliskSCBW@BurrowDown" parent="SoundOneShot"/>
     <CActorUnit id="UltraliskSCBW" parent="GenericUnitBase" unitName="UltraliskSCBW">
