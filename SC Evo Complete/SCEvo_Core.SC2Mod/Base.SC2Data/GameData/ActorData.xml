@@ -349,6 +349,12 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorSiteOpLocalOffset id="CreepColonySCBW@SplatOffset">
+        <LocalOffset value="0.100000,0.000000,0.000000"/>
+    </CActorSiteOpLocalOffset>
+    <CActorSiteOpLocalOffset id="SporeColonySCBW@SplatOffset">
+        <LocalOffset value="-0.130000,-0.100000,0.000000"/>
+    </CActorSiteOpLocalOffset>
     <CActorModel id="CommandCenterSCBW@CommandPlayerDecalW" parent="ModelAddition">
         <Inherits index="BaseModelScale" value="0"/>
         <Inherits index="CloakEffect" value="0"/>
@@ -471,6 +477,48 @@
     <CActorSiteOpLocalOffset id="CommandCenterSCBW@TerranCommandPlayerDecalOffset">
         <LocalOffset value="0.000000,-3.500000,0.000000"/>
     </CActorSiteOpLocalOffset>
+    <CActorModel id="CreepColonySCBW@PlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation" Send="Create SunkenColonySCBW@ProtectRange"/>
+        <On Terms="ActorDestruction" Target="SunkenColonySCBW@ProtectRange" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="Create SporeColonySCBW@ProtectRange"/>
+        <On Terms="ActorDestruction" Target="SporeColonySCBW@ProtectRange" Send="Destroy"/>
+    </CActorModel>
+    <CActorSplat id="CreepColonySCBW@Splat" parent="BurrowedSplatBase">
+        <On Terms="UnitBirth.CreepColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SporeColonySCBW" Send="RefClear ::Host"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SporeColonySCBW" Send="TimerSet 1.500000 DelayDestroy"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="RefClear ::Host"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="TimerSet 1.500000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <Scale value="0.970000"/>
+        <HostSiteOps Ops="CreepColonySCBW@SplatOffset"/>
+        <AutoScaleFactor value="0.800000"/>
+    </CActorSplat>
+    <CActorRange id="SporeColonySCBW@ProtectRange" parent="RangeWeapon" weapon="SporeColonySCBWWeapon">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorModel id="SporeColonySCBW@PlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
+        <On Terms="ActorCreation" Send="Create SporeColonySCBW@ProtectRange"/>
+        <On Terms="ActorDestruction" Target="SporeColonySCBW@ProtectRange" Send="Destroy"/>
+    </CActorModel>
+    <CActorRange id="SunkenColonySCBW@ProtectRange" parent="RangeWeapon" weapon="SunkenColonySCBWWeapon">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorModel id="SunkenColonySCBW@PlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation" Send="Create SunkenColonySCBW@ProtectRange"/>
+        <On Terms="ActorDestruction" Target="SunkenColonySCBW@ProtectRange" Send="Destroy"/>
+    </CActorModel>
+    <CActorSplat id="SunkenColonySCBW@Splat" parent="BurrowedSplatBase">
+        <On Terms="UnitBirth.SunkenColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom SunkenColonySCBW" Send="RefClear ::Host"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom SunkenColonySCBW" Send="TimerSet 5.000000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <AutoScaleFactor value="1.250000"/>
+    </CActorSplat>
     <CActorForceSphere id="VultureSCBWWeapon@ActionDeathForce" parent="MissileAttackDeathForce">
         <HostSiteOps Ops="SOpIncomingMissileDot25 SOpMoveDownByDot25 SOpRandomPointInCircleDot2"/>
         <Field value="Radial"/>
