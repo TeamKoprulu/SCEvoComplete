@@ -817,6 +817,28 @@
     <CRequirementAnd id="UltraliskCavernSCBW@Show">
         <OperandArray value="UltraliskCavernSCBW@AllowUnit"/>
     </CRequirementAnd>
+    <CActorProgress id="SunkenColonySCBW@BuildProgress">
+        <Supporter Subject="_ZergBuildModel"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <StageArray AnimProps="Morph,Start"/>
+        <StageArray AnimProps="Morph,Stand"/>
+    </CActorProgress>
+    <CActorProgress id="SporeColonySCBW@BuildProgress">
+        <Supporter Subject="_ZergBuildModel"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <StageArray AnimProps="Morph,Start"/>
+        <StageArray AnimProps="Morph,Stand"/>
+    </CActorProgress>
+    <CActorProgress id="CreepColonySCBW@MorphProgress">
+        <Supporter Subject="_ZergColonyMorph"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <StageArray AnimProps="Morph,Start"/>
+        <StageArray AnimProps="Morph,Stand"/>
+    </CActorProgress>
     <CActorSound id="NydusCanalSCBW@TransportLoadSound" parent="SoundOneShot">
         <On Terms="AbilTransport.NydusCanalSCBW@Transport.TransportLoad" Send="Create"/>
         <Host Subject="_Selectable"/>
@@ -941,21 +963,26 @@
         <On Terms="TurretEnable.SporeColonySCBW@Turret" Send="Create"/>
     </CActorTurret>
     <CActorModel id="SunkenColonySCBW@Build" parent="ZergBuildingSCBW@Build">
+        <On index="3" Terms="ActorCreation" Send="Create SunkenColonySCBW@BuildProgress"/>
         <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="Create"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo SunkenColonySCBW" Send="Destroy"/>
-        <HostSiteOps Ops="SOpAttachOriginStationary"/>
-        <Inherits index="Opacity" value="0"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="AnimPlay Death Morph,End"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SunkenColonySCBW" Send="AnimClear ::Progress"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SunkenColonySCBW" Send="AnimPlay Death Morph,End"/>
+        <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
+        <HostSiteOps Ops="SOpShadow SunkenColonySCBW@BuildFacing"/>
     </CActorModel>
     <CActorModel id="SporeColonySCBW@Build" parent="ZergBuildingSCBW@Build">
+        <HostSiteOps Ops="SOpShadow SunkenColonySCBW@BuildFacing"/>
+        <On index="3" Terms="ActorCreation" Send="Create SporeColonySCBW@BuildProgress"/>
         <On Terms="AbilMorph.*.Start; MorphTo SporeColonySCBW" Send="Create"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Cancel; MorphTo SporeColonySCBW" Send="Destroy"/>
-        <HostSiteOps Ops="SOpAttachOriginStationary"/>
-        <Inherits index="Opacity" value="0"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="AnimPlay Death Morph,End"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SporeColonySCBW" Send="AnimClear ::Progress"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SporeColonySCBW" Send="AnimPlay Death Morph,End"/>
+        <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
     </CActorModel>
     <CActorUnit id="SunkenColonySCBW" parent="ZergBuildingSCBW" unitName="SunkenColonySCBW">
         <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="AnimPlay Birth Build,D,Start 0 0.000000"/>
         <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="AnimClear Attack"/>
         <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="Create SunkenColonySCBWWeapon@LaunchSound"/>
         <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="AnimPlay Attack Attack 0 0.500000 0.500000 2.000000 AsDuration"/>
@@ -1231,6 +1258,8 @@
         <Aliases value="_UnitLarge"/>
         <Macros value="TerrainSquibAnimations"/>
         <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="AnimPlay Birth Build,D,Start 0 0.000000"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="AnimSetTime Birth 0.600000"/>
         <On Terms="Behavior.Corruption.On" Send="AnimSetPaused Morph"/>
         <On Terms="Behavior.Corruption.Off" Send="AnimSetPaused Morph 0"/>
         <On Terms="ActorCreation" Send="AnimGroupApply Burrow"/>
@@ -1285,17 +1314,23 @@
         <On Terms="UnitDeath.SporeCrawlerUprooted; PassChance 25.000000" Send="Create"/>
     </CActorSound>
     <CActorUnit id="CreepColonySCBW" parent="ZergBuildingSCBW" unitName="CreepColonySCBW">
-        <On Terms="Signal.*.Morph" Send="SetOpacity 0.000000 0.500000"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Create CreepColonySCBW@MorphProgress"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="AnimBaselineStop"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimClear ::Progress"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimBaselineStart"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimPlay Morph Morph,End 0 0.000000"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimSetTime Morph 0.100000"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW; MorphTo SunkenColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW; MorphTo SporeColonySCBW" Send="Destroy"/>
+        <!--On Terms="Signal.*.Morph" Send="SetOpacity 0.000000 0.500000"/>
         <On Terms="Signal.*.MorphEnd" Send="SetOpacity 1.000000 0.500000"/>
         <On Terms="Signal.*.MorphEnd" Target="SporeColonySCBW" Send="SetOpacity 1.000000"/>
-        <On Terms="Signal.*.MorphEnd" Target="SunkenColonySCBW" Send="SetOpacity 1.000000"/>
-        <On Terms="Signal.*.DelayDestroy" Send="TimerSet 0.062500 DelayDestroy"/>
-        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
-        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Signal Morph"/>
-        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="Signal MorphEnd"/>
-        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW" Send="Signal MorphEnd"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Signal DelayDestroy"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Signal DelayDestroy"/>
+        <On Terms="Signal.*.MorphEnd" Target="SunkenColonySCBW" Send="SetOpacity 1.000000"/-->
+        <!--On Terms="Signal.*.DelayDestroy" Send="TimerSet 0.062500 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/-->
+        <!--On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Destroy"/-->
+        <!--On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Signal DelayDestroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Signal DelayDestroy"/-->
         <AnimBlendTime value="0.400000"/>
         <PlacementSound value="ZergBuildingSCBW@PlacementSmall"/>
         <WalkAnimMoveSpeed value="0.7968"/>
@@ -1310,6 +1345,7 @@
             <Image value="Assets\Textures\wireframe-zerg-creepcolony@scbw.dds"/>
         </Wireframe>
         <PlacementActorModel value="CreepColonySCBW@PlacementModel"/>
+        <Aliases value="_ZergColonyMorph"/>
     </CActorUnit>
     <CActorModel id="CreepColonySCBW@Build" parent="ZergBuildingSCBW@Build"/>
     <CActorProgress id="LairSCBW@MorphProgress">
@@ -1590,8 +1626,12 @@
         <ScaleMin value="0.900000,0.900000,0.900000"/>
     </CModel>
     <CModel id="SporeColonySCBW@Portrait" parent="ZergAdvisorSCBW@PortraitBase" Race="Zerg"/>
-    <CModel id="SunkenColonySCBW@Build" parent="SporeCrawlerBuildBase"/>
-    <CModel id="SporeColonySCBW@Build" parent="SporeCrawlerBuildBase"/>
+    <CModel id="SunkenColonySCBW@Build" parent="SporeCrawlerBuildBase">
+        <Model value="Assets\Buildings\Zerg\CreepColonySCBW\CreepColonySCBW@MorphAttachment.m3"/>
+    </CModel>
+    <CModel id="SporeColonySCBW@Build" parent="SporeCrawlerBuildBase">
+        <Model value="Assets\Buildings\Zerg\CreepColonySCBW\CreepColonySCBW@MorphAttachment.m3"/>
+    </CModel>
     <CModel id="CreepColonySCBW" parent="Building" Race="Zerg">
         <PlanetPanelCamera value="Star2CameraHigh09"/>
         <Radius value="1.000000"/>
@@ -1601,6 +1641,7 @@
         <SquibTypeDefault value="Flesh"/>
         <TechPurchaseCamera value="Star2CameraHigh09"/>
         <UnitGlossaryCamera value="Star2CameraHigh09"/>
+        <RequiredAnims value="Assets\Buildings\Zerg\CreepColonySCBW\CreepColonySCBW@MorphAnims.m3a"/>
     </CModel>
     <CModel id="CreepColonySCBW@Death" parent="BuildingDeath" Race="Zerg">
         <Model value="Assets\Buildings\Zerg\ZergBuildingDeathEx1\ZergBuildingDeathEx1.m3"/>
@@ -1621,6 +1662,7 @@
         <SquibTypeDefault value="Flesh"/>
         <TechPurchaseCamera value="Star2CameraMid06"/>
         <UnitGlossaryCamera value="Star2CameraMid06"/>
+        <RequiredAnims value="Assets\Buildings\Zerg\SunkenColonySCBW\PrimalSunkenColony_Build.m3a"/>
     </CModel>
     <CModel id="SunkenColonySCBW@Death" parent="BuildingDeath" Race="Zerg">
         <Model value="Assets\Units\Zerg\PrimalSunkenColonyDeath\PrimalSunkenColonyDeath.m3"/>
