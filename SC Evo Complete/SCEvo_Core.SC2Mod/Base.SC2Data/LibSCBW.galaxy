@@ -231,11 +231,11 @@ void libSCBW_gf_SC1_InfiniteMoneyMap_Check () {
     // Automatic Variable Declarations
     // Implementation
     if ((CatalogFieldValueGetAsInt(c_gameCatalogAbil, "SCVHarvest", "FlagArray[" + IntToString(0) + "]", c_playerAny) == 1)) {
-        TriggerEnable(libSCBW_gt_SC1_InfiniteMoneyMap_Swap, true);
+        TriggerEnable(libSCBW_gt_SC1_InfiniteMoneyMap_Trigger, true);
         libSCBW_gf_SC1_InfiniteMoneyMap_Action(UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter((1 << c_targetFilterWorker), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0));
     }
     else {
-        TriggerEnable(libSCBW_gt_SC1_InfiniteMoneyMap_Swap, false);
+        TriggerEnable(libSCBW_gt_SC1_InfiniteMoneyMap_Trigger, false);
     }
 }
 
@@ -256,18 +256,62 @@ void libSCBW_gf_SC1_InfiniteMoneyMap_Action (unitgroup lp_unitGroup) {
         lv_unit = UnitGroupUnitFromEnd(autoA874CF5B_g, autoA874CF5B_u);
         if (lv_unit == null) { break; }
         if ((UnitGetType(lv_unit) == "SCVSCBW")) {
-            UnitAbilityAdd(lv_unit, "SCVSCBW@HarvestNoQue");
-            UnitAbilityRemove(lv_unit, "SCVSCBW@Harvest");
+            libSCBW_gf_SC1_InfiniteMoneyMap_NewOrder(lv_unit, AbilityCommand("SCVSCBW@Harvest", 0), AbilityCommand("SCVSCBW@HarvestNoQue", 0));
         }
         else if ((UnitGetType(lv_unit) == "DroneSCBW")) {
-            UnitAbilityAdd(lv_unit, "DroneSCBW@HarvestNoQue");
-            UnitAbilityRemove(lv_unit, "DroneSCBW@Harvest");
+            libSCBW_gf_SC1_InfiniteMoneyMap_NewOrder(lv_unit, AbilityCommand("DroneSCBW@Harvest", 0), AbilityCommand("DroneSCBW@HarvestNoQue", 0));
         }
         else if ((UnitGetType(lv_unit) == "ProbeSCBW")) {
-            UnitAbilityAdd(lv_unit, "ProbeSCBW@HarvestNoQue");
-            UnitAbilityRemove(lv_unit, "ProbeSCBW@Harvest");
+            libSCBW_gf_SC1_InfiniteMoneyMap_NewOrder(lv_unit, AbilityCommand("ProbeSCBW@Harvest", 0), AbilityCommand("ProbeSCBW@HarvestNoQue", 0));
         }
         else if (true) {
+        }
+    }
+}
+
+void libSCBW_gf_SC1_InfiniteMoneyMap_NewOrder (unit lp_unit, abilcmd lp_oldAbil, abilcmd lp_newAbil) {
+    // Variable Declarations
+    int lv_i;
+    int lv_count;
+    order[4] lv_orders;
+    order lv_currOrder;
+
+    // Automatic Variable Declarations
+    const int auto3A14DDC0_ae = 3;
+    const int auto3A14DDC0_ai = 1;
+    int auto6462CCD0_ae;
+    const int auto6462CCD0_ai = 1;
+
+    // Variable Initialization
+    lv_count = -1;
+
+    // Implementation
+    lv_i = 0;
+    for ( ; ( (auto3A14DDC0_ai >= 0 && lv_i <= auto3A14DDC0_ae) || (auto3A14DDC0_ai < 0 && lv_i >= auto3A14DDC0_ae) ) ; lv_i += auto3A14DDC0_ai ) {
+        lv_currOrder = UnitOrder(lp_unit, lv_i);
+        if ((lv_currOrder != null)) {
+            if ((OrderGetAbilityCommand(lv_currOrder) == lp_oldAbil)) {
+                lv_orders[lv_i] = OrderTargetingUnit(lp_newAbil, OrderGetTargetUnit(lv_currOrder));
+            }
+            else {
+                lv_orders[lv_i] = UnitOrder(lp_unit, lv_i);
+            }
+            lv_count = lv_i;
+        }
+        else {
+            break;
+        }
+    }
+    UnitAbilityAdd(lp_unit, AbilityCommandGetAbility(lp_newAbil));
+    UnitAbilityRemove(lp_unit, AbilityCommandGetAbility(lp_oldAbil));
+    auto6462CCD0_ae = lv_count;
+    lv_i = 0;
+    for ( ; ( (auto6462CCD0_ai >= 0 && lv_i <= auto6462CCD0_ae) || (auto6462CCD0_ai < 0 && lv_i >= auto6462CCD0_ae) ) ; lv_i += auto6462CCD0_ai ) {
+        if ((lv_i == 0)) {
+            UnitIssueOrder(lp_unit, lv_orders[lv_i], c_orderQueueReplace);
+        }
+        else {
+            UnitIssueOrder(lp_unit, lv_orders[lv_i], c_orderQueueAddToEnd);
         }
     }
 }
@@ -731,7 +775,7 @@ void libSCBW_gt_SC1_UnitSwap_Init () {
 //--------------------------------------------------------------------------------------------------
 // Trigger: SC1_InfiniteMoneyMap_Trigger
 //--------------------------------------------------------------------------------------------------
-bool libSCBW_gt_SC1_InfiniteMoneyMap_Swap_Func (bool testConds, bool runActions) {
+bool libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Func (bool testConds, bool runActions) {
     // Automatic Variable Declarations
     // Conditions
     if (testConds) {
@@ -750,10 +794,10 @@ bool libSCBW_gt_SC1_InfiniteMoneyMap_Swap_Func (bool testConds, bool runActions)
 }
 
 //--------------------------------------------------------------------------------------------------
-void libSCBW_gt_SC1_InfiniteMoneyMap_Swap_Init () {
-    libSCBW_gt_SC1_InfiniteMoneyMap_Swap = TriggerCreate("libSCBW_gt_SC1_InfiniteMoneyMap_Swap_Func");
-    TriggerEnable(libSCBW_gt_SC1_InfiniteMoneyMap_Swap, false);
-    TriggerAddEventUnitRegion(libSCBW_gt_SC1_InfiniteMoneyMap_Swap, null, RegionEntireMap(), true);
+void libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Init () {
+    libSCBW_gt_SC1_InfiniteMoneyMap_Trigger = TriggerCreate("libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Func");
+    TriggerEnable(libSCBW_gt_SC1_InfiniteMoneyMap_Trigger, false);
+    TriggerAddEventUnitRegion(libSCBW_gt_SC1_InfiniteMoneyMap_Trigger, null, RegionEntireMap(), true);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1029,7 +1073,7 @@ void libSCBW_InitTriggers () {
     libSCBW_gt_SC1_HighgroundMiss_Add_Init();
     libSCBW_gt_SC1_Refund_Init();
     libSCBW_gt_SC1_UnitSwap_Init();
-    libSCBW_gt_SC1_InfiniteMoneyMap_Swap_Init();
+    libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Init();
     libSCBW_gt_SC1_CheatTracker_Init();
     libSCBW_gt_OperationCwalActivate_Init();
     libSCBW_gt_OperationCwal_Train_Init();
