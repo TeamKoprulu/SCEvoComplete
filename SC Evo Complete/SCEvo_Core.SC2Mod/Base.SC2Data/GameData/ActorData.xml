@@ -349,6 +349,44 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorEventMacro id="SCBW_ZergSmallBurrowEffects">
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create SmallBurrowDownEffects"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create ZergUnitSCBW@Burrow"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create SmallBurrowUpEffects"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create ZergUnitSCBW@Unburrow"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUpMorph" Send="Create ZergUnitSCBW@Unburrow"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="SCBW_ZergMediumBurrowEffects">
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create MediumBurrowDownEffects"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create ZergUnitSCBW@Burrow"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create MediumBurrowUpEffects"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create ZergUnitSCBW@Unburrow"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUpMorph" Send="Create ZergUnitSCBW@Unburrow"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="SCBW_ZergMediumBurrowEffectsNoSound">
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create MediumBurrowDownEffects"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create MediumBurrowUpEffects"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="SCBW_ZergLargeBurrowEffects">
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create LargeBurrowDownEffects"/>
+        <!--        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create BurrowDownLarge"/> -->
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create LargeBurrowUpEffects"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create ZergUnitSCBW@Unburrow"/>
+    </CActorEventMacro>
+    <CActorModel id="ValkyrieSCBWWeapon@Impact" parent="ModelAnimationStyleOneShot">
+        <Host Subject="_Missile"/>
+    </CActorModel>
+    <CActorSound id="ZealotSCBWWeapon@Launch" parent="SoundOneShot"/>
+    <CActorSound id="ZealotSCBWWeapon@Impact" parent="SoundOneShot">
+        <On Terms="Effect.ZealotSCBWWeapon@Damage.Start; At Caster" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="ZergUnitSCBW@Burrow" parent="SoundOneShot"/>
+    <CActorForceSphere id="ScourgeSCBWWeapon@DeathForce">
+        <HostSiteOps Ops="SOpRandomPointInCircleDot25"/>
+        <Duration value="0.300000"/>
+        <Magnitude value="16.000000,8.000000"/>
+        <Radius value="2.100000,0.300000"/>
+    </CActorForceSphere>
     <CActorSiteOpLocalOffset id="CreepColonySCBW@SplatOffset">
         <LocalOffset value="0.100000,0.000000,0.000000"/>
     </CActorSiteOpLocalOffset>
@@ -831,54 +869,6 @@
         <HostSiteOps Ops="SOpAttachOriginStationary"/>
         <Sound value="OverlordSCBW@TransportUnload"/>
     </CActorSound>
-    <CActorBeamSimple id="ShieldBatterySCBWRecharge@Beam" parent="BeamSimpleAnimationStyleContinuous">
-        <Inherits index="Visibility" value="1"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStart" Send="Create"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStop" Send="Destroy"/>
-        <HostForProps Subject="_Unit" Scope="Target" Actor="Find"/>
-        <ModelFlags index="AutomateGlobalLoops" value="1"/>
-        <HostLaunch Subject="_Unit" Scope="Caster" Actor="Find"/>
-        <HostLaunchSiteOps Ops="SOpAttachWeapon"/>
-        <HostImpact Subject="_Unit" Scope="Target" Actor="Find"/>
-        <HostImpactSiteOps Ops="SOpAttachCenter"/>
-    </CActorBeamSimple>
-    <CActorModel id="ShieldBatterySCBWRecharge@Model" parent="ModelAnimationStyleContinuous">
-        <On Terms="ActorCreation" Send="$Birth PlayForever"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStart; At Target" Send="Create"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStop; At Target" Send="Destroy"/>
-        <On Terms="ActorOrphan" Send="Destroy"/>
-        <Host Subject="_Selectable"/>
-        <HostSiteOps Ops="SOpAttachCenter"/>
-    </CActorModel>
-    <CActorSound id="ShieldBatterySCBWRecharge@SoundLoopTarget" parent="SoundContinuous">
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStart; At Target" Send="Create"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStop; At Target" Send="Destroy"/>
-        <On Terms="ActorOrphan" Send="Destroy"/>
-        <!--
-        <On Terms="ActorCreation" Send="Create SentryShieldRepairSoundStart"/>
-        <On Terms="ActorDestruction" Send="Create SentryShieldRepairSoundStop"/>
-        -->
-        <Host Subject="_Selectable"/>
-        <HostSiteOps Ops="SOpAttachOverhead"/>
-    </CActorSound>
-    <CActorSound id="ShieldBatterySCBWRecharge@SoundLoopCaster" parent="SoundContinuous">
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStart; At Caster" Send="Create"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStop; At Caster" Send="Destroy"/>
-        <On Terms="ActorOrphan" Send="Destroy"/>
-    </CActorSound>
-    <CActorModel id="ShieldBatterySCBW@PlacementModel" parent="PlacementModel">
-        <On Terms="ActorCreation; ModelName ShieldBatterySCBW@Placement" Send="Create ShieldBatterySCBW@Range"/>
-        <On Terms="ActorCreation; ModelName ShieldBatterySCBW; ModelIsLowQuality" Send="Create ShieldBatterySCBW@Range"/>
-        <On Terms="ActorDestruction" Target="ShieldBatterySCBW@Range" Send="Destroy"/>
-    </CActorModel>
-    <CActorRange id="ShieldBatterySCBW@Range" parent="RangeAbil" abil="ShieldBatterySCBWRecharge">
-        <On index="1" Terms="SelectionLocalUpdate.ShieldBatterySCBW.Start" Send="Create"/>
-        <On index="2" Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorGround" Send="Create"/>
-        <On index="3" Terms="SelectionLocalUpdate.ShieldBatterySCBW.StartEditorFlyer" Send="Create"/>
-        <On index="4" Terms="SelectionLocalUpdate.ShieldBatterySCBW.Stop" Send="Destroy"/>
-        <Icon value="Assets\Textures\RadarIcon2.dds"/>
-        <IconArcLength value="3.250000"/>
-    </CActorRange>
     <CActorModel id="FleetBeaconSCBW@Death" parent="UnitDeathModel">
         <CopySource value="FleetBeaconSCBW"/>
         <Inherits index="BaseModelScale" value="0"/>
@@ -1139,13 +1129,12 @@
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
-        <Macros value="ZergSmallBurrowEffects"/>
+        <Macros value="SCBW_ZergSmallBurrowEffects"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <On index="69" Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="Create"/>
         <On index="70" Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
-        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create BurrowDownSmall"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom InfestedTerranSCBW; MorphTo InfestedTerranSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW; MorphFrom InfestedTerranSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW; MorphFrom InfestedTerranSCBW@Burrowed" Send="AnimClear Burrow"/>
@@ -1214,9 +1203,32 @@
         <HostSiteOps Ops="LurkerMPSOpAoEVariancer SOpShadow SOpForwardCasterPoint SOp2DRotation LurkerMPSOpShadowSpine SOpRotVariancerUp15"/>
     </CActorModel>
     <CActorModel id="LurkerSCBWWeapon@ImpactModel" parent="ModelAnimationStyleOneShot">
-        <On Terms="Effect.LurkerSCBWWeapon@Damage.Start; At Target" Send="Create"/>
-        <HostSiteOps Ops="SOpShadow"/>
+        <!--On Terms="Effect.LurkerSCBWWeapon@Damage.Start; At Target" Send="Create"/-->
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 1" Send="AttachSetBearingsFrom {Weapon 0} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 2" Send="AttachSetBearingsFrom {Weapon 1} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 3" Send="AttachSetBearingsFrom {Weapon 2} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 4" Send="AttachSetBearingsFrom {Weapon 3} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 5" Send="AttachSetBearingsFrom {Weapon 4} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 6" Send="AttachSetBearingsFrom {Weapon 5} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 7" Send="AttachSetBearingsFrom {Weapon 6} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 8" Send="AttachSetBearingsFrom {Weapon 7} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 9" Send="AttachSetBearingsFrom {Weapon 8} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 10" Send="AttachSetBearingsFrom {Weapon 9} {} $LurkerMPSpineSiteOps"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 1" Send="AnimPlay Attack00 Attack,00"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 2" Send="AnimPlay Attack01 Attack,01"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 3" Send="AnimPlay Attack02 Attack,02"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 4" Send="AnimPlay Attack03 Attack,03"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 5" Send="AnimPlay Attack04 Attack,04"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 6" Send="AnimPlay Attack05 Attack,05"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 7" Send="AnimPlay Attack06 Attack,06"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 8" Send="AnimPlay Attack07 Attack,07"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 9" Send="AnimPlay Attack08 Attack,08"/>
+        <On Terms="Effect.LurkerSCBWWeapon@Search.Start; EffectExecuteIndex 10" Send="AnimPlay Attack09 Attack,09"/>
+        <On Terms="Effect.LurkerSCBWWeapon@CP.Stop" Send="TimerSet 1.500000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="SetTintColor {251,251,251 5.000000}"/>
         <Model value="LurkerSCBWWeapon@Impact"/>
+        <HostSiteOps Ops="SOpCasterPoint SOpForwardTargetPointInverted LurkerMPSOpOffset SOp2DRotation LurkerMPSOpShadowAllSpines" HoldPosition="1" HoldRotation="1"/>
     </CActorModel>
     <CActorSound id="LurkerSCBWWeapon@LaunchSound" parent="SoundOneShot">
         <On Terms="Effect.LurkerSCBWWeapon@Search.Start; At Effect" Send="Create"/>
@@ -1409,12 +1421,13 @@
         <On Terms="WeaponStart.ScourgeSCBWWeapon.AttackStart" Send="Create"/>
         <Sound value="ScourgeSCBWWeapon@Launch"/>
     </CActorSound>
-    <CActorAction id="ScourgeSCBWWeapon@Action" parent="GenericAttack" effectAttack="ScourgeSCBWWeapon@Damage">
+    <CActorAction id="ScourgeSCBWWeapon@Action" parent="GenericAttack" effectAttack="ScourgeSCBWWeapon@Set">
         <ImpactMap index="None" Model="ScourgeSCBWWeapon@Impact" Sound="ScourgeSCBWWeapon@Impact"/>
         <AcquisitionYawHalfArc value="1.000000"/>
         <AcquisitionPitchHalfArc value="1.000000"/>
         <AccuracyHalfArc value="1.000000"/>
-        <On index="5" Terms="Effect.ScourgeSCBWWeapon@Damage.Start; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+        <On index="5" Terms="Effect.ScourgeSCBWWeapon@Set.Start; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+        <ImpactPhysics Name="ScourgeSCBWWeapon" MatchKeys="Acid,BasicAir" Physics="ScourgeSCBWWeapon@DeathForce"/>
     </CActorAction>
     <CActorSound id="LurkerSCBWEgg@Birth" parent="SoundOneShot">
         <On Terms="AbilMorph.*.Start; MorphTo LurkerSCBWEgg" Send="Create"/>
@@ -1515,11 +1528,11 @@
     <CActorSplat id="UltraliskSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="UltraliskSCBW"/>
     <CActorUnit id="DefilerSCBW" parent="GenericBurrowerStandard" unitName="DefilerSCBW">
         <Aliases value="_UnitLarge"/>
-        <Macros value="ZergMediumBurrowEffects"/>
+        <Macros value="SCBW_ZergMediumBurrowEffects"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
         <On index="69" Terms="UnitBirth.DefilerSCBW@Burrowed" Send="Create"/>
         <On index="70" Terms="UnitBirth.DefilerSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
-        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create BurrowDownMedium"/>
+        <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create ZergUnitSCBW@Burrow"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom DefilerSCBW; MorphTo DefilerSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo DefilerSCBW; MorphFrom DefilerSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo DefilerSCBW; MorphFrom DefilerSCBW@Burrowed" Send="AnimClear Burrow"/>
@@ -1998,6 +2011,8 @@
     <CActorSound id="DroneSCBW@Harvest" parent="SoundContinuous">
         <On Terms="Abil.DroneSCBW@Harvest.Start" Send="Create"/>
         <On Terms="Abil.DroneSCBW@Harvest.Stop" Send="Destroy"/>
+        <On Terms="Abil.DroneSCBW@HarvestNoQue.Start" Send="Create"/>
+        <On Terms="Abil.DroneSCBW@HarvestNoQue.Stop" Send="Destroy"/>
     </CActorSound>
     <CActorStateMonitor id="ZergBuildingSCBW@BloodLarge" parent="ZergBlood">
         <On Terms="UnitCreation.HatcherySCBW" Send="Create"/>
@@ -2111,6 +2126,7 @@
         <On Terms="UnitBirth.LairSCBW; ValidateUnit NotCloaked" Send="Create HatcheryPlayerDecal1"/>
         <On Terms="UnitBirth.LairSCBW.EditorPlaced" Send="Create HatcheryPlayerDecal1"/>
     </CActorEventMacro>
+    <CActorSound id="ZergUnitSCBW@Unburrow" parent="SoundOneShot"/>
     <CActorAction id="ZerglingSCBWWeapon@Action" parent="GenericAttack" effectAttack="ZerglingSCBWWeapon@Damage">
         <ImpactAttachQuery Methods="AMFilterTargetVolumes"/>
         <ImpactMap index="None" Model="ZerglingSCBWWeapon@Impact" Sound="ZerglingSCBWWeapon@Impact"/>
@@ -2280,9 +2296,10 @@
         <LaunchAttachQuery Methods="ValkyrieSCBWWeapon@AMPattern"/>
         <LaunchAssets Sound="ValkyrieSCBWWeapon@Launch"/>
         <Missile value="ValkyrieSCBWWeapon@Missile"/>
-        <ImpactMap index="None" Model="ValkyrieSCBWWeapon@Impact" Sound="ValkyrieSCBWWeapon@Impact"/>
+        <ImpactMap index="None" Model="" Sound="ValkyrieSCBWWeapon@Impact"/>
     </CActorAction>
     <CActorMissile id="ValkyrieSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="ValkyrieSCBWWeapon@Missile">
+        <On Terms="ActorDestruction" Send="Create ValkyrieSCBWWeapon@Impact"/>
         <!--<On Terms="ActorDestruction" Send="Create HailstormMissileVolleyDeath"/>-->
     </CActorMissile>
     <CActorAction id="WraithSCBWWeaponAir@ActionLeft" parent="GenericAttack" effectImpact="WraithSCBWWeaponAir@Impact" effectLaunch="WraithSCBWWeaponAir@LMLeft">
@@ -2660,8 +2677,17 @@
         <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
         <ImpactMap index="None" Model="DragoonSCBWWeapon@Impact" Sound="DragoonSCBWWeapon@Impact"/>
         <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
-        <ImpactPhysics Name="DragoonPhaseDisruptorImpact" MatchKeys="Basic" Physics="DragoonAttackDeathForce"/>
+        <ImpactPhysics Name="DragoonSCBWWeapon" MatchKeys="Basic" Physics="DragoonSCBWWeapon@DeathForce"/>
     </CActorAction>
+    <CActorForceSphere id="DragoonSCBWWeapon@DeathForce">
+        <HostSiteOps Ops="SOpIncomingMissileDot25 SOpRotVariancerForward15"/>
+        <Receiver Subject="::Main"/>
+        <Field value="Directional"/>
+        <Duration value="0.250000"/>
+        <Magnitude value="20.000000,5.000000"/>
+        <Radius value="0.500000,0.250000"/>
+        <Direction value="Forward"/>
+    </CActorForceSphere>
     <CActorMissile id="DragoonSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DragoonSCBWWeapon@Missile">
         <On Terms="UnitBirth" Send="AnimSetTimeScaleAbsolute Lifetime 1.000000"/>
     </CActorMissile>
@@ -2850,6 +2876,8 @@
     <CActorSound id="ProbeSCBW@@HarvestSound" parent="SoundContinuous">
         <On Terms="Abil.ProbeSCBW@Harvest.Start" Send="Create"/>
         <On Terms="Abil.ProbeSCBW@Harvest.Stop" Send="Destroy"/>
+        <On Terms="Abil.ProbeSCBW@HarvestNoQue.Start" Send="Create"/>
+        <On Terms="Abil.ProbeSCBW@HarvestNoQue.Stop" Send="Destroy"/>
         <Sound value="ProbeSCBW@Harvest"/>
     </CActorSound>
     <CActorSound id="ProtossBuildingSCBW@PowerDownLarge" parent="SoundOneShot">
@@ -2871,7 +2899,6 @@
     <CActorModel id="PylonSCBW@Build" parent="ProtossBuildingSCBW@Build"/>
     <CActorModel id="RoboticsBaySCBW@Build" parent="ProtossBuildingSCBW@Build"/>
     <CActorModel id="RoboticsFacilitySCBW@Build" parent="ProtossBuildingSCBW@Build"/>
-    <CActorModel id="ShieldBatterySCBW@Build" parent="ProtossBuildingSCBW@Build"/>
     <CActorSplat id="TemplarArchiveSCBW@Splat" parent="GenericUnitSplat" unitName="TemplarArchiveSCBW"/>
     <CActorSplat id="CitadelOfAdunSCBW@Splat" parent="GenericUnitSplat" unitName="CitadelOfAdunSCBW"/>
     <CActorAction id="ScoutSCBWWeaponGround@Action" parent="GenericAttackWhiff" effectAttack="ScoutSCBWWeaponGround@Damage">
@@ -2931,8 +2958,8 @@
     <CActorMissile id="VultureSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="VultureSCBWWeapon@Missile"/>
     <CActorAction id="ZealotSCBWWeapon@Action" parent="GenericAttack" effectAttack="ZealotSCBWWeapon@Damage">
         <LaunchAttachQuery Methods="AMFilterWeaponLeft"/>
-        <LaunchAssets Sound="ZealotSCBWWeapon@LaunchNew"/>
-        <ImpactMap index="None" Sound="ZealotSCBWWeapon@ImpactNew"/>
+        <LaunchAssets Sound=""/>
+        <ImpactMap index="None" Sound=""/>
         <ImpactPhysics>
             <Name value="Attack00"/>
             <MatchKeys value="Basic"/>
@@ -3092,7 +3119,7 @@
         <DeathArray index="Normal" ModelLink="ChangelingDeathZealot" SoundLink="Changling_Explode"/>
         <BuildModel value="ZealotSCBW@WarpIn"/>
         <PortraitModel value="ZealotSCBW@Portrait"/>
-        <WalkAnimMoveSpeed value="2.25"/>
+        <WalkAnimMoveSpeed value="3"/>
         <BarWidth value="42"/>
         <BarOffset value="40"/>
         <AcceptedHostedPropTransfers index="Scale" value="0"/>
@@ -3136,6 +3163,7 @@
             <AttachQuery Methods="AMFilterCenter"/>
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
         </TerrainSquibs>
+        <StandAnimTurnTime value="4.5"/>
     </CActorUnit>
     <CActorSound id="ChangelingZealotSCBW_Land" parent="SoundOneShot"/>
     <CActorUnit id="ChangelingZerglingSCBW" parent="GenericUnitMorph" unitName="ChangelingZerglingSCBW">
