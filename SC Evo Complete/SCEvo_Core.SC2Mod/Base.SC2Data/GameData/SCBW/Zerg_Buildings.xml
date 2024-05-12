@@ -972,6 +972,9 @@
     <CActorTurret id="SporeColonySCBW@Turret">
         <On Terms="TurretEnable.SporeColonySCBW@Turret" Send="Create"/>
     </CActorTurret>
+    <CActorLookAt id="SporeColonySCBW@LookAt" parent="UnitTurret">
+        <Type value="FastStanding"/>
+    </CActorLookAt>
     <CActorModel id="SunkenColonySCBW@Build" parent="ZergBuildingSCBW@Build">
         <On index="3" Terms="ActorCreation" Send="Create SunkenColonySCBW@BuildProgress"/>
         <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="Create"/>
@@ -995,7 +998,11 @@
         <On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="AnimPlay Birth Build,D,Start 0 0.000000"/>
         <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="AnimClear Attack"/>
         <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="Create SunkenColonySCBWWeapon@LaunchSound"/>
-        <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="AnimPlay Attack Attack 0 0.500000 0.500000 2.000000 AsDuration"/>
+        <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="AnimPlay Attack Attack 0 -1.000000 -1.000000 2.000000 AsDuration"/>
+        <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Send="Create SunkenColonySCBW@LookAt"/>
+        <On Terms="WeaponStart.SunkenColonySCBWWeapon.AttackStart" Target="SunkenColonySCBW@LookAt" Send="LookAtEngage Continue"/>
+        <!--On Terms="WeaponStop.SunkenColonySCBWWeapon.AttackStop" Target="SunkenColonySCBW@LookAt" Send="LookAtDisengage"/-->
+        <On Terms="WeaponStop.SunkenColonySCBWWeapon.AttackStop" Target="SunkenColonySCBW@LookAt" Send="Destroy"/>
         <AnimBlendTime value="0.400000"/>
         <PlacementModel value="SunkenColonySCBW"/>
         <PlacementSound value="Zerg_BuildingPlacementSmall"/>
@@ -1276,6 +1283,9 @@
         <On Terms="Behavior.ZeratulStun.On" Send="AnimSetPaused Morph"/>
         <On Terms="Behavior.ZeratulStun.Off" Send="AnimSetPaused Morph 0"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
+        <On Terms="ActorCreation" Send="Create SporeColonySCBW@LookAt"/>
+        <On Terms="Abil.attack.ReadyStart" Target="SporeColonySCBW@LookAt" Send="LookAtEngage"/>
+        <On Terms="Abil.attack.ReadyStop" Target="SporeColonySCBW@LookAt" Send="LookAtDisengage"/>
         <AnimBlendTime value="0.400000"/>
         <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
         <PlacementSound value="Zerg_BuildingPlacementSmall"/>
@@ -1684,6 +1694,8 @@
         <SquibTypeDefault value="Flesh"/>
         <TechPurchaseCamera value="Star2CameraMid06"/>
         <UnitGlossaryCamera value="Star2CameraMid06"/>
+        <ScaleMax value="1.100000,1.100000,1.100000"/>
+        <ScaleMin value="1.100000,1.100000,1.100000"/>
     </CModel>
     <CModel id="SunkenColonySCBW@Death" parent="BuildingDeath" Race="Zerg">
         <Model value="Assets\Units\Zerg\PrimalSunkenColonyDeath\PrimalSunkenColonyDeath.m3"/>
@@ -2517,7 +2529,7 @@
     <CTurret id="SunkenColonySCBW@Turret">
         <Idle value="Hold"/>
         <YawArc value="360"/>
-        <YawRate value="360"/>
+        <YawRate value="2857.5"/>
     </CTurret>
     <CUnit id="HiveSCBW" parent="ZergUnitSCBW">
         <DeathRevealRadius value="3"/>
@@ -3451,7 +3463,7 @@
         <BehaviorArray Link="OnCreep"/>
         <BehaviorArray Link="UnderConstruction"/>
         <BehaviorArray Link="ZergBuildingSCBW@CreepGrowthMedium"/>
-        <WeaponArray Link="SporeColonySCBWWeapon" Turret="SporeColonySCBW@Turret"/>
+        <WeaponArray Link="SporeColonySCBWWeapon"/>
         <CardLayouts>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="BuildInProgress,Cancel" Row="2" Column="4"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -3587,7 +3599,7 @@
         <BehaviorArray Link="OnCreep"/>
         <BehaviorArray Link="UnderConstruction"/>
         <BehaviorArray Link="ZergBuildingSCBW@CreepGrowthMedium"/>
-        <WeaponArray Link="SunkenColonySCBWWeapon" Turret="SunkenColonySCBW@Turret"/>
+        <WeaponArray Link="SunkenColonySCBWWeapon"/>
         <CardLayouts>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="BuildInProgress,Cancel" Row="2" Column="4"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
