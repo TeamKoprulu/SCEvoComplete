@@ -90,6 +90,26 @@ void libGHLo_InitVariables () {
 
 // Presets
 // Functions
+void libGHLo_gf_DisableGameHeart () {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerEnable(libGHLo_gt_GraphsTimer, false);
+    TriggerEnable(libGHLo_gt_LabelsUnitCreated, false);
+    TriggerEnable(libGHLo_gt_LabelsUnitTrainingStarted, false);
+    TriggerEnable(libGHLo_gt_LabelsUnitTrainingStopped, false);
+    TriggerEnable(libGHLo_gt_LabelsResearchStarted, false);
+    TriggerEnable(libGHLo_gt_LabelsResearchStopped, false);
+    TriggerEnable(libGHLo_gt_LabelsReactorDestroyed, false);
+    TriggerEnable(libGHLo_gt_UpgradeNotificationsResearchCancelled, false);
+    TriggerEnable(libGHLo_gt_UpgradeNotificationsResearchCompleted, false);
+    TriggerEnable(libGHLo_gt_UpgradeNotificationsResearchStarted, false);
+    TriggerEnable(libGHLo_gt_UpgradeNotificationsDestructionTimerRunsOut, false);
+    TriggerEnable(libGHLo_gt_WorkersKilledNotificationsWorkerKilled, false);
+    TriggerEnable(libGHLo_gt_WorkersKilledNotificationsTimerRunsOut, false);
+    TriggerEnable(libGHLo_gt_MapNotificationsDrop, false);
+    TriggerEnable(libGHLo_gt_MapNotificationsScannerSweep, false);
+}
+
 void libGHLo_gf_ApplySkinSet (string lp_skinSet, int lp_player) {
     // Variable Declarations
     string lv_itSkinPack;
@@ -960,18 +980,23 @@ bool libGHLo_gt_GameHeartInitialization_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    UIUnitColorStyleOverride(lv_observerGroup, c_unitColorStyleNormal);
-    auto200383C7_g = PlayerGroupActive();
-    auto200383C7_var = -1;
-    while (true) {
-        auto200383C7_var = PlayerGroupNextPlayer(auto200383C7_g, auto200383C7_var);
-        if (auto200383C7_var < 0) { break; }
-        libNtve_gf_SetAllianceOneWay(lv_observer, auto200383C7_var, libNtve_ge_AllianceSetting_Neutral);
-        PlayerSetAlliance(auto200383C7_var, c_allianceIdDefeat, lv_observer, true);
-        PlayerSetAlliance(auto200383C7_var, c_allianceIdPassive, lv_observer, true);
-        PlayerSetAlliance(auto200383C7_var, c_allianceIdControl, lv_observer, true);
-        PlayerSetAlliance(auto200383C7_var, c_allianceIdVision, lv_observer, true);
-        libNtve_gf_SetUpgradeLevelForPlayer(auto200383C7_var, "GameHeartActive", 1);
+    if (((PlayerType(lv_observer) == c_playerTypeUser) || (PlayerType(lv_observer) == c_playerTypeComputer))) {
+        libGHLo_gf_DisableGameHeart();
+    }
+    else {
+        UIUnitColorStyleOverride(lv_observerGroup, c_unitColorStyleNormal);
+        auto200383C7_g = PlayerGroupActive();
+        auto200383C7_var = -1;
+        while (true) {
+            auto200383C7_var = PlayerGroupNextPlayer(auto200383C7_g, auto200383C7_var);
+            if (auto200383C7_var < 0) { break; }
+            libNtve_gf_SetAllianceOneWay(lv_observer, auto200383C7_var, libNtve_ge_AllianceSetting_Neutral);
+            PlayerSetAlliance(auto200383C7_var, c_allianceIdDefeat, lv_observer, true);
+            PlayerSetAlliance(auto200383C7_var, c_allianceIdPassive, lv_observer, true);
+            PlayerSetAlliance(auto200383C7_var, c_allianceIdControl, lv_observer, true);
+            PlayerSetAlliance(auto200383C7_var, c_allianceIdVision, lv_observer, true);
+            libNtve_gf_SetUpgradeLevelForPlayer(auto200383C7_var, "GameHeartActive", 1);
+        }
     }
     return true;
 }
