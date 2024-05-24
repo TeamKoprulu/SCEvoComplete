@@ -1,0 +1,3108 @@
+//==================================================================================================
+//  BWTerran Melee Very Hard
+//==================================================================================================
+
+bool BWTerranOpenRushMarineVyHd (int player);                   // heavy early marine rush 
+bool BWTerranOpenRushMarineReaperVyHd (int player);             // marine w/ early reaper harass
+bool BWTerranOpenRushProxyBarracksVyHd (int player);            // proxy barracks marine rush
+bool BWTerranOpenTimingMMStimVyHd (int player);                 // stim timing push
+bool BWTerranOpenTimingVultureFirebatVyHd (int player);        // hellion marauder timing push
+bool BWTerranOpenTimingMariSiegeVyHd (int player);              // marine + siege push
+bool BWTerranOpenTimingCloakBansheeVyHd (int player);           // cloak banshee timing
+bool BWTerranOpenPowerMacroQuickExpGndVyHd (int player);        // aggresive quick expand
+bool BWTerranOpenPowerMacroMarineExpGndVyHd (int player);       // gasless marines expand
+bool BWTerranOpenPowerMacroDefenseExpGndVyHd (int player);      // safer marine/siege expand
+bool BWTerranOpenAirOneBaseAirVyHd (int player);                // single base "island" air build
+bool BWTerranOpenAirOneBaseDropVyHd (int player);               // single base "island" drop build
+bool BWTerranOpenAirCloakBansheeVyHd (int player);              // single base "island" cloak banshee
+bool BWTerranOpenAirQuickExpandAirVyHd (int player);            // quick expand air build
+
+bool BWTerranMidRushTimingMMMedivacVyHd (int player);           // continued agression with mmm
+bool BWTerranMidRushTimingDefensiveExpandVyHd (int player);     // transition from early pressure to a macro game
+bool BWTerranMidPowerMMMedivacVyHd (int player);                // standard bio attack
+bool BWTerranMidPowerMMSiegeVyHd (int player);                  // bio+siege
+bool BWTerranMidPowerSiegeBansheeVyHd (int player);             // delayed 1,1,1
+bool BWTerranMidPowerHellionSiegeVyHd (int player);             // low-tech mech
+bool BWTerranMidPowerSiegeThorVyHd (int player);                // high-tech mech
+bool BWTerranMidMacroBioVyHd (int player);                      // macro toward late game bio
+bool BWTerranMidMacroMechVyHd (int player);                     // macro toward late game mech
+bool BWTerranMidMacroThorBCVyHd (int player);                   // macro toward late game thor/bc
+bool BWTerranMidAirOneBaseAirVyHd (int player);                 // continue single base "island" air build
+bool BWTerranMidAirOneBaseDropVyHd (int player);                // continue single base "island" drop build
+bool BWTerranMidAirExpansionVikingBansheeVyHd (int player);     // quick expand viking/banshee attack
+bool BWTerranMidAirExpansionBCVyHd (int player);                // quick expand battlecruiser attack
+bool BWTerranMidAirExpansionDropAirVyHd (int player);           // quick expand drop + air attack
+bool BWTerranMidAirMacroVyHd (int player);                      // macro toward a large late game air force
+
+//}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenVyHd
+//--------------------------------------------------------------------------------------------------
+void BWTerranOpenVyHd (int player) {
+    bool done = false;
+    int buildIndex;
+
+    AIEarlyDefenseScouting(player);
+
+    // see if we need to switch builds
+    UpdateHDBWTerranOpening(player);
+    
+    buildIndex = AIGetUserInt(player, c_currentBuildIndex);
+    if (buildIndex == e_BWhdBuildIndex_TOpenRush_Marine)                      { done = BWTerranOpenRushMarineVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenRush_MarineReaper)           { done = BWTerranOpenRushMarineReaperVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenRush_ProxyBarracks)          { done = BWTerranOpenRushProxyBarracksVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenTiming_MMStim)               { done = BWTerranOpenTimingMMStimVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenTiming_VultureFirebat)      { done = BWTerranOpenTimingVultureFirebatVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenTiming_MariSiege)            { done = BWTerranOpenTimingMariSiegeVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenTiming_CloakBanshee)         { done = BWTerranOpenTimingCloakBansheeVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenPowerMacro_QuickExpGnd)      { done = BWTerranOpenPowerMacroQuickExpGndVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenPowerMacro_MarineExpGnd)     { done = BWTerranOpenPowerMacroMarineExpGndVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenPowerMacro_DefenseExpGnd)    { done = BWTerranOpenPowerMacroDefenseExpGndVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenAir_OneBaseAir)              { done = BWTerranOpenAirOneBaseAirVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenAir_OneBaseDrop)             { done = BWTerranOpenAirOneBaseDropVyHd (player); } 
+    else if (buildIndex == e_BWhdBuildIndex_TOpenAir_CloakBanshee)            { done = BWTerranOpenAirCloakBansheeVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TOpenAir_QuickExpandAir)          { done = BWTerranOpenAirQuickExpandAirVyHd (player); }
+    else { ErrorMeleeScript(player, "Invalid Open BuildIndex BWTerranVyHd"); }
+
+    if (done) {
+        BWTerranHDInitMid(player); // Transition to MidGame
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidVyHd
+//--------------------------------------------------------------------------------------------------
+void BWTerranMidVyHd (int player) {
+    bool done = false;
+    int buildIndex;
+    
+    // enable scouting as appropriate
+    if (AIGetUserInt(player, c_numGroundStartLocs) > 0) {
+        AIScoutingEnable(player, 15, c_BWTU_SCV);
+        AIEarlyDefenseScouting(player);
+    }
+    else {
+        AIScoutingEnable(player, 1, c_BWTU_Dropship);
+    }
+
+    // see if we need to switch builds
+    UpdateHDBWTerranMidGame(player);
+    
+    buildIndex = AIGetUserInt(player, c_currentBuildIndex);
+    if (buildIndex == e_BWhdBuildIndex_TMidRushTiming_MMMedivac)              { done = BWTerranMidRushTimingMMMedivacVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidRushTiming_DefensiveExpand)   { done = BWTerranMidRushTimingDefensiveExpandVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidPower_MMMedivac)              { done = BWTerranMidPowerMMMedivacVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidPower_MMSiege)                { done = BWTerranMidPowerMMSiegeVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidPower_SiegeBanshee)           { done = BWTerranMidPowerSiegeBansheeVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidPower_HellionSiege)           { done = BWTerranMidPowerHellionSiegeVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidPower_SiegeThor)              { done = BWTerranMidPowerSiegeThorVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidMacro_Bio)                    { done = BWTerranMidMacroBioVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidMacro_Mech)                   { done = BWTerranMidMacroMechVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidMacro_ThorBC)                 { done = BWTerranMidMacroThorBCVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidAir_OneBaseAir)               { done = BWTerranMidAirOneBaseAirVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidAir_OneBaseDrop)              { done = BWTerranMidAirOneBaseDropVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidAir_ExpansionVikingBanshee)   { done = BWTerranMidAirExpansionVikingBansheeVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidAir_ExpansionBC)              { done = BWTerranMidAirExpansionBCVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidAir_ExpansionDropAir)         { done = BWTerranMidAirExpansionDropAirVyHd (player); }
+    else if (buildIndex == e_BWhdBuildIndex_TMidAir_Macro)                    { done = BWTerranMidAirMacroVyHd (player); }
+    else { ErrorMeleeScript(player, "Invalid Mid BuildIndex BWTerranVyHd"); }
+
+    if (done) {
+        BWTerranHDInitLate(player); // Transition to LateGame
+    }
+}
+
+//==================================================================================================
+//  OPENINGS
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenRushMarineVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenRushMarineVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenRushMarine"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 12, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 13, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_Barracks );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 5, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 20, c_BWTU_Marine );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 26, c_BWTU_Marine );
+    
+    BWTerranBasicDefenseStock(player);
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AIScoutingEnableWithPreReq(player, 14, c_BWTU_SCV, 3, c_BWTB_Barracks, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWTU_Marine, 2, 7, c_continuousMerge);
+
+    if (AIGetTime() < 300) {
+        if (AITechCount(player, c_BWTU_Marine, c_techCountInProgressOrBetter) < 19) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTB_SupplyDepot, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+    }
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenRushMarineFinished"));
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenRushMarineReaperVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenRushMarineReaperVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenRushMarineReaper"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 2, c_BWTU_Firebat );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTU_Firebat );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTU_Firebat );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 22, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 17) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 4, c_BWTU_Medic );
+    AISetStock( player, 10, c_BWTU_Firebat );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 12, c_BWTU_Marine );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AIScoutingEnableWithPreReq(player, 17, c_BWTU_SCV, 1, c_BWTB_ComsatStation, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWTU_Marine, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 1, 5, c_continuousMerge);
+
+    if (AIGetTime() < 330) {
+        if (AITechCount(player, c_BWTU_Firebat, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTB_Refinery, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenRushMarineReaperFinished"));
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenRushProxyBarracksVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenRushProxyBarracksVyHd (int player) {
+
+    // not yet a proxy build, needs to be fixed
+    // this build is not used
+
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 12, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );     // proxy
+    AISetStock( player, 2, c_BWTB_Barracks );        // proxy
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_Bunker );          // proxy
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 8, c_BWTU_Marine );
+    
+    BWTerranBasicDefenseStock(player);
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AIScoutingEnableWithPreReq(player, 14, c_BWTU_SCV, 2, c_BWTB_Barracks, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWTU_Marine, 2, 4, c_continuousMerge);
+
+    if (AIGetTime() < 270) {
+        if (AITechCount(player, c_BWTU_Marine, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTB_ComsatStation, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenTimingMMStimVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenTimingMMStimVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingMMStim"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 4, c_BWTU_Firebat );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTU_Firebat );
+    AISetStock( player, 4, c_BWTU_Medic );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 14, c_BWTU_Firebat );
+    AISetStock( player, 8, c_BWTU_Medic );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 24, c_BWTU_Marine );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 14, c_BWTU_SCV, 1, c_BWTB_Barracks, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWTU_Marine, 3, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 2, 999, c_continuousMerge);
+
+    if (AITechCount(player, c_BWTU_Marine, c_techCountCompleteOnly) >= 8) {
+        AISetAttackStatus(player, c_BWTU_Firebat, 2, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWTU_Firebat, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }        
+        if (AITechCount(player, c_BWTB_Refinery, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingMMStimFinished"));
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenTimingVultureFirebatVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenTimingVultureFirebatVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingVultureFirebat"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 19, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Factory );
+    AISetStock( player, 4, c_BWTU_Vulture );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
+    AISetStock( player, 3, c_BWTB_Factory );
+    AISetStock( player, 2, c_BWTU_Firebat );
+    AISetStock( player, 5, c_BWTU_Vulture );
+    AISetStock( player, 6, c_BWTU_Firebat );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Firebat );
+    AISetStock( player, 1, c_BWTR_VultureSCBWSpeedUpgrade );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 8, c_BWTU_Vulture );
+    AISetStock( player, 10, c_BWTU_Firebat );
+    AISetStock( player, 9, c_BWTU_Vulture );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 14, c_BWTU_Firebat );
+    AISetStock( player, 11, c_BWTU_Vulture );
+    AISetStock( player, 18, c_BWTU_Firebat );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 16, c_BWTU_Vulture );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 14, c_BWTU_SCV, 1, c_BWTB_Barracks, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWTU_Marine, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Vulture, 1, 4, c_continuousMerge);
+
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWTU_Vulture, c_techCountInProgressOrBetter) < 10) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Firebat, c_techCountInProgressOrBetter) < 10) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_VultureSCBWSpeedUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    if (AITechCount(player, c_BWTU_Firebat, c_techCountCompleteOnly) >= 8) {
+        AISetAttackStatus(player, c_BWTU_Vulture, 1, 3, c_continuousMerge);
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingVultureFirebatFinished"));
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenTimingMariSiegeVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenTimingMariSiegeVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingMariSiege"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 17) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Factory );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_MachineShop );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTU_SiegeTank );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 7, c_BWTU_SiegeTank );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 12, c_BWTU_SCV, 1, c_BWTB_Barracks, c_techCountCompleteOnly);
+    AISetAttackStatus(player, c_BWTU_Marine, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_SiegeTank, 1, 2, c_continuousMerge);
+
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWTU_SiegeTank, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Marine, c_techCountInProgressOrBetter) < 11) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingMariSiegeFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenTimingCloakBansheeVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenTimingCloakBansheeVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingCloakBanshee"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 13, c_BWTU_SCV );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );    
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_Starport );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Wraith );
+    AISetStock( player, 2, c_BWTB_ControlTower );
+    AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
+    AISetStock( player, 4, c_BWTU_Wraith );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTB_Starport );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_ControlTower );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Wraith );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 10, c_BWTU_Wraith );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 12, c_BWTU_Marine );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // attack is done by diversion wave with banshees
+    if (AITechCount(player, c_BWTU_Wraith, c_techCountCompleteOnly) >= 2) {
+        AISetFlag(player, e_flagsDiversion, true);
+    }
+    
+    AIScoutingEnableWithPreReq(player, 17, c_BWTU_SCV, 1, c_BWTB_Factory, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWTU_Wraith, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+
+        if (AITechCount(player, c_BWTR_WraithSCBWCloakResearch, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenTimingCloakBansheeFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenPowerMacroQuickExpGndVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenPowerMacroQuickExpGndVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenPowerMacroQuickExpGnd"));
+
+    // riskier very fast expansion
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 17) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 18, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 4, c_BWTU_Marine );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 18, c_BWTU_SCV, 1, c_BWTB_Barracks, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 180) {
+        if (AITechCount(player, c_BWTB_CommandCenter, c_techCountIncompleteOnly) < 2) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenPowerMacroQuickExpGndFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenPowerMacroMarineExpGndVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenPowerMacroMarineExpGndVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenPowerMacroMarineExpGnd"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 22, c_BWTU_SCV );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 15, c_BWTU_SCV, 1, c_BWTB_ComsatStation, c_techCountInProgressOrBetter);
+
+    if (AIGetTime() < 210) {
+        if (AITechCount(player, c_BWTB_CommandCenter, c_techCountCompleteOnly) < 2) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenPowerMacroMarineExpGndFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenPowerMacroDefenseExpGndVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenPowerMacroDefenseExpGndVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenPowerMacroDefenseExpGnd"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 20, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
+    
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 25) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Bunker );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_SiegeTank );
+    AISetStock( player, 12, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 18, c_BWTU_SCV, 1, c_BWTB_Factory, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 300) {
+        if (AITechCount(player, c_BWTU_SiegeTank, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+
+        if (AITechCount(player, c_BWTR_SiegeModeSCBWResearch, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenPowerMacroDefenseExpGndFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenAirOneBaseAirVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenAirOneBaseAirVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirOneBaseAir"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );    
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Armory );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 2, c_BWTB_Starport );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ControlTower );
+    AISetStock( player, 4, c_BWTU_Goliath );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTU_Valkyrie );
+    AISetStock( player, 4, c_BWTU_Wraith );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTU_Valkyrie );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 6, c_BWTU_Wraith );
+    AISetStock( player, 4, c_BWTU_Goliath );   
+    AISetStock( player, 1, c_BWTB_EngineeringBay );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 12, c_BWTU_Marine );
+    AISetStock( player, 6, c_BWTU_Goliath );   
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWTU_Wraith, 2, 6, c_continuousMerge);
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWTU_Wraith, c_techCountInProgressOrBetter) < 5) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirOneBaseAirFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenAirOneBaseDropVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenAirOneBaseDropVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirOneBaseDrop"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Starport );
+    AISetStock( player, 1, c_BWTU_Vulture );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Vulture );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTU_Dropship );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Vulture );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Dropship );
+    AISetStock( player, 4, c_BWTU_Medic );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Starport );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTU_Vulture );
+    AISetStock( player, 1, c_BWTU_Valkyrie );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    if (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) >= 2) {
+        AISetAttackStatus(player, c_BWTU_Marine, 4, 7, c_continuousMerge);
+        AISetAttackStatus(player, c_BWTU_Vulture, 1, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Valkyrie, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirOneBaseDropFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenAirCloakBansheeVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenAirCloakBansheeVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirCloakBanshee"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );  
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Starport );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_ControlTower );
+    AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
+    AISetStock( player, 2, c_BWTU_Wraith );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Wraith );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTR_WraithSCBWEnergyUpgrade );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 6, c_BWTU_Wraith );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 8, c_BWTU_Marine );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // attack is done by diversion wave with banshees
+    if (AITechCount(player, c_BWTU_Wraith, c_techCountCompleteOnly) >= 2) {
+        AISetFlag(player, e_flagsDiversion, true);
+    }
+    
+    AIScoutingEnableWithPreReq(player, 20, c_BWTU_SCV, 1, c_BWTB_Factory, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWTU_Wraith, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+
+        if (AITechCount(player, c_BWTR_WraithSCBWEnergyUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirCloakBansheeFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranOpenAirQuickExpandAirVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranOpenAirQuickExpandAirVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirQuickExpandAir"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 17) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 18, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 22, c_BWTU_SCV );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    if (AIGetTime() < 180) {
+        if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("OpenAirQuickExpandAirFinished"));
+
+    return true;  // Transition to MidGame
+}
+
+//==================================================================================================
+//  MID GAME
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidRushTimingMMMedivacVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidRushTimingMMMedivacVyHd (int player) {
+    AIClearStock(player);
+
+    // Build should now be focused on heavy Bio with a large mass of marines, firebats, a lot of supporting medics and some science vessels
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidRushTimingMMMedivac"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 18, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+        
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Firebat );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 1, c_BWTB_EngineeringBay );  
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_Starport );
+    AISetStock( player, 6, c_BWTU_Firebat );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTB_Barracks );
+    AISetStock( player, 8, c_BWTU_Firebat );
+    AISetStock( player, 1, c_BWTB_ScienceFacility );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTU_Medic );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_ScienceVessel );
+    AISetStock( player, 14, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 16, c_BWTU_Marine );
+    AISetStock( player, 12, c_BWTU_Firebat );
+    AISetStock( player, 2, c_BWTU_ScienceVessel );
+    AISetStock( player, 6, c_BWTU_Medic );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 20, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_ScienceVesselSCBWEMPShockwaveResearch );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTU_ScienceVessel );
+    AISetStock( player, 8, c_BWTU_Medic );
+    AISetStock( player, 16, c_BWTU_Firebat );
+    AISetStock( player, 12, c_BWTU_Medic );
+    AISetStock( player, 24, c_BWTU_Marine );
+    AISetStock( player, 28, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 28) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 26, c_BWTU_Marine );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 28, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_EngineeringBay );    
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 8, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWTU_ScienceVessel, c_techCountCompleteOnly) >= 2) {
+        AISetAttackStatus(player, c_BWTU_Marine, 2, 13, c_continuousMerge);
+        AISetAttackStatus(player, c_BWTU_Firebat, 2, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWTU_ScienceVessel, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidRushTimingMMMedivac Finished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidRushTimingDefensiveExpandVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidRushTimingDefensiveExpandVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidRushTimingDefensiveExpand"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_Barracks );    
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
+    AISetStock( player, 6, c_BWTU_Marine );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 26, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 26) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 28, c_BWTU_SCV );    
+    AISetStock( player, 3, c_BWTB_Refinery );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 32, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Starport );
+    AISetStock( player, 33, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 4, c_BWTU_Firebat );
+    AISetStock( player, 34, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_SiegeTank );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 37, c_BWTU_SCV );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_SiegeTank, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWTU_Firebat, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }        
+        if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+            if (AITechCount(player, c_BWTB_ComsatStation, c_techCountInProgressOrBetter) < 2) {
+                return false;
+            }
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidRushTimingDefensiveExpandFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidPowerMMMedivacVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidPowerMMMedivacVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerMMMedivac"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 15) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 23, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 24, c_BWTU_SCV );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 1, c_BWTB_Starport );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Dropship );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 14, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_Marine );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTU_Firebat );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Dropship );
+    AISetStock( player, 4, c_BWTU_Medic );
+    AISetStock( player, 8, c_BWTU_Firebat );
+    AISetStock( player, 18, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 12, c_BWTU_Firebat );
+    AISetStock( player, 19, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 6, c_BWTU_Medic );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 20, c_BWTU_Marine );
+    AISetStock( player, 16, c_BWTU_Firebat );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 2, c_BWTB_EngineeringBay );
+    AISetStock( player, 8, c_BWTU_Medic );
+    AISetStock( player, 21, c_BWTU_Marine );
+    AISetStock( player, 20, c_BWTU_Firebat );
+    AISetStock( player, 49, c_BWTU_SCV );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);  
+    AISetAttackStatus(player, c_BWTU_Firebat, 4, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) >= 2) {
+        if (AITechCount(player, c_BWTU_SiegeTank, c_techCountCompleteOnly) >= 1) {
+            AISetAttackStatus(player, c_BWTU_Marine, 4, 18, c_continuousMerge);  
+            AISetAttackStatus(player, c_BWTU_Firebat, 4, 4, c_continuousMerge);
+        }
+    }
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_SiegeTank, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Dropship, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTB_EngineeringBay, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerMMMedivacFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidPowerMMSiegeVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidPowerMMSiegeVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerMMSiege"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 23, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 24, c_BWTU_SCV );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 4, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 33, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 14, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 4, c_BWTU_Firebat );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTB_Refinery );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Firebat );
+    AISetStock( player, 16, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 12, c_BWTU_Firebat );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_Firebat );
+    AISetStock( player, 18, c_BWTU_Marine );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 4, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWTU_Marine, c_techCountCompleteOnly) >= 12) {
+        AISetAttackStatus(player, c_BWTU_SiegeTank_Alias, 1, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWTU_SiegeTank_Alias, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerMMSiegeFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidPowerSiegeBansheeVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidPowerSiegeBansheeVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerSiegeBanshee"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 23, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 24, c_BWTU_SCV );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 1, c_BWTB_Starport );
+    AISetStock( player, 33, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ControlTower );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 1, c_BWTU_Wraith );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 2, c_BWTU_Wraith );
+    AISetStock( player, 49, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_EngineeringBay );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+    AISetStock( player, 4, c_BWTU_SiegeTank );
+    AISetStock( player, 4, c_BWTU_Firebat );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 51, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Wraith );
+    AISetStock( player, 11, c_BWTB_SupplyDepot );
+    AISetStock( player, 6, c_BWTU_Firebat );
+    AISetStock( player, 1, c_BWTR_TerranInfantryArmorsSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWTR_TerranInfantryArmorsSCBW_Lvl2 );
+    AISetStock( player, 5, c_BWTU_SiegeTank );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 4, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWTU_Marine, c_techCountCompleteOnly) >= 14) {
+        AISetAttackStatus(player, c_BWTU_SiegeTank_Alias, 1, 3, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_SiegeTank_Alias, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Wraith, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerSiegeBansheeFinish"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidPowerHellionSiegeVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidPowerHellionSiegeVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerHellionSiege"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+
+    BWTerranHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Factory );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 32, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Vulture );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 34, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Vulture );
+    AISetStock( player, 36, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 38, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 3, c_BWTU_Vulture );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 40, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Armory );
+    AISetStock( player, 4, c_BWTU_Vulture );
+    AISetStock( player, 42, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 44, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
+    AISetStock( player, 5, c_BWTU_Vulture );
+    AISetStock( player, 46, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_SiegeTank );
+    AISetStock( player, 2, c_BWTB_Armory );
+    AISetStock( player, 1, c_BWTR_TerranVehicleWeaponsSCBW_Lvl1 );
+    AISetStock( player, 12, c_BWTU_Marine );
+    AISetStock( player, 48, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Vulture );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTB_Factory );
+    AISetStock( player, 50, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 7, c_BWTU_Vulture );
+    AISetStock( player, 5, c_BWTU_SiegeTank );
+    AISetStock( player, 52, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTR_TerranVehiclePlatingSCBW_Lvl1 );
+    AISetStock( player, 8, c_BWTU_Vulture );
+    AISetStock( player, 6, c_BWTU_SiegeTank );
+    AISetStock( player, 2, c_BWTB_MachineShop );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Vulture, 1, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWTU_SiegeTank_Alias, c_techCountCompleteOnly) >= 4) {
+        AISetAttackStatus(player, c_BWTU_Marine, 4, 10, c_continuousMerge);
+        AISetAttackStatus(player, c_BWTU_Vulture, 1, 5, c_continuousMerge);
+    }
+
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTB_Factory, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_TerranVehicleWeaponsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_TerranVehiclePlatingSCBW_Lvl1, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerHellionSiegeFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidPowerSiegeThorVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidPowerSiegeThorVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerSiegeThor"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+
+    BWTerranHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Factory );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_MachineShop );
+    AISetStock( player, 32, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 34, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 36, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 38, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 40, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_SiegeTank );
+    AISetStock( player, 42, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Armory );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 44, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_SiegeTank );
+    AISetStock( player, 46, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 6, c_BWTU_SiegeTank );
+    AISetStock( player, 48, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 7, c_BWTU_SiegeTank );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 50, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Goliath );
+    AISetStock( player, 12, c_BWTU_Marine );
+    AISetStock( player, 11, c_BWTB_SupplyDepot );
+    AISetStock( player, 52, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Goliath );
+    AISetStock( player, 1, c_BWTR_TerranVehicleWeaponsSCBW_Lvl1 );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 12, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 2, c_BWTB_Armory );
+    AISetStock( player, 54, c_BWTU_SCV );
+    AISetStock( player, 14, c_BWTU_Marine );
+    AISetStock( player, 9, c_BWTU_Goliath );
+    AISetStock( player, 13, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 12, c_BWTU_Goliath );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_TerranVehiclePlatingSCBW_Lvl1 );
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWTU_SiegeTank, c_techCountCompleteOnly) >= 5) {
+        AISetAttackStatus(player, c_BWTU_Goliath, 3, 4, c_continuousMerge);
+    }
+
+    if (AIGetTime() < 480) {
+        if (AITechCount(player, c_BWTU_Goliath, c_techCountInProgressOrBetter) < 7) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidPowerSiegeThorFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidMacroBioVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidMacroBioVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidMacroBio"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 23, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 24, c_BWTU_SCV );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 1, c_BWTB_Starport );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 14, c_BWTU_Marine );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTU_Dropship );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Dropship );
+    AISetStock( player, 4, c_BWTU_Medic );
+    AISetStock( player, 2, c_BWTB_EngineeringBay );
+    AISetStock( player, 4, c_BWTU_Firebat );
+    AISetStock( player, 18, c_BWTU_Marine );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Medic );
+    AISetStock( player, 49, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Firebat );
+    AISetStock( player, 19, c_BWTU_Marine );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTR_TerranInfantryWeaponsSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWTR_TerranInfantryArmorsSCBW_Lvl1 );
+    AISetStock( player, 51, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 8, c_BWTU_Medic );
+    AISetStock( player, 53, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTB_SupplyDepot );
+    AISetStock( player, 12, c_BWTU_Firebat );
+    AISetStock( player, 20, c_BWTU_Marine );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Firebat, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_SiegeTank, 2, 999, c_continuousMerge);
+
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_SiegeTank, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Dropship, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_TerranInfantryWeaponsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_TerranInfantryArmorsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidMacroBioFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidMacroMechVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidMacroMechVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidMacroMech"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+
+    BWTerranHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Factory );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_MachineShop );
+    AISetStock( player, 32, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 34, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 36, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 38, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 40, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_SiegeTank );
+    AISetStock( player, 42, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Armory );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 44, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_SiegeTank );
+    AISetStock( player, 46, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 6, c_BWTU_SiegeTank );
+    AISetStock( player, 2, c_BWTB_Armory );
+    AISetStock( player, 48, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 7, c_BWTU_SiegeTank );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 50, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_SiegeTank );
+    AISetStock( player, 12, c_BWTU_Marine );
+    AISetStock( player, 52, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTR_TerranVehicleWeaponsSCBW_Lvl1 );
+    AISetStock( player, 11, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 54, c_BWTU_SCV );
+    AISetStock( player, 12, c_BWTB_SupplyDepot );
+    AISetStock( player, 9, c_BWTU_SiegeTank );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTR_TerranVehiclePlatingSCBW_Lvl1 );
+    AISetStock( player, 14, c_BWTU_Marine );
+    AISetStock( player, 10, c_BWTU_SiegeTank );
+    AISetStock( player, 56, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    
+    AISetStock( player, 3, c_BWTU_Goliath );
+
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_SiegeTank, 2, 999, c_continuousMerge);
+
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_SiegeTank, c_techCountInProgressOrBetter) < 7) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_TerranVehicleWeaponsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_TerranVehiclePlatingSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidMacroMechFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidMacroThorBCVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidMacroThorBCVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidMacroThorBC"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    
+    BWTerranBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWTU_SCV );
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountInProgressOrBetter) >= 18) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 24, c_BWTU_SCV );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 24, c_BWTU_SCV );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 1, c_BWTB_Starport );
+    AISetStock( player, 33, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_ControlTower );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 1, c_BWTB_Armory );
+    AISetStock( player, 1, c_BWTB_PhysicsLab );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Valkyrie );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_SiegeTank );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 49, c_BWTU_SCV );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 3, c_BWTU_Goliath );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTR_TerranVehicleWeaponsSCBW_Lvl1 );
+    AISetStock( player, 51, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 19, c_BWTU_Marine );
+    AISetStock( player, 11, c_BWTB_SupplyDepot );
+    AISetStock( player, 53, c_BWTU_SCV );
+    AISetStock( player, 21, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTU_Battlecruiser );
+    AISetStock( player, 6, c_BWTU_Goliath );
+    AISetStock( player, 13, c_BWTB_SupplyDepot );
+    AISetStock( player, 55, c_BWTU_SCV );
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWTU_SiegeTank, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Goliath, 6, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Battlecruiser, 1, 999, c_continuousMerge);
+
+    if (AIGetTime() < 450) {
+        if (AITechCount(player, c_BWTU_Goliath, c_techCountInProgressOrBetter) < 5) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Battlecruiser, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidMacroThorBCFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidAirOneBaseAirVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidAirOneBaseAirVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirOneBaseAir"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 2, c_BWTU_Marine );    
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_Starport );
+    
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTU_Valkyrie );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 6, c_BWTU_Valkyrie );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Vulture );    
+    AISetStock( player, 1, c_BWTB_EngineeringBay );
+    AISetStock( player, 2, c_BWTU_Dropship );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );    
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 7, c_BWTU_Valkyrie );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTU_Valkyrie );
+    AISetStock( player, 4, c_BWTU_Vulture );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 9, c_BWTU_Valkyrie );
+    AISetStock( player, 12, c_BWTU_Valkyrie );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 12, c_BWTU_Marine );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWTU_Valkyrie, 4, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) >= 1) {
+        AISetAttackStatus(player, c_BWTU_Marine, 6, 999, c_continuousMerge);
+    }
+    AISetAttackStatus(player, c_BWTU_Valkyrie, 1, 2, c_continuousMerge);
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_Valkyrie, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirOneBaseAirFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidAirOneBaseDropVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidAirOneBaseDropVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirOneBaseDrop"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 15, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 16, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 17, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+    
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 20, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Starport );
+    
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 2, c_BWTU_Vulture );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Vulture );
+    AISetStock( player, 24, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 1, c_BWTU_Dropship );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 26, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Vulture );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Medic );
+    AISetStock( player, 2, c_BWTU_Dropship );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 28, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Starport );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTU_Vulture );
+    AISetStock( player, 1, c_BWTU_Valkyrie );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 30, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTU_Valkyrie );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 4, c_BWTU_Valkyrie );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 12, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 5, c_BWTU_Valkyrie );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 14, c_BWTU_Marine );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    if ( (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) >= 2) &&
+         (AITechCount(player, c_BWTU_Valkyrie, c_techCountCompleteOnly) >= 2) ) {
+        AISetAttackStatus(player, c_BWTU_Marine, 4, 7, c_continuousMerge);
+        AISetAttackStatus(player, c_BWTU_Vulture, 1, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWTU_Valkyrie, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTU_Marine, c_techCountInProgressOrBetter) < 12) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirOneBaseDropFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidAirExpansionVikingBansheeVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidAirExpansionVikingBansheeVyHd (int player) {
+    AISetFlag(player, e_flagsDiversion, true);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirExpansionVikingBanshee"));
+
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 17) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 18, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Starport );
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_Starport );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 33, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_ControlTower );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_ControlTower );
+    AISetStock( player, 1, c_BWTU_Wraith );
+    AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Wraith );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Wraith );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTU_Valkyrie );
+    AISetStock( player, 49, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 51, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTU_Valkyrie );
+    AISetStock( player, 53, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // attack is done by diversion wave with banshees
+
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_Valkyrie, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirExpansionVikingBansheeFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidAirExpansionBCVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidAirExpansionBCVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirExpansionBC"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 14) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 18, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Starport );
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 33, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_PhysicsLab );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_ControlTower );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTU_Battlecruiser );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Battlecruiser );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTR_BattlecruiserSCBWYamatoResearch );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 49, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Battlecruiser );
+    AISetStock( player, 51, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTU_Battlecruiser );
+    AISetStock( player, 53, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    if (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) >= 1) {
+        AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    }
+    AISetAttackStatus(player, c_BWTU_Valkyrie, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWTU_Battlecruiser, 1, 999, c_continuousMerge);
+
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_Battlecruiser, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirExpansionBCFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidAirExpansionDropAirVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidAirExpansionDropAirVyHd (int player) {
+    AISetFlag(player, e_flagsDiversion, true);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirExpansionDropAir"));
+
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 17) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 18, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTB_Starport );
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 27, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Vulture );
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 33, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Dropship );
+    AISetStock( player, 4, c_BWTU_Vulture );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Dropship );
+    AISetStock( player, 6, c_BWTU_Vulture );
+    AISetStock( player, 2, c_BWTB_Starport );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 11, c_BWTU_Marine );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 8, c_BWTU_Vulture );
+    AISetStock( player, 6, c_BWTU_Medic );
+    AISetStock( player, 13, c_BWTU_Marine );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTU_Valkyrie );
+    AISetStock( player, 15, c_BWTU_Marine );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_MachineShop );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTB_Barracks );
+    AISetStock( player, 6, c_BWTU_Medic );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 17, c_BWTU_Marine );
+    AISetStock( player, 49, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_SiegeTank );
+    AISetStock( player, 11, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_Academy );
+    AISetStock( player, 3, c_BWTU_Valkyrie );
+    AISetStock( player, 51, c_BWTU_SCV );
+    AISetStock( player, 12, c_BWTB_SupplyDepot );
+    AISetStock( player, 4, c_BWTU_Valkyrie );
+    AISetStock( player, 53, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+    AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+    AISetStock( player, 2, c_BWTU_SiegeTank );
+    AISetStock( player, 4, c_BWTU_Firebat );
+    AISetStock( player, 18, c_BWTU_Marine );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    if (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) >= 2) {
+        AISetAttackStatus(player, c_BWTU_Marine, 2, 8, c_continuousMerge);
+        AISetAttackStatus(player, c_BWTU_Vulture, 2, 4, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTR_MarineSCBWRangeUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWTR_StimpackSCBWResearch, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirExpansionDropAirFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranMidAirMacroVyHd
+//--------------------------------------------------------------------------------------------------
+bool BWTerranMidAirMacroVyHd (int player) {
+    AIClearStock(player);
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirMacro"));
+    
+    AISetStock( player, 1, c_BWTB_CommandCenter );
+    AISetStock( player, 14, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_SupplyDepot );
+    AISetStock( player, 17, c_BWTU_SCV );
+    
+    BWTerranBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWTU_SCV, c_techCountQueuedOrBetter) >= 14) {
+        if (BWTerranHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 18, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Refinery );
+    AISetStock( player, 19, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Barracks );
+    AISetStock( player, 21, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_SupplyDepot );
+    AISetStock( player, 22, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Refinery );
+    AISetStock( player, 23, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTB_Factory );
+    AISetStock( player, 1, c_BWTB_ComsatStation );
+    
+    if (AITechCount(player, c_BWTB_CommandCenter, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 2, c_BWTB_ComsatStation );
+    }
+    
+    AISetStock( player, 25, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTB_Starport );
+
+    BWTerranHDEmergencyDetectionAntiAir(player);
+    BWTerranHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 29, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_Refinery );
+    AISetStock( player, 31, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Marine );
+    AISetStock( player, 3, c_BWTB_SupplyDepot );
+    AISetStock( player, 33, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTU_Valkyrie );
+    AISetStock( player, 35, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTB_SupplyDepot );
+    AISetStock( player, 3, c_BWTU_Marine );
+    AISetStock( player, 37, c_BWTU_SCV );
+    AISetStock( player, 4, c_BWTU_Marine );
+    AISetStock( player, 39, c_BWTU_SCV );
+    AISetStock( player, 1, c_BWTU_Dropship );
+    AISetStock( player, 2, c_BWTU_Medic );
+    AISetStock( player, 3, c_BWTU_Valkyrie );
+    AISetStock( player, 5, c_BWTB_SupplyDepot );
+    AISetStock( player, 41, c_BWTU_SCV );
+    AISetStock( player, 5, c_BWTU_Marine );
+    AISetStock( player, 2, c_BWTB_Armory );
+    AISetStock( player, 43, c_BWTU_SCV );
+    AISetStock( player, 6, c_BWTU_Marine );
+    AISetStock( player, 4, c_BWTU_Valkyrie );
+    AISetStock( player, 6, c_BWTB_SupplyDepot );
+    AISetStock( player, 6, c_BWTU_Medic );
+    AISetStock( player, 2, c_BWTU_Dropship );
+    AISetStock( player, 45, c_BWTU_SCV );
+    AISetStock( player, 7, c_BWTU_Marine );
+    AISetStock( player, 7, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTB_PhysicsLab );
+    AISetStock( player, 47, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_Marine );
+    AISetStock( player, 8, c_BWTB_SupplyDepot );
+    AISetStock( player, 1, c_BWTR_TerranShipWeaponsSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWTR_TerranShipPlatingSCBW_Lvl1 );
+    AISetStock( player, 2, c_BWTB_ControlTower );
+    AISetStock( player, 49, c_BWTU_SCV );
+    AISetStock( player, 9, c_BWTU_Marine );
+    AISetStock( player, 9, c_BWTB_SupplyDepot );
+    AISetStock( player, 51, c_BWTU_SCV );
+    AISetStock( player, 10, c_BWTU_Marine );
+    AISetStock( player, 1, c_BWTU_Battlecruiser );
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 10, c_BWTB_SupplyDepot );
+    AISetStock( player, 53, c_BWTU_SCV );
+    AISetStock( player, 2, c_BWTU_Battlecruiser );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    if (AITechCount(player, c_BWTU_Dropship, c_techCountCompleteOnly) >= 1) {
+        AISetAttackStatus(player, c_BWTU_Marine, 4, 999, c_continuousMerge);
+    }
+    AISetAttackStatus(player, c_BWTU_Valkyrie, 4, 999, c_continuousMerge);
+
+    if (AIGetTime() < 420) {
+        if (AITechCount(player, c_BWTU_Battlecruiser, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("MidAirMacroFinished"));
+
+    return true;  // Transition to LateGame
+}
+
+//==================================================================================================
+//  LATE GAME
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWTerranLateVyHd
+//--------------------------------------------------------------------------------------------------
+void BWTerranLateVyHd (int player) {
+    int armyCompareEstimate = AIArmyComparisonEstimate(player);
+    int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
+
+    // only allow scouting if I have plenty of workers
+    AIScoutingEnable(player, 16, c_BWTU_SCV);
+    // calculate a limit on how much simultaneous teching can happen
+    AISetTechLimitLevels(player);
+
+
+// ****************** Start Restock ****************** //
+    AIClearStock(player);
+
+// Very basic recovery start
+    BWTerranHDRecoveryStart(player);
+
+// Very basic farms & peons
+    AISetStockFarms( player, c_BWTB_SupplyDepot, c_stockNormalFarms);
+    AISetStockPeons( player, 16, c_BWTU_SCV, c_stockMinPeons, c_stockAlways);
+
+// Desperate expand (we're about to run out of minerals/gas)
+    AIDefaultExpansion(player, c_BWTB_CommandCenter, 3000, 1000, c_expandVitalHard);
+
+// Choose what type of endgame army we'd like to make
+    UpdateHDBWTerranLateGameArmy(player);
+
+// Bare minimum army
+    if (foodUsed < 180) {
+        BWTerranHDLateGameArmy(player, e_armyTypeMinimum);
+    }
+
+// Basic peons
+    AISetStockPeons( player, 24, c_BWTU_SCV, c_stockMinPeons, c_stockAlways);
+
+// Urgent early detection
+    if (AINeedsDetection(player)) {
+        AISetStock( player, 1, c_BWTU_ScienceVessel );
+        AISetStock( player, 1, c_BWTB_ComsatStation );
+    }
+
+// Barely adequete army including anti-air
+    if (foodUsed < 180) {
+        BWTerranHDLateGameArmy(player, e_armyTypeBase);
+    }
+    
+// Basic towns, farms, & peons
+    AIDefaultEconomy(player, c_BWTB_CommandCenter, c_BWTB_Refinery, c_BWTB_SupplyDepot, c_BWTU_SCV, 70, c_stockAlways);
+
+// Low expand (we're running low on minerals/gas)
+    AIAdjustedDefaultExpansion(player, c_BWTB_CommandCenter, 7000, 3000, c_expandVitalHard, armyCompareEstimate);
+
+// Minimum normal detection
+    if (AISuspectDetectionDanger(player, c_lateDetectionDangerTime)) {
+        AISetStock( player, 1, c_BWTB_ComsatStation );
+    }
+
+// On an air map build at least one transport as long as we have some other units/army
+    if (AIGetUserInt(player, c_numGroundStartLocs) == 0) {
+        AISetStock( player, 1, c_BWTU_Dropship );
+    }
+
+// Nearly food capped units
+    if (foodUsed > 160) {
+        AISetStock( player, 2, c_BWTU_ScienceVessel );
+        AISetStock( player, 1, c_BWTU_Dropship );
+        if (AIWantsMultipleTransport(player)) {
+            AISetStock( player, 4, c_BWTU_Dropship );
+        }
+
+        if (foodUsed >= 180) {
+            BWTerranHDLateGameArmy(player, e_armyTypeMinimum);
+            BWTerranHDLateGameArmy(player, e_armyTypeBase);
+        }
+    }
+
+// Basic small army
+    BWTerranHDLateGameArmy(player, e_armyTypeSmall);
+
+// Basic production buildings
+    AISetStock( player, 2, c_BWTB_Barracks );
+    AISetStock( player, 1, c_BWTB_Academy );
+    
+// Normal expand
+    AIAdjustedDefaultExpansion(player, c_BWTB_CommandCenter, 15000, 6000, c_expandNormalHard, armyCompareEstimate);
+    
+// Make Counter Units
+    BWTerranHDMakeCounters(player);
+    
+// Vital upgrades
+    BWTerranHDVitalUpgrades(player);
+
+// Medium sized army
+    BWTerranHDLateGameArmy(player, e_armyTypeMedium);
+
+// General upgrades
+    BWTerranHDGeneralUpgrades(player);
+    
+// Other towns defense
+    BWTerranHDDefenseOtherTowns(player);
+
+// Large sized army
+    BWTerranHDLateGameArmy(player, e_armyTypeLarge);
+
+// Main base defense
+    BWTerranHDDefenseMainTown(player);
+
+// BWTerran harrassment
+    BWTerranHDHarass(player);
+
+// Multiple detectors & scouts & a transport
+    AISetStockUnitNext( player, 1, c_BWTU_Dropship, c_stockAlways );
+    AISetStockUnitNext( player, 2, c_BWTU_ScienceVessel, c_stockAlways );
+
+// Middle expand
+    AIAdjustedDefaultExpansion(player, c_BWTB_CommandCenter, 20000, 9000, c_expandNormalHard, armyCompareEstimate);
+
+// Extra detection & scouts & transports
+    AISetStockUnitNext( player, 3, c_BWTU_Dropship, c_stockAlways );
+    
+// Late expand
+    AIAdjustedDefaultExpansion(player, c_BWTB_CommandCenter, 24000, 10000, c_expandNormalHard, armyCompareEstimate);
+  
+// Extra production buildings
+    AISetStockUnitNext( player, 4, c_BWTB_Barracks,       c_stockIdle );
+    AISetStockUnitNext( player, 1, c_BWTB_Academy,        c_stockIdle );
+    AISetStockUnitNext( player, 2, c_BWTB_Factory,        c_stockIdle );
+    AISetStockUnitNext( player, 2, c_BWTB_Starport,       c_stockIdle );
+    AISetStockUnitNext( player, 2, c_BWTB_MachineShop,    c_stockIdle );
+    AISetStockUnitNext( player, 1, c_BWTB_ControlTower,   c_stockIdle );
+    AISetStockUnitNext( player, 6, c_BWTB_Barracks,       c_stockIdle );
+
+// Extra research buildings
+    if (AIHasRes(player,700,500)) {
+        AISetStockUnitNext( player, 2, c_BWTB_EngineeringBay, c_stockAlways );
+        AISetStockUnitNext( player, 2, c_BWTB_Armory, c_stockAlways );
+    }
+
+// Minor upgrades
+    BWTerranHDMinorUpgrades(player);
+
+// Idle expand (very low priority, to prevent us from sitting around with idle peons)
+    AIAdjustedDefaultExpansion(player, c_BWTB_CommandCenter, 36000, 15000, c_expandIdleHard, armyCompareEstimate);
+
+// Entire Army
+    BWTerranHDLateGameArmy(player, e_armyTypeFull);
+
+    AIEnableStock(player);
+// ****************** End Restock ****************** //
+
+}
