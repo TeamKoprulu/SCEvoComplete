@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectRemoveBehavior id="DarkArchonSCBWMindControl@RB">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorCategories index="User8" value="1"/>
+    </CEffectRemoveBehavior>
     <CEffectDamage id="DarkTemplarSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Protoss"/>
         <Amount value="40"/>
@@ -250,14 +254,14 @@
         <EffectArray value="CorsairSCBWDisruptionWeb@AB"/>
         <EffectArray value="CorsairSCBWDisruptionWeb@IterateTransport"/>
     </CEffectSet>
+    <CEffectSet id="DarkArchonSCBWMindControl@Clear">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="DarkArchonSCBWMindControl@RB"/>
+    </CEffectSet>
     <CEffectApplyBehavior id="DarkArchonSCBWMindControl@AB">
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="DarkArchonSCBWMindControl"/>
     </CEffectApplyBehavior>
-    <CEffectRemoveBehavior id="DarkArchonSCBWMindControl@RB">
-        <EditorCategories value="Race:Protoss"/>
-        <BehaviorLink value="ObserverTargetLock"/>
-    </CEffectRemoveBehavior>
     <CEffectModifyUnit id="DarkArchonSCBWMindControl@MUChangeOwner">
         <EditorCategories value="Race:Protoss"/>
         <ModifyFlags index="Owner" value="1"/>
@@ -273,8 +277,8 @@
     <CEffectSet id="DarkArchonSCBWMindControl@Set">
         <ValidatorArray value="DarkArchonSCBWMindControl@Set"/>
         <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="DarkArchonSCBWMindControl@Clear"/>
         <EffectArray value="DarkArchonSCBWMindControl@AB"/>
-        <EffectArray value="DarkArchonSCBWMindControl@RB"/>
         <EffectArray value="DarkArchonSCBWMindControl@MU"/>
         <EffectArray value="DarkArchonSCBWMindControl@MUChangeOwner"/>
     </CEffectSet>
@@ -746,10 +750,9 @@
     <CAbilEffectTarget id="DarkArchonSCBWMindControl" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="DarkArchonSCBWMindControl@Set"/>
-        <Flags index="AbortOnAllianceChange" value="0"/>
         <Cost>
             <Vital index="Energy" value="150"/>
-            <Cooldown TimeUse="1.5"/>
+            <Cooldown TimeUse="1.375"/>
         </Cost>
         <TargetFilters value="Visible;Player,Structure,Heroic,Missile,Stasis,Dead,Invulnerable"/>
         <Range value="8"/>
@@ -761,6 +764,7 @@
         <Effect index="0" value="DarkArchonSCBWMaelstrom@Search"/>
         <Cost>
             <Vital index="Energy" value="100"/>
+            <Cooldown TimeUse="0.0625"/>
         </Cost>
         <TargetFilters value="Biological,Visible;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="10"/>
@@ -776,8 +780,7 @@
         <Flags index="AllowMovement" value="1"/>
         <Cost>
             <Vital index="Energy" value="50"/>
-            <Charge Link=""/>
-            <Cooldown Link=""/>
+            <Cooldown TimeUse="1.375"/>
         </Cost>
         <TargetFilters value="CanHaveEnergy,Visible,HasEnergy;Self,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="10"/>
@@ -1048,6 +1051,7 @@
         <CombineArray value="NotEggSCBW"/>
         <CombineArray value="DarkArchonSCBWMindControl@PreventionNot"/>
         <CombineArray value="NotSpiderMineSCBW"/>
+        <CombineArray value="IsNotNeuralParasited"/>
         <ResultFailed value="CantTargetThatUnit"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="DarkArchonSCBWMindControl@PreventionNot">
@@ -2033,14 +2037,19 @@
     </CActorModel>
     <CActorBeamSimple id="DarkArchonSCBWMindControl@Beam" parent="BeamSimpleAnimationStyleOneShot">
         <On Terms="Effect.DarkArchonSCBWMindControl@AB.Start" Send="Create"/>
+        <On Terms="ActorCreation" Send="TimerSet 1.000000 A"/>
+        <On Terms="TimerExpired; TimerName A" Send="SetOpacity 0.000000 0.250000"/>
+        <On Terms="TimerExpired; TimerName A" Send="TimerSet 0.250000 B"/>
+        <On Terms="TimerExpired; TimerName B" Send="AnimBracketStop BSD"/>
         <HostLaunch Subject="_Unit" Scope="Caster" Actor="Find"/>
         <HostLaunchSiteOps Ops="SOpAttachHead"/>
         <HostImpact Subject="_Unit" Scope="Target" Actor="Find"/>
         <HostImpactSiteOps Ops="SOpAttachHead"/>
+        <ModelFlags index="AutomateGlobalLoops" value="1"/>
     </CActorBeamSimple>
     <CActorRange id="DarkArchonSCBWMindControl@Range" parent="RangeAbil" abil="DarkArchonSCBWMindControl"/>
     <CActorSound id="DarkArchonSCBWMindControl@Sound" parent="SoundOneShot">
-        <On Terms="Behavior.DarkArchonSCBWMindControl.On" Send="Create"/>
+        <On Terms="Effect.DarkArchonSCBWMindControl@AB.Start; At Target" Send="Create"/>
     </CActorSound>
     <CActorModel id="DarkArchonSCBWMindControl@State" parent="ModelAnimationStyleContinuous">
         <On Terms="Behavior.DarkArchonSCBWMindControl.On" Send="Create"/>
@@ -5295,7 +5304,7 @@
         <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Sound"/>
         <DataRecord Entry="Effect,DarkArchonSCBWMindControl@AB"/>
         <DataRecord Entry="Effect,DarkArchonSCBWMindControl@Set"/>
-        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@RB"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@Clear"/>
         <DataRecord Entry="Effect,DarkArchonSCBWMindControl@MU"/>
         <DataRecord Entry="Model,DarkArchonSCBWMindControl@Beam"/>
         <DataRecord Entry="Model,DarkArchonSCBWMindControl@Impact"/>
@@ -7347,6 +7356,7 @@
         <Modification>
             <StateFlags index="SuppressRequirements" value="1"/>
         </Modification>
+        <BehaviorCategories index="User8" value="1"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="DarkArchonSCBWMaelstrom">
         <Alignment value="Negative"/>
