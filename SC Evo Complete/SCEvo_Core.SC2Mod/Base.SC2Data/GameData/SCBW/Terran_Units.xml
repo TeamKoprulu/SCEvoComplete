@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectSet id="VultureSCBWWeapon@Set">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="VultureSCBWWeapon@LM"/>
+        <EffectArray value="VultureSCBWWeapon@StrafingApplyDisableWeapon"/>
+    </CEffectSet>
     <CEffectEnumTransport id="ScienceVesselSCBWIrradiate@IterateTransportPeriodic">
         <SearchFilters value="Biological;Structure,RawResource,HarvestableResource,Buried,Stasis,Dead,Invulnerable,Outer"/>
         <Effect value="ScienceVesselSCBWIrradiate@DamagePeriodic"/>
@@ -391,6 +396,22 @@
         <EffectArray value="SC1_ShieldsParam"/>
         <EffectArray value="BattlecruiserSCBWYamato@DamageAccum"/>
     </CEffectSet>
+    <CEffectApplyBehavior id="VultureSCBWWeapon@StrafingApplyDisableWeapon">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Caster"/>
+        <Behavior value="VultureSCBWWeapon@StrafingDisableWeapon"/>
+    </CEffectApplyBehavior>
+    <CEffectCreatePersistent id="VultureSCBWWeapon@StrafingDelay">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="CasterUnit"/>
+        <InitialDelay value="0.125"/>
+        <InitialEffect value="VultureSCBWWeapon@StrafingApplyDisableWeapon"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="VultureSCBWWeapon@StrafingSet">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="VultureSCBWWeapon@LM"/>
+        <EffectArray value="VultureSCBWWeapon@StrafingDelay"/>
+    </CEffectSet>
     <CAbilEffectTarget id="GhostSCBWNuclearStrike">
         <TechPlayer value="Owner"/>
         <Alignment value="Negative"/>
@@ -454,7 +475,7 @@
         <Flags index="AllowMovement" value="1"/>
         <Cost>
             <Vital index="Energy" value="75"/>
-            <Cooldown TimeUse="4.5"/>
+            <Cooldown TimeUse="4.6875"/>
         </Cost>
         <TargetFilters value="-;Self,Structure,RawResource,HarvestableResource,Item,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="9"/>
@@ -570,7 +591,8 @@
             <Flags index="UseDefaultButton" value="1"/>
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
-        <PrepTime value="0.5"/>
+        <CastIntroTime value="0.375"/>
+        <FinishTime value="0.125"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="GhostSCBWLockdown">
         <EditorCategories value="AbilityorEffectType:Units,Race:Terran"/>
@@ -598,12 +620,11 @@
         </Cost>
         <TargetFilters value="-;Player,Ally,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="9"/>
-        <PrepTime value="0.125"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="MedicSCBWOpticFlare" Requirements="MedicSCBWOpticFlare">
             <Flags index="UseDefaultButton" value="1"/>
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
-        <CastIntroTime value="0.4"/>
+        <CastIntroTime value="0.375"/>
         <FinishTime value="0.125"/>
         <UninterruptibleArray index="Cast" value="1"/>
         <UninterruptibleArray index="Channel" value="1"/>
@@ -924,6 +945,9 @@
             <Resource index="Custom" value="-0.75"/>
         </RefundFraction>
     </CAbilResearch>
+    <CValidatorCombine id="VultureSCBWWeapon@StrafingDisable">
+        <CombineArray value="VultureSCBWWeapon@StrafingSpeed"/>
+    </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="ScienceVesselSCBWDefensiveMatrix@HasShield">
         <Compare value="GT"/>
         <Behavior value="ScienceVesselSCBWDefensiveMatrix"/>
@@ -949,6 +973,11 @@
         <Filters value="-;Self,Stasis,Dead,Hidden,Invulnerable"/>
     </CValidatorUnitFilters>
     <CValidatorCombine id="ScienceVesselSCBWEMPShockwave@Decloak@Disable" parent="SCBW_Behavior"/>
+    <CValidatorUnitCompareSpeed id="VultureSCBWWeapon@StrafingSpeed">
+        <WhichUnit Value="Source"/>
+        <Compare value="LE"/>
+        <Value value="1"/>
+    </CValidatorUnitCompareSpeed>
     <CValidatorCombine id="ScienceVesselSCBWEMPShockwave@Decloak@Remove" parent="SCBW_Behavior">
         <CombineArray value="IsNotBuried"/>
     </CValidatorCombine>
@@ -1835,6 +1864,13 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
+    <CActorModel id="ScienceVesselSCBWIrradiate@ImpactFX" parent="ModelAnimationStyleOneShot">
+        <Terms value="Cap 1"/>
+        <On Terms="Effect.ScienceVesselSCBWIrradiate@DamagePeriodic.Start; At Target" Send="Create"/>
+        <On Terms="Effect.ScienceVesselSCBWIrradiate@DamageInitial.Start; At Target" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachHarnessSoft SOpAttachCenter"/>
+    </CActorModel>
     <CActorModel id="GhostSCBWNuclearStrike@Target" parent="ModelAnimationStyleOneShot">
         <Flags index="SuppressSaveLoad" value="0"/>
         <Filter index="Self" value="1"/>
@@ -2094,10 +2130,10 @@
         <On Terms="Effect.ScienceVesselSCBWEMPShockwave@Search.Stop" Send="AnimBracketStop BSD"/>
         <HostSiteOps Ops="SOpShadow"/>
     </CActorModel>
-    <CActorMissile id="ScienceVesselSCBWEMPShockwave@Missile" parent="GenericAttackMissile" unitName="ScienceVesselSCBWEMPShockwave@Missile"/>
     <CActorSound id="ScienceVesselSCBWIrradiate@Impact" parent="SoundOneShot">
         <On Terms="Behavior.ScienceVesselSCBWIrradiate@Irradiated.On" Send="Create"/>
     </CActorSound>
+    <CActorMissile id="ScienceVesselSCBWEMPShockwave@Missile" parent="GenericAttackMissile" unitName="ScienceVesselSCBWEMPShockwave@Missile"/>
     <CActorAction id="BattlecruiserSCBWYamato@Action" parent="GenericAttack" effectImpact="BattlecruiserSCBWYamato@Impact" effectLaunch="BattlecruiserSCBWYamato@LM">
         <LaunchAttachQuery Methods="AMFilterWeaponSetA2"/>
         <LaunchAssets Sound="BattlecruiserSCBWYamato@Launch"/>
@@ -2995,6 +3031,7 @@
         <On Terms="Abil.MedicSCBWOpticFlare.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create MedicSCBW@Land"/>
         <On Terms="UnitMovementUpdate.*.Walk; AnimPlayingName Spell" Send="AnimClear Spell"/>
+        <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
         <DeathCustoms ModelLink="MedicSCBW@DeathRagdoll" Name="RagdollBasic"/>
         <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
@@ -3651,6 +3688,10 @@
         <HostSiteOps Ops="SOpAttachWeapon"/>
     </CActorSound>
     <CActorSound id="MarineSCBW@Land" parent="SoundOneShot"/>
+    <CModel id="ScienceVesselSCBWIrradiate@ImpactFX" parent="ImpactFX" Race="Terran">
+        <Model value="Assets\Effects\Terran\IrradiateImpact@SCBWEffect\IrradiateImpact@SCBWEffect.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
     <CModel id="ScienceVesselSCBWIrradiate@Behavior" parent="PersistentSpellFX" Race="Terran">
         <Model value="Assets\Effects\Terran\IrradiateBehavior@SCBWEffect\IrradiateBehavior@SCBWEffect.m3"/>
         <EditorCategories value="Race:Terran"/>
@@ -4575,6 +4616,27 @@
         <Model value="Assets\Portraits\Terran\MarinePortrait\MarinePortrait.m3"/>
         <FacialController value="LocalizedData\Facial\MarineSCBW@Portrait.fxa"/>
     </CModel>
+    <CWeaponStrafe id="VultureSCBWWeapon@StrafingWeapon">
+        <EditorCategories value="Race:Terran"/>
+        <Tip value="Weapon/Tip/ConcussiveWeapon"/>
+        <Options index="Hidden" value="1"/>
+        <Options index="NeverMiss" value="0"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel0.dds"/>
+        <DisplayEffect value="VultureSCBWWeapon@DamageConc"/>
+        <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <ArcSlop value="0"/>
+        <Cost>
+            <Cooldown Link="Weapon/VultureSCBWWeapon"/>
+        </Cost>
+        <Period value="1.875"/>
+        <DamagePoint value="0"/>
+        <Backswing value="0"/>
+        <Effect value="VultureSCBWWeapon@StrafingSet"/>
+        <MinScanRange value="5.5"/>
+        <RangeSlop value="0"/>
+        <LoiterInnerRadius value="5"/>
+        <LoiterRadius value="5"/>
+    </CWeaponStrafe>
     <CMoverMissile id="ScienceVesselSCBWEMPShockwave@Mover">
         <MotionPhases>
             <Driver value="Guidance"/>
@@ -5150,9 +5212,9 @@
     </CSound>
     <CSound id="ValkyrieSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement00.ogg"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement01.ogg"/>
-        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement02.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement00.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement01.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Wraith\Wraith_Movement02.wav"/>
     </CSound>
     <CSound id="ValkyrieSCBW@Attack" parent="TerranAckSCBW" Folder="ValkyrieSCBW">
         <AssetArray TemplateParam="ValkyrieSCBW@Yes00"/>
@@ -5458,9 +5520,9 @@
         <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement3.wav"/>
         <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement4.wav"/>
         <AssetArray File="Assets\Sounds\Terran\Hellion\Hellion_Movement5.wav"/>
+        <Volume value="-9.000000,-9.000000"/>
         <DupeDestroyCount value="3"/>
         <Pitch value="-1.000000,1.000000"/>
-        <Volume value="-9.000000,-9.000000"/>
     </CSound>
     <CSound id="VultureSCBW@Pissed" parent="TerranAckSCBW" Folder="VultureSCBW">
         <AssetArray TemplateParam="VultureSCBW@Pissed00"/>
@@ -5554,7 +5616,6 @@
     </CSound>
     <CSound id="GhostSCBW@Death" parent="TerranDeathSCBW" Folder="GhostSCBW">
         <AssetArray TemplateParam="GhostSCBW@Death00"/>
-        <AssetArray TemplateParam="GhostSCBW@Death01"/>
         <Volume value="-1.000000,-1.000000"/>
     </CSound>
     <CSound id="GhostSCBW@Explode" parent="Combat">
@@ -7335,6 +7396,8 @@
         <AbilArray Link="attack"/>
         <AbilArray Link="move"/>
         <AbilArray Link="VulturePlaceSpiderMineSCBW"/>
+        <BehaviorArray Link="VultureSCBWWeapon@StrafingDisableIfNoMove"/>
+        <WeaponArray Link="VultureSCBWWeapon@StrafingWeapon"/>
         <WeaponArray Link="VultureSCBWWeapon"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
@@ -7549,7 +7612,7 @@
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
             <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
-            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="TacNukeStrike,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="GhostSCBWNuclearStrike,Cancel" Row="2" Column="4"/>
             <LayoutButtons Face="AttackGhost" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="GhostSCBWHoldFire" Type="AbilCmd" AbilCmd="GhostSCBWHoldFire,Execute" Row="1" Column="0"/>
             <LayoutButtons Face="GhostSCBWCloak" Type="AbilCmd" AbilCmd="GhostSCBWCloak,On" Row="2" Column="0"/>
@@ -7894,6 +7957,22 @@
             <VitalRegenArray index="Energy" value="-1.3125"/>
         </Modification>
         <DisableValidatorArray value="WraithSCBWCloak@Disable"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="VultureSCBWWeapon@StrafingDisableWeapon">
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <Duration value="1.875"/>
+        <Modification DecelerationMultiplier="0.5">
+            <WeaponDisableArray value="VultureSCBWWeapon@StrafingWeapon"/>
+        </Modification>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="VultureSCBWWeapon@StrafingDisableIfNoMove">
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <DisableValidatorArray value="VultureSCBWWeapon@StrafingDisable"/>
+        <Modification>
+            <WeaponDisableArray value="VultureSCBWWeapon@StrafingWeapon"/>
+        </Modification>
+        <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
     <CUpgrade default="1" id="MechPlating" parent="SCBW_Upgrade">
         <Race value="Terr"/>

@@ -1,0 +1,322 @@
+//==================================================================================================
+//  Swarm BWProtoss Melee AI
+//==================================================================================================
+
+include "TriggerLibs/BWProtoss/BWProtossVyEy"  //Very Easy
+include "TriggerLibs/BWProtoss/BWProtossEasy"  //Easy
+include "TriggerLibs/BWProtoss/BWProtossMedi"  //Medium
+include "TriggerLibs/BWProtoss/BWProtossMdHd"  //Hard
+include "TriggerLibs/BWProtoss/BWProtossHard"  //Harder
+include "TriggerLibs/BWProtoss/BWProtossHdVH"  //Very Hard
+include "TriggerLibs/BWProtoss/BWProtossVyHd"  //Elite
+include "TriggerLibs/BWProtoss/BWProtossChVi"  //CH Vision
+include "TriggerLibs/BWProtoss/BWProtossChRe"  //CH Resources
+include "TriggerLibs/BWProtoss/BWProtossChIn"  //CH Insane
+
+//--------------------------------------------------------------------------------------------------
+//  Counter-Attack Units
+//--------------------------------------------------------------------------------------------------
+static void InitCounters (int player) {
+    // versus BWProtoss
+    AICounterUnitSetup(player, c_BWPU_Zealot,             1.00, c_BWPU_Zealot,      1.00, c_BWPU_Zealot);
+    AICounterUnitSetup(player, c_BWPU_Dragoon,            1.00, c_BWPU_Dragoon,     0.33, c_BWPU_Reaver);
+    AICounterUnitSetup(player, c_BWPU_HighTemplar,        0.60, c_BWPU_Dragoon,     0.60, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWPU_DarkTemplar,        1.00, c_BWPU_Zealot,      1.00, c_BWPU_Zealot);
+    AICounterUnitSetup(player, c_BWPU_Archon,             1.00, c_BWPU_Reaver,      1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWPU_DarkArchon,         1.00, c_BWPU_Zealot,      1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWPU_Reaver,             2.00, c_BWPU_Scout,       1.00, c_BWPU_Zealot);
+    AICounterUnitSetup(player, c_BWPU_Scout,              1.10, c_BWPU_Corsair,     1.10, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWPU_Corsair,            1.00, c_BWPU_Corsair,     1.00, c_BWPU_Scout);
+    AICounterUnitSetup(player, c_BWPU_Carrier,            2.00, c_BWPU_Scout,       2.00, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWPU_Arbiter,            1.00, c_BWPU_Dragoon,     1.00, c_BWPU_Scout);
+    AICounterUnitSetup(player, c_BWPB_PhotonCannon,       3.00, c_BWPU_Zealot,      0.40, c_BWPU_Reaver);
+
+    // versus BWTerran
+    AICounterUnitSetup(player, c_BWTU_Marine,             0.50, c_BWPU_Zealot,         0.20, c_BWPU_Reaver);
+    AICounterUnitSetup(player, c_BWTU_Firebat,            0.70, c_BWPU_Dragoon,        0.60, c_BWPU_Reaver);
+    AICounterUnitSetup(player, c_BWTU_Medic,              1.00, c_BWPU_Dragoon,        0.80, c_BWPU_Zealot);
+    AICounterUnitSetup(player, c_BWTU_Ghost,              1.00, c_BWPU_Dragoon,        1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWTU_Vulture,            0.80, c_BWPU_Dragoon,        0.80, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWTU_SiegeTank_Alias,    9.00, c_BWPU_Scout,          0.80, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWTU_Goliath,            4.00, c_BWPU_Zealot,         1.20, c_BWPU_Reaver);
+    AICounterUnitSetup(player, c_BWTU_Valkyrie,           1.50, c_BWPU_Scout,          0.50, c_BWPU_Carrier);
+    AICounterUnitSetup(player, c_BWTU_Dropship,           1.00, c_BWPU_Corsair,        1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWTU_ScienceVessel,      1.00, c_BWPU_Dragoon,        1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWTU_Wraith,             1.00, c_BWPU_Dragoon,        0.90, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWTU_Battlecruiser,      1.75, c_BWPU_Scout,          1.75, c_BWPU_Scout);
+    AICounterUnitSetup(player, c_BWTB_Bunker,             4.00, c_BWPU_Zealot,         0.50, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWTB_MissileTurret,      3.00, c_BWPU_Zealot,         1.00, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWTU_SpiderMine_Alias,   0.50, c_BWPU_Archon,         0.50, c_BWPU_Scout);
+
+    // versus BWZerg
+    AICounterUnitSetup(player, c_BWZU_Zergling,           0.30, c_BWPU_Zealot,         0.30, c_BWPU_Zealot);
+    AICounterUnitSetup(player, c_BWZU_Hydralisk,          0.40, c_BWPU_Dragoon,        0.20, c_BWPU_Reaver);
+    AICounterUnitSetup(player, c_BWZU_Queen,              2.00, c_BWPU_Dragoon,        1.00, c_BWPU_HighTemplar);
+    AICounterUnitSetup(player, c_BWZU_InfestedTerran,     0.90, c_ZU_Zergling,         0.80, c_BWPU_Scout);
+    AICounterUnitSetup(player, c_BWZU_Mutalisk,           1.00, c_BWPU_Dragoon,        1.50, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWZU_Devourer,           1.00, c_BWPU_Scout,          1.00, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWZU_Ultralisk,          1.25, c_BWPU_Reaver,         1.25, c_BWPU_Reaver);
+    AICounterUnitSetup(player, c_BWZU_Guardian,           1.50, c_BWPU_Scout,          1.50, c_BWPU_Corsair);
+    AICounterUnitSetup(player, c_BWZB_SunkenColony,       2.50, c_BWZU_Zergling,       1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWZB_SporeColony,        3.00, c_BWZU_Zergling,       1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWZU_Scourge,            1.00, c_BWPU_Dragoon,        1.00, c_BWPU_Dragoon);
+    AICounterUnitSetup(player, c_BWZU_Defiler,            2.00, c_BWPU_HighTemplar,    1.00, c_BWPU_DarkArchon);
+    AICounterUnitSetup(player, c_BWZU_Lurker,             1.50, c_BWPU_Dragoon,        1.00, c_BWPU_Corsair);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossSubStateName
+//--------------------------------------------------------------------------------------------------
+string BWProtossSubStateName (int state) {
+    // TODO Call the individual difficulties to return a real substate name
+    return "-" + IntToString(state) + "-";
+}
+
+//--------------------------------------------------------------------------------------------------
+//  DebugCallbackBWPr
+//--------------------------------------------------------------------------------------------------
+void DebugCallbackBWPr (int player) {
+    DebugAI("=====BWPROTOSS=====\n");
+    DebugMelee(player);
+    DebugAI("e_mainState = "        + MainStateName(AIState(player, e_mainState))           +
+            ", e_mainSubState = "   + BWProtossSubStateName(AIState(player, e_mainSubState))  +
+            ", e_attackState = "    + AttackStateName(AIState(player, e_attackState))
+    );
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AINewUnitBWPr
+//--------------------------------------------------------------------------------------------------
+void AINewUnitBWPr (int player, unit u) {
+    wave w;
+    unit drop;
+    string type = UnitGetType(u);
+
+    // ignored units
+    //
+    if (UnitTypeTestAttribute(type, c_unitAttributeStructure)) {
+        return;
+    }
+    if (UnitTypeTestFlag(type, c_unitFlagWorker)) {
+        return;
+    }
+
+    // units that stay near home
+    //
+    if (type == c_BWPU_Shuttle) {
+        AIWaveAddUnitPriority(AIWaveGet(player, c_waveHome), u, c_prioWavePeon);
+        return;
+    }
+    
+    // detector
+    //
+    if (type == c_BWPU_Observer) {
+        AINewDetector(player, u, true);
+        return;
+    }
+    
+    // diversion units
+    if (AIGetFlag(player, e_flagsDiversion)) {
+        if (type == c_BWPU_Scout) {
+            AIMergeUnit(player, u, AIWaveGet(player, c_waveDivert1));
+            return;
+        }
+        if (type == c_BWPU_DarkTemplar) {
+            AIMergeUnit(player, u, AIWaveGet(player, c_waveDivert2));
+            return;
+        }
+    }
+
+    // clear obstacle units
+    //
+    if (AIWaveNeedClearObsUnits(player)) {
+        if (type == c_BWPU_Zealot || type == c_BWPU_Dragoon || type == c_BWPU_DarkTemplar) {
+            AIMergeUnit(player, u, AIWaveGet(player, c_waveClearObs));
+            return;
+        }
+    }
+
+    // main wave units
+    //
+    AINewUnitDefault(player, u);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AIGetScoutBWPr
+//--------------------------------------------------------------------------------------------------
+unit AIGetScoutBWPr (int player, int index, unit prev, bool allowWorkers) {
+    unit obs;
+    string prevType = UnitGetType(prev);
+    
+    if (!PlayerBeaconIsSet(player, c_beaconScout) &&
+        !AIGetFlag(player, e_flagsScouting)) {
+        // if no scouting beacons are set and we're not ready to scout, don't return a unit
+        return c_nullUnit;
+    }
+
+    if (index == 1 && PlayerBeaconIsSet(player, c_beaconScout)) {
+        AISetFlag(player, e_flagsScouting, true);
+        if (allowWorkers) {
+            // only return a worker, we want to claim a tower
+            if (prevType == c_BWPU_Probe) {
+                return prev;
+            } 
+            return AIGrabUnit(player, c_BWPU_Probe, c_prioScout, null);
+        }
+    }
+
+    if (prevType == c_BWPU_Observer) {
+        return prev;
+    }
+    obs = AIGrabUnit(player, c_BWPU_Observer, c_prioScout, null);
+    if (obs) {
+        return obs;
+    }
+    if (prev) {
+        return prev;
+    }
+    // back to allowing workers as late scouts
+    //if (AIGetFlag(player, e_flagsLateScout)) {
+    //    return c_nullUnit;
+    //}
+    if (!allowWorkers) {
+        return c_nullUnit;
+    }
+    return AIGrabUnit(player, c_BWPU_Probe, c_prioScout, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AIEarlyDefScoutBWPr
+//--------------------------------------------------------------------------------------------------
+unit AIEarlyDefScoutBWPr (int player, unit prev, bool allowWorkers) {
+    unit obs;
+    string prevType;
+    
+    if (!AIGetFlag(player, e_flagsEarlyDefScout)) {
+        return c_nullUnit;
+    }
+    prevType = UnitGetType(prev);
+    if (prevType == c_BWPU_Observer) {
+        return prev;
+    }
+    obs = AIGrabUnit(player, c_BWPU_Observer, c_prioScout, null);
+    if (obs) {
+        return obs;
+    }
+    if (prevType == c_BWPU_Zealot) {
+        return prev;
+    }
+    obs = AIGrabUnit(player, c_BWPU_Zealot, c_prioScout, null);
+    if (obs) {
+        return obs;
+    }
+    if (prev) {
+        return prev;
+    }
+    if (!allowWorkers) {
+        return c_nullUnit;
+    }
+    return AIGrabUnit(player, c_BWPU_Probe, c_prioScout, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AIWaveThinkBWPr
+//--------------------------------------------------------------------------------------------------
+void AIWaveThinkBWPr (int player, wave w, int type) {
+    AIWaveThinkDefault(player, w, type);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtoss Init
+//--------------------------------------------------------------------------------------------------
+static void BWProtossInit (int player) {
+
+    InitCounters(player);
+    AIMeleeSharedInit(player);
+    AISetFlag(player, e_flagsScouting, false);
+    AISetFlag(player, e_flagsEarlyDefScout, false);
+    AISetPowerBuilding(player, c_BWPB_Pylon);
+    AISetDefaultArmyUnit(player, c_BWPU_Zealot);
+    AISetDefaultTownHall(player, c_BWPB_Nexus);
+    AITransportSetPanic(player, 0.27); // just below max shield threshold
+    //AISetFlag(player, e_flagsDiversion, true);  // for now start diverson right away
+
+    AISetMainState(player, e_mainState_Open, e_mainSubState_Init);
+
+    //if (AIPlayerDifficulty(player) > c_skirHard) {
+    //    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("BWProtoss AI: Difficulties above Harder are not supported at this time, please use at the most Harder difficulty"));
+    //}
+
+    //if (AIPlayerDifficulty(player) < c_skirHard) {
+    //    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("BWProtoss AI: Difficulties below Harder are not supported at this time, please use at most Harder difficulty"));
+    //}
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("BWProtoss AI: AI Implemention is in it's very early stages and is not complete"));
+}
+
+//--------------------------------------------------------------------------------------------------
+void BWProtossOpen (int player);
+void BWProtossMid (int player);
+void BWProtossLate (int player);
+
+//--------------------------------------------------------------------------------------------------
+//  AIMeleeBWPr
+//--------------------------------------------------------------------------------------------------
+void AIMeleeBWPr (int player) {    
+    int mainState = AIState(player, e_mainState);
+
+    if (AIPlayerDifficulty(player) >= c_skirChMoney) {
+        AIMeleeCheatResources(player);
+    }
+
+    if (mainState == e_mainState_Init)              { BWProtossInit(player);    }
+    else if (mainState == e_mainState_Open)         { BWProtossOpen(player);    }
+    else if (mainState == e_mainState_Mid)          { BWProtossMid(player);     }
+    else if (mainState == e_mainState_Late)         { BWProtossLate(player);    }
+    else { ErrorMeleeScript(player, "Invalid mainState"); }
+}
+
+void BWProtossOpen (int player) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff == c_skirVeryEasy)       { BWProtossOpenVyEy(player); }
+    else if (diff == c_skirEasy)      { BWProtossOpenEasy(player); }
+    else if (diff == c_skirMedium)    { BWProtossOpenMedi(player); }
+    else if (diff == c_skirMed_Hard)  { BWProtossOpenMdHd(player); }
+    else if (diff == c_skirHard)      { BWProtossOpenHard(player); }
+    else if (diff == c_skirHard_VH)   { BWProtossOpenHdVH(player); }
+    else if (diff == c_skirVeryHard)  { BWProtossOpenVyHd(player); }
+    else if (diff == c_skirChVision)  { BWProtossOpenChVi(player); }
+    else if (diff == c_skirChMoney)   { BWProtossOpenChRe(player); }
+    else                              { BWProtossOpenChIn(player); }
+}
+
+void BWProtossMid (int player) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff == c_skirVeryEasy)       { BWProtossMidVyEy(player); }
+    else if (diff == c_skirEasy)      { BWProtossMidEasy(player); }
+    else if (diff == c_skirMedium)    { BWProtossMidMedi(player); }
+    else if (diff == c_skirMed_Hard)  { BWProtossMidMdHd(player); }
+    else if (diff == c_skirHard)      { BWProtossMidHard(player); }
+    else if (diff == c_skirHard_VH)   { BWProtossMidHdVH(player); }
+    else if (diff == c_skirVeryHard)  { BWProtossMidVyHd(player); }
+    else if (diff == c_skirChVision)  { BWProtossMidChVi(player); }
+    else if (diff == c_skirChMoney)   { BWProtossMidChRe(player); }
+    else                              { BWProtossMidChIn(player); }
+}
+
+void BWProtossLate (int player) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff == c_skirVeryEasy)       { BWProtossLateVyEy(player); }
+    else if (diff == c_skirEasy)      { BWProtossLateEasy(player); }
+    else if (diff == c_skirMedium)    { BWProtossLateMedi(player); }
+    else if (diff == c_skirMed_Hard)  { BWProtossLateMdHd(player); }
+    else if (diff == c_skirHard)      { BWProtossLateHard(player); }
+    else if (diff == c_skirHard_VH)   { BWProtossLateHdVH(player); }
+    else if (diff == c_skirVeryHard)  { BWProtossLateVyHd(player); }
+    else if (diff == c_skirChVision)  { BWProtossLateChVi(player); }
+    else if (diff == c_skirChMoney)   { BWProtossLateChRe(player); }
+    else                              { BWProtossLateChIn(player); }
+}

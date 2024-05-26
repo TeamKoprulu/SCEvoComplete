@@ -1,0 +1,336 @@
+//==================================================================================================
+//  SCBW Zerg Melee AI
+//==================================================================================================
+
+include "TriggerLibs/BWZerg/BWZergVyEy"  //Very Easy
+include "TriggerLibs/BWZerg/BWZergEasy"  //Easy
+include "TriggerLibs/BWZerg/BWZergMedi"  //Medium
+include "TriggerLibs/BWZerg/BWZergMdHd"  //Hard
+include "TriggerLibs/BWZerg/BWZergHard"  //Harder
+include "TriggerLibs/BWZerg/BWZergHdVH"  //Very Hard
+include "TriggerLibs/BWZerg/BWZergVyHd"  //Elite
+include "TriggerLibs/BWZerg/BWZergChVi"  //CH Vision
+include "TriggerLibs/BWZerg/BWZergChRe"  //CH Resources
+include "TriggerLibs/BWZerg/BWZergChIn"  //CH Insane
+
+//--------------------------------------------------------------------------------------------------
+//  Counter-Attack Units
+//--------------------------------------------------------------------------------------------------
+static void InitCounters (int player) {
+    // versus BWProtoss
+    AICounterUnitSetup(player, c_BWPU_Zealot,             1.10, c_BWZU_Hydralisk,      1.00, c_BWZU_Zergling);
+    AICounterUnitSetup(player, c_BWPU_Dragoon,            3.00, c_BWZU_Zergling,       0.25, c_BWZU_Ultralisk);
+    AICounterUnitSetup(player, c_BWPU_HighTemplar,        1.00, c_BWZU_Hydralisk,      1.00, c_BWZU_Hydralisk);
+    AICounterUnitSetup(player, c_BWPU_DarkTemplar,        1.30, c_BWZU_Hydralisk,      1.30, c_BWZU_Hydralisk);
+    AICounterUnitSetup(player, c_BWPU_Archon,             1.50, c_BWZU_Hydralisk,      2.00, c_BWZU_Queen);
+    AICounterUnitSetup(player, c_BWPU_DarkArchon,         1.20, c_BWZU_Hydralisk,      2.00, c_BWZU_Queen);
+    AICounterUnitSetup(player, c_BWPU_Reaver,             1.50, c_BWZU_Guardian,       1.50, c_BWZU_Defiler);
+    AICounterUnitSetup(player, c_BWPU_Scout,              1.50, c_BWZU_Devourer,       1.00, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWPU_Corsair,            2.00, c_BWZU_Devourer,       1.00, c_BWZU_Hydralisk);
+    AICounterUnitSetup(player, c_BWPU_Carrier,            2.00, c_BWZU_Devourer,       2.00, c_BWZU_Devourer);
+    AICounterUnitSetup(player, c_BWPU_Arbiter,            1.00, c_BWZU_Mutalisk,       1.00, c_BWZU_Devourer);
+    AICounterUnitSetup(player, c_BWPB_PhotonCannon,       3.00, c_BWZU_Guardian,        1.00, c_BWZU_Hydralisk);
+
+    // versus BWTerran
+    AICounterUnitSetup(player, c_BWTU_Marine,             0.70, c_BWZU_Zergling,       0.70, c_BWZU_Hydralisk);
+    AICounterUnitSetup(player, c_BWTU_Firebat,            1.00, c_BWZU_Mutalisk,       0.30, c_BWZU_Zergling);
+    AICounterUnitSetup(player, c_BWTU_Medic,              1.00, c_BWZU_Zergling,       1.00, c_BWZU_Hydralisk);
+    AICounterUnitSetup(player, c_BWTU_Ghost,              3.00, c_BWZU_Zergling,       1.50, c_BWZU_Hydralisk);
+    AICounterUnitSetup(player, c_BWTU_Vulture,            0.50, c_BWZU_Hydralisk,      1.00, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWTU_SiegeTank_Alias,    6.00, c_BWZU_Guardian,       0.50, c_BWZU_Zergling);
+    AICounterUnitSetup(player, c_BWTU_Goliath,            6.00, c_BWZU_Guardian,       1.00, c_BWZU_Ultralisk);
+    AICounterUnitSetup(player, c_BWTU_Valkyrie,           1.10, c_BWZU_Devourer,       1.10, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWTU_Dropship,           0.60, c_BWZU_Mutalisk,       0.60, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWTU_ScienceVessel,      0.60, c_BWZU_Mutalisk,       0.60, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWTU_Wraith,             1.00, c_BWZU_Devourer,       0.60, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWTU_Battlecruiser,      3.00, c_BWZU_Devourer,       2.00, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWTB_Bunker,             3.00, c_BWZU_Guardian,       1.00, c_BWZU_Guardian);
+    AICounterUnitSetup(player, c_BWTB_MissileTurret,      3.00, c_BWZU_Guardian,       1.00, c_BWZU_Zergling);
+    AICounterUnitSetup(player, c_BWTU_SpiderMine_Alias,   0.50, c_BWZU_Zergling,       0.50, c_BWZU_Mutalisk);
+
+    // versus BWZerg
+    AICounterUnitSetup(player, c_BWZU_Zergling,           0.50, c_BWZU_InfestedTerran, 0.50, c_BWZU_Zergling);
+    AICounterUnitSetup(player, c_BWZU_Hydralisk,          1.00, c_BWZU_Hydralisk,      1.00, c_BWZU_Hydralisk);
+    AICounterUnitSetup(player, c_BWZU_Queen,              0.75, c_BWZU_Mutalisk,       1.00, c_BWZU_Devourer);
+    AICounterUnitSetup(player, c_BWZU_InfestedTerran,     0.90, c_BWZU_Zergling,       0.90, c_BWZU_Zergling);
+    AICounterUnitSetup(player, c_BWZU_Mutalisk,           1.00, c_BWZU_Mutalisk,       1.50, c_BWZU_Devourer);
+    AICounterUnitSetup(player, c_BWZU_Devourer,           0.80, c_BWZU_Hydralisk,      0.80, c_BWZU_Devourer);
+    AICounterUnitSetup(player, c_BWZU_Ultralisk,          3.00, c_BWZU_Guardian,       3.00, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWZU_Guardian,           1.50, c_BWZU_Guardian,       1.50, c_BWZU_Guardian);
+    AICounterUnitSetup(player, c_BWZB_SunkenColony,       2.50, c_BWZU_Hydralisk,      1.00, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWZB_SporeColony,        3.00, c_BWZU_Guardian,       1.00, c_BWZU_Mutalisk);
+    AICounterUnitSetup(player, c_BWZU_Scourge,            1.00, c_BWZU_Hydralisk,      0.50, c_BWZU_Scourge);
+    AICounterUnitSetup(player, c_BWZU_Defiler,            1.00, c_BWZU_Guardian,       1.00, c_BWZU_Zergling);
+    AICounterUnitSetup(player, c_BWZU_Lurker,             1.50, c_BWZU_Hydralisk,      1.00, c_BWZU_Ultralisk);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZergSubStateName
+//--------------------------------------------------------------------------------------------------
+string BWZergSubStateName (int state) {
+    // TODO Call the individual difficulties to return a real substate name
+    return "-" + IntToString(state) + "-";
+}
+
+//--------------------------------------------------------------------------------------------------
+//  DebugCallbackBWZe
+//--------------------------------------------------------------------------------------------------
+void DebugCallbackBWZe (int player) {
+    DebugAI("=====BWZERG=====\n");
+    DebugMelee(player);
+    DebugAI("e_mainState = "        + MainStateName(AIState(player, e_mainState))           +
+            ", e_mainSubState = "   + BWZergSubStateName(AIState(player, e_mainSubState))     +
+            ", e_attackState = "    + AttackStateName(AIState(player, e_attackState))
+    );
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AINewUnitBWZe
+//--------------------------------------------------------------------------------------------------
+void AINewUnitBWZe (int player, unit u) {
+    wave w;
+    unit drop;
+    string type = UnitGetType(u);
+
+    // ignored units
+    //
+    if (type == c_BWZU_Larva || 
+        type == c_BWZU_Broodling) {
+        return;
+    }
+    if (UnitTypeTestAttribute(type, c_unitAttributeStructure)) {
+        return;
+    }
+    if (UnitTypeTestFlag(type, c_unitFlagWorker)) {
+        return;
+    }
+    
+    // detector
+    //
+    //if (type == c_BWZU_Overlord) {
+    //    AINewDetector(player, u, true);
+    //    return;
+    //}
+
+    // extra scout units
+    //
+    if (type == c_BWZU_Overlord) {
+        AIAddToExtraScoutGroup(player, u);
+        return;
+    }
+
+    // clear obstacle units
+    //
+    if (AIWaveNeedClearObsUnits(player)) {
+        if (type == c_BWZU_Zergling || type == c_BWZU_Hydralisk) {
+            AIMergeUnit(player, u, AIWaveGet(player, c_waveClearObs));
+            return;
+        }
+    }
+
+    // diversion units
+    if (AIGetFlag(player, e_flagsDiversion)) {
+        if (type == c_BWZU_Zergling) {
+            AIMergeUnit(player, u, AIWaveGet(player, c_waveDivert1));
+            return;
+        }
+        if (type == c_BWZU_Mutalisk) {
+            AIMergeUnit(player, u, AIWaveGet(player, c_waveDivert2));
+            return;
+        }
+    }
+
+    // main wave units
+    //
+    AINewUnitDefault(player, u);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AIGetScoutBWZe
+//--------------------------------------------------------------------------------------------------
+unit AIGetScoutBWZe (int player, int index, unit prev, bool allowWorkers) {  
+    unit scout;
+    string prevType = UnitGetType(prev);
+
+    if (!PlayerBeaconIsSet(player, c_beaconScout) &&
+        !AIGetFlag(player, e_flagsScouting)) {
+        // if no scouting beacons are set and we're not ready to scout, don't return a unit
+        return c_nullUnit;
+    }
+
+    if (index == 1 && PlayerBeaconIsSet(player, c_beaconScout)) {
+        AISetFlag(player, e_flagsScouting, true);
+        if (allowWorkers) {
+            // only return a worker, we want to claim a tower
+            if (prevType == c_BWZU_Zergling) {
+                return prev;
+            }  
+            scout = AIGrabUnit(player, c_BWZU_Zergling, c_prioScout, null);
+            if (scout) {
+                return scout;
+            }
+            if (prevType == c_BWZU_Drone) {
+                return prev;
+            }
+            return AIGrabUnit(player, c_BWZU_Drone, c_prioScout, null);
+        }
+    }
+
+    //if (prev) {
+    //    return prev;
+    //}   
+    //scout = AIGrabUnit(player, c_BWZU_Overlord, c_prioScout, null);
+    //if (scout) {
+    //    return scout;
+    //}
+    if (prevType == c_BWZU_Zergling) {
+        return prev;
+    }  
+    scout = AIGrabUnit(player, c_BWZU_Zergling, c_prioScout, null);
+    if (scout) {
+        return scout;
+    }
+    if (!allowWorkers) {
+        return c_nullUnit;
+    }
+    return AIGrabUnit(player, c_BWZU_Drone, c_prioScout, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AIEarlyDefScoutBWZe
+//--------------------------------------------------------------------------------------------------
+unit AIEarlyDefScoutBWZe (int player, unit prev, bool allowWorkers) {
+    unit obs;
+    string prevType;
+    
+    if (!AIGetFlag(player, e_flagsEarlyDefScout)) {
+        return c_nullUnit;
+    }
+    prevType = UnitGetType(prev);
+    if (prevType == c_BWZU_Overlord) {
+        return prev;
+    }
+    obs = AIGrabUnit(player, c_BWZU_Overlord, c_prioScout, null);
+    if (obs) {
+        return obs;
+    }
+    if (prevType == c_BWZU_Zergling) {
+        return prev;
+    }
+    obs = AIGrabUnit(player, c_BWZU_Zergling, c_prioScout, null);
+    if (obs) {
+        return obs;
+    }
+    if (prev) {
+        return prev;
+    }
+    if (!allowWorkers) {
+        return c_nullUnit;
+    }
+    return AIGrabUnit(player, c_BWZU_Drone, c_prioScout, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  AIWaveThinkBWZe
+//--------------------------------------------------------------------------------------------------
+void AIWaveThinkBWZe (int player, wave w, int type) {
+    AIWaveThinkDefault(player, w, type);
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWZerg Init
+//--------------------------------------------------------------------------------------------------
+static void BWZergInit (int player) {
+
+    InitCounters(player);
+    AIMeleeSharedInit(player);
+    AISetFlag(player, e_flagsScouting, false);
+    AISetFlag(player, e_flagsEarlyDefScout, false);
+    AILimitStockLarva(player, c_BWZU_Larva);
+    AIReqCountAsBuiltObject(player, c_BWZU_Larva);
+    AISetCreepBuilding(player, c_BWZB_CreepColony, "ZergBuildingNotOnCreep");
+    AISetDefaultArmyUnit(player, c_BWZU_Zergling);
+    AISetDefaultTownHall(player, c_BWZB_Hatchery);
+    AIReqAddSpecialMaker(c_BWZB_CreepColony, c_BWZU_Drone, c_BWAB_DroneBuildSCBW, 1);
+    AIReqAddSpecialMaker(c_BWZB_SunkenColony, c_BWZB_CreepColony, "SunkenColonySCBW@Morph", 0);
+    AIReqAddSpecialMaker(c_BWZB_SporeColony, c_BWZB_CreepColony, "SporeColonySCBW@Morph", 0);
+
+    AISetMainState(player, e_mainState_Open, e_mainSubState_Init);
+
+    //if (AIPlayerDifficulty(player) > c_skirHard) {
+    //    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("BWZerg AI: Difficulties above Hard are not supported at this time, please use at the most Hard Resources"));
+    //}
+
+    //if (AIPlayerDifficulty(player) < c_skirEasy) {
+    //    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("BWZerg AI: Difficulties below Medium are not supported at this time, please use at most Hard difficulty for this AI"));
+    //}
+
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("BWZerg AI: AI Implemention is in it's very early stages and is not complete, please use the Terran AI instead"));
+}
+
+//--------------------------------------------------------------------------------------------------
+void BWZergOpen (int player);
+void BWZergMid (int player);
+void BWZergLate (int player);
+
+//--------------------------------------------------------------------------------------------------
+//  AIMeleeBWZe
+//--------------------------------------------------------------------------------------------------
+void AIMeleeBWZe (int player) {
+    int mainState = AIState(player, e_mainState);
+    
+    if (AIPlayerDifficulty(player) >= c_skirChMoney) {
+        AIMeleeCheatResources(player);
+    }
+
+    if (mainState == e_mainState_Init)              { BWZergInit(player);       }
+    else if (mainState == e_mainState_Open)         { BWZergOpen(player);       }
+    else if (mainState == e_mainState_Mid)          { BWZergMid(player);        }
+    else if (mainState == e_mainState_Late)         { BWZergLate(player);       }
+    else { ErrorMeleeScript(player, "Invalid mainState"); }
+}
+
+void BWZergOpen (int player) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff == c_skirVeryEasy)       { BWZergOpenVyEy(player); }
+    else if (diff == c_skirEasy)      { BWZergOpenEasy(player); }
+    else if (diff == c_skirMedium)    { BWZergOpenMedi(player); }
+    else if (diff == c_skirMed_Hard)  { BWZergOpenMdHd(player); }
+    else if (diff == c_skirHard)      { BWZergOpenHard(player); }
+    else if (diff == c_skirHard_VH)   { BWZergOpenHdVH(player); }
+    else if (diff == c_skirVeryHard)  { BWZergOpenVyHd(player); }
+    else if (diff == c_skirChVision)  { BWZergOpenChVi(player); }
+    else if (diff == c_skirChMoney)   { BWZergOpenChRe(player); }
+    else                              { BWZergOpenChIn(player); }
+}
+
+void BWZergMid (int player) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff == c_skirVeryEasy)       { BWZergMidVyEy(player); }
+    else if (diff == c_skirEasy)      { BWZergMidEasy(player); }
+    else if (diff == c_skirMedium)    { BWZergMidMedi(player); }
+    else if (diff == c_skirMed_Hard)  { BWZergMidMdHd(player); }
+    else if (diff == c_skirHard)      { BWZergMidHard(player); }
+    else if (diff == c_skirHard_VH)   { BWZergMidHdVH(player); }
+    else if (diff == c_skirVeryHard)  { BWZergMidVyHd(player); }
+    else if (diff == c_skirChVision)  { BWZergMidChVi(player); }
+    else if (diff == c_skirChMoney)   { BWZergMidChRe(player); }
+    else                              { BWZergMidChIn(player); }
+}
+
+void BWZergLate (int player) {
+    int diff = AIPlayerDifficulty(player);
+
+    if (diff == c_skirVeryEasy)       { BWZergLateVyEy(player); }
+    else if (diff == c_skirEasy)      { BWZergLateEasy(player); }
+    else if (diff == c_skirMedium)    { BWZergLateMedi(player); }
+    else if (diff == c_skirMed_Hard)  { BWZergLateMdHd(player); }
+    else if (diff == c_skirHard)      { BWZergLateHard(player); }
+    else if (diff == c_skirHard_VH)   { BWZergLateHdVH(player); }
+    else if (diff == c_skirVeryHard)  { BWZergLateVyHd(player); }
+    else if (diff == c_skirChVision)  { BWZergLateChVi(player); }
+    else if (diff == c_skirChMoney)   { BWZergLateChRe(player); }
+    else                              { BWZergLateChIn(player); }
+}

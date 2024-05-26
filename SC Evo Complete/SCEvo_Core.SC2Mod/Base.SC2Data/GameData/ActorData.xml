@@ -349,14 +349,35 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorSound id="CorsairSCBWWeapon@ImpactSound" parent="GenericAttackImpactSound">
+        <Sound value="CorsairSCBWWeapon@Impact"/>
+        <Layers Sound="CorsairSCBWWeapon@ImpactAlt" PitchSource="Sound" VolumeSource="Sound">
+            <Chance value="100"/>
+            <Pitch value="0.000000,0.000000"/>
+            <PlayDelay value="0,0"/>
+            <Volume value="0.000000,0.000000"/>
+        </Layers>
+    </CActorSound>
+    <CActorModel id="CorsairSCBWWeapon@ImpactModel" parent="GenericAttackImpactModel">
+        <On Terms="ActorCreation" Send="SetTintColor {255,255,255 3.000000}"/>
+    </CActorModel>
+    <CActorSiteOpAttachVolume id="SOpAttachVolumeVizEnhanceUp">
+        <HostIncoming Subject="_LaunchGuide" Actor="Find"/>
+        <UpwardVisibilityEnhancement value="1"/>
+        <UpwardVisibilityEnhancementVarianceUp value="25.000000"/>
+    </CActorSiteOpAttachVolume>
+    <CActorSiteOpShadow id="SOpShadowHold" parent="SOpShadow">
+        <HoldPosition value="1"/>
+        <HoldRotation value="1"/>
+    </CActorSiteOpShadow>
     <CActorLookAt id="SunkenColonySCBW@LookAt" parent="UnitTurret">
-        <InheritType value="OneShot"/>
-        <HostTargetSiteOps Ops="SOpAttachOriginStationary"/>
+        <HostTargetSiteOps Ops="SOpShadowHold"/>
         <Type value="SunkenColonySCBW"/>
         <Types Id="SunkenColonySCBW" Name="LookAtType/SunkenColonySCBW">
             <Start Group="Head" Weight="0.8"/>
             <Stop Group="Head" Weight="0.8"/>
         </Types>
+        <HostTarget Scope="Target"/>
     </CActorLookAt>
     <CActorEventMacro id="SCBW_ZergSmallBurrowEffects">
         <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create SmallBurrowDownEffects"/>
@@ -382,6 +403,15 @@
         <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create LargeBurrowUpEffects"/>
         <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create ZergUnitSCBW@Unburrow"/>
     </CActorEventMacro>
+    <CActorModel id="UnitDeathModelWithDeathMotionFlier">
+        <Aliases value="_DeathMotion"/>
+    </CActorModel>
+    <CActorModel id="UnitDeathModelWithDeathMotionGround">
+        <Aliases value="_DeathMotion"/>
+    </CActorModel>
+    <CActorModel id="UnitDeathModelWithDeathMotionGroundUnscaled">
+        <Aliases value="_DeathMotion"/>
+    </CActorModel>
     <CActorModel id="ValkyrieSCBWWeapon@Impact" parent="ModelAnimationStyleOneShot">
         <Host Subject="_Missile"/>
     </CActorModel>
@@ -1342,7 +1372,10 @@
         <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
         <On Terms="ActorCreation" Send="AnimPlay Birth Stand 0 0.000000 0.000000 12.000000 AsDuration"/>
         <On Terms="AnimDone; AnimName Birth" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="TimerSet 0.000000 ScopeCheck"/>
+        <On Terms="TimerExpired; TimerName ScopeCheck; ScopeContains _DeathMotion" Send="HostSiteOpsSet ::Host SOpShadow 1 1"/>
         <Model value="SunkenColonySCBWWeapon@Impact"/>
+        <InheritType value="OneShot"/>
     </CActorModel>
     <CActorAction id="SporeColonySCBWWeapon@Action" parent="GenericAttack" effectImpact="SporeColonySCBWWeapon@Damage" effectLaunch="SporeColonySCBWWeapon@LM">
         <LaunchAssets Sound="SporeColonySCBWWeapon@Launch"/>
@@ -2585,14 +2618,16 @@
         <Flags index="SuppressCreationErrors" value="1"/>
         <Inherits index="Visibility" value="1"/>
         <On Terms="ActorCreation" Send="SetTintColor {32,32,255 2.000000}"/>
-        <Model value="GenericAttackModel"/>
         <ModelFlags index="AllowHitTest" value="0"/>
     </CActorModel>
     <CActorAction id="CorsairSCBWWeapon@Action" parent="GenericAttack" effectAttack="CorsairSCBWWeapon@Impact">
-        <LaunchAssets Model="CorsairSCBWWeapon@Launch" Sound="CorsairSCBWWeapon@Launch"/>
-        <LaunchModel value="CorsairSCBWWeapon@LaunchModel"/>
+        <LaunchAssets Model="" Sound="CorsairSCBWWeapon@Launch"/>
+        <LaunchModel value=""/>
         <ImpactMap index="None" Model="CorsairSCBWWeapon@Impact" Sound="CorsairSCBWWeapon@Impact"/>
         <ShieldFlashType value="Full"/>
+        <ImpactSound value="CorsairSCBWWeapon@ImpactSound"/>
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeVizEnhanceUp"/>
+        <ImpactModel value="CorsairSCBWWeapon@ImpactModel"/>
     </CActorAction>
     <CActorRange id="ArbiterSCBWCloakField@Range">
         <On Terms="SelectionLocalUpdate.ArbiterSCBW.Start" Send="Create"/>
