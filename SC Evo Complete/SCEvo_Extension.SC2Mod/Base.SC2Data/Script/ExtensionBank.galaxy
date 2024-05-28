@@ -1,0 +1,227 @@
+include "TriggerLibs/natives"
+include "Script/DynBank/Source/DynBank"
+
+const string c_extBankName = "EvoExtension";
+const string c_extOptionBankSection = "Options";
+const string c_extBankKey_Setting = "Setting";
+const string c_extBankKey_Setting_ClassicSkins = "Setting0";
+const int c_extBankKey_SettingCount = 1;
+const fixed c_extOptionsVersion = 1.0; 
+
+void DYBLoadBankHelper(int playerSyncSpeed);
+bank[DYB_MAX_PLAYERS + 1] gv_extensionBank;
+bank[DYB_MAX_PLAYERS + 1] gv_syncBank;
+
+static bool IntToBool(int i){
+    if(i == 1) { return true; }
+    return false;
+}
+
+void ExtensionInit(){
+    int tmp_player;
+    trigger t;
+    int i;
+
+    t = TriggerCreate("Extension_MapInit_Func");
+    TriggerAddEventMapInit(t);
+
+    t = TriggerCreate("Extension_DelayedStart_Func");
+    TriggerAddEventTimeElapsed(t, 0.0625, c_timeGame);
+
+    t = TriggerCreate("Extension_ChatTracker_Func");
+    TriggerAddEventChatMessage(t, c_playerAny, "-ClassicIcons", true);
+
+    return;
+}
+
+bool Extension_MapInit_Func(bool test_conds, bool run_actions){
+    int s;
+    int i;
+    int tmp_player;
+    playergroup pg = PlayerGroupActive();
+
+    for (i = 1; i <= PlayerGroupCount(pg); i += 1) {
+        tmp_player = PlayerGroupPlayer(pg, i);
+        gv_extensionBank[tmp_player] = BankLoad(c_extBankName, tmp_player);
+        gv_syncBank[tmp_player] = BankLoad("SyncBank", tmp_player);
+        DYB_BankReset(gv_syncBank[tmp_player]);
+    }
+
+    // TriggerDebugSetTypeFile(10, "SyncLog.txt");
+    // TriggerDebugSetTypeFile(14, "Log.txt");
+    // TriggerDebugSetTypeFile(15, "Errors.txt");
+
+    DYB_InitDebugLog(false, 14, 15);
+
+    s = DYB_Startup(true);
+    DYB_DbgG("DYB_Startup with return val: " + IntToString(s));
+
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
+bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
+    int tmp_player;
+    int i;
+    playergroup pg = PlayerGroupActive();
+    int k;
+    bool enabled;
+    Wait(0.0625,0);
+    DYBLoadBankHelper(DYB_SYNC_SPEED_BASE);
+
+    for (i = 1; i <= PlayerGroupCount(PlayerGroupActive()); i += 1) {
+        tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
+        for (k = 0; k < c_extBankKey_SettingCount; k += 1) {
+            if(BankSectionExists(gv_extensionBank[tmp_player], c_extOptionBankSection)){
+                if(BankKeyExists(gv_extensionBank[tmp_player], c_extOptionBankSection, c_extBankKey_Setting+IntToString(k))){
+                    enabled = IntToBool(StringToInt(BankValueGetAsString(gv_extensionBank[tmp_player], c_extOptionBankSection, c_extBankKey_Setting+IntToString(k))));
+                    if(k == 0 && enabled){
+                        libSCBW_gf_SC1_ClassicIconsActivate(true, PlayerGroupSingle(tmp_player));
+                    }
+                }
+            }
+        }
+    }
+
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
+void Extension_OptionsBankSaveValue(int p, string key, string value){
+    // DYBLoadBankHelper(-1);
+
+    if(!BankSectionExists(gv_extensionBank[p], c_extOptionBankSection)){
+        BankValueSetFromFixed(gv_extensionBank[p], c_extOptionBankSection, "Version", c_extOptionsVersion);
+    }
+
+    BankValueSetFromString(gv_extensionBank[p], c_extOptionBankSection, key, value);
+    
+    BankSave(gv_extensionBank[p]);
+    DYB_BankBackupsClear(p, gv_extensionBank[p], 1);
+    DYB_BankBackup(p, gv_extensionBank[p], 1);
+}
+
+bool Extension_ChatTracker_Func(bool test_conds, bool run_actions) {
+    playergroup players = PlayerGroupActive();
+    int player = EventPlayer();
+    bool enabled;
+    if(!PlayerGroupHasPlayer(players, player)) {
+        return false;
+    }
+    if(BankSectionExists(gv_extensionBank[player], c_extOptionBankSection)){
+        if(BankKeyExists(gv_extensionBank[player], c_extOptionBankSection, c_extBankKey_Setting_ClassicSkins)){
+            enabled = IntToBool(StringToInt(BankValueGetAsString(gv_extensionBank[player], c_extOptionBankSection, c_extBankKey_Setting_ClassicSkins)));
+        }
+    }
+    Extension_OptionsBankSaveValue(player, c_extBankKey_Setting_ClassicSkins, IntToString(BoolToInt(!enabled)));
+    libSCBW_gf_SC1_ClassicIconsActivate(!enabled, PlayerGroupSingle(player));
+
+    return true;
+}
+
+bool Extension_OptionsBankLoadValueAsBool(int p, string key){
+    
+    if(!BankSectionExists(gv_extensionBank[p], c_extOptionBankSection)){
+        return false;
+    }
+
+    return IntToBool(StringToInt(BankValueGetAsString(gv_extensionBank[p], c_extOptionBankSection, key)));
+}
+
+
+int[DYB_MAX_PLAYERS] gv_syncedBytes;
+void OnValueChanged(int player, string bankName, string section, string key, string val, int syncType, int valType) {
+    playergroup players = PlayerGroupActive();
+    //these are safety checks to verify bank is properly being synced and is not required once tuning sync speed has been done
+    if(section == null) {
+        DYB_DbgE("[OnValueChanged] invalid section: " + section);
+    }
+    if(syncType == DYB_SYNC_TYPE_VAL) {
+        if(key == null) {
+            DYB_DbgE("[OnValueChanged] invalid key: " + key);
+        }
+        if(val == null) {
+            DYB_DbgE("[OnValueChanged] invalid value: " + val);
+        }
+        //SyncBank stuff is optional and just used for testing to verify whole bank got synced
+        if(BankKeyExists(gv_syncBank[player], section, key)) {
+            DYB_DbgE("[OnValueChanged] error section=" + section + ", key=" + key + " already exists. NewVal=" + val + ", OldVal=" + BankValueGetAsString(gv_syncBank[player], section, key));
+        }
+        if(!PlayerGroupHasPlayer(players, player)) {
+            DYB_DbgE("[OnValueChanged] invalid player: " + IntToString(player));
+        }
+    
+        TriggerDebugOutput(10, StringToText("[OnValueChanged] section=" + section + ", key=" + key + ", val=" + val), false);
+        DYB_BankSetFromStringType(gv_syncBank[player], section, key, val, valType); //add value to sync bank
+
+        gv_syncedBytes[player] += StringLength(key) + StringLength(val);// + 9;
+    }
+    else if(syncType == DYB_SYNC_TYPE_SECT) { //sect name
+        BankSectionCreate(gv_syncBank[player], section);
+
+        gv_syncedBytes[player] += StringLength(section);// + 4;
+    }
+    else {
+        DYB_DbgE("[OnValueChanged] invalid syncType=" + IntToString(syncType));
+    }
+
+
+    // DYB_DbgG("[OnValueChanged]");
+}
+void OnSyncResult(int player, string bankName, bank b, DYB_SyncResult_t syncResult) {
+    int sizeBytes;
+    if(syncResult.lv_syncCode == DYB_SYNC_CODE_PRESYNC_INFO) {
+        sizeBytes = StringToInt(syncResult.lv_payload);
+        // UIDispMessageLog2(PlayerGroupAll(), "[OnSyncResult] Time=" + FixedToString(GameGetMissionTime(), 4) + ", " + "Starting sync of player " + IntToString(player) + " bank called \"" + bankName + "\" with size of " + IntToString(sizeBytes) + "B.", false);
+    }
+    else if(syncResult.lv_syncCode == DYB_SYNC_CODE_SYNC_FINISHED) {
+        BankSave(gv_syncBank[player]);
+
+        // UIDispMessageLog2(PlayerGroupAll(), "[OnSyncResult] Time=" + FixedToString(GameGetMissionTime(), 4) + ", " + "player: " + IntToString(player) + " success with code: " + IntToString(syncResult.lv_syncCode) + ", bytesSynced=" + IntToString(gv_syncedBytes[player]) + "B." + ", payloadlen=" + IntToString(StringLength(syncResult.lv_payload)) + ", payload: " + syncResult.lv_payload, false);
+        // if(player == 1) {
+        //     if(BankSectionExists(b, "TestSect")) { //if whole bank is not synced you should read from gv_syncBank instead
+        //         if(BankKeyExists(b, "TestSect", "Unit1Mod")) {
+        //             // UnitSetPropertyFixed(UnitFromId(1700799453), c_unitPropLife, 
+        //             //     StringToFixed(BankValueGetAsString(b, "TestSect", "Unit1Mod")));
+        //             UnitKill(UnitFromId(1700799453)); //test for desync
+        //         }
+        //         if(BankKeyExists(b, "TestSect", "Unit2Mod")) {
+        //             UnitSetPropertyFixed(UnitFromId(1739551825), c_unitPropLife, 
+        //                 StringToFixed(BankValueGetAsString(b, "TestSect", "Unit2Mod")));  //Test for desync by making units with modified life kill each other
+        //         }
+        //     }
+        // }
+    }
+    else {
+        // UIDispMessageLog2(PlayerGroupAll(), "[OnSyncResult] Time=" + FixedToString(GameGetMissionTime(), 4) + ", " + "player: " + IntToString(player) + " failed with code: " + IntToString(syncResult.lv_syncCode) + ", payloadlen=" + IntToString(StringLength(syncResult.lv_payload)) + ", payload: " + syncResult.lv_payload, true);
+    }
+}
+
+void DYBLoadBankHelper(int playerSyncSpeed) {
+    playergroup players = PlayerGroupActive();
+    gs_DYB_ExtArgs extArgs;
+    extArgs.syncSave           = true;
+    extArgs.clearBeforeRestore = true;
+    extArgs.playerSyncSpeedMax = playerSyncSpeed;
+    extArgs.syncBankGetResult  = null;
+    extArgs.shouldSyncStr      = null;
+    extArgs.onMutateStr        = null;
+
+    // extArgs.syncBankGetResult = SyncBankGetResult;
+    // extArgs.shouldSyncStr     = ShouldSyncString;
+    // extArgs.onMutateStr       = OnMutateString;
+
+    DYB_LoadBankEx(c_extBankName, players, gv_extensionBank, OnValueChanged, OnSyncResult, extArgs);
+
+    // DYB_LoadBank(c_plyrBankName, PlayerGroupActive(), gv_plyrBank, OnValueChanged, OnSyncResult);
+
+
+    //Save extra bank data at a later point in the game once sync is finished
+    while(DYB_SyncIPAll()) {
+        // DYB_DbgG("SyncIP");
+        Wait(0.0625, c_timeGame);
+    }
+
+    // UIDispMessageLog2(PlayerGroupAll(), "[DYBLoadBankHelper] Time=" + FixedToString(GameGetMissionTime(), 4) + ". SyncFinished", false);
+    // AddExtraBankDataPG(players);
+}
