@@ -66,21 +66,28 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
     playergroup pg = PlayerGroupActive();
     int k;
     bool enabled;
+    string race;
     Wait(0.0625,0);
     DYBLoadBankHelper(DYB_SYNC_SPEED_BASE);
 
     for (i = 1; i <= PlayerGroupCount(PlayerGroupActive()); i += 1) {
         tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
+        if(PlayerType(tmp_player) != c_playerTypeUser){ continue; }
+        race = PlayerRace(tmp_player);
+        
         for (k = 0; k < c_extBankKey_SettingCount; k += 1) {
             if(BankSectionExists(gv_extensionBank[tmp_player], c_extOptionBankSection)){
                 if(BankKeyExists(gv_extensionBank[tmp_player], c_extOptionBankSection, c_extBankKey_Setting+IntToString(k))){
                     enabled = IntToBool(StringToInt(BankValueGetAsString(gv_extensionBank[tmp_player], c_extOptionBankSection, c_extBankKey_Setting+IntToString(k))));
                     if(k == 0 && enabled){
-                        libSCBW_gf_SC1_ClassicIconsActivate(true, PlayerGroupSingle(tmp_player));
+                        if(race == "BWTe" || race == "BWPr" || race == "BWZe"){
+                            libSCBW_gf_SC1_ClassicIconsActivate(true, PlayerGroupSingle(tmp_player));
+                        }
                     }
                 }
             }
         }
+
     }
 
     TriggerDestroy(TriggerGetCurrent());
@@ -104,6 +111,7 @@ void Extension_OptionsBankSaveValue(int p, string key, string value){
 bool Extension_ChatTracker_Func(bool test_conds, bool run_actions) {
     playergroup players = PlayerGroupActive();
     int player = EventPlayer();
+    string race = PlayerRace(player);
     bool enabled;
     if(!PlayerGroupHasPlayer(players, player)) {
         return false;
@@ -114,8 +122,9 @@ bool Extension_ChatTracker_Func(bool test_conds, bool run_actions) {
         }
     }
     Extension_OptionsBankSaveValue(player, c_extBankKey_Setting_ClassicSkins, IntToString(BoolToInt(!enabled)));
-    libSCBW_gf_SC1_ClassicIconsActivate(!enabled, PlayerGroupSingle(player));
-
+    if(race == "BWTe" || race == "BWPr" || race == "BWZe"){
+        libSCBW_gf_SC1_ClassicIconsActivate(!enabled, PlayerGroupSingle(player));
+    }
     return true;
 }
 
