@@ -1,0 +1,1686 @@
+include "Script/DynBank/Header/DynBank_h"
+include "Script/SU/Source/StringUtils"
+
+static const string DYB_LP_BANKNAME = "DYB_LPTestBank";
+static const string DYB_STARTSYNC_EV = "DYB_StartSync";
+static const string DYB_INITLOCALPLAYER_EV = "DYB_InitLocalPlayer";
+static const string DYB_BANKBACKUP_EV = "DYB_BankBackup";
+static const string DYB_CLEARBACKUP_EV = "DYB_ClearBackup";
+
+static const string DYB_PFX_CONT     = "A";
+static const string DYB_PFX_CONT_ALT = "B";
+static const string DYB_PFX_END      = "C";
+static const string DYB_PFX_END_ALT  = "D";
+
+static const string DYB_PFX_SECT_CONT     = "E";
+static const string DYB_PFX_SECT_CONT_ALT = "F";
+static const string DYB_PFX_SECT_END      = "G";
+static const string DYB_PFX_SECT_END_ALT  = "H";
+
+static const string DYB_PFX_SYNCCODE_CONT     = "I";
+static const string DYB_PFX_SYNCCODE_CONT_ALT = "J";
+static const string DYB_PFX_SYNCCODE_END      = "K";
+static const string DYB_PFX_SYNCCODE_END_ALT  = "L";
+
+static const string DYB_KEY_SEP = "_";
+
+static const int DYB_MAXLEN_KEYLEN_COMP = 2;
+static const int DYB_EB_PFXLEN = 1;
+static const int DYB_EB_MAXLEN = 256;
+static const int DYB_EB_MAXLEN_NR = DYB_EB_MAXLEN - DYB_EB_PFXLEN;
+static const int DYB_EB_MAXLEN_KEY = DYB_EB_MAXLEN - DYB_MAXLEN_KEYLEN_COMP - DYB_EB_PFXLEN;
+static const int DYB_ALLIGN_TO = 4 * 3; // Allign 4, 2, and 3 unicode byte sizes for UTF-8 (editbox converts to UTF-8)
+
+struct gs_DYB_BoolRes {
+    bool result;
+};
+typedef structref<gs_DYB_BoolRes> DYB_BoolRes_t;
+
+struct gs_DYB_StringRes {
+    string str;
+};
+typedef structref<gs_DYB_StringRes> DYB_StringRes_t;
+
+struct gs_DYB_Ctrls {
+    int dlg;
+
+    int[DYB_EB_VAL_CNT] ebs;
+};
+
+struct gs_DYB_StringOptional {
+    string s; //null and "" compare the same in galaxy
+    bool valid;
+};
+typedef structref<gs_DYB_StringOptional> DYB_StringOptional_t;
+
+struct gs_DYB_IntOptional {
+    int i;
+    bool valid;
+};
+typedef structref<gs_DYB_IntOptional> DYB_IntOptional_t;
+
+struct gs_DYB {
+    gs_DYB_StringOptional sect;
+    gs_DYB_StringOptional key;
+    gs_DYB_StringOptional val;
+    gs_DYB_StringOptional syncCode;
+};
+
+struct gs_DYB_CtrlSend {
+    string lblStr;
+};
+struct gs_DYB_SendInfo {
+    int ctrlIdx;
+    gs_DYB_CtrlSend[DYB_EB_VAL_CNT] ebsInfo;
+    int playerSyncSpeed;
+    fixed lastWaitTime;
+};
+
+struct gs_DYB_Info {
+    bool localPlayerInit;
+
+    string bankName;
+    DYB_OnValueChanged_t onSyncValue;
+    DYB_OnSyncResult_t onSyncResult;
+
+    gs_DYB[DYB_MAX_PLAYERS + 1] pinfo;
+    gs_DYB_SendInfo sendInfo;
+    DYB_Arr_t banks;
+    playergroup pg;
+    playergroup pgSyncIP;
+    playergroup pgUsers;
+
+    gs_DYB_ExtArgs extArgs;
+
+    bool quickStart;
+    int localPlayerIdx;
+};
+typedef structref<gs_DYB_Info> DYB_Info_t;
+
+static const string DYB_COMP_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzMNOPQRSTUVWXYZ!$%/()=?,.-;:^#+*@{[]}|~`'\" ";
+static const string DYB_ASCII_TABLE = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2A\x2B\x2C\x2D\x2E\x2F\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x3B\x3C\x3D\x3E\x3F\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4A\x4B\x4C\x4D\x4E\x4F\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5A\x5B\x5C\x5D\x5E\x5F\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6A\x6B\x6C\x6D\x6E\x6F\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7A\x7B\x7C\x7D\x7E\x7F";
+static int DYB_COMP_ALPHABETLEN = StringLength(DYB_COMP_ALPHABET);
+static int DYB_ASCII_TABLELEN = StringLength(DYB_ASCII_TABLE);
+
+static string DYB_CompressInt(int val);
+static int DYB_DecompressInt(string val);
+
+static void DYB_InitIsLocalPlayer(playergroup pgUsers);
+
+static void DYB_InitBase(string bankName, playergroup pg, DYB_ArrRef_t banks, DYB_OnValueChanged_t onSyncValue, DYB_OnSyncResult_t onSyncResult);
+static playergroup DYB_FilterPG(playergroup pg);
+static void DYB_RestoreBank(int player, bank b, int backupId);
+static void DYB_PrepareSyncPG(playergroup pg);
+
+static bool DYB_PreSyncMissingBackupShouldSyncResult(DYB_SyncResult_t syncResult);
+static bool DYB_PreSyncShouldSyncResult(DYB_SyncResult_t syncResult);
+static bool DYB_PreSyncShouldSyncBank(DYB_SyncResult_t syncResult);
+
+static bool DYB_StartSyncLocal(int p);
+static void DYB_SyncStartThrdPG(playergroup pg);
+static void DYB_SyncStartThrdPGQS(playergroup pg);
+static void DYB_StartSync();
+
+static void DYB_InitCtrls();
+
+static string DYB_SendNameMk(SU_BreakStrRes_t bsr, string prevStr);
+static string DYB_SendValMk(string keyPfx, string valSend, string prevStr, int type, bool lastVal);
+static int DYB_SendValCount(int strLen);
+
+static int DYB_CtrlIdxNext();
+static void DYB_Sync(int player, bank b);
+static void DYB_SyncSect(int player, bank b, string sect, int sectIdx);
+static void DYB_SyncSectName(int player, bank b, string sect, int sectIdx);
+static bool DYB_SyncValAny(int player, bank b, string sect, string key, int sectIdx, int keyIdx);
+static bool DYB_SyncKeyVal(int player, bank b, string sect, string key, string val, int sectIdx, int keyIdx, int valType);
+
+static void DYB_InitIsLocalPlayer_init();
+static void DYB_BankBackup_init();
+static void DYB_BankBackupsClear_Init();
+static void DYB_EBOnEdit_init();
+static void DYB_StartSync_init();
+static void DYB_OnPlayerLeave_init();
+
+static void DYB_BankBackupHelper(int player, bank mainBank, int count);
+static void DYB_BankBackupsClearHelper(int player, bank mainBank, int keepCount);
+
+static bool DYB_EBOnChange(int player, int ctrl, string s);
+
+static void DYB_CallOnSyncResult(int player, DYB_SyncResult_t syncResult);
+static bool DYB_SyncResultShouldEndSync(DYB_SyncResult_t syncResult);
+static void DYB_CallOnSyncResultSync(int player, string s);
+static void DYB_OnSyncFinished(int player);
+static bool DYB_OnSyncCodeStr(int player, string val);
+static bool DYB_OnSyncCheckCode(int player, string val);
+static bool DYB_SyncCodePfxValid(string pfx);
+
+static void DYB_SyncCreateThrds();
+static void DYB_SyncStartThrd(int player);
+
+static void DYB_SetEBStr(int player, int ctrlIdx, string str, string type);
+
+static bool DYB_SyncBankForwardResult(int status, DYB_SyncResult_t syncResult);
+static void DYB_SyncResultInit(DYB_SyncResult_t syncResult);
+static void DYB_SyncResult(int player, DYB_SyncResult_t syncInfo);
+static string DYB_SyncResultToString(DYB_SyncResult_t syncInfo);
+static void DYB_SyncResultFromString(string code, DYB_SyncResult_t syncInfo);
+
+static void DYB_PlayerResetSend(int player);
+static void DYB_PlayerResetRecv(int player);
+static void DYB_PlayerOnSyncFailed(int player);
+static void DYB_BankCleanupTriggers();
+static void DYB_BankCleanupTriggersBase();
+static void DYB_BankCleanupDT();
+static void DYB_CleanupCtrls();
+
+static void DYB_BankBackupFind(bank b, bool decending, DYB_IntOptional_t outBackup);
+
+static playergroup DYB_PGUsers();
+static void DYB_Wait();
+
+static string DYB_PointToString(point pt);
+
+static bool DYB_OnSyncCheck(int player, string pfx);
+static bool DYB_OnSyncCheckSect(int player, string s);
+
+static bool DYB_ValPfxIsValid(string pfx);
+static bool DYB_OnSectSyncStr(int player, string val);
+static string DYB_OnKeyValSyncStr(int player, string val);
+static string DYB_OnKeyValSyncStrLast(int player, string val);
+static string DYB_OnValSyncStr(int player, string val);
+static bool DYB_OnKeyValSyncStrCase(int player, string val, DYB_StringRes_t res);
+static string DYB_OnValSyncStr(int player, string val); //returns pfx
+static bool DYB_AllSet(int player);
+
+static void DYB_DTSectCleanup(int player);
+static void DYB_OnSync(int player, int valType, string sect, string key, string val);
+
+static void DYB_EBOnPollPlayer(int player);
+
+static int DYB_RoundDownToNearest(int i, int mult);
+static bool DYB_CharIsAscii(string c);
+static void DYB_AllignUTF8Bounds(SU_BreakStrRes_t bsr);
+
+static int DYB_SyncRateToPerWait(int playerSyncRateMax);
+static int DYB_StringToByteCount(string s);
+static void DYB_OnSyncRate(string s);
+
+static void DYB_StringOptionalInit(DYB_StringOptional_t sopt);
+static void DYB_IntOptionalInit(DYB_IntOptional_t iopt);
+
+static trigger gt_DYB_SyncPlayerBank;
+static trigger gt_DYB_OnPlayerLeave;
+static trigger gt_DYB_EBOnPoll;
+static trigger gt_DYB_EBOnEdit;
+static trigger gt_DYB_StartSync;
+static trigger gt_DYB_InitLocalPlayer;
+static trigger gt_DYB_BankBackup;
+static trigger gt_DYB_BankBackupClear;
+static playergroup gt_DYB_InitLocalPlayerPG;
+
+static gs_DYB_Info dybInfo;
+static gs_DYB_Ctrls dybCtrls;
+
+static int DYB_DbgIntToMsg(int lp_value);
+static int DYB_DBG_TYPE_GEN = DYB_DBG_TYPE_INVALID;
+static int DYB_DBG_TYPE_ERR = DYB_DBG_TYPE_INVALID;
+
+void DYB_InitCtrls() {
+    int i;
+    dybCtrls.dlg = DialogCreate(200, 200, c_anchorTopLeft, 0, 0, true);
+    DialogSetVisible(dybCtrls.dlg, PlayerGroupAll(), false);
+
+    for(i = 0; i < DYB_EB_VAL_CNT; i += 1) {
+        dybCtrls.ebs[i] = DialogControlCreate(dybCtrls.dlg, c_triggerControlTypeEditBox);
+        TriggerAddEventDialogControl(gt_DYB_EBOnEdit, c_playerAny, dybCtrls.ebs[i], c_triggerControlEventTypeTextChanged);
+    }  
+}
+
+void DYB_InitDebugLog(bool debugOn, int typeGen, int typeErr) {
+    gv_DYB_debugLoggingOn = debugOn;
+	DYB_DBG_TYPE_GEN = DYB_DbgIntToMsg(typeGen);
+	DYB_DBG_TYPE_ERR = DYB_DbgIntToMsg(typeErr);
+}
+int DYB_DbgIntToMsg(int lp_value) {
+	if ((lp_value < 1) || (lp_value > 16)) {
+		return 1;
+	}
+	return lp_value;
+}
+void DYB_DbgG(string s) {
+	if(gv_DYB_debugLoggingOn && DYB_DBG_TYPE_GEN != DYB_DBG_TYPE_INVALID) {
+		TriggerDebugOutput(DYB_DBG_TYPE_GEN, StringToText(s), false);
+	}
+}
+void DYB_DbgE(string s) {
+	if(gv_DYB_debugLoggingOn && DYB_DBG_TYPE_ERR != DYB_DBG_TYPE_INVALID) {
+		TriggerDebugOutput(DYB_DBG_TYPE_ERR, StringToText(s), false);
+	}
+}
+
+int DYB_Startup(bool disableQS) {
+    dybInfo.localPlayerInit = false;
+    dybInfo.pgUsers = DYB_PGUsers();
+
+    DYB_InitIsLocalPlayer_init();
+    DYB_BankBackupsClear_Init();
+    DYB_BankBackup_init();
+
+    DYB_InitIsLocalPlayer(dybInfo.pgUsers);
+    while(!dybInfo.localPlayerInit) {
+        Wait(0.0625, c_timeGame);
+    }
+
+    if(!disableQS && PlayerGroupCount(dybInfo.pgUsers) == 1) {
+        dybInfo.quickStart = true;
+        return DYB_STARTUP_QUICK;
+    }
+    else {
+        dybInfo.quickStart = false;
+        DYB_StartSync_init();
+        DYB_SyncCreateThrds();
+        DYB_EBOnEdit_init();
+        DYB_InitCtrls();
+        DYB_OnPlayerLeave_init();
+        return DYB_STARTUP_SUCC;
+    }
+}
+void DYB_Cleanup() {
+    DYB_BankCleanupTriggersBase();
+    if(!dybInfo.quickStart) {
+        DYB_BankCleanupTriggers();
+        DYB_BankCleanupDT();
+        DYB_CleanupCtrls();
+    }
+}
+void DYB_BankCleanupTriggersBase() {
+    if(gt_DYB_InitLocalPlayer != null) {
+        TriggerDestroy(gt_DYB_InitLocalPlayer);
+        gt_DYB_InitLocalPlayer = null;
+    }
+    if(gt_DYB_BankBackup != null) {
+        TriggerDestroy(gt_DYB_BankBackup);
+        gt_DYB_BankBackup = null;
+    }
+    if(gt_DYB_BankBackupClear != null) {
+        TriggerDestroy(gt_DYB_BankBackupClear);
+        gt_DYB_BankBackupClear = null;
+    }
+}
+void DYB_BankCleanupTriggers() {
+    if(gt_DYB_StartSync != null) {
+        TriggerDestroy(gt_DYB_StartSync);
+        gt_DYB_StartSync = null;
+    }
+    if(gt_DYB_SyncPlayerBank != null) {
+        TriggerDestroy(gt_DYB_SyncPlayerBank);
+        gt_DYB_SyncPlayerBank = null;
+    }
+    if(gt_DYB_EBOnEdit != null) {
+        TriggerDestroy(gt_DYB_EBOnEdit);
+        gt_DYB_EBOnEdit = null;
+    }
+    if(gt_DYB_OnPlayerLeave != null) {
+        TriggerDestroy(gt_DYB_OnPlayerLeave);
+        gt_DYB_OnPlayerLeave = null;
+    }
+}
+void DYB_BankCleanupDT() {}
+void DYB_CleanupCtrls() {
+    DialogDestroy(dybCtrls.dlg);
+}
+
+void DYB_InitBase(string bankName, playergroup pg, DYB_ArrRef_t banks, DYB_OnValueChanged_t onSyncValue, DYB_OnSyncResult_t onSyncResult) {
+    dybInfo.bankName = bankName;
+    DYB_ArrCopy(dybInfo.banks, banks);
+    dybInfo.pg = DYB_FilterPG(pg);
+    dybInfo.pgSyncIP = PlayerGroupEmpty();
+    dybInfo.onSyncValue = onSyncValue;
+    dybInfo.onSyncResult = onSyncResult;
+}
+
+playergroup DYB_FilterPG(playergroup pg) {
+    playergroup newPg = PlayerGroupEmpty();
+    int p;
+
+    p = -1;
+    while (true) {
+        p = PlayerGroupNextPlayer(pg, p);
+        if (p < 0) { break; }
+
+        if(p > 0 && p <= DYB_MAX_PLAYERS) {
+            if(PlayerType(p) == c_playerTypeUser && PlayerStatus(p) == c_playerStatusActive) {
+                PlayerGroupAdd(newPg, p);
+            }
+        }
+    }
+
+    return newPg;
+}
+
+void DYB_RestoreBank(int player, bank b, int backupId) {
+    if(dybInfo.extArgs.clearBeforeRestore) {
+        DYB_BankReset(b); //wipe bank
+    }
+    BankRestore(b, player, backupId);
+    BankSave(b);
+}
+
+void DYB_InitIsLocalPlayer_init() {
+    if(gt_DYB_InitLocalPlayer == null) {
+        gt_DYB_InitLocalPlayer = TriggerCreate("DYB_InitIsLocalPlayerThrd");
+        TriggerAddEventGeneric(gt_DYB_InitLocalPlayer, DYB_INITLOCALPLAYER_EV);
+    }
+}
+void DYB_InitIsLocalPlayer(playergroup pgUsers) {
+    gt_DYB_InitLocalPlayerPG = pgUsers;
+    TriggerSendEvent(DYB_INITLOCALPLAYER_EV);
+}
+
+bool DYB_InitIsLocalPlayerThrd(bool p_chk, bool p_run) {
+	bank[DYB_MAX_PLAYERS + 1] b;
+	int p;
+    playergroup pgUsers;
+
+    pgUsers = gt_DYB_InitLocalPlayerPG;
+    dybInfo.localPlayerIdx = DYB_INVALID_IDX;
+
+	p = -1;
+	while(true) {
+		p = PlayerGroupNextPlayer(pgUsers, p);
+		if(p < 0) { break; }
+
+        b[p] = BankLoad(DYB_LP_BANKNAME, p);
+        DYB_BankReset(b[p]);
+        BankSectionCreate(b[p], IntToString(p));
+
+        DYB_BankBackupsClearHelper(p, b[p], 0);
+        BankBackup(b[p], p);
+	}
+
+	// Wait(0.125, c_timeGame);
+
+	p = -1;
+	while(true) {
+		p = PlayerGroupNextPlayer(pgUsers, p);
+		if(p < 0) { break; }
+
+        DYB_BankReset(b[p]);
+        BankRestore(b[p], p, BankBackupGetLatestId(b[p]));
+        BankSave(b[p]);
+
+        if(BankSectionExists(b[p], IntToString(p))) {
+            dybInfo.localPlayerIdx = p;
+            DYB_DbgG("[DYB_InitIsLocalPlayer] player=" + IntToString(p) + " is local player");
+        }
+
+        DYB_BankBackupsClearHelper(p, b[p], 0);
+        BankRemove(b[p]);
+	}
+
+    dybInfo.localPlayerInit = true;
+
+    return true;
+}
+
+int DYB_LocalPlayerIdx() {
+    return dybInfo.localPlayerIdx;
+}
+
+void DYB_PrepareSyncPG(playergroup pg) {
+    bank bankBackup;
+    int p;
+
+    //need separate loops because syncIP needs to be set to true before any thread starts
+    p = -1;
+    while (true) {
+        p = PlayerGroupNextPlayer(pg, p);
+        if (p < 0) { break; }
+
+        if(dybInfo.banks[p] == null) {
+            DYB_DbgE("[DYB_PrepareSyncPG] bank=\"" + dybInfo.bankName + "\" invalid for p=" + IntToString(p));
+            continue;
+        }
+
+        PlayerGroupAdd(dybInfo.pgSyncIP, p);
+    }
+}
+
+bool DYB_PreSyncMissingBackupShouldSyncResult(DYB_SyncResult_t syncResult) {
+    return
+        syncResult.lv_syncCode != DYB_SYNC_CODE_ABANDON;
+}
+bool DYB_PreSyncShouldSyncResult(DYB_SyncResult_t syncResult) {
+    return
+        syncResult.lv_syncCode != DYB_SYNC_CODE_ABANDON &&
+        syncResult.lv_syncCode != DYB_SYNC_CODE_IGNORE;
+}
+bool DYB_PreSyncShouldSyncBank(DYB_SyncResult_t syncResult) {
+    return
+        syncResult.lv_syncCode != DYB_SYNC_CODE_ABANDON &&
+        syncResult.lv_syncCode != DYB_SYNC_CODE_ABANDON_NOTIFY;
+}
+bool DYB_SyncResultShouldEndSync(DYB_SyncResult_t syncResult) {
+    return 
+        syncResult.lv_syncCode == DYB_SYNC_CODE_SYNC_FINISHED ||
+        syncResult.lv_syncCode == DYB_SYNC_CODE_MISSING_BACKUP ||
+        syncResult.lv_syncCode == DYB_SYNC_CODE_ABANDON_NOTIFY ||
+        syncResult.lv_syncCode == DYB_SYNC_CODE_LEFT_GAME ||
+        syncResult.lv_syncCode == DYB_SYNC_CODE_FAILED;
+}
+
+void DYB_SyncStartThrdPGQS(playergroup pg) {
+    gs_DYB_SyncResult syncResult;
+    gs_DYB_IntOptional backupBank;
+    int p;
+
+    //need separate loops because syncIP needs to be set to true before any thread starts
+    p = -1;
+    while (true) {
+        p = PlayerGroupNextPlayer(pg, p);
+        if (p < 0) { break; }
+
+        DYB_BankBackupFind(dybInfo.banks[p], true, backupBank);
+
+        if(!backupBank.valid) { 
+            DYB_DbgE("[DYB_SyncStartThrdPGQS] bank=\"" + dybInfo.bankName + "\" does not have a valid backup for p=" + IntToString(p));
+            DYB_SyncBankGetResult(p, dybInfo.bankName, dybInfo.banks[p], DYB_SYNC_STATUS_MISSING_BACKUP, syncResult);
+            if(DYB_PreSyncMissingBackupShouldSyncResult(syncResult)) {
+                dybInfo.onSyncResult(p, dybInfo.bankName, dybInfo.banks[p], syncResult);
+            }
+            continue;
+        }
+
+        DYB_RestoreBank(p, dybInfo.banks[p], backupBank.i);
+
+        DYB_SyncBankGetResult(p, dybInfo.bankName, dybInfo.banks[p], DYB_SYNC_STATUS_PRESYNC, syncResult);
+        if(DYB_PreSyncShouldSyncResult(syncResult)) {
+            dybInfo.onSyncResult(p, dybInfo.bankName, dybInfo.banks[p], syncResult);
+        }
+    }
+}
+
+void DYB_SyncStartThrdPG(playergroup pg) {
+    int p;
+
+    //need separate loops because syncIP needs to be set to true before any thread starts
+    p = -1;
+    while (true) {
+        p = PlayerGroupNextPlayer(pg, p);
+        if (p < 0) { break; }
+
+        DYB_PlayerResetRecv(p);
+    }
+
+    if(dybInfo.localPlayerIdx == DYB_INVALID_IDX) {
+        DYB_DbgE("[DYB_SyncStartThrdPG] invalid local player idx=" + IntToString(dybInfo.localPlayerIdx));
+        return;
+    }
+    if(dybInfo.localPlayerIdx <= 0 || dybInfo.localPlayerIdx > DYB_MAX_PLAYERS) {
+        DYB_DbgE("[DYB_SyncStartThrdPG] out of range local player idx=" + IntToString(dybInfo.localPlayerIdx));
+        return;
+    }
+
+    if(PlayerGroupHasPlayer(pg, dybInfo.localPlayerIdx)) {
+        DYB_StartSyncLocal(dybInfo.localPlayerIdx);
+    }
+}
+bool DYB_StartSyncLocal(int p) {
+    gs_DYB_SyncResult syncResult;
+    gs_DYB_IntOptional backupBank;
+
+    DYB_PlayerResetSend(p);
+
+    DYB_BankBackupFind(dybInfo.banks[p], true, backupBank);
+    if(!backupBank.valid) { 
+        DYB_DbgE("[DYB_StartSyncLocal] bank=\"" + dybInfo.bankName + "\" does not have a valid backup for p=" + IntToString(p));
+        DYB_SyncBankGetResult(p, dybInfo.bankName, dybInfo.banks[p], DYB_SYNC_STATUS_MISSING_BACKUP, syncResult);
+        if(DYB_PreSyncMissingBackupShouldSyncResult(syncResult)) {
+            DYB_SyncResult(p, syncResult); //cant just set dybInfo.pinfo[p].syncIP to false otherwise could cause desync DYB_Waiting on dybInfo.pinfo[p].syncIP    
+        }
+        return false;
+    }
+
+    DYB_RestoreBank(p, dybInfo.banks[p], backupBank.i);
+
+    DYB_SyncBankGetResult(p, dybInfo.bankName, dybInfo.banks[p], DYB_SYNC_STATUS_PRESYNC, syncResult);
+    if(DYB_PreSyncShouldSyncResult(syncResult)) {
+        DYB_SyncResult(p, syncResult);
+    }
+    if(DYB_PreSyncShouldSyncBank(syncResult)) {
+        DYB_SyncStartThrd(p);
+    }
+
+    return true;
+}
+
+bool DYB_StartSync_thrd(bool p_chk, bool p_run) {
+    //need two loops so that dybInfo.pinfo[p].syncIP is set to true for all players before syncing
+    DYB_SyncStartThrdPG(dybInfo.pgSyncIP);
+
+    return true;
+}
+void DYB_StartSync_init() {
+    gt_DYB_StartSync = TriggerCreate("DYB_StartSync_thrd");
+    TriggerAddEventGeneric(gt_DYB_StartSync, DYB_STARTSYNC_EV);
+}
+
+void DYB_StartSync() {
+    if(dybInfo.quickStart) {
+        DYB_SyncStartThrdPGQS(dybInfo.pg);
+    }
+    else {
+        DYB_PrepareSyncPG(dybInfo.pg);
+        TriggerSendEvent(DYB_STARTSYNC_EV);
+    }
+}
+
+ 
+void DYB_LoadBank(string bankName, playergroup pg, DYB_ArrRef_t banks, DYB_OnValueChanged_t onSyncValue, DYB_OnSyncResult_t onSyncResult) {
+    DYB_InitBase(bankName, pg, banks, onSyncValue, onSyncResult);
+    dybInfo.extArgs.syncSave           = true;
+    dybInfo.extArgs.clearBeforeRestore = true;
+    dybInfo.extArgs.syncBankGetResult  = null;
+    dybInfo.extArgs.shouldSyncStr      = null;
+    dybInfo.extArgs.onMutateStr        = null;
+    dybInfo.extArgs.playerSyncSpeedMax = DYB_SyncRateToPerWait(DYB_SYNC_SPEED_BASE);
+    DYB_StartSync();
+}
+void DYB_LoadBankEx(string bankName, playergroup pg, DYB_ArrRef_t banks, DYB_OnValueChanged_t onSyncValue, DYB_OnSyncResult_t onSyncResult, DYB_ExtArgsRef_t extArgs) {
+    DYB_InitBase(bankName, pg, banks, onSyncValue, onSyncResult);
+    DYB_ExtArgsCopy(dybInfo.extArgs, extArgs);
+    DYB_StartSync();
+}
+
+void DYB_PlayerResetSend(int player) {
+    dybInfo.sendInfo.ctrlIdx = 0;
+    dybInfo.sendInfo.lastWaitTime = -DYB_WAIT; //initialize this so DYB_EB_SYNC_VAL_CNT check passes
+}
+
+void DYB_PlayerResetRecv(int player) {
+    DYB_StringOptionalInit(dybInfo.pinfo[player].sect);
+    DYB_StringOptionalInit(dybInfo.pinfo[player].key);
+    DYB_StringOptionalInit(dybInfo.pinfo[player].val);
+    DYB_StringOptionalInit(dybInfo.pinfo[player].syncCode);
+}
+
+void DYB_PlayerOnSyncFailed(int player) {
+    PlayerGroupRemove(dybInfo.pg, player);
+}
+
+static int gv_DYB_SyncPlayerIdx;
+bool DYB_Sync_thrd(bool p_chk, bool p_run) {
+    int p = gv_DYB_SyncPlayerIdx;
+    bank b = dybInfo.banks[p];
+
+    DYB_Sync(p, b);
+
+    return true;
+}
+
+void DYB_SyncStartThrd(int player) {
+    gv_DYB_SyncPlayerIdx = player;
+    TriggerExecute(gt_DYB_SyncPlayerBank, true, false);
+}
+
+void DYB_SyncCreateThrds() {
+    gt_DYB_SyncPlayerBank = TriggerCreate("DYB_Sync_thrd");
+}
+
+void DYB_Sync(int player, bank b) {
+    int cnt = BankSectionCount(b);
+    int s;
+    string sect;
+    gs_DYB_SyncResult syncResult;
+
+    if(cnt > 0) {
+        for(s = 0; s < cnt; s += 1) {
+            sect = BankSectionName(b, s);
+
+            if(DYB_ShouldSyncString(player, dybInfo.bankName, b, sect, null, null, DYB_SYNC_TYPE_SECT)) {
+                DYB_SyncSectName(player, b, sect, s);
+                DYB_SyncSect(player, b, sect, s);
+            }
+        }
+    }
+    DYB_SyncBankGetResult(player,dybInfo.bankName, b, DYB_SYNC_STATUS_SYNC_FINISHED, syncResult);
+    if(syncResult.lv_syncCode != DYB_SYNC_CODE_IGNORE) {
+        DYB_SyncResult(player, syncResult);
+    }
+}
+void DYB_SetEBStr(int player, int ctrlIdx, string str, string type) {
+    if(str == null) {
+        DYB_DbgE("[DYB_SetEBStr] send str invalid");
+    }
+
+    DialogControlSetPropertyAsString(dybCtrls.ebs[ctrlIdx], c_triggerControlPropertyEditText, PlayerGroupSingle(player), str);
+    DYB_OnSyncRate(str);
+}
+
+string DYB_SyncResultStrMake(SU_BreakStrRes_t bsr, string prevStr) {
+    string pfx = null;
+    string send = null;
+    if(bsr.lv_result == null || bsr.lv_line == null) {
+        pfx = DYB_PFX_SYNCCODE_END;
+    } else {
+        pfx = DYB_PFX_SYNCCODE_CONT;
+    }
+
+    send = pfx + bsr.lv_result;
+
+    if(prevStr == send) {
+        if(bsr.lv_result == null || bsr.lv_line == null) {
+            pfx = DYB_PFX_SYNCCODE_END_ALT;
+        } else {
+            pfx = DYB_PFX_SYNCCODE_CONT_ALT;
+        }
+
+        send = pfx + bsr.lv_result;
+    }
+
+    return send;
+}
+
+void DYB_SyncResult(int player, DYB_SyncResult_t syncResult) {
+    int ctrlIdx;
+    string send;
+    gs_SU_BreakStrRes bsr;
+
+    bsr.lv_line = DYB_SyncResultToString(syncResult);
+
+    while(true) {
+        SU_BreakStringLen(bsr, DYB_EB_MAXLEN_NR);
+        DYB_AllignUTF8Bounds(bsr);
+
+        ctrlIdx = DYB_CtrlIdxNext();
+        send = DYB_SyncResultStrMake(bsr, dybInfo.sendInfo.ebsInfo[ctrlIdx].lblStr);
+        dybInfo.sendInfo.ebsInfo[ctrlIdx].lblStr = send;
+        DYB_SetEBStr(player, ctrlIdx, send, "SyncCode");
+
+        if(bsr.lv_line == null) {
+            break;
+        }
+    }
+}
+
+void DYB_SyncSect(int player, bank b, string sect, int sectIdx) {
+    int cnt = BankKeyCount(b, sect);
+    int k;
+    string key;
+
+    for(k = 0; k < cnt; k += 1) {
+        key = BankKeyName(b, sect, k);
+        DYB_SyncValAny(player, b, sect, key, sectIdx, k);
+    }
+}
+string DYB_SendNameMk(SU_BreakStrRes_t bsr, string prevStr) {
+    string pfx = null;
+    string send = null;
+    if(bsr.lv_result == null || bsr.lv_line == null) {
+        pfx = DYB_PFX_SECT_END;
+    } else {
+        pfx = DYB_PFX_SECT_CONT;
+    }
+
+    send = pfx + bsr.lv_result;
+
+    if(prevStr == send) {
+        if(bsr.lv_result == null || bsr.lv_line == null) {
+            pfx = DYB_PFX_SECT_END_ALT;
+        } else {
+            pfx = DYB_PFX_SECT_CONT_ALT;
+        }
+
+        send = pfx + bsr.lv_result;
+    }
+
+    return send;
+}
+string DYB_SendValMk(string keyPfx, string valSend, string prevStr, int type, bool lastVal) {
+    string pfx = null;
+    string send = null;
+    if(lastVal) {
+        pfx = IntToString(type) + DYB_PFX_END;
+    } else {
+        pfx = DYB_PFX_CONT;
+    }
+
+    send = keyPfx + pfx + valSend;
+
+    if(prevStr == send) {
+        if(lastVal) {
+            pfx = IntToString(type) + DYB_PFX_END_ALT;
+        } else {
+            pfx = DYB_PFX_CONT_ALT;
+        }
+
+        send = keyPfx + pfx + valSend;
+    }
+
+    return send;
+}
+
+int DYB_SendValCount(int strLen) {
+    //this is better than straight division to reduce roundoff error
+    int cnt = FixedToInt(Ceiling(IntToFixed(strLen) / IntToFixed(DYB_EB_MAXLEN_NR)));
+    if(strLen % DYB_EB_MAXLEN_NR == 0) {
+        cnt += 1;
+    }
+    return cnt;
+}
+
+int DYB_CtrlIdxNext() {
+    fixed curTime;
+    int idx;
+
+    idx = dybInfo.sendInfo.ctrlIdx;
+    dybInfo.sendInfo.ctrlIdx = (dybInfo.sendInfo.ctrlIdx + 1) % DYB_EB_VAL_CNT;
+
+    if(dybInfo.sendInfo.ctrlIdx % DYB_EB_SYNC_VAL_CNT == 0) {
+        curTime = GameGetMissionTime();
+        if((curTime - dybInfo.sendInfo.lastWaitTime) > (DYB_WAIT - 0.125)) { //Need incase bank is full of a bunch of tiny key value pairs and can't reach the sync speed, or incase sync speed is set way too high.
+            dybInfo.sendInfo.lastWaitTime = curTime;
+            DYB_Wait();
+            dybInfo.sendInfo.playerSyncSpeed = 0;
+            // DYB_DbgG("[DYB_CtrlIdxNext] WAAAAAAAIIIIIIIIITTTTTT. Time=" + FixedToString(GameGetMissionTime(), 4));
+        }
+    }
+
+    return idx;
+}
+
+void DYB_SyncSectName(int player, bank b, string sect, int sectIdx) {
+    string sectSync;
+    string send;
+    gs_SU_BreakStrRes bsr;
+    int ctrlIdx;
+
+    send = "";
+
+    if(dybInfo.extArgs.onMutateStr != null) {
+        sectSync = dybInfo.extArgs.onMutateStr(player, dybInfo.bankName, b, sect, null, null, DYB_STRING_TYPE_SECT);
+    }
+    else {
+        sectSync = sect;
+    }
+
+    bsr.lv_line = sectSync;
+
+    while(true) {
+        SU_BreakStringLen(bsr, DYB_EB_MAXLEN_NR);
+        DYB_AllignUTF8Bounds(bsr);
+
+        ctrlIdx = DYB_CtrlIdxNext();
+        send = DYB_SendNameMk(bsr, dybInfo.sendInfo.ebsInfo[ctrlIdx].lblStr);
+        dybInfo.sendInfo.ebsInfo[ctrlIdx].lblStr = send;
+        DYB_SetEBStr(player, ctrlIdx, send, "Sect");
+
+        if(bsr.lv_line == null) {
+            break;
+        }
+    }
+}
+
+string DYB_KeyMakePfx(string key) {
+    int keyLen = StringLength(key);
+    string keyLenComp = DYB_CompressInt(keyLen);
+    if(StringLength(keyLenComp) > DYB_MAXLEN_KEYLEN_COMP) {
+        DYB_DbgE("[DYB_KeyMakePfx] keyLenComp length too long=" + IntToString(StringLength(keyLenComp)));
+    }
+    return keyLenComp + DYB_KEY_SEP + key;
+}
+
+int DYB_RoundDownToNearest(int i, int mult) {
+    return i - (i % mult);
+}
+bool DYB_CharIsAscii(string c) {
+    return StringFind(DYB_ASCII_TABLE, c, true) != c_stringNotFound;
+}
+void DYB_AllignUTF8Bounds(SU_BreakStrRes_t bsr) {
+    int len = StringLength(bsr.lv_result);
+    int newLen;
+    string c;
+
+    newLen = DYB_RoundDownToNearest(len, DYB_ALLIGN_TO);
+    if(newLen != len) {
+        c = SU_StringCharAt(bsr.lv_result, len);
+        if(!DYB_CharIsAscii(c)) {
+            bsr.lv_line = StringSub(bsr.lv_result, newLen + 1, len) + bsr.lv_line;
+            bsr.lv_result = StringSub(bsr.lv_result, 1, newLen);
+            DYB_DbgG("[DYB_AllignUTF8Bounds] not ascii and not alligned");
+        }
+    }
+}
+
+bool DYB_SyncKeyVal(int player, bank b, string sect, string key, string val, int sectIdx, int keyIdx, int valType) {
+    string keySync;
+    string valSync;
+    string keyPfx;
+    int keyPfxLen;
+    int sendCnt;
+    string send;
+    int i;
+    string pfx;
+    int breakLen;
+    int ctrlIdx;
+    gs_SU_BreakStrRes bsr;
+
+    if(dybInfo.extArgs.onMutateStr != null) {
+        keySync = dybInfo.extArgs.onMutateStr(player, dybInfo.bankName, b, sect, key, null, DYB_STRING_TYPE_KEY);
+        valSync = dybInfo.extArgs.onMutateStr(player, dybInfo.bankName, b, sect, key, val, DYB_STRING_TYPE_VAL);
+    }
+    else {
+        keySync = key;
+        valSync = val;
+    }
+
+    keyPfx = DYB_KeyMakePfx(keySync);
+    keyPfxLen = StringLength(keyPfx);
+    sendCnt = DYB_SendValCount(keyPfxLen + StringLength(valSync));
+    send = "";
+
+    bsr.lv_line = valSync;
+
+    for(i = 0; i < sendCnt; i += 1) {
+        if(i == 0) {
+            if(keyPfxLen > DYB_EB_MAXLEN_NR) {
+                DYB_DbgE("[DYB_SyncKeyVal] key too long maxLen=" + IntToString(DYB_EB_MAXLEN_KEY));
+                return false;
+            }
+            breakLen = DYB_EB_MAXLEN_NR - keyPfxLen;
+        } else {
+            breakLen = DYB_EB_MAXLEN_NR;
+            keyPfx = "";
+        }
+
+        SU_BreakStringLen(bsr, breakLen);
+        DYB_AllignUTF8Bounds(bsr);
+
+        ctrlIdx = DYB_CtrlIdxNext();
+        send = DYB_SendValMk(keyPfx, bsr.lv_result, dybInfo.sendInfo.ebsInfo[ctrlIdx].lblStr, valType, i == sendCnt - 1);
+        dybInfo.sendInfo.ebsInfo[ctrlIdx].lblStr = send;
+        DYB_SetEBStr(player, ctrlIdx, send, "Sect");
+
+        // DYB_DbgG("[DYB_SyncKeyVal] Time=" + FixedToString(GameGetMissionTime(), c_fixedPrecisionAny) + ", Ctrl=" + IntToString(dybCtrls.sects[s].keys[k].ebVal[vRel]) + ", Sect=" + sect + "(" + IntToString(s) + "), Send=" + send + ", len=" + IntToString(StringLength(send)) + ", breakLen=" + IntToString(breakLen));
+    }
+    return true;
+}
+
+string DYB_PointToString(point pt) {
+	return FixedToString(PointGetX(pt), c_fixedPrecisionAny) + "," + FixedToString(PointGetY(pt), c_fixedPrecisionAny);
+}
+point DYB_PointFromString(string str) {
+    gs_SU_BreakStrRes bsr;
+    bsr.lv_line = str;
+    SU_BreakStringChar(bsr, "_");
+    return Point(StringToFixed(bsr.lv_result), StringToFixed(bsr.lv_line));
+}
+bool DYB_SyncValAny(int player, bank b, string sect, string key, int sectIdx, int keyIdx) {
+    int valType;
+    string val = "";
+
+    if(BankValueIsType(b, sect, key, c_bankTypeString)) {
+        valType = DYB_BANK_TYPE_STR;
+        val = BankValueGetAsString(b, sect, key);
+    } else if(BankValueIsType(b, sect, key, c_bankTypeText)) {
+        valType = DYB_BANK_TYPE_TXT;
+        val = TextToString(BankValueGetAsText(b, sect, key));
+    } else if(BankValueIsType(b, sect, key, c_bankTypeInt)) {
+        valType = DYB_BANK_TYPE_INT;
+        val = IntToString(BankValueGetAsInt(b, sect, key));
+    } else if(BankValueIsType(b, sect, key, c_bankTypeFixed)) {
+        valType = DYB_BANK_TYPE_FIXED;
+        val = FixedToString(BankValueGetAsFixed(b, sect, key), c_fixedPrecisionAny);
+    } else if(BankValueIsType(b, sect, key, c_bankTypeFlag)) {
+        valType = DYB_BANK_TYPE_BOOL;
+        val = IntToString(BoolToInt(BankValueGetAsFlag(b, sect, key)));
+    } else if(BankValueIsType(b, sect, key, c_bankTypePoint)) {
+        valType = DYB_BANK_TYPE_POINT;
+        val = DYB_PointToString(BankValueGetAsPoint(b, sect, key));
+    } else {
+        DYB_DbgE("[DYB_SyncValAny] unsupported type section=" + sect + " key=" + key);
+    }
+
+
+    if(val == null) {
+        DYB_DbgE("[DYB_SyncValAny] null val section=" + sect + " key=" + key);
+    }
+
+    // DYB_DbgG("[DYB_SyncValHelper] Time=" + FixedToString(GameGetMissionTime(), c_fixedPrecisionAny) + ", Sect=" + sect + "(" + IntToString(sectIdx) + "), Send=" + val + ", len=" + IntToString(StringLength(val)));
+    if(DYB_ShouldSyncString(player, dybInfo.bankName, b, sect, key, val, DYB_SYNC_TYPE_VAL)) {
+        return DYB_SyncKeyVal(player, b, sect, key, val, sectIdx, keyIdx, valType);
+    }
+    else {
+        return false;
+    }
+}
+
+bool DYB_ValPfxIsValid(string pfx) {
+    return (pfx != null) &&
+        (pfx == DYB_PFX_END || pfx == DYB_PFX_CONT || pfx == DYB_PFX_END_ALT || pfx == DYB_PFX_CONT_ALT);
+}
+
+bool DYB_SectPfxIsValid(string pfx) {
+    return (pfx != null) &&
+        (pfx == DYB_PFX_SECT_END || pfx == DYB_PFX_SECT_CONT || pfx == DYB_PFX_SECT_END_ALT || pfx == DYB_PFX_SECT_CONT_ALT);
+}
+
+
+bool DYB_OnSectSyncStr(int player, string val) {
+    string pfx = SU_StringFront(val);
+    string rest;
+
+    if(!DYB_SectPfxIsValid(pfx)) {
+        // DYB_DbgE("[DYB_OnSectSyncStr] invalid pfx=" + pfx);
+        return false;
+    }
+
+    rest = SU_StringPopFront(val);
+    if(dybInfo.pinfo[player].sect.valid) {
+        dybInfo.pinfo[player].sect.s = rest;
+    } else {
+        dybInfo.pinfo[player].sect.s += rest;
+    }
+    dybInfo.pinfo[player].sect.valid = pfx == DYB_PFX_SECT_END || pfx == DYB_PFX_SECT_END_ALT;
+
+    return true;
+}
+string DYB_OnKeyValSyncStr(int player, string val) {
+    gs_SU_BreakStrRes bsr;
+    int keyLen;
+    string key;
+    int keyStart;
+    int keyEnd;
+
+    bsr.lv_line = val;
+    SU_BreakStringChar(bsr, DYB_KEY_SEP);
+    if(bsr.lv_result == null) {
+        DYB_DbgE("[DYB_OnKeyValSyncStr] invalid compressed key length for val=" + val);
+        return null;
+    }
+
+    if(StringLength(bsr.lv_result) > DYB_MAXLEN_KEYLEN_COMP) {
+        DYB_DbgE("[DYB_OnKeyValSyncStr] keyLenComp greater than max of " + IntToString(DYB_MAXLEN_KEYLEN_COMP) + ", val=" + val);
+    }
+
+    keyLen = DYB_DecompressInt(bsr.lv_result);
+    if(keyLen > DYB_EB_MAXLEN_KEY) {
+        DYB_DbgE("[DYB_OnKeyValSyncStr] keyLen greater than max of " + IntToString(DYB_EB_MAXLEN_KEY));
+    }
+
+    keyStart = bsr.lv_i + 1;
+    keyEnd = keyStart + keyLen - 1;
+    dybInfo.pinfo[player].key.s = StringSub(val, keyStart, keyEnd);
+    dybInfo.pinfo[player].key.valid = true;
+    val = StringSub(val, keyEnd + 1, NL_INT_MAX);
+    return val;
+}
+string DYB_OnKeyValSyncStrLast(int player, string val) {
+    string pfx = SU_StringFront(val);
+    string rest = StringSub(val, 3, NL_INT_MAX);
+
+    if(dybInfo.pinfo[player].val.valid) {
+        dybInfo.pinfo[player].val.s = rest;
+    } else {
+        dybInfo.pinfo[player].val.s += rest;
+    }
+
+    dybInfo.pinfo[player].val.valid = true;
+
+    return pfx;
+}
+string DYB_OnValSyncStr(int player, string val) {
+    string pfx = SU_StringFront(val);
+    string rest = StringSub(val, 2, NL_INT_MAX);
+
+    if(dybInfo.pinfo[player].val.valid) {
+        dybInfo.pinfo[player].val.s = rest;
+    } else {
+        dybInfo.pinfo[player].val.s += rest;
+    }
+
+    return pfx;
+}
+
+bool DYB_OnKeyValSyncStrCase(int player, string val, DYB_StringRes_t res) {
+    res.str = SU_StringFront(val); // pfx
+
+    if(DYB_ValPfxIsValid(res.str)) { // [valpfx][val]
+        DYB_OnValSyncStr(player, val);
+        return true;
+    }
+    else if(SU_CharIsNumeric(res.str) && DYB_ValPfxIsValid(SU_StringCharAt(val, 2))) { // [valtype][valpfx][val] 
+        DYB_OnKeyValSyncStrLast(player, val);
+        return true;
+    } else { // [keylencomp]_[key][valtype][valpfx][val] or [keylencomp]_[key][valpfx][val] 
+        val = DYB_OnKeyValSyncStr(player, val);
+        if(val != null) {
+            return DYB_OnKeyValSyncStrCase(player, val, res);
+        }
+    }
+
+    return false;
+}
+
+bool DYB_AllSet(int player) {
+    return dybInfo.pinfo[player].sect.valid &&
+        dybInfo.pinfo[player].key.valid &&
+        dybInfo.pinfo[player].val.valid;
+}
+
+void DYB_BankSetFromStringType(bank b, string sect, string key, string val, int valType) {
+    if(valType == DYB_BANK_TYPE_STR) {
+        BankValueSetFromString(b, sect, key, val);
+    } else if(valType == DYB_BANK_TYPE_TXT) {
+        BankValueSetFromText(b, sect, key, StringToText(val));
+    } else if(valType == DYB_BANK_TYPE_INT) {
+        BankValueSetFromInt(b, sect, key, StringToInt(val));
+    } else if(valType == DYB_BANK_TYPE_FIXED) {
+        BankValueSetFromFixed(b, sect, key, StringToFixed(val));
+    } else if(valType == DYB_BANK_TYPE_BOOL) {
+        BankValueSetFromFlag(b, sect, key, StringToInt(val) == 1);
+    } else if(valType == DYB_BANK_TYPE_POINT) {
+        BankValueSetFromPoint(b, sect, key, DYB_PointFromString(val));
+    } else {
+        DYB_DbgE("[DYB_BankSetFromStringType] invalid val type");
+    }
+}
+
+bool DYB_OnSyncCheck(int player, string pfx) {
+    int valType;
+    if(DYB_AllSet(player)) {
+        valType = StringToInt(pfx);
+        if(valType < DYB_BANK_TYPE_STR || valType > DYB_BANK_TYPE_POINT) {
+            DYB_DbgE("[DYB_OnSyncCheck] invalid val type");
+            return true;
+        }
+
+        if(dybInfo.extArgs.syncSave) {
+            DYB_BankSetFromStringType(dybInfo.banks[player], 
+                dybInfo.pinfo[player].sect.s,
+                dybInfo.pinfo[player].key.s,
+                dybInfo.pinfo[player].val.s,
+                valType
+            );
+        }
+
+        dybInfo.onSyncValue(player, dybInfo.bankName, 
+            dybInfo.pinfo[player].sect.s,
+            dybInfo.pinfo[player].key.s,
+            dybInfo.pinfo[player].val.s,
+            DYB_SYNC_TYPE_VAL,
+            valType
+        );
+
+        DYB_StringOptionalInit(dybInfo.pinfo[player].key);
+        DYB_StringOptionalInit(dybInfo.pinfo[player].val);
+        return true;
+    }
+
+    return false;
+}
+bool DYB_OnSyncCheckSect(int player, string s) {
+    if(dybInfo.pinfo[player].sect.valid) {
+        if(dybInfo.extArgs.syncSave) {
+            BankSectionCreate(dybInfo.banks[player], dybInfo.pinfo[player].sect.s);
+        }
+        
+        dybInfo.onSyncValue(player, dybInfo.bankName, 
+            dybInfo.pinfo[player].sect.s,
+            null,
+            null,
+            DYB_SYNC_TYPE_SECT,
+            DYB_INVALID_IDX
+        );
+        return true;
+    }
+    return false;
+}
+
+void DYB_OnSyncFinished(int player) {
+    PlayerGroupRemove(dybInfo.pgSyncIP, player);
+    if(dybInfo.extArgs.syncSave) {
+        BankSave(dybInfo.banks[player]);
+    }
+}
+
+void DYB_CallOnSyncResult(int player, DYB_SyncResult_t syncResult) {
+    if(DYB_SyncResultShouldEndSync(syncResult) && dybInfo.extArgs.syncSave) {
+        dybInfo.onSyncResult(player, dybInfo.bankName, dybInfo.banks[player], syncResult);
+    }
+    else {
+        dybInfo.onSyncResult(player, dybInfo.bankName, null, syncResult);
+    }
+}
+void DYB_CallOnSyncResultSync(int player, string s) {
+    gs_DYB_SyncResult syncResult;
+    DYB_SyncResultFromString(s, syncResult);
+    if(DYB_SyncResultShouldEndSync(syncResult)) {
+        DYB_OnSyncFinished(player);
+    }
+    DYB_CallOnSyncResult(player, syncResult);
+}
+
+playergroup DYB_SyncIPPG() {
+    return dybInfo.pgSyncIP;
+}
+bool DYB_SyncIP(int player) {
+    return PlayerGroupHasPlayer(dybInfo.pgSyncIP, player);
+}
+bool DYB_SyncIPAll() {
+    return PlayerGroupCount(dybInfo.pgSyncIP) > 0;
+}
+
+void DYB_OnPlayerLeave_init() {
+    if(gt_DYB_OnPlayerLeave == null) {
+        gt_DYB_OnPlayerLeave = TriggerCreate("DYB_OnPlayerLeave");
+        TriggerAddEventPlayerLeft(gt_DYB_OnPlayerLeave, c_playerAny, c_gameResultUndecided);
+    }
+}
+
+bool DYB_OnPlayerLeave(bool p_chk, bool p_run) {
+    gs_DYB_SyncResult syncResult;
+    int player = EventPlayer();
+
+    if(player <= 0 || player > DYB_MAX_PLAYERS) {
+        return true;
+    }
+
+    if(DYB_SyncIP(player)) {
+        DYB_SyncBankGetResult(player, dybInfo.bankName, dybInfo.banks[player], DYB_SYNC_STATUS_LEFT_GAME, syncResult);
+        DYB_OnSyncFinished(player);
+        if(syncResult.lv_syncCode != DYB_SYNC_CODE_IGNORE) {
+            DYB_CallOnSyncResult(player, syncResult);
+        }
+    }
+
+    DYB_PlayerOnSyncFailed(player);
+
+    if(dybInfo.pgUsers != null) {
+        PlayerGroupRemove(dybInfo.pgUsers, player);
+    }
+
+    return true;
+}
+
+bool DYB_SyncCodePfxValid(string pfx) {
+    return 
+        pfx == DYB_PFX_SYNCCODE_END     ||
+        pfx == DYB_PFX_SYNCCODE_END_ALT ||
+        pfx == DYB_PFX_SYNCCODE_CONT    ||
+        pfx == DYB_PFX_SYNCCODE_CONT_ALT;
+}
+bool DYB_OnSyncCodeStr(int player, string val) {
+    string pfx = SU_StringFront(val);
+    string rest;
+
+    if(!DYB_SyncCodePfxValid(pfx)) {
+        // DYB_DbgE("[DYB_SyncCodePfxValid] invalid pfx=" + pfx);
+        return false;
+    }
+
+    rest = SU_StringPopFront(val);
+    if(dybInfo.pinfo[player].syncCode.valid) {
+        dybInfo.pinfo[player].syncCode.s = rest;
+    } else {
+        dybInfo.pinfo[player].syncCode.s += rest;
+    }
+    dybInfo.pinfo[player].syncCode.valid = pfx == DYB_PFX_SYNCCODE_END || pfx == DYB_PFX_SYNCCODE_END_ALT;
+
+    return true;
+}
+bool DYB_OnSyncCheckCode(int player, string val) {
+    if(dybInfo.pinfo[player].syncCode.valid) {
+        DYB_CallOnSyncResultSync(player, dybInfo.pinfo[player].syncCode.s);
+        return true;
+    }
+    return false;
+}
+
+bool DYB_EBOnChange(int player, int ctrl, string s) {
+    gs_DYB_StringRes res;
+
+    // DYB_DbgG("[DYB_EBOnChange] s=" + s + ", len=" + IntToString(StringLength(s)));
+
+    if(DYB_OnSyncCodeStr(player, s)) {
+        DYB_OnSyncCheckCode(player, s);
+    } else if(DYB_OnSectSyncStr(player, s)) {
+        DYB_OnSyncCheckSect(player, s);
+    } else if(DYB_OnKeyValSyncStrCase(player, s, res)) {
+        DYB_OnSyncCheck(player, res.str);   
+    } else {
+        DYB_DbgE("[DYB_EBOnChange] failed to map ctrl with idx");
+        return false;
+    }
+
+    return true;
+}
+
+bool DYB_EBOnEdit(bool p_chk, bool p_run) {
+    int player = EventPlayer();
+    int ctrl;
+    string s;
+
+    if(player <= 0 || player > DYB_MAX_PLAYERS) {
+        DYB_DbgE("[DYB_EBOnEdit] invalid player=" + IntToString(player));
+        return true;
+    }
+
+    ctrl = EventDialogControl();
+    s = DialogControlGetPropertyAsString(ctrl, c_triggerControlPropertyEditText, player);
+
+    if(s == null) {
+        DYB_DbgE("[DYB_EBOnEdit] null str player=" + IntToString(player) + ", ctrl=" + IntToString(ctrl));
+        return true;
+    }
+    
+    DYB_EBOnChange(player, ctrl, s);
+
+    return true;
+}
+
+void DYB_EBOnEdit_init() {
+    if(gt_DYB_EBOnEdit == null) {
+        gt_DYB_EBOnEdit = TriggerCreate("DYB_EBOnEdit");
+    }
+}
+
+void DYB_BankBackup_init() {
+    int p;
+    if(gt_DYB_BankBackup == null) {
+        gt_DYB_BankBackup = TriggerCreate("DYB_BankBackup_thrd");
+        TriggerAddEventGeneric(gt_DYB_BankBackup, DYB_BANKBACKUP_EV);
+    }
+}
+bool DYB_BankBackup_thrd(bool p_chk, bool p_run) {
+    int player;
+    bank b;
+    int count;
+
+    player = DataTableGetInt(false, TriggerEventParamName(DYB_BANKBACKUP_EV, "player"));
+    if(player <= 0 && player > DYB_MAX_PLAYERS) {
+        DYB_DbgE("[DYB_BankBackup_thrd] invalid player");
+        return true;
+    }
+    b = DataTableGetBank(false, TriggerEventParamName(DYB_BANKBACKUP_EV, "mainBank"));
+    if(b == null) {
+        DYB_DbgE("[DYB_BankBackupClear_thrd] invalid bank");
+        return true;
+    }
+    count = DataTableGetInt(false, TriggerEventParamName(DYB_BANKBACKUP_EV, "count"));
+    if(count <= 0) {
+        DYB_DbgE("[DYB_BankBackupClear_thrd] invalid count");
+        return true;
+    }
+
+    DYB_BankBackupHelper(player, b, count);
+
+    return true;
+}
+void DYB_BankBackup(int player, bank mainBank, int count) {
+    DataTableSetInt(false, TriggerEventParamName(DYB_BANKBACKUP_EV, "player"), player);
+    DataTableSetBank(false, TriggerEventParamName(DYB_BANKBACKUP_EV, "mainBank"), mainBank);
+    DataTableSetInt(false, TriggerEventParamName(DYB_BANKBACKUP_EV, "count"), count);
+    TriggerSendEvent(DYB_BANKBACKUP_EV);
+}
+void DYB_BankBackupHelper(int player, bank mainBank, int count) {
+    int i;
+    for(i = 0; i < count; i += 1) {
+        BankBackup(mainBank, player);
+    }
+}
+
+void DYB_BankBackupsClear_Init() {
+    int p;
+    if(gt_DYB_BankBackupClear == null) {
+        gt_DYB_BankBackupClear = TriggerCreate("DYB_BankBackupClear_thrd");
+        TriggerAddEventGeneric(gt_DYB_BankBackupClear, DYB_CLEARBACKUP_EV);
+    }
+}
+bool DYB_BankBackupClear_thrd(bool p_chk, bool p_run) {
+    int player;
+    bank b;
+    int keepCount;
+
+    player = DataTableGetInt(false, TriggerEventParamName(DYB_CLEARBACKUP_EV, "player"));
+    if(player <= 0 && player > DYB_MAX_PLAYERS) {
+        DYB_DbgE("[DYB_BankBackupClear_thrd] invalid player");
+        return true;
+    }
+    b = DataTableGetBank(false, TriggerEventParamName(DYB_CLEARBACKUP_EV, "mainBank"));
+    if(b == null) {
+        DYB_DbgE("[DYB_BankBackupClear_thrd] invalid bank");
+        return true;
+    }
+    keepCount = DataTableGetInt(false, TriggerEventParamName(DYB_CLEARBACKUP_EV, "keepCount"));
+    if(keepCount < 0) {
+        DYB_DbgE("[DYB_BankBackupClear_thrd] invalid keepCount");
+        return true;
+    }
+    DYB_BankBackupsClearHelper(player, b, keepCount);
+
+    return true;
+}
+void DYB_BankBackupsClearHelper(int player, bank mainBank, int keepCount) {
+    int i = 1;
+    bank bankBackup = null;
+    BankBackupLoopBegin(mainBank, true);
+    for (;!BankBackupLoopDone(); BankBackupLoopStep()) {
+        if(i > keepCount) {
+            bankBackup = BankBackupLoopCurrent();
+            BankBackupRemove(mainBank, BankBackupGetId(bankBackup), player);
+        }
+        i += 1;
+    }
+    BankBackupLoopEnd();
+}
+void DYB_BankBackupsClear(int player, bank mainBank, int keepCount) {
+    DataTableSetInt(false, TriggerEventParamName(DYB_CLEARBACKUP_EV, "player"), player);
+    DataTableSetBank(false, TriggerEventParamName(DYB_CLEARBACKUP_EV, "mainBank"), mainBank);
+    DataTableSetInt(false, TriggerEventParamName(DYB_CLEARBACKUP_EV, "keepCount"), keepCount);
+    TriggerSendEvent(DYB_CLEARBACKUP_EV);
+}
+
+void DYB_BankBackupFind(bank b, bool decending, DYB_IntOptional_t outBackup) {
+    bank bankBackup;
+    DYB_IntOptionalInit(outBackup);
+
+    BankBackupLoopBegin(b, decending);
+    for (;!BankBackupLoopDone(); BankBackupLoopStep()) {
+        bankBackup = BankBackupLoopCurrent();
+        outBackup.i = BankBackupGetId(bankBackup);
+        outBackup.valid = true;
+        break;
+    }
+    BankBackupLoopEnd();
+}
+
+void DYB_BankReset(bank b) {
+	int cnt;
+	int n;
+    
+    //For some reason restoring a backup to a bank that already exists results in missing keys for large backups even if it is saved/removed before restoring. This seems to solve that problem for some odd reason...
+    BankSectionCreate(b, "A");
+    cnt = BankSectionCount(b);
+
+    for(n = 0; n < cnt; n+= 1) {
+        BankSectionRemove(b, BankSectionName(b, 0));
+    }
+	BankSave(b);
+}
+
+void DYB_ArrCopy(DYB_ArrRef_t dst, DYB_ArrRef_t src) {
+    int i;
+    for(i = 1; i <= DYB_MAX_PLAYERS; i += 1) {
+        dst[i] = src[i];
+    }
+}
+void DYB_ExtArgsCopy(DYB_ExtArgsRef_t dst, DYB_ExtArgsRef_t src) {
+    dst.syncSave           = src.syncSave;
+    dst.clearBeforeRestore = src.clearBeforeRestore;
+    dst.syncBankGetResult  = src.syncBankGetResult;
+    dst.shouldSyncStr      = src.shouldSyncStr;
+    dst.onMutateStr        = src.onMutateStr;
+
+    dst.playerSyncSpeedMax = src.playerSyncSpeedMax;
+    if(dst.playerSyncSpeedMax == 0) {
+        dst.playerSyncSpeedMax = DYB_SYNC_SPEED_BASE;
+    }
+    dst.playerSyncSpeedMax = DYB_SyncRateToPerWait(dst.playerSyncSpeedMax);
+}
+
+playergroup DYB_PGUsers() {
+	int pSrc = -1;
+	playergroup pg = PlayerGroupActive();
+	playergroup pgUsers = PlayerGroupEmpty();
+
+	while(true) {
+		pSrc = PlayerGroupNextPlayer(pg, pSrc);
+		if(pSrc < 0) { break; }
+
+        if((pSrc > 0 && pSrc <= DYB_MAX_PLAYERS) && (PlayerType(pSrc) == c_playerTypeUser) && (PlayerStatus(pSrc) == c_playerStatusActive)) {
+            PlayerGroupAdd(pgUsers, pSrc);
+        }
+	}
+
+	return pgUsers;
+}
+
+void DYB_Wait() {
+    Wait(DYB_WAIT, c_timeReal);
+}
+
+string DYB_CompressInt(int val) {
+    string s = "";
+    int div;
+    if(val < 0) {
+        DYB_DbgE("[DYB_Compress_Int] does not support negative integers");
+        return s;
+    }
+
+    do {
+        div = (val % DYB_COMP_ALPHABETLEN) + 1; //strings have 1 based indicies
+        val /= DYB_COMP_ALPHABETLEN;
+        s += StringSub(DYB_COMP_ALPHABET, div, div);
+    } while(val > 0);
+
+    return s;
+}
+int DYB_DecompressInt(string val) {
+    int valLen = StringLength(val);
+    int n = 0;
+    int i;
+    int iPow;
+    int idx;
+    string c;
+
+    iPow = 1;
+    for(i = 1; i <= valLen; i += 1) {
+        c = StringSub(val, i, i);
+        idx = StringFind(DYB_COMP_ALPHABET, c, true);
+        if(idx == c_stringNotFound) {
+            DYB_DbgE("[DYB_Decompress_Int] val=" + val + ", char= " + c + ", not found in alphabet");
+            return DYB_INVALID_IDX;
+        }
+
+        idx -= 1;
+        n += iPow * idx;
+        iPow *= DYB_COMP_ALPHABETLEN;
+    }
+
+    return n;
+}
+
+int DYB_BankGetSize(bank src) {
+    int byteCount;
+    int sectCnt;
+    int keyCnt;
+    int s;
+    int k;
+    string sectName;
+    string keyName;
+    string val;
+
+    byteCount = 0;
+
+    if(src == null) {
+        DYB_DbgE("[DYB_BankGetSize] invalid bank");
+        return DYB_INVALID_IDX;
+    }
+
+    sectCnt = BankSectionCount(src);
+    for(s = 0; s < sectCnt; s += 1) {
+        sectName = BankSectionName(src, s);
+        byteCount += StringLength(sectName);
+
+        keyCnt = BankKeyCount(src, sectName);
+        for(k = 0; k < keyCnt; k += 1) {
+            keyName = BankKeyName(src, sectName, k);
+    
+            val = BankValueGetAsString(src, sectName, keyName);
+            byteCount += StringLength(keyName) + StringLength(val);
+        }
+    }
+
+    return byteCount;
+}
+
+int DYB_BankGetSizeEx(bank src, DYB_ShouldSyncString_t shouldSyncStr, DYB_OnMutateString_t onMutateStr) {
+    int byteCount;
+    int sectCnt;
+    int keyCnt;
+    int s;
+    int k;
+    string sectName;
+    string keyName;
+    string val;
+
+    byteCount = 0;
+
+    if(src == null) {
+        DYB_DbgE("[DYB_BankGetSizeEx] invalid bank");
+        return DYB_INVALID_IDX;
+    }
+
+    sectCnt = BankSectionCount(src);
+    for(s = 0; s < sectCnt; s += 1) {
+        sectName = BankSectionName(src, s);
+      
+        if(shouldSyncStr(DYB_INVALID_IDX, DYB_BANKGETSIZEEX_NAME, src, sectName, null, null, DYB_SYNC_TYPE_SECT)) {
+            byteCount += StringLength(onMutateStr(DYB_INVALID_IDX, DYB_BANKGETSIZEEX_NAME, src, sectName, null, null, DYB_STRING_TYPE_SECT));
+        
+            keyCnt = BankKeyCount(src, sectName);
+            for(k = 0; k < keyCnt; k += 1) {
+                keyName = BankKeyName(src, sectName, k);
+        
+                if(shouldSyncStr(DYB_INVALID_IDX, DYB_BANKGETSIZEEX_NAME, src, sectName, keyName, null, DYB_SYNC_TYPE_VAL)) {
+                    val = BankValueGetAsString(src, sectName, keyName);
+                    byteCount += StringLength(onMutateStr(DYB_INVALID_IDX, DYB_BANKGETSIZEEX_NAME, src, sectName, keyName, null, DYB_STRING_TYPE_KEY)) +
+                        StringLength(onMutateStr(DYB_INVALID_IDX, DYB_BANKGETSIZEEX_NAME, src, sectName, keyName, val, DYB_STRING_TYPE_VAL));
+                }
+            }
+        }
+    }
+
+    return byteCount;
+}
+
+int DYB_SyncRateToPerWait(int playerSyncRateMax) {
+    if(playerSyncRateMax == DYB_PLAYER_SYNC_SPEED_ANY) {
+        return playerSyncRateMax;
+    }
+    
+    if(playerSyncRateMax <= 0) {
+        DYB_DbgE("[DYB_SyncRateToPerWait] playerSyncRateMax must be a positive integer");
+        playerSyncRateMax = DYB_SYNC_SPEED_BASE;
+    }
+
+    if(DYB_WAIT <= 0) {
+        DYB_DbgE("[DYB_SyncRateToPerWait] DYB_WAIT must be a positive integer");
+        playerSyncRateMax = 1;
+    }
+    else {
+        if(playerSyncRateMax > 100000) {
+            playerSyncRateMax = FixedToInt(IntToFixed(playerSyncRateMax / 1000) * DYB_WAIT) * 1000; //fixed has a low max value
+        }
+        else {
+            playerSyncRateMax = FixedToInt(IntToFixed(playerSyncRateMax) * DYB_WAIT);
+        }
+    }
+
+    return playerSyncRateMax;
+}
+int DYB_StringToByteCount(string s) {
+    //To do: maybe factor in TCP and IP header lengths?
+    return StringLength(s) + 13; //increase for packet size
+}
+void DYB_OnSyncRate(string s) {
+    if(dybInfo.extArgs.playerSyncSpeedMax == DYB_PLAYER_SYNC_SPEED_ANY) {
+        return;
+    }
+
+    dybInfo.sendInfo.playerSyncSpeed += DYB_StringToByteCount(s);
+    if(dybInfo.sendInfo.playerSyncSpeed > dybInfo.extArgs.playerSyncSpeedMax) {
+        dybInfo.sendInfo.lastWaitTime = GameGetMissionTime();
+        Wait(DYB_WAIT, c_timeReal);
+        dybInfo.sendInfo.playerSyncSpeed = 0;
+        // DYB_DbgG("[DYB_OnSyncRate] WAAAAAAAIIIIIIIIITTTTTT. Time=" + FixedToString(GameGetMissionTime(), 4));
+    }
+}
+
+
+bool DYB_ShouldSyncString(int player, string bankName, bank b, string section, string key, string value, int syncType) {
+    return (dybInfo.extArgs.shouldSyncStr == null) || 
+        dybInfo.extArgs.shouldSyncStr(player, bankName, b, section, key, value, syncType);
+}
+void DYB_SyncBankGetResult(int player, string bankName, bank b, int status, DYB_SyncResult_t syncResult) {
+    DYB_SyncResultInit(syncResult);
+    if(dybInfo.extArgs.syncBankGetResult != null) {
+        dybInfo.extArgs.syncBankGetResult(player, bankName, b, status, syncResult);
+    }
+
+    if(syncResult.lv_syncCode == DYB_SYNC_CODE_INVALID) {
+        DYB_SyncBankForwardResult(status, syncResult);
+    }
+}
+
+void DYB_SyncResultInit(DYB_SyncResult_t syncResult) {
+    syncResult.lv_syncCode = DYB_SYNC_CODE_INVALID;
+    syncResult.lv_payload  = null;
+}
+
+//Forwards default sync codes in syncBankGetResult callback.
+//Returns true if status is recognized as default DYB_SYNC_STATUS_ status code.
+bool DYB_SyncBankForwardResult(int status, DYB_SyncResult_t syncResult) {
+    if(status == DYB_SYNC_STATUS_MISSING_BACKUP) {
+        syncResult.lv_syncCode = DYB_SYNC_CODE_MISSING_BACKUP;
+    }
+    else if(status == DYB_SYNC_STATUS_SYNC_FAILURE) {
+        syncResult.lv_syncCode = DYB_SYNC_CODE_FAILED;
+    }
+    else if(status == DYB_SYNC_STATUS_LEFT_GAME) {
+        syncResult.lv_syncCode = DYB_SYNC_CODE_LEFT_GAME;
+    }
+    else if(status == DYB_SYNC_STATUS_PRESYNC) {
+        syncResult.lv_syncCode = DYB_SYNC_CODE_IGNORE;
+    }
+    else if(status == DYB_SYNC_STATUS_SYNC_FINISHED) {
+        syncResult.lv_syncCode = DYB_SYNC_CODE_SYNC_FINISHED;
+    }
+    else {
+        syncResult.lv_syncCode = DYB_SYNC_CODE_IGNORE;
+        DYB_DbgE("[DYB_SyncBankForwardResult] invalid sync status: " + IntToString(status));
+        return false;
+    }
+    
+    return true;
+}
+//Changes max player sync speed in bytes per second during syncing
+void DYB_SetSyncSpeedMax(int syncSpeed) {
+    dybInfo.extArgs.playerSyncSpeedMax = DYB_SyncRateToPerWait(syncSpeed);
+}
+
+string DYB_SyncResultToString(DYB_SyncResult_t syncResult) {
+    return IntToString(syncResult.lv_syncCode) + " " + syncResult.lv_payload;
+}
+void DYB_SyncResultFromString(string code, DYB_SyncResult_t syncResult) {
+    gs_SU_BreakStrRes bsr;
+    bsr.lv_line = code;
+    SU_BreakStringChar(bsr, " ");
+
+    if(bsr.lv_result == null) {
+        DYB_DbgE("[DYB_SyncResultFromString] invalid syncCode");
+    }
+
+    syncResult.lv_syncCode = StringToInt(bsr.lv_result);
+    syncResult.lv_payload  = bsr.lv_line;
+}
+
+void DYB_StringOptionalInit(DYB_StringOptional_t sopt) {
+    sopt.s = null;
+    sopt.valid = false;
+}
+void DYB_IntOptionalInit(DYB_IntOptional_t iopt) {
+    iopt.i = 0;
+    iopt.valid = false;
+}

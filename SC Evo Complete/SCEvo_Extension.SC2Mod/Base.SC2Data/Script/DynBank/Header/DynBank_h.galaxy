@@ -1,0 +1,295 @@
+//---------------- Structs -----------------
+struct gs_DYB_SyncResult {
+    int lv_syncCode; //Will be passed to onSyncResult callback, must be set to one of the DYB_SYNC_CODE_ constants. Set to DYB_SYNC_CODE_ABANDON to abandon the sync.
+    string lv_payload; //Custom data to pass to onSyncResult callback.
+};
+typedef structref<gs_DYB_SyncResult> DYB_SyncResult_t;
+
+//---------------- Callbacks -----------------
+void DYB_OnValueChanged(
+    int player, //Player whos bank is being loaded
+    string bankName, //Bank name passed to DYB_LoadBank
+    string section, //Section name
+    string key, //Key name
+    string value, //Value
+    int syncType, //One of DYB_SYNC_TYPE_ constants
+    int valType //Value type, will be one of DYB_BANK_TYPE_ constants (DYB_INVALID_IDX if syncType==DYB_SYNC_TYPE_SECT)
+);
+typedef funcref<DYB_OnValueChanged> DYB_OnValueChanged_t;
+
+void DYB_OnSyncResult(
+    int player, //Player whos bank is being loaded
+    string bankName, //Bank name passed to DYB_LoadBank
+    bank b, //Main bank for player
+    DYB_SyncResult_t syncResult //Sync result returned from DYB_SyncBankGetResult
+);
+typedef funcref<DYB_OnSyncResult> DYB_OnSyncResult_t;
+
+//Returns code indicating how a synced bank should be processed in onSyncResult callback before syncing begins or after a successful sync.
+//When syncResult.lv_syncCode=DYB_SYNC_CODE_ABANDON syncing of the bank is abandoned.
+//When status=DYB_SYNC_STATUS_PRESYNC, and when syncResult.lv_syncCode=DYB_SYNC_CODE_ABANDON_NOTIFY syncing of the bank is abandoned and clients are notified.
+//When status=DYB_SYNC_STATUS_PRESYNC, whatever syncResult.lv_syncCode is set to is what is passed to the onSyncResult, syncing will proceed like normal (except for DYB_SYNC_CODE_ABANDON).
+//When status=DYB_SYNC_STATUS_SYNC_FINISHED, syncResult.lv_syncCode must be set to DYB_SYNC_CODE_SYNC_FINISHED.
+//If syncResult.lv_syncCode is not set within the callback, the default code for the current status will be synced.
+//syncResult.lv_payload can be set to something custom if you need to let clients know more exactly why syncing was abandoned. See gs_DYB_SyncResult.
+//Note that doing anything that can affect game state in this callback will result in desync.
+void DYB_SyncBankGetResult(
+    int player, //Player whos bank is being loaded
+    string bankName, //Bank name passed to DYB_LoadBank
+    bank b, //Bank is readonly here (empty if status=DYB_SYNC_STATUS_MISSING_BACKUP)
+    int status, //Sync status, will be one of DYB_SYNC_STATUS_ constants
+    DYB_SyncResult_t syncResult //Out parameter the callee should fill out
+);
+typedef funcref<DYB_SyncBankGetResult> DYB_SyncBankGetResult_t;
+
+//Returns true if should sync syncType
+//The non-mutated forms of section,key,value are passed
+//Note that doing anything that can affect game state in this callback will result in desync
+bool DYB_ShouldSyncString(
+    int player, //Player whos bank is being loaded
+    string bankName, //Bank name passed to DYB_LoadBank
+    bank b, //Bank is readonly here
+    string section, //Section name
+    string key, //Key name
+    string value, //Value
+    int syncType //One of DYB_SYNC_TYPE_ constants
+);
+typedef funcref<DYB_ShouldSyncString> DYB_ShouldSyncString_t;
+
+//Note that all string types are subject to their max length and will result in an error if it is exceeded
+//The non-mutated forms of section,key,value are passed
+//Returns mutated string of stringType
+//Note that doing anything that can affect game state in this callback will result in desync
+string DYB_OnMutateString(
+    int player, //Player whos bank is being loaded
+    string bankName, //Bank name passed to DYB_LoadBank
+    bank b, //Bank is readonly here
+    string section, //Section name
+    string key, //Key name
+    string value, //Value
+    int stringType //One of DYB_STRING_TYPE_ constants
+);
+typedef funcref<DYB_OnMutateString> DYB_OnMutateString_t;
+
+// void DYB_OnSyncBackupCnt(
+//     int player, //Player whos bank is being loaded
+//     string bankName, //Bank name passed to DYB_LoadBank
+//     bank b, //Main bank for player
+//     int backupCnt //Finish result will be one of DYB_ONFINISH_RES_ constants
+// );
+// typedef funcref<DYB_OnSyncBackupCnt> DYB_OnSyncBackupCnt_t;
+//--------------------------------------------
+
+//--------- Useful Useful types/constants ----------
+
+const int DYB_MAX_PLAYERS = 14;
+
+//--------------------------------------------------------------------------
+//Special non-synced codes which are handled differently than the rest (do not need to be handled in OnSyncResult callback)
+const int DYB_SYNC_CODE_INVALID         = -1; //invalid sync code (this is the default value before syncBankGetResult is called)
+const int DYB_SYNC_CODE_ABANDON         = 0; //abandon sync (don't sync the syncResult or bank)
+const int DYB_SYNC_CODE_IGNORE          = 1; //handle sync like normal (don't sync the syncResult)
+
+//synced codes which should be handled in OnSyncResult callback
+const int DYB_SYNC_CODE_ABANDON_NOTIFY  = 2; //abandon sync in DYB_SYNC_STATUS_PRESYNC stage and notify clients
+const int DYB_SYNC_CODE_FAILED          = 3; //sync failed, notify clients and cancel sync
+const int DYB_SYNC_CODE_MISSING_BACKUP  = 4; //missing backup, notify clients and cancel sync
+const int DYB_SYNC_CODE_LEFT_GAME       = 5; //player left game before or during syncing, notify clients and cancel sync
+const int DYB_SYNC_CODE_PRESYNC_INFO    = 6; //sync custom payload before syncing of the bank begins
+const int DYB_SYNC_CODE_SYNC_FINISHED   = 7; //sync finished, notify clients and end sync
+//--------------------------------------------------------------------------
+
+const int DYB_SYNC_STATUS_MISSING_BACKUP = 0; //missing backup
+const int DYB_SYNC_STATUS_SYNC_FAILURE   = 1; //failure to sync
+const int DYB_SYNC_STATUS_LEFT_GAME      = 2; //player left game before or during syncing
+const int DYB_SYNC_STATUS_PRESYNC        = 3; //just before bank syncing starts
+const int DYB_SYNC_STATUS_SYNC_FINISHED  = 4; //all bank data has been synchronized, need to notify clients bank transfer is complete
+
+const int DYB_SYNC_TYPE_SECT = 0; //section
+const int DYB_SYNC_TYPE_VAL  = 1; //key/value pair
+
+const int DYB_STRING_TYPE_SECT = 0; //section
+const int DYB_STRING_TYPE_KEY  = 1; //key
+const int DYB_STRING_TYPE_VAL  = 2; //value
+
+const int DYB_BANK_TYPE_STR   = 0; //string
+const int DYB_BANK_TYPE_TXT   = 1; //text
+const int DYB_BANK_TYPE_INT   = 2; //int
+const int DYB_BANK_TYPE_FIXED = 3; //fixed
+const int DYB_BANK_TYPE_BOOL  = 4; //bool
+const int DYB_BANK_TYPE_POINT = 5; //point
+
+const int DYB_STARTUP_FAIL  = 0; //fail
+const int DYB_STARTUP_SUCC  = 1; //success
+const int DYB_STARTUP_QUICK = 2; //quick start
+
+const int DYB_PLAYER_SYNC_SPEED_ANY = -1; //not advisable to use
+
+const int DYB_INVALID_IDX = -1;
+const int DYB_DBG_TYPE_INVALID = -1;
+
+const string DYB_BANKGETSIZEEX_NAME = "DYB_BankGetSizeEx";
+
+typedef bank[DYB_MAX_PLAYERS + 1] DYB_Arr_t;
+typedef arrayref<DYB_Arr_t> DYB_ArrRef_t;
+
+struct gs_DYB_ExtArgs {
+    //If true sychronizes the save state of the bank so it can be safely read through standard bank API. This is the default behavior.
+    //If false, direct reads from bank are not safe, and the only way to read bank is through onSyncValue callback. Adding new values to bank should, however, be safe if set to false.
+    bool syncSave;
+
+    //If true clears the bank before a backup is restored to it. This is the default behavior.
+    bool clearBeforeRestore;
+
+    //Max player sync speed in bytes per second.
+    int playerSyncSpeedMax;
+
+    //Optional callback used to provide custom status codes/payloads to the onSyncResult callback at different stages of syncing. Can be used to perform local bank validation before syncing or sync the bank size before syncing in order to track progress.
+    DYB_SyncBankGetResult_t syncBankGetResult;
+
+    //Optional callback used to conditionally sync certain sections, and key,value pairs.
+    //Can be used to sync part of a bank to reduce load times, or to validate a bank contains valid data before syncing it.
+    //If specified direct reads to the bank may not be safe and iteration of the bank will not be safe. The solution is to only read in the onSyncValue callback or save to a separate bank in the onSyncValue callback and read from that instead.
+    DYB_ShouldSyncString_t shouldSyncStr;
+
+    //Optional callback used to mutate section, key, or value strings.
+    //Can be used modify a string before syncing it such as for use with public key cryptography.
+    DYB_OnMutateString_t onMutateStr;
+};
+typedef structref<gs_DYB_ExtArgs> DYB_ExtArgsRef_t;
+//--------------------------------------------
+
+//----------------Interface-------------------
+
+//Call only once and do not call in InitMap(), wait until at least event Map Init. Must be called before DYBLoadBank, DYBLoadBankEx, and DYB_BankBackup.
+//Return value: DYB_STARTUP_SUCCESS if succeeded with multiple players present in game, DYB_STARTUP_QUICK if succeeeded with only a single player.
+//If DYB_STARTUP_QUICK is returned, contents of bank are not synced through editboxes, and the bank can be safely read from bankbackup upon calling DYB_LoadBank. If DYB_STARTUP_QUICK is returned it will be impossible to restore a bank via replay (though no tool currently exists to do this with bank backups).
+//Parameters:
+//- disableQS - Disables quick start for debugging.
+int DYB_Startup(bool disableQS);
+
+//[Optional] Initializes debug logging for DYB. Should be called before DYB_Startup but after TriggerDebugSetType... functions are called to initialize debug output.
+//Parameters:
+//- debugOn - If true uses enables debug messages.
+//- typeGen - Debug type to use for general debug messages. Valid range [1, 15].
+//- typeErr - Debug type to use for error debug messages.  Valid range [1, 15].
+void DYB_InitDebugLog(bool debugOn, int typeGen, int typeErr);
+
+//[Optional] Call ONLY after no more bank backup loads will be performed, and after all in progress loads are complete.
+//Destroys all triggers, dialog controls, and datatable values created for this system.
+void DYB_Cleanup();
+
+//Asynchronously loads the latest bank backup (if exists) for all players in playergroup. If backup does not exist for player DYB_OnSyncResult is called with result DYB_ONFINISH_RES_FAIL.
+//Call for every bank backup load.
+//All banks in banks array are unsafe to be read from until onSyncResult is called.
+//Only one in progress dynamic bank load call is allowed. Call DYB_SyncIP to check when it is complete.
+//Parameters:
+//- bankName - Optional bank name passed to callbacks.
+//- pg - Player group to load the backup of the bank correspending to each players index in banks array.
+//- onSyncValue - Called for each player,section,key,value permutation loaded from the bank.
+//- onSyncResult - Called after all keys have been processed by onSyncValue for each player in pg.
+void DYB_LoadBank(string bankName, playergroup pg, DYB_ArrRef_t banks, DYB_OnValueChanged_t onSyncValue, DYB_OnSyncResult_t onSyncResult);
+
+//DYBLoadBank with extended functionality by passing extArgs.
+//If extArgs.syncSave is true, then banks in banks array are unsafe to be read from until onSyncResult is called.
+//If extArgs.syncSave is false, then banks in banks array are unsafe to be read from, and the only safe way of reading bank is through the onSyncValue callback.
+//Parameters:
+//- extArgs - See gs_DYB_ExtArgs.
+void DYB_LoadBankEx(string bankName, playergroup pg, DYB_ArrRef_t banks, DYB_OnValueChanged_t onSyncValue, DYB_OnSyncResult_t onSyncResult, DYB_ExtArgsRef_t extArgs);
+
+// void DYB_SyncBackupCnt(string bankName, playergroup pg, DYB_ArrRef_t banks, DYB_OnSyncBackupCnt_t onSyncBackupCnt);
+
+//Returns playergroup for which there is still an in progress dynamic bank load.
+playergroup DYB_SyncIPPG();
+
+//Returns true if a dynamic bank load is still in progress for any player.
+//Returns false before onSyncResult is called for the final player in pg (not ordered).
+bool DYB_SyncIPAll();
+
+//Returns true if a dynamic bank load is still in progress for player.
+//Returns false before onSyncResult is called for player.
+bool DYB_SyncIP(int player);
+
+//Clear all bank backups associated with mainBank for player.
+//Keeps keepCount of the latest backups incase a backup load fails in the future.
+//Takes 2 ticks to process the clear backup event for each player.
+void DYB_BankBackupsClear(int player, bank mainBank, int keepCount);
+
+//Asynchronously creates count backups of mainBank for player. This should be done after any major save event to mainBank.
+//Takes 2 ticks to process the backup event for each player.
+void DYB_BankBackup(int player, bank mainBank, int count);
+
+//Changes max player sync speed in bytes per second during syncing
+void DYB_SetSyncSpeedMax(int syncSpeed);
+
+//Returns the size in bytes of mainBank.
+//Returns DYB_INVALID_IDX if function fails for any reason.
+//Note: Do not compare the returned value for bank backups before syncing is complete (unless it is synced first).
+int DYB_BankGetSize(bank src);
+
+//Returns the size in bytes of mainBank.
+//Returns DYB_INVALID_IDX if function fails for any reason.
+//bankName for callbacks is set to DYB_BANKGETSIZEEX_NAME.
+//Note: Do not compare the returned value for bank backups before syncing is complete (unless it is synced first).
+int DYB_BankGetSizeEx(bank src, DYB_ShouldSyncString_t shouldSyncStr, DYB_OnMutateString_t onMutateStr);
+
+//Returns local player index.
+//Returns DYB_INVALID_IDX if the game is a replay.
+//Note: Only use if you know exactly what you are doing otherwise a desync may occur.
+int DYB_LocalPlayerIdx();
+
+//----------------------------------------------
+
+//Tweak these numbers to alter network traffic and speed/slow down sync process (at the expense of lag).
+const int DYB_SYNC_SPEED_BASE = 8000;   //[Primarily tweak this] Default max player sync speed in bytes per second. It is not advisable to go above this number any as sc2 maps are pretty heavily rate limited.
+const int DYB_EB_VAL_CNT      = 1600;   //[Can also tweak this] Max number of editboxes to use in syncing. Increase to decrease chance of missing keys if sync speed is too high or lag spikes occur.
+const int DYB_EB_SYNC_VAL_CNT = 16;     //[Can also tweak this] Max number of editboes to sync per DYB_WAIT period. This number should be less than or equal to DYB_EB_VAL_CNT, preferably half of it to maximize reliability.
+const fixed DYB_WAIT          = 0.0625; //[Not advisable to lower] Wait time after syncing, lower of playerSyncSpeedMax*DYB_WAIT bytes or DYB_EB_SYNC_VAL_CNT editboxes worth of data.
+
+//------------------Helpers--------------------
+
+bool gv_DYB_debugLoggingOn = false;
+
+void DYB_DbgG(string s);   //general
+void DYB_DbgE(string s);   //errors
+
+//Clears bank
+void DYB_BankReset(bank b);
+
+//Generic BankValueSetFrom with valType parameter (DYB_BANK_TYPE_ enum)
+void DYB_BankSetFromStringType(bank b, string sect, string key, string val, int valType);
+
+//Converts string to point
+point DYB_PointFromString(string str);
+
+void DYB_ArrCopy(DYB_ArrRef_t dst, DYB_ArrRef_t src);
+void DYB_ExtArgsCopy(DYB_ExtArgsRef_t dst, DYB_ExtArgsRef_t src);
+
+//----------------------------------------------
+
+//Supported bank value types:
+// - String (highly recommended)
+// - Text
+// - Integer
+// - Fixed
+// - Point
+// - Boolean
+
+//Byte count restrictions:
+// - Section: infinite
+// - Key: 253
+// - Value: infinite
+// - gs_DYB_SyncResult.lv_payload: infinite
+
+//Notes: 
+// - Sync speed is limited by SC2; if the synced bank ends up having missing keys/sections it almost always means the sync speed is too high and needs lowered.
+// - Bank size limit is around 1MB which applies to bank backups as well. Trying to load a bank larger (and sometimes just under it) will result in missing keys/sections in the bank.
+// - It is highly recommended to keep bank format compact with fewer keys but longer values rather than many keys with only an integer/boolean.
+// - All supported bank value types get converted to string when calling the onSyncValue callback. Values retain their original types in the bank itself.
+// - No guarentees are made about the order section/keys are passed to the callback function onSyncValue.
+// - Bank Signatures do not work with bankbackup api and are not supported.
+// - It is recommended to make a custom in game loading screen and display it while loading your bank especially if it is large or if it is loaded for many players.
+// - GUI support is provided for all functions that its possible for. However, DYB_LoadBank/DYB_LoadBankEx use arrayref/funcref which require custom script to invoke.
+// - If the last character in a value string is not ascii and the value is larger than can in the editbox, the length automatically gets alligned to UTF-8 boundaries.
+// - Use at own risk
+//----------------------------------------------

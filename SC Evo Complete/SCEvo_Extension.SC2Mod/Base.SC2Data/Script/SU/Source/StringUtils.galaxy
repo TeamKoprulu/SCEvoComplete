@@ -1,0 +1,929 @@
+include "Script/SU/Header/StringUtils_h"
+include "Script/SU/Header/NumericalLimits_h"
+
+static const string SU_STRNUMBERS = "0123456789";
+
+string SU_BreakStringLen(SU_BreakStrRes_t breaklineRes, int len) {
+	breaklineRes.lv_result = StringSub(breaklineRes.lv_line, 1, len);
+	breaklineRes.lv_line = StringSub(breaklineRes.lv_line, len + 1, NL_INT_MAX);
+
+	return breaklineRes.lv_result;
+}
+
+string SU_BreakString(SU_BreakStrRes_t breaklineRes, string delimiter) {
+    int fnd = StringFind(breaklineRes.lv_line, delimiter, true);
+	breaklineRes.lv_i = fnd;
+	
+    if(fnd == c_stringNotFound) {
+        breaklineRes.lv_result = breaklineRes.lv_line;
+        breaklineRes.lv_line = "";
+    }
+    else {
+        breaklineRes.lv_result = StringSub(breaklineRes.lv_line, 1, fnd - 1);
+        breaklineRes.lv_line = StringSub(breaklineRes.lv_line, fnd + StringLength(delimiter), NL_INT_MAX);
+    }
+
+    return breaklineRes.lv_result;
+}
+string SU_BreakStringStrip(SU_BreakStrRes_t breaklineRes, string delimiter) {
+    SU_BreakString(breaklineRes, delimiter);
+    breaklineRes.lv_result = SU_StringStripWord(breaklineRes.lv_result, " ");
+    return breaklineRes.lv_result;
+}
+string SU_BreakStringChar(SU_BreakStrRes_t breaklineRes, string delimiterChar) {
+    int fnd = StringFind(breaklineRes.lv_line, delimiterChar, true);
+	breaklineRes.lv_i = fnd;
+	
+    if(fnd == c_stringNotFound) {
+        breaklineRes.lv_result = breaklineRes.lv_line;
+        breaklineRes.lv_line = "";
+    }
+    else {
+        breaklineRes.lv_result = StringSub(breaklineRes.lv_line, 1, fnd - 1);
+        breaklineRes.lv_line = StringSub(breaklineRes.lv_line, fnd + 1, NL_INT_MAX);
+    }
+
+    return breaklineRes.lv_result;
+}
+string SU_BreakStringCharStrip(SU_BreakStrRes_t breaklineRes, string delimiterChar) {
+    SU_BreakString(breaklineRes, delimiterChar);
+    breaklineRes.lv_result = SU_StringStripWord(breaklineRes.lv_result, " ");
+    return breaklineRes.lv_result;
+}
+string SU_BreakStringAny(SU_BreakStrRes_t breaklineRes, string delimiters) {
+    int fnd = SU_StringFindFirstOf(breaklineRes.lv_line, delimiters);
+	breaklineRes.lv_i = fnd;
+
+    if(fnd == c_stringNotFound) {
+        breaklineRes.lv_result = breaklineRes.lv_line;
+        breaklineRes.lv_line = "";
+    }
+    else {
+        breaklineRes.lv_result = StringSub(breaklineRes.lv_line, 1, fnd - 1);
+        breaklineRes.lv_line = StringSub(breaklineRes.lv_line, fnd + 1, NL_INT_MAX);
+	}
+
+    return breaklineRes.lv_result;
+}
+string SU_BreakStringAnyStrip(SU_BreakStrRes_t breaklineRes, string delimiters) {
+    SU_BreakStringAny(breaklineRes, delimiters);
+    breaklineRes.lv_result = SU_StringStripAnyOfFront(breaklineRes.lv_result, delimiters);
+    return breaklineRes.lv_result;
+}
+string SU_BreakStringAnyCase(SU_BreakStrRes_t breaklineRes, string delimiters, bool caseInsensitive) {
+    int fnd = SU_StringFindFirstOfCase(breaklineRes.lv_line, delimiters, caseInsensitive);
+	breaklineRes.lv_i = fnd;
+	
+    if(fnd == c_stringNotFound) {
+        breaklineRes.lv_result = breaklineRes.lv_line;
+        breaklineRes.lv_line = "";
+    }
+    else {
+        breaklineRes.lv_result = StringSub(breaklineRes.lv_line, 1, fnd - 1);
+        breaklineRes.lv_line = StringSub(breaklineRes.lv_line, fnd + 1, NL_INT_MAX);
+    }
+
+    return breaklineRes.lv_result;
+}
+string SU_BreakStringStripAnyCase(SU_BreakStrRes_t breaklineRes, string delimiters, bool caseInsensitive) {
+    SU_BreakStringAnyCase(breaklineRes, delimiters, caseInsensitive);
+    breaklineRes.lv_result = SU_StringStripAnyOfFront(breaklineRes.lv_result, delimiters);
+    return breaklineRes.lv_result;
+}
+
+
+int SU_BreakStringLenInt(SU_BreakStrRes_t breaklineRes, int len) {
+	return StringToInt(SU_BreakStringLen(breaklineRes, len));
+}
+fixed SU_BreakStringLenFixed(SU_BreakStrRes_t breaklineRes, int len) {
+	return StringToFixed(SU_BreakStringLen(breaklineRes, len));
+}
+
+int SU_BreakStringInt(SU_BreakStrRes_t breaklineRes, string delimiter) {
+    return StringToInt(SU_BreakString(breaklineRes, delimiter));
+}
+fixed SU_BreakStringFixed(SU_BreakStrRes_t breaklineRes, string delimiter) {
+    return StringToFixed(SU_BreakString(breaklineRes, delimiter));
+}
+int SU_BreakStringStripInt(SU_BreakStrRes_t breaklineRes, string delimiter) {
+    return StringToInt(SU_BreakStringStrip(breaklineRes, delimiter));
+}
+fixed SU_BreakStringStripFixed(SU_BreakStrRes_t breaklineRes, string delimiter) {
+    return StringToFixed(SU_BreakStringStrip(breaklineRes, delimiter));
+}
+
+int SU_BreakStringAnyInt(SU_BreakStrRes_t breaklineRes, string delimiters) {
+    return StringToInt(SU_BreakStringAny(breaklineRes, delimiters));
+}
+fixed SU_BreakStringAnyFixed(SU_BreakStrRes_t breaklineRes, string delimiters) {
+    return StringToFixed(SU_BreakStringAny(breaklineRes, delimiters));
+}
+int SU_BreakStringAnyStripInt(SU_BreakStrRes_t breaklineRes, string delimiters) {
+    return StringToInt(SU_BreakStringAnyStrip(breaklineRes, delimiters));
+}
+fixed SU_BreakStringAnyStripFixed(SU_BreakStrRes_t breaklineRes, string delimiters) {
+    return StringToFixed(SU_BreakStringAnyStrip(breaklineRes, delimiters));
+}
+
+int SU_BreakStringCharInt(SU_BreakStrRes_t breaklineRes, string delimiterChar) {
+    return StringToInt(SU_BreakStringChar(breaklineRes, delimiterChar));
+}
+fixed SU_BreakStringCharFixed(SU_BreakStrRes_t breaklineRes, string delimiterChar) {
+    return StringToFixed(SU_BreakStringChar(breaklineRes, delimiterChar));
+}
+int SU_BreakStringCharStripInt(SU_BreakStrRes_t breaklineRes, string delimiterChar) {
+    return StringToInt(SU_BreakStringCharStrip(breaklineRes, delimiterChar));
+}
+fixed SU_BreakStringCharStripFixed(SU_BreakStrRes_t breaklineRes, string delimiterChar) {
+    return StringToFixed(SU_BreakStringCharStrip(breaklineRes, delimiterChar));
+}
+
+//breaklineRes in/out
+string SU_ETagGetString(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose) {
+    SU_BreakString(breaklineRes, tagOpen); // remove opening tag
+    return SU_BreakString(breaklineRes, tagClose); // get enclosing string
+}
+int SU_ETagGetStringInt(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose) {
+    return StringToInt(SU_ETagGetString(breaklineRes, tagOpen, tagClose));
+}
+fixed SU_ETagGetStringFixed(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose) {
+    return StringToFixed(SU_ETagGetString(breaklineRes, tagOpen, tagClose));
+}
+
+string SU_ETagGetStringChar(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose) {
+	SU_BreakStringChar(breaklineRes, tagOpen); // remove opening tag
+    return SU_BreakStringChar(breaklineRes, tagClose); // get enclosing string
+}
+int SU_ETagGetStringCharInt(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose) {
+    return StringToInt(SU_ETagGetStringChar(breaklineRes, tagOpen, tagClose));
+}
+fixed SU_ETagGetStringCharFixed(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose) {
+    return StringToFixed(SU_ETagGetStringChar(breaklineRes, tagOpen, tagClose));
+}
+
+string SU_ETagString(string str, string tagOpen, string tagClose) {
+    return tagOpen + str + tagClose;
+}
+
+string SU_TagGetString(SU_BreakStrRes_t breaklineRes, string tag) {
+    return SU_ETagGetString(breaklineRes, gv_SU_STRING_TAG_OPEN + tag + gv_SU_STRING_TAG_CLOSE, gv_SU_STRING_TAG_OPEN + "/" + tag + gv_SU_STRING_TAG_CLOSE);
+}
+int SU_TagGetStringInt(SU_BreakStrRes_t breaklineRes, string tag) {
+    return StringToInt(SU_TagGetString(breaklineRes, tag));
+}
+fixed SU_TagGetStringFixed(SU_BreakStrRes_t breaklineRes, string tag) {
+    return StringToFixed(SU_TagGetString(breaklineRes, tag));
+}
+
+string SU_TagString(string str, string tag, string tagOpen, string tagClose) {
+	return (tagOpen + tag + tagClose) + str + (tagOpen + "/" + tag + tagClose);
+}
+string SU_TagStringS(string str, string tag) {
+	return SU_TagString(str, tag, gv_SU_STRING_TAG_OPEN, gv_SU_STRING_TAG_CLOSE);
+}
+
+void SU_GetNextTag(SU_TagResult_t tagResult, string tagOpen, string tagClose) {
+    string result;
+    tagResult.lv_tagName = SU_ETagGetString(tagResult.lv_bsr, tagOpen, tagClose);
+
+    result = SU_BreakString(tagResult.lv_bsr, tagOpen); // get contents of tag
+    SU_BreakString(tagResult.lv_bsr, tagClose); // remove closing tag
+
+    tagResult.lv_bsr.lv_result = result;
+}
+
+string SU_FieldGetTag(SU_TagResult_t tagResult, string searchString, string tagOpen, string tagClose, string desiredTag) {
+    tagResult.lv_bsr.lv_line = searchString;  //packed init field
+    while(true) {
+        SU_GetNextTag(tagResult, gv_SU_STRING_TAG_OPEN, gv_SU_STRING_TAG_CLOSE);
+
+        if(tagResult.lv_tagName == desiredTag) {
+            return tagResult.lv_bsr.lv_result;
+        }
+        else if(tagResult.lv_tagName == "") {
+            return "";
+        }
+    }
+    return "";
+}
+
+bool SU_StringBeginsWithCase(string str, string with, bool caseInsensitive) {
+	return StringContains(str, with, c_stringBegin, !caseInsensitive);
+}
+bool SU_StringBeginsWith(string str, string with) {
+	return SU_StringBeginsWithCase(str, with, false);
+}
+
+bool SU_StringEndsWithCase(string str, string with, bool caseInsensitive) {
+	return StringContains(str, with, c_stringEnd, !caseInsensitive);
+}
+bool SU_StringEndsWith(string str, string with) {
+	return SU_StringEndsWithCase(str, with, false);
+}
+
+bool SU_StringContainsAnywhereCase(string str, string with, bool caseInsensitive) {
+	return StringContains(str, with, c_stringAnywhere, !caseInsensitive);
+}
+bool SU_StringContainsAnywhere(string str, string with) {
+	return SU_StringContainsAnywhereCase(str, with, false);
+}
+
+bool SU_StringContainsAtCase(string str, string with, int idxStart, int idxEnd, bool caseInsensitive) {
+	if(caseInsensitive) {
+		return SU_StringUpper(StringSub(str, idxStart, idxEnd)) == SU_StringUpper(with);
+	}
+	else {
+		return StringSub(str, idxStart, idxEnd) == with;
+	}
+}
+bool SU_StringContainsAt(string str, string with, int idxStart, int idxEnd) {
+	return SU_StringContainsAtCase(str, with, idxStart, idxEnd, false);
+}
+
+int SU_StringFindFirstOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		found = SU_StringCharAtCase(str, i, caseInsensitive);
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAtCase(anyof, j, caseInsensitive)) {
+				return i;
+			}
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindFirstOfIdx(string str, string anyof, int idxStart, int idxEnd) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		found = SU_StringCharAt(str, i);
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAt(anyof, j)) {
+				return i;
+			}
+		}
+	}
+
+	return c_stringNotFound;
+}
+
+int SU_StringFindFirstNotOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+	bool noMatch;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		found = SU_StringCharAtCase(str, i, caseInsensitive);
+		noMatch = true;
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAtCase(anyof, j, caseInsensitive)) {
+				noMatch = false;
+				break;
+			}
+		}
+
+		if(noMatch) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindFirstNotOfIdx(string str, string anyof, int idxStart, int idxEnd) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+	bool noMatch;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		found = SU_StringCharAt(str, i);
+		noMatch = true;
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAt(anyof, j)) {
+				noMatch = false;
+				break;
+			}
+		}
+
+		if(noMatch) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+
+int SU_StringFindLastOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		found = SU_StringCharAtCase(str, i, caseInsensitive);
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAtCase(anyof, j, caseInsensitive)) {
+				return i;
+			}
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindLastOfIdx(string str, string anyof, int idxStart, int idxEnd) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		found = SU_StringCharAt(str, i);
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAt(anyof, j)) {
+				return i;
+			}
+		}
+	}
+
+	return c_stringNotFound;
+}
+
+int SU_StringFindLastNotOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+	bool noMatch;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		found = SU_StringCharAtCase(str, i, caseInsensitive);
+		noMatch = true;
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAtCase(anyof, j, caseInsensitive)) {
+				noMatch = false;
+				break;
+			}
+		}
+
+		if(noMatch) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindLastNotOfIdx(string str, string anyof, int idxStart, int idxEnd) {
+	int strLenAny = StringLength(anyof);
+	int i;
+	int j;
+	string found;
+	bool noMatch;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		found = SU_StringCharAt(str, i);
+		noMatch = true;
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAt(anyof, j)) {
+				noMatch = false;
+				break;
+			}
+		}
+
+		if(noMatch) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+
+int SU_StringFindFirstOfCase(string str, string anyof, bool caseInsensitive) {
+	return SU_StringFindFirstOfCaseIdx(str, anyof, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindFirstOf(string str, string anyof) {
+	return SU_StringFindFirstOfIdx(str, anyof, 1, StringLength(str));
+}
+
+int SU_StringFindFirstNotOfCase(string str, string anyof, bool caseInsensitive) {
+	return SU_StringFindFirstNotOfCaseIdx(str, anyof, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindFirstNotOf(string str, string anyof) {
+	return SU_StringFindFirstNotOfIdx(str, anyof, 1, StringLength(str));
+}
+
+int SU_StringFindLastOfCase(string str, string anyof, bool caseInsensitive) {
+	return SU_StringFindLastOfCaseIdx(str, anyof, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindLastOf(string str, string anyof) {
+	return SU_StringFindLastOfIdx(str, anyof, 1, StringLength(str));
+}
+
+int SU_StringFindLastNotOfCase(string str, string anyof, bool caseInsensitive) {
+	return SU_StringFindLastNotOfCaseIdx(str, anyof, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindLastNotOf(string str, string anyof) {
+	return SU_StringFindLastNotOfIdx(str, anyof, 1, StringLength(str));
+}
+
+int SU_StringFindFirstOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive) {
+	int i;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		if(SU_StringCharAtCase(str, i, caseInsensitive) == c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindFirstOfCharIdx(string str, string c, int idxStart, int idxEnd) {
+	int i;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		if(SU_StringCharAt(str, i) == c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindFirstNotOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive) {
+	int i;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		if(SU_StringCharAtCase(str, i, caseInsensitive) != c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindFirstNotOfCharIdx(string str, string c, int idxStart, int idxEnd) {
+	int i;
+
+	for(i = idxStart; i <= idxEnd; i += 1) {
+		if(SU_StringCharAt(str, i) != c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindLastOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive) {
+	int i;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		if(SU_StringCharAtCase(str, i, caseInsensitive) == c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindLastOfCharIdx(string str, string c, int idxStart, int idxEnd) {
+	int i;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		if(SU_StringCharAt(str, i) == c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindLastNotOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive) {
+	int i;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		if(SU_StringCharAtCase(str, i, caseInsensitive) != c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+int SU_StringFindLastNotOfCharIdx(string str, string c, int idxStart, int idxEnd) {
+	int i;
+
+	for(i = idxEnd; i >= idxStart; i -= 1) {
+		if(SU_StringCharAt(str, i) != c) {
+			return i;
+		}
+	}
+
+	return c_stringNotFound;
+}
+
+int SU_StringFindFirstOfCharCase(string str, string c, bool caseInsensitive) {
+	return SU_StringFindFirstOfCharCaseIdx(str, c, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindFirstOfChar(string str, string c) {
+	return SU_StringFindFirstOfCharIdx(str, c, 1, StringLength(str));
+}
+
+int SU_StringFindFirstNotOfCharCase(string str, string c, bool caseInsensitive) {
+	return SU_StringFindFirstNotOfCharCaseIdx(str, c, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindFirstNotOfChar(string str, string c) {
+	return SU_StringFindFirstNotOfCharIdx(str, c, 1, StringLength(str));
+}
+
+int StringFindLastOfCharCase(string str, string c, bool caseInsensitive) {
+	return SU_StringFindLastOfCharCaseIdx(str, c, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindLastOfChar(string str, string c) {
+	return SU_StringFindLastOfCharIdx(str, c, 1, StringLength(str));
+}
+
+int SU_StringFindLastNotOfCharCase(string str, string c, bool caseInsensitive) {
+	return SU_StringFindLastNotOfCharCaseIdx(str, c, 1, StringLength(str), caseInsensitive);
+}
+int SU_StringFindLastNotOfChar(string str, string c) {
+	return SU_StringFindLastNotOfCharIdx(str, c, 1, StringLength(str));
+}
+
+string SU_StringStripAnyOfBackCase(string str, string anyof, bool caseInsensitive) {
+	int idx = SU_StringFindLastNotOfCase(str, anyof, caseInsensitive);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, 1, idx);
+	}
+
+	return str;
+}
+string SU_StringStripAnyOfBack(string str, string anyof) {
+	int idx = SU_StringFindLastNotOf(str, anyof);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, 1, idx);
+	}
+
+	return str;
+}
+string SU_StringStripAnyOfFrontCase(string str, string anyof, bool caseInsensitive) {
+	int idx = SU_StringFindFirstNotOfCase(str, anyof, caseInsensitive);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, idx, NL_INT_MAX);
+	}
+
+	return str;
+}
+string SU_StringStripAnyOfFront(string str, string anyof) {
+	int idx = SU_StringFindFirstNotOf(str, anyof);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, idx, NL_INT_MAX);
+	}
+
+	return str;
+}
+string SU_StringStripAnyOfEndsCase(string str, string anyof, bool caseInsensitive) {
+	return SU_StringStripAnyOfFrontCase(SU_StringStripAnyOfBackCase(str, anyof, caseInsensitive), anyof, caseInsensitive);
+}
+string SU_StringStripAnyOfEnds(string str, string anyof) {
+	return SU_StringStripAnyOfFront(SU_StringStripAnyOfBack(str, anyof), anyof);
+}
+
+string SU_StringStripCharBackCase(string str, string c, bool caseInsensitive) {
+	int idx = SU_StringFindLastNotOfCharCase(str, c, caseInsensitive);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, 1, idx);
+	}
+
+	return str;
+}
+string SU_StringStripCharBack(string str, string c) {
+	int idx = SU_StringFindLastNotOfChar(str, c);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, 1, idx);
+	}
+
+	return str;
+}
+string SU_StringStripCharFrontCase(string str, string c, bool caseInsensitive) {
+	int idx = SU_StringFindFirstNotOfCharCase(str, c, caseInsensitive);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, idx, NL_INT_MAX);
+	}
+
+	return str;
+}
+string SU_StringStripCharFront(string str, string c) {
+	int idx = SU_StringFindFirstNotOfChar(str, c);
+	if(idx != c_stringNotFound) {
+		return StringSub(str, idx, NL_INT_MAX);
+	}
+
+	return str;
+}
+string SU_StringStripCharEndsCase(string str, string anyof, bool caseInsensitive) {
+	return SU_StringStripCharFrontCase(SU_StringStripCharBackCase(str, anyof, caseInsensitive), anyof, caseInsensitive);
+}
+string SU_StringStripCharEnds(string str, string anyof) {
+	return SU_StringStripCharFront(SU_StringStripCharBack(str, anyof), anyof);
+}
+
+string SU_StringStripWordCase(string str, string substr, bool caseInsensitive) {
+    return StringReplaceWord(str, substr, "", 0, !caseInsensitive);
+}
+string SU_StringStripWord(string str, string substr) {
+    return SU_StringStripWordCase(str, substr, false);
+}
+
+string SU_StringStripAnyOfCase(string str, string anyof, bool caseInsensitive) {
+	int strLenAny = StringLength(anyof);
+	int strLenStr = StringLength(str);
+	int i;
+	int j;
+	string found;
+	bool foundAny;
+	string result = "";
+
+	for(i = 1; i <= strLenStr; i += 1) {
+		found = SU_StringCharAtCase(str, i, caseInsensitive);
+		foundAny = false;
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAtCase(anyof, j, caseInsensitive)) {
+				foundAny = true;
+				break;
+			}
+		}
+
+		if(!foundAny) {
+			result += SU_StringCharAt(str, i);
+		}
+	}
+
+	return result;
+}
+string SU_StringStripAnyOf(string str, string anyof) {
+	int strLenAny = StringLength(anyof);
+	int strLenStr = StringLength(str);
+	int i;
+	int j;
+	string found;
+	bool foundAny;
+	string result = "";
+
+	for(i = 1; i <= strLenStr; i += 1) {
+		found = SU_StringCharAt(str, i);
+		foundAny = false;
+
+		for(j = 1; j <= strLenAny; j += 1) {
+			if(found == SU_StringCharAt(anyof, j)) {
+				foundAny = true;
+				break;
+			}
+		}
+
+		if(!foundAny) {
+			result += found;
+		}
+	}
+
+	return result;
+}
+
+
+string SU_StringErase(string str, int start, int end) {
+	return StringSub(str, 1, start - 1) + StringSub(str, end + 1, NL_INT_MAX);
+}
+string SU_StringEraseChar(string str, int i) {
+	return SU_StringErase(str, i, i);
+}
+
+string SU_StringInsert(string str, string insert, int start) {
+	return StringSub(str, 1, start - 1) + insert + StringSub(str, start, NL_INT_MAX);
+}
+
+string SU_StringUpper(string str) {
+	return StringCase(str, true);
+}
+string SU_StringLower(string str) {
+	return StringCase(str, false);
+}
+
+string SU_StringCharAt(string str, int i) {
+	return StringSub(str, i, i);
+}
+string SU_StringCharAtCase(string str, int i, bool caseInsensitive) {
+	string res = StringSub(str, i, i);
+	if(caseInsensitive) {
+		res = SU_StringUpper(res);
+	}
+	return res;
+}
+string SU_StringFront(string str) {
+	if(str == null) {
+		return str;
+	}
+
+	return SU_StringCharAt(str, 1);
+}
+string SU_StringFrontCase(string str, bool caseInsensitive) {
+	return StringCase(SU_StringFront(str), caseInsensitive);
+}
+string SU_StringBack(string str) {
+	if(str == null) {
+		return str;
+	}
+
+	return SU_StringCharAt(str, StringLength(str));
+}
+string SU_StringBackCase(string str, bool caseInsensitive) {
+	return StringCase(SU_StringBack(str), caseInsensitive);
+}
+
+string SU_StringPopFront(string str) {
+	int strLen = StringLength(str);
+	if(strLen <= 1) {
+		return "";
+	}
+
+	return StringSub(str, 2, strLen);
+}
+string SU_StringPopBack(string str) {
+	int strLen = StringLength(str);
+	if(strLen <= 1) {
+		return "";
+	}
+
+	return StringSub(str, 1, strLen - 1);
+}
+
+string SU_StringSlice(string s, int start, int end) {
+	return StringSub(s, start, end);
+}
+
+string SU_StringSliceFront(string s, int maxSlice) {
+	if(s == null) {
+		return s;
+	}
+
+    return StringSub(s, 1, maxSlice);
+}
+string SU_StringSliceBack(string s, int maxSlice) {
+	int strLen;
+	if(s == null) {
+		return s;
+	}
+
+	strLen = StringLength(s);
+	if(strLen < maxSlice) {
+		return s;
+	}
+
+    return StringSub(s, strLen - maxSlice + 1, strLen);
+}
+
+string SU_StringPushBack(string str, string other) {
+	return str + other;
+}
+string SU_StringPushFront(string str, string other) {
+	return other + str;
+}
+
+string SU_StringPadFront(string toPad, string with, int padTo) {
+	int len = StringLength(toPad);
+	string result = "";
+	int i;
+
+	for(i = len; i < padTo; i += 1) {
+		result += with;
+	}
+
+	result += toPad;
+	return result;
+}
+string SU_StringPadBack(string toPad, string with, int padTo) {
+	int len = StringLength(toPad);
+	string result = toPad;
+	int i;
+
+	for(i = len; i < padTo; i += 1) {
+		result += with;
+	}
+
+	return result;
+}
+string SU_StringPadDec(string n, int padTo) {
+	int idx = StringFind(n, ".", true);
+	if(idx == c_stringNotFound) {
+		return n + "." + SU_StringPadBack("", "0", padTo);
+	}
+
+	return StringSub(n, 1, idx) + SU_StringPadBack(StringSub(n, idx + 1, StringLength(n)), "0", padTo);
+}
+
+string SU_StringReverse(string str) {
+	int n = StringLength(str);
+	int i;
+	string result = "";
+
+	for(i = n; i >= 1; i -= 1) {
+		result += SU_StringCharAt(str, i);
+	}
+
+	return result;
+}
+
+bool SU_CharIsNumeric(string c) {
+    return StringFind(SU_STRNUMBERS, c, true) != c_stringNotFound;
+}
+
+bool SU_StringIsInt(string s) {
+    int i;
+    int len;
+
+    if(SU_StringFront(s) == "-") {
+        s = SU_StringPopFront(s);
+    }
+    if(s == null) {
+        return false;
+    }
+
+    len = StringLength(s);
+    for(i = 1; i <= len; i += 1) {
+        if(!SU_CharIsNumeric(SU_StringCharAt(s, i))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool SU_StringIsFixed(string s) {
+    gs_SU_BreakStrRes bsr;
+    int i;
+    int len;
+
+    if(SU_StringFront(s) == "-") {
+        s = SU_StringPopFront(s);
+    }
+    if(s == null) {
+        return false;
+    }
+
+    bsr.lv_line = s;
+    s = SU_BreakStringChar(bsr, ".");
+
+    len = StringLength(s);
+    for(i = 1; i <= len; i += 1) {
+        if(!SU_CharIsNumeric(SU_StringCharAt(s, i))) {
+            return false;
+        }
+    }
+
+    s = bsr.lv_line;
+
+    len = StringLength(s);
+    for(i = 1; i <= len; i += 1) {
+        if(!SU_CharIsNumeric(SU_StringCharAt(s, i))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+string SU_IntToStringPad(int n, int padTo) {
+	return SU_StringPadFront(IntToString(n), "0", padTo);
+}
+string SU_FixedToStringPad(fixed n, int precision, int padTo) {
+	return SU_StringPadFront(FixedToString(n, precision), "0", padTo);
+}
+
+//now null == "" = true
+bool SU_StringIsValid(string s) {
+    // return s != null && s != "";
+	return s != null; //now "" == null == true
+}
+bool SU_StringIsInvalid(string s) {
+    // return s == null || s == "";
+	return s == null; //now "" == null == true
+}
+bool SU_StringIsEmpty(string s) {
+	return s == ""; //now "" == null == true
+}
+
+text SU_StringExternalDefault(string key, string s) {
+    text res = StringExternal(key);
+    return TextReplaceWord(res, StringToText(key), StringToText(s), 1, false);
+}

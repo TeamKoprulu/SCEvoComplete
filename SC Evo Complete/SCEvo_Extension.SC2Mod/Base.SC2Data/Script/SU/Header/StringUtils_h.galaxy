@@ -1,0 +1,312 @@
+const int gv_SU_BANK_MAX_VALUE_LEN  = 781;
+const string gv_SU_STRING_TAG_OPEN  = "[";
+const string gv_SU_STRING_TAG_CLOSE = "]";
+
+//----------------------------------------------------------------------------------------
+// General documentation applying to all functions
+// if caseInsensitive is specified it performs checks as if both strings are uppercase.
+// Non-case versions are optimized
+// Char variations of functions are optimized for single character searching
+// Non-Char (anyof) variations are for searching for any character in anyof
+//----------------------------------------------------------------------------------------
+
+//String proceessing and splitting
+
+struct gs_SU_BreakStrRes {
+    int lv_i; //Index of first instance of delimiter in string. Will be c_stringNotFound if not found.
+    string lv_result; //Head of string from calling BreakString
+    string lv_line; //Tail of string from calling BreakString (remaining line). Should be initialized before calling BreakString.
+};
+typedef structref<gs_SU_BreakStrRes> SU_BreakStrRes_t;
+
+struct gs_SU_TagResult {
+    gs_SU_BreakStrRes lv_bsr;
+    string lv_tagName;
+};
+typedef structref<gs_SU_TagResult> SU_TagResult_t;
+
+//BreakString utils
+
+//Splits into head and tail where head is result of length len and tail is line (stored in breaklineRes). Returns result.
+string SU_BreakStringLen(SU_BreakStrRes_t breaklineRes, int len);
+
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result.
+string SU_BreakString(SU_BreakStrRes_t breaklineRes, string delimiter);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result where spaces are stripped.
+string SU_BreakStringStrip(SU_BreakStrRes_t breaklineRes, string delimiter);
+//Optimization of BreakString where delimiter is a single character
+string SU_BreakStringChar(SU_BreakStrRes_t breaklineRes, string delimiterChar);
+//Optimization of BreakStringStrip where delimiter is a single character
+string SU_BreakStringCharStrip(SU_BreakStrRes_t breaklineRes, string delimiterChar);
+
+//Breaks string at first instance of any chars in delimiters into head and tail where head is result and tail is line (stored in breaklineRes). Returns result.
+string SU_BreakStringAny(SU_BreakStrRes_t breaklineRes, string delimiters);
+//Breaks string at first instance of any chars in delimiters into head and tail where head is result and tail is line (stored in breaklineRes). Returns result where spaces are stripped.
+string SU_BreakStringAnyStrip(SU_BreakStrRes_t breaklineRes, string delimiters);
+//Breaks string at first instance of any chars in delimiters into head and tail where head is result and tail is line (stored in breaklineRes). Returns result.
+string SU_BreakStringAnyCase(SU_BreakStrRes_t breaklineRes, string delimiters, bool caseInsensitive);
+//Breaks string at first instance of any chars in delimiters into head and tail where head is result and tail is line (stored in breaklineRes). Returns result where spaces are stripped.
+string SU_BreakStringStripAnyCase(SU_BreakStrRes_t breaklineRes, string delimiters, bool caseInsensitive);
+
+//Splits into head and tail where head is result of length len and tail is line (stored in breaklineRes). Returns result as int.
+int SU_BreakStringLenInt(SU_BreakStrRes_t breaklineRes, int len);
+//Splits into head and tail where head is result of length len and tail is line (stored in breaklineRes). Returns result as fixed.
+fixed SU_BreakStringLenFixed(SU_BreakStrRes_t breaklineRes, int len);
+
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as int.
+int SU_BreakStringInt(SU_BreakStrRes_t breaklineRes, string delimiter);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as fixed.
+fixed SU_BreakStringFixed(SU_BreakStrRes_t breaklineRes, string delimiter);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as int where spaces are stripped.
+int SU_BreakStringStripInt(SU_BreakStrRes_t breaklineRes, string delimiter);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as fixed where spaces are stripped.
+fixed SU_BreakStringStripFixed(SU_BreakStrRes_t breaklineRes, string delimiter);
+
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as int.
+int SU_BreakStringAnyInt(SU_BreakStrRes_t breaklineRes, string delimiters);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as fixed.
+fixed SU_BreakStringAnyFixed(SU_BreakStrRes_t breaklineRes, string delimiters);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as int where spaces are stripped.
+int SU_BreakStringAnyStripInt(SU_BreakStrRes_t breaklineRes, string delimiters);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as fixed where spaces are stripped.
+fixed SU_BreakStringAnyStripFixed(SU_BreakStrRes_t breaklineRes, string delimiters);
+
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as int.
+int SU_BreakStringCharInt(SU_BreakStrRes_t breaklineRes, string delimiterChar);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as fixed.
+fixed SU_BreakStringCharFixed(SU_BreakStrRes_t breaklineRes, string delimiterChar);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as int where spaces are stripped.
+int SU_BreakStringCharStripInt(SU_BreakStrRes_t breaklineRes, string delimiterChar);
+//Breaks string at first instance of delimiter into head and tail where head is result and tail is line (stored in breaklineRes). Returns result as fixed where spaces are stripped.
+fixed SU_BreakStringCharStripFixed(SU_BreakStrRes_t breaklineRes, string delimiterChar);
+
+//Tag Utils
+
+//Returns contents of string enclosed in tagOpen, tagClose. Remaining string is stormed in breaklineRes.line.
+string SU_ETagGetString(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose);
+//Returns contents of string enclosed in tagOpen, tagClose as int. Remaining string is stormed in breaklineRes.line.
+int SU_ETagGetStringInt(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose);
+//Returns contents of string enclosed in tagOpen, tagClose as fixed. Remaining string is stormed in breaklineRes.line.
+fixed SU_ETagGetStringFixed(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose);
+
+//Returns contents of string enclosed in tagOpen, tagClose. Remaining string is stormed in breaklineRes.line.
+string SU_ETagGetStringChar(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose);
+//Returns contents of string enclosed in tagOpen, tagClose as int. Remaining string is stormed in breaklineRes.line.
+int SU_ETagGetStringCharInt(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose);
+//Returns contents of string enclosed in tagOpen, tagClose as fixed. Remaining string is stormed in breaklineRes.line.
+fixed SU_ETagGetStringCharFixed(SU_BreakStrRes_t breaklineRes, string tagOpen, string tagClose);
+
+//Returns string str enclosed in tagOpen, tagClose.
+string SU_ETagString(string str, string tagOpen, string tagClose);
+
+//Returns contents of data stored in [tag]Contents[/tag].
+string SU_TagGetString(SU_BreakStrRes_t breaklineRes, string tag);
+//Returns contents of data stored in [tag]Contents[/tag] as int.
+int SU_TagGetStringInt(SU_BreakStrRes_t breaklineRes, string tag);
+//Returns contents of data stored in [tag]Contents[/tag] as fixed.
+fixed SU_TagGetStringFixed(SU_BreakStrRes_t breaklineRes, string tag);
+
+//Retrives the next tag and stores it in tagResult.
+void SU_GetNextTag(SU_TagResult_t tagResult, string tagOpen, string tagClose);
+//Returns a tagged string in the form of {tagOpen}tag{tagClose}str{tagOpen}/tag{tagClose}
+string SU_TagString(string str, string tag, string tagOpen, string tagClose);
+//Returns a tagged string in the form of [tag]str[/tag].
+string SU_TagStringS(string str, string tag);
+//Returns contents of string matching tag anywhere in searchString (this should match the same tagOpen, tagClose, and tag as when you created the taged string)
+string SU_FieldGetTag(SU_TagResult_t tagResult, string searchString, string tagOpen, string tagClose, string desiredTag);
+
+//General String Utilities
+// all indexes are from [1, SU_StringLength(s)] unless otherwise specified.
+// if caseInsensitive is specified it performs checks as if both strings are uppercase.
+
+//Returns true if string is not null and not empty and false otherwise.
+bool SU_StringIsValid(string s);
+//Returns false if string is not null and not empty and true otherwise.
+bool SU_StringIsInvalid(string s);
+//returns true if string length is 0 and false otherwise.
+bool SU_StringIsEmpty(string s);
+
+//Returns true if string str begins with string with and false otherwise.
+bool SU_StringBeginsWithCase(string str, string with, bool caseInsensitive);
+bool SU_StringBeginsWith(string str, string with);
+
+//Returns true if string str ends with string with and false otherwise.
+bool SU_StringEndsWithCase(string str, string with, bool caseInsensitive);
+bool SU_StringEndsWith(string str, string with);
+
+//Returns true if string str constains string with and false otherwise.
+bool SU_StringContainsAnywhereCase(string str, string with, bool caseInsensitive);
+bool SU_StringContainsAnywhere(string str, string with);
+
+//Returns true if string str constains string with from [idxStart, idxEnd] and false otherwise.
+bool SU_StringContainsAtCase(string str, string with, int idxStart, int idxEnd, bool caseInsensitive);
+bool SU_StringContainsAt(string str, string with, int idxStart, int idxEnd);
+
+//Converts string to uppercase
+string SU_StringUpper(string str);
+//Converts string to lowercase
+string SU_StringLower(string str);
+
+//Returns character in string at index i
+string SU_StringCharAt(string str, int i);
+string SU_StringCharAtCase(string str, int i, bool caseInsensitive);
+
+//Returns last character
+string SU_StringBack(string str);
+string SU_StringBackCase(string str, bool caseInsensitive);
+
+//Returns front character
+string SU_StringFront(string str);
+string SU_StringFrontCase(string str, bool caseInsensitive);
+
+//Returns slice of string with characters [start, end]. An alias for StringSub.
+string SU_StringSlice(string s, int start, int end);
+
+//Returns up to maxSlice of the last characters of the string
+string SU_StringSliceBack(string s, int maxSlice);
+//Returns up to maxSlice of the first characters of the string
+string SU_StringSliceFront(string s, int maxSlice);
+
+//Returns string with back character removed
+string SU_StringPopBack(string str);
+//Returns string with front character removed
+string SU_StringPopFront(string str);
+
+//Returns result of erasing characters [start, end] from str
+string SU_StringErase(string str, int start, int end);
+//Returns result of erasing character at index i from str
+string SU_StringEraseChar(string str, int i);
+
+//Returns the result of appending other to str
+string SU_StringPushBack(string str, string other);
+//Returns the result of prepending other to str
+string SU_StringPushFront(string str, string other);
+
+//Returns result of inserting insert into str at start index.
+string SU_StringInsert(string str, string insert, int start);
+
+//Pads the front of the string toPad with string with in order to get it to padTo characters
+string SU_StringPadFront(string toPad, string with, int padTo);
+//Pads the back of the string toPad with string with in order to get it to padTo characters
+string SU_StringPadBack(string toPad, string with, int padTo);
+//Removes decimal places from n to have at most padTo decimal places. Similar to FixedToString.
+string SU_StringPadDec(string n, int padTo);
+
+//Pads the front of n to be padTo characters long
+string SU_IntToStringPad(int n, int padTo);
+//Pads the front of n to be padTo characters long
+string SU_FixedToStringPad(fixed n, int precision, int padTo);
+
+//Reverses str
+string SU_StringReverse(string str);
+
+//String Parse Utils
+
+bool SU_CharIsNumeric(string c);
+bool SU_StringIsInt(string s);
+bool SU_StringIsFixed(string s);
+
+//String Strip Utils
+
+//Strips all characters in anyof from string up to the last character not matching any character in anyof
+string SU_StringStripAnyOfBackCase(string str, string anyof, bool caseInsensitive);
+string SU_StringStripAnyOfBack(string str, string anyof);
+
+//Strips all characters in anyof from string up to the first character not matching any character in anyof
+string SU_StringStripAnyOfFrontCase(string str, string anyof, bool caseInsensitive);
+string SU_StringStripAnyOfFront(string str, string anyof);
+
+//Strips all characters in anyof from both ends of str (a combination of StringStripCharsBackCase and StringStripCharsFrontCase)
+string SU_StringStripAnyOfEndsCase(string str, string anyof, bool caseInsensitive);
+string SU_StringStripAnyOfEnds(string str, string anyof);
+
+//Strips all characters in anyof from string
+string SU_StringStripAnyOfCase(string str, string anyof, bool caseInsensitive);
+string SU_StringStripAnyOf(string str, string anyof);
+
+//Strips character c from string up to the last character not matching any character in anyof
+string SU_StringStripCharBackCase(string str, string c, bool caseInsensitive);
+string SU_StringStripCharBack(string str, string c);
+
+//Strips character c from string up to the first character not matching any character in anyof
+string SU_StringStripCharFrontCase(string str, string c, bool caseInsensitive);
+string SU_StringStripCharFront(string str, string c);
+
+//Strips character c from both ends of str (a combination of StringStripCharsBackCase and StringStripCharsFrontCase)
+string SU_StringStripCharEndsCase(string str, string c, bool caseInsensitive);
+string SU_StringStripCharEnds(string str, string c);
+
+//Strips all instances of substr from str
+string SU_StringStripWordCase(string str, string substr, bool caseInsensitive);
+string SU_StringStripWord(string str, string substr);
+
+//String Find Utils
+
+//Returns index of first occurance of a character in str matching with a character in anyof. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindFirstOfIdx(string str, string anyof, int idxStart, int idxEnd);
+
+//Returns index of first occurance of a character in str not matching with a character in anyof. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstNotOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindFirstNotOfIdx(string str, string anyof, int idxStart, int idxEnd);
+
+//Returns index of last occurance of a character in str matching with a character in anyof. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindLastOfIdx(string str, string anyof, int idxStart, int idxEnd);
+
+//Returns index of last occurance of a character in str not matching with a character in anyof. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastNotOfCaseIdx(string str, string anyof, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindLastNotOfIdx(string str, string anyof, int idxStart, int idxEnd);
+
+//This is equivalent to native StringFind and should not be used unless you need case insensitve search
+//Returns index of first occurance of a character in str matching with a character in anyof. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstOfCase(string str, string anyof, bool caseInsensitive);
+int SU_StringFindFirstOf(string str, string anyof);
+
+//Returns index of first occurance of a character in str not matching with a character in anyof. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstNotOfCase(string str, string anyof, bool caseInsensitive);
+int SU_StringFindFirstNotOf(string str, string anyof);
+
+//Returns index of last occurance of a character in str matching with a character in anyof. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastOfCase(string str, string anyof, bool caseInsensitive);
+int SU_StringFindLastOf(string str, string anyof);
+
+//Returns index of last occurance of a character in str not matching with a character in anyof. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastNotOfCase(string str, string anyof, bool caseInsensitive);
+int SU_StringFindLastNotOf(string str, string anyof);
+
+//Returns index of first occurance of a character in str matching character c. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindFirstOfCharIdx(string str, string c, int idxStart, int idxEnd);
+
+//Returns index of first occurance of a character in str not matching character c. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstNotOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindFirstNotOfCharIdx(string str, string c, int idxStart, int idxEnd);
+
+//Returns index of last occurance of a character in str matching with a character in anyof. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindLastOfCharIdx(string str, string c, int idxStart, int idxEnd);
+
+//Returns index of last occurance of a character in str not matching character c. Matches characters in str from [idxStart, idxEnd]. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastNotOfCharCaseIdx(string str, string c, int idxStart, int idxEnd, bool caseInsensitive);
+int SU_StringFindLastNotOfCharIdx(string str, string c, int idxStart, int idxEnd);
+
+//This is equivalent to native StringFind and should not be used unless you need case insensitve search
+//Returns index of first occurance of a character in str matching character c. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstOfCharCase(string str, string c, bool caseInsensitive);
+int SU_StringFindFirstOfChar(string str, string c);
+
+//Returns index of first occurance of a character in str not matching character c. Returns c_stringNotFound if no match was found.
+int SU_StringFindFirstNotOfCharCase(string str, string c, bool caseInsensitive);
+int SU_StringFindFirstNotOfChar(string str, string c);
+
+//Returns index of last occurance of a character in str matching character c. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastOfCharCase(string str, string c, bool caseInsensitive);
+int SU_StringFindLastOfChar(string str, string c);
+
+//Returns index of last occurance of a character in str not matching character c. Returns c_stringNotFound if no match was found.
+int SU_StringFindLastNotOfCharCase(string str, string c, bool caseInsensitive);
+int SU_StringFindLastNotOfChar(string str, string c);
+
+//returns StringExternal if key exists otherwise returns s as text
+text SU_StringExternalDefault(string key, string s);
