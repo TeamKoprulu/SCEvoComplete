@@ -1,4 +1,5 @@
 const int gv_targetDummyCount_C = 6;
+int gv_targetDummyCountCurrent;
 const fixed gv_targetDummyOutOfCombatTime_C = 5.0;
 
 fixed[gv_targetDummyCount_C + 1][5] gv_targetDummyHealthSnapshots;
@@ -149,6 +150,7 @@ bool gt_TargetDummyInitialize_Func (bool testConds, bool runActions) {
             gv_targetDummyUnit[i] = gf_UserTagExecutionGetEventUnit();
             gf_UserTagExecutionClearEventUnit();
             TriggerAddEventUnitDamaged(gt_TargetDummyTakesDamage, UnitRefFromUnit(gv_targetDummyUnit[i]), c_unitDamageTypeAny, c_unitDamageEither, null);
+            gv_targetDummyCountCurrent += 1;
             break;
         }
     }
@@ -172,7 +174,7 @@ bool gt_TargetDummyQuarterlyUpdate_Func (bool testConds, bool runActions) {
     int lv_targetDummiesnotinCombat;
 
     // Automatic Variable Declarations
-    const int auto68DB66F4_ae = gv_targetDummyCount_C;
+    int auto68DB66F4_ae = gv_targetDummyCountCurrent - 1;
     const int auto68DB66F4_ai = 1;
 
     // Variable Initialization
@@ -218,9 +220,8 @@ bool gt_TargetDummyQuarterlyUpdate_Func (bool testConds, bool runActions) {
     }
     gv_targetDummyDamageLastSecond = lv_lv_DamageLastSecond;
     // gv_healingDummyHealingLastSecond = lv_lv_HealingLastSecond;
-    if ((lv_targetDummiesnotinCombat == gv_targetDummyCount_C) && (TimerGetElapsed(gv_targetDummyAnyDummyInCombatTimer) == 0.0)) {
+    if ((lv_targetDummiesnotinCombat == gv_targetDummyCountCurrent) && (TimerGetElapsed(gv_targetDummyAnyDummyInCombatTimer) == 0.0)) {
         TimerStart(gv_targetDummyResetTimer, gv_targetDummyOutOfCombatTime_C, false, c_timeGame);
-
     }
     else {
         gv_targetDummyDoNotUpdateNumbers = false;
@@ -232,6 +233,7 @@ bool gt_TargetDummyQuarterlyUpdate_Func (bool testConds, bool runActions) {
 void gt_TargetDummyQuarterlyUpdate_Init () {
     gt_TargetDummyQuarterlyUpdate = TriggerCreate("gt_TargetDummyQuarterlyUpdate_Func");
     TriggerAddEventTimePeriodic(gt_TargetDummyQuarterlyUpdate, 0.25, c_timeGame);
+    TriggerEnable(gt_TargetDummyQuarterlyUpdate, false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -243,6 +245,9 @@ bool gt_TargetDummyTakesDamage_Func (bool testConds, bool runActions) {
     if (!runActions) {
         return true;
     }
+    if(EventUnit() == null || UnitIsValid(EventUnit()) == false){ return false; }
+
+    TriggerEnable(gt_TargetDummyQuarterlyUpdate, true);
 
     gv_targetDummyDamageTotal += EventUnitDamageAmount();
     gf_TargetDummyUpdateDamageUI();
@@ -272,7 +277,7 @@ bool gt_TargetDummyResetTimerExpired_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    gv_targetDummyDoNotUpdateNumbers = true;
+    // gv_targetDummyDoNotUpdateNumbers = true;
     TimerRestart(gv_targetDummyAnyDummyInCombatTimer);
     TimerPause(gv_targetDummyAnyDummyInCombatTimer, true);
     TimerRestart(gv_targetDummyResetTimer);
@@ -379,7 +384,7 @@ bool gt_TargetDummyHideUITimerExpired_Func (bool testConds, bool runActions) {
     if (!runActions) {
         return true;
     }
-
+    TriggerEnable(gt_TargetDummyQuarterlyUpdate, false);
     // gf_TryMeModePanelShowHide2(false);
     return true;
 }
