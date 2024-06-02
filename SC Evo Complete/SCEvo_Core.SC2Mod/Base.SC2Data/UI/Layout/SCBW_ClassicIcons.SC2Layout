@@ -306,8 +306,125 @@
 
     </Frame>
 
-    <Frame type="EquipmentIcon" name="EquipmentIconTemplate" file="EquipmentIcon">
+    <Frame type="InfoPaneUnit" name="GameUI/UIContainer/ConsoleUIContainer/InfoPanel/InfoPaneUnit" file="GameUI">
 
+        <Frame type="UnitFrame" name="UnitFrame">
+            <Anchor relative="$parent"/>
+            <UseSelectionLeader val="False"/>
+            <UnitTag val="{$ancestor[@name=InfoPanel]/UnitPanel/UnitWireframe/@UnitTag}"/>
+        
+            <StateGroup name="IsBWRace">
+                <DefaultState val="False"/>
+                <State name="BWPr">
+                    <When type="AnimationState" frame="$ancestor[@name=UIContainer]" UseClassicIcons="True"/>
+                    <When type="Property" frame="UnitRace" Text="BWPr"/>
+                </State>
+                <State name="BWTe">
+                    <When type="AnimationState" frame="$ancestor[@name=UIContainer]" UseClassicIcons="True"/>
+                    <When type="Property" frame="UnitRace" Text="BWTe"/>
+                </State>
+                <State name="BWZe">
+                    <When type="AnimationState" frame="$ancestor[@name=UIContainer]" UseClassicIcons="True"/>
+                    <When type="Property" frame="UnitRace" Text="BWZe"/>
+                </State>
+                <State name="False"/>
+            </StateGroup>
+
+            <Frame type="Label" name="UnitRace">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@UnitLink[Race]}"/>
+                <Visible val="False"/>
+            </Frame>
+
+            <Frame type="Label" name="UnitName">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@UnitLink[Name]}"/>
+                <Visible val="False"/>
+            </Frame>
+
+            <Frame type="Label" name="LifeArmor">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@ActorUnitLink[LifeArmorIcon]}"/>
+                <Visible val="False"/>
+            </Frame>
+
+            <Frame type="Label" name="ShieldArmor">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@ActorUnitLink[ShieldArmorIcon]}"/>
+                <Visible val="False"/>
+            </Frame>
+        </Frame>
+
+		<Frame type="CountdownLabel" name="IndexCounter">
+			<Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+			<Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+			<UseAlternateTime val="True"/>
+			<CountdownTime val="0"/>
+			<StartValue val="{$this/@CurrentValue}"/>
+			<TargetValue val="{Math/@ResultInt}"/>
+			<Style val="DebugTiny"/>
+			<CurrentValue val="0"/>
+			<Text val="0"/>
+			<Alpha val="0"/>
+
+			<Animation name="Counter">
+				<Event event="ItemAdded" action="Reset,Play" frame="$parent"/>
+				<Controller type="Counter" end="Pause" frame="$this">
+					<Key type="Curve" time="0.0" value="1.0"/>
+				</Controller>
+				<Controller type="Event" end="Stop" frame="$this">
+					<Key type="Event" time="0.0" event="CountdownLabelResetRequest"/>
+				</Controller>
+			</Animation>
+
+			<Animation name="Reset">
+                <Event event="OnHidden" action="Reset,Play" frame="$parent"/>
+				<Event event="ItemsCleared" action="Reset,Play" frame="$parent"/>
+                <Controller type="Property" end="Pause" frame="$this" property="CurrentValue">
+                    <Key type="Property" time="0.0" value="0"/>
+                </Controller>
+				<Controller type="Event" end="Stop" frame="$this">
+					<Key type="Event" time="0.001" event="CountdownLabelResetRequest"/>
+				</Controller>
+			</Animation>
+
+			<Frame type="MathFrame" name="Math">
+				<A val="{$parent/@StartValue}"/>
+				<B val="1"/>
+				<Operator val="Add"/>
+			</Frame>
+		</Frame>
+
+    </Frame>
+
+    <Frame type="EquipmentIcon" name="EquipmentIconTemplate" file="EquipmentIcon">
+        <LayerCount val="3"/>
+        <TextureType val="Normal" layer="2"/>
+
+        <Animation name="EquipmentVisible">
+            <Event event="OnShown" action="Reset,Play" frame="$parent"/>
+            <Controller type="Event" end="Stop" frame="$this">
+                <Key type="Event" time="0.0" event="ItemAdded"/>
+            </Controller>
+            <Controller type="Event" end="Stop" frame="$parent">
+                <Key type="Event" time="0.0" event="ItemAdded"/>
+            </Controller>
+        </Animation>
+
+        <!-- <StateGroup name="CooldownState">
+            <DefaultState val="NotActive"/>
+        
+            <State name="Active">
+                <When type="Property" frame="Test" Text="true" />
+                <Action type="SetProperty" LayerAlpha="50" index="2" />
+            </State>
+        
+            <State name="NotActive">
+                <When type="Property" frame="Test" Text="false"/>
+                <Action type="SetProperty" LayerAlpha="255" index="2" />
+            </State>
+        </StateGroup> -->
+        
         <StateGroup name="ClassicIcon">
             <DefaultState val="False"/>
         
@@ -321,7 +438,7 @@
             </State>
         </StateGroup>
         
-        <StateGroup name="ClassicTint">
+        <!-- <StateGroup name="ClassicTint">
             <DefaultState val="False"/>
 
             <State name="True">
@@ -332,13 +449,65 @@
             </State>
         
             <State name="False"/>
-        </StateGroup>
+        </StateGroup> -->
+
+		<Frame type="CountdownLabel" name="EquipmentIndex">
+            <Anchor relative="$parent"/>
+			<UseAlternateTime val="True"/>
+			<CountdownTime val="0"/>
+			<StartValue val="{$this/@CurrentValue}"/>
+			<TargetValue val="{Math/@ResultInt}"/>
+			<Style val="DebugTiny"/>
+			<CurrentValue val="1"/>
+			<Text val="0"/>
+			<Alpha val="0"/>
+
+			<Animation name="Counter">
+				<Event event="ItemAdded" action="Reset,Play" frame="$parent"/>
+				<Controller type="Counter" end="Pause" frame="$this">
+					<Key type="Curve" time="0.0" value="1.0"/>
+				</Controller>
+				<Controller type="Event" end="Stop" frame="$this">
+					<Key type="Event" time="0.0" event="CountdownLabelResetRequest"/>
+				</Controller>
+			</Animation>
+
+			<Animation name="Reset">
+                <Event event="OnHidden" action="Reset,Play" frame="$parent/$parent"/>
+				<Event event="ItemsCleared" action="Reset,Play" frame="$parent"/>
+                <Controller type="Property" end="Pause" frame="$this" property="CurrentValue">
+                    <Key type="Property" time="0.0" value="0"/>
+                </Controller>
+				<Controller type="Event" end="Stop" frame="$this">
+					<Key type="Event" time="0.01" event="CountdownLabelResetRequest"/>
+				</Controller>
+			</Animation>
+
+			<Frame type="MathFrame" name="Math">
+				<A val="{$parent/$parent/$parent/IndexCounter/@CurrentValue}"/>
+				<B val="1"/>
+				<Operator val="Subtract"/>
+			</Frame>
+		</Frame>
+
+        <StateGroup name="ClassicIconIndex" template="SCBW_ClassicIconsPaths/ClassicIconIndexTemplate"/>
+        <StateGroup name="ClassicIconSwap" template="SCBW_ClassicIconsPaths/ClassicIconSwapTemplate"/>
+
+        <Frame type="EditBox" name="IconListener" template="SCBW_ClassicIcons/ListenerBoxTemplate">
+            <Text val="{$parent/@Texture}"/>
+        </Frame>
 
         <Frame type="EditBox" name="ClassicIconListenerBox" template="SCBW_ClassicIcons/ListenerBoxTemplate">
             <MaxCharacters val="29"/>
-            <Text val="{$parent/@Texture}"/>
+            <Text val="{$parent/@Texture[2]}"/>
             <StateGroup name="ClassicIcon" template="SCBW_ClassicIcons/ClassicIcon"/>
         </Frame>
+
+        <Frame type="MathFrame" name="IconIndex">
+            <A val="-1"/>
+        </Frame>
+
+
     </Frame>
 
     <Frame type="Image" name="AlertItemTemplate/AlertIcon" file="AlertPanel">
