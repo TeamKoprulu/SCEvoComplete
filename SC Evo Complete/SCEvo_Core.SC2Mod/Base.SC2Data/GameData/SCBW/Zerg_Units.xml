@@ -14,6 +14,8 @@
         <PeriodicOffsetArray value="-1,2,0"/>
         <PeriodicOffsetArray value="1,2,0"/>
         <PeriodicPeriodArray value="0"/>
+        <OffsetRandMode value="RandomNoRepeat"/>
+        <PeriodRandMode value="RandomNoRepeat"/>
     </CEffectCreatePersistent>
     <CEffectCreatePersistent id="DefilerSCBWDarkSwarm@DummyLocation">
         <OffsetVectorStartLocation Value="TargetPoint"/>
@@ -713,13 +715,15 @@
     </CLight>
     <CActorSiteOpLocalOffset id="DefilerSCBWDarkSwarm@HeightVariancer">
         <LocalOffset value="0.000000,0.000000,0.001000"/>
-        <OverridingLength value="-0.750000,0.250000"/>
+        <OverridingLength value="-0.750000,0.350000"/>
     </CActorSiteOpLocalOffset>
     <CActorModel id="DefilerSCBWDarkSwarm@Persistent" parent="ModelAnimationStyleContinuous">
         <On Terms="Behavior.DefilerSCBWDarkSwarm.On" Send="Create"/>
         <On Terms="ActorCreation" Target="_Unit" Send="SetTintColor 225,113,0 0.500000 OneShot DarkSwarmTint"/>
         <On Terms="Behavior.DefilerSCBWDarkSwarm.Off" Target="_Unit" Send="ClearTintColor 0.500000 DarkSwarmTint"/>
+        <On Terms="Behavior.DefilerSCBWDarkSwarm.Off" Send="SetOpacity 0.000000 0.250000"/>
         <On Terms="Behavior.DefilerSCBWDarkSwarm.Off" Send="Destroy"/>
+        <On Terms="ActorCreation; ValidateUnit TargetRadius0Dot5" Send="ModelSwap DefilerSCBWDarkSwarm@PersistentSmall"/>
         <ModelFlags index="AllowHitTest" value="0"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
         <Terms value="Cap 1"/>
@@ -729,9 +733,6 @@
     <CActorModel id="DefilerSCBWDarkSwarm@Splat" parent="ModelAnimationStyleContinuous">
         <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Start" Send="Create"/>
         <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Stop" Send="AnimBracketStop BSD"/>
-        <On Terms="ActorCreation" Send="SetOpacity 0.450000"/>
-        <On Terms="ActorCreation" Send="SetTintColor 255,170,85"/>
-        <HostSiteOps Ops="SOpMoveUpByDot5"/>
         <ModelFlags index="AllowHitTest" value="0"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
     </CActorModel>
@@ -796,15 +797,16 @@
         <On Terms="Effect.DefilerSCBWDarkSwarm@DummyLocation.Start" Send="Create"/>
         <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Stop" Send="Destroy"/>
         <ModelFlags index="AllowHitTest" value="0"/>
-        <ModelFlags index="AutomateGlobalLoops" value="1"/>
         <HostSiteOps Ops="SOpTargetPointStationary SOpShadowRespectsBaseHeight DefilerSCBWDarkSwarm@HeightVariancer"/>
     </CActorModel>
     <CActorAction id="DefilerSCBWDarkSwarm@Action" parent="GenericAttack" effectImpact="DefilerSCBWDarkSwarm@CP" effectLaunch="DefilerSCBWDarkSwarm@LM">
         <LaunchAssets Sound=""/>
         <Missile value="DefilerSCBWDarkSwarm@Missile"/>
-        <ImpactMap index="None" Model="DefilerSCBWDarkSwarm@Impact" Sound=""/>
+        <ImpactMap index="None" Model="" Sound=""/>
     </CActorAction>
-    <CActorMissile id="DefilerSCBWDarkSwarm@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="DefilerSCBWDarkSwarm@Missile"/>
+    <CActorMissile id="DefilerSCBWDarkSwarm@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="DefilerSCBWDarkSwarm@Missile">
+        <On index="1" Terms="UnitBirth" Send="AnimBracketStart BSD Birth Stand IGNORE"/>
+    </CActorMissile>
     <CActorSplat id="DefilerSCBWDarkSwarm@CursorSplat" parent="ZergCursorSplat" abil="DefilerSCBWDarkSwarm"/>
     <CActorRange id="DefilerSCBWDarkSwarm@Range" parent="RangeAbil" abil="DefilerSCBWDarkSwarm">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
@@ -1295,6 +1297,11 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
+    <CModel id="DefilerSCBWDarkSwarm@PersistentSmall" parent="PersistentSpellFX">
+        <Model value="Assets\Effects\Zerg\DefilerDarkSwarmSCBW@Persistent\DefilerDarkSwarmSCBW@PersistentSmall.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Priority value="16"/>
+    </CModel>
     <CModel id="DefilerSCBWDarkSwarm@Persistent" parent="PersistentSpellFX">
         <Model value="Assets\Effects\Zerg\DefilerDarkSwarmSCBW@Persistent\DefilerDarkSwarmSCBW@Persistent.m3"/>
         <EditorCategories value="Race:Zerg"/>
@@ -1305,9 +1312,9 @@
     </CModel>
     <CModel id="DefilerSCBWDarkSwarm@Splat" parent="Splat">
         <EditorCategories value="Race:Zerg"/>
-        <Model value="Assets\Effects\Zerg\Defiler_DarkSwarm_AOE\Defiler_DarkSwarm_AOE.m3"/>
-        <ScaleMax value="0.550000,0.550000,0.550000"/>
-        <ScaleMin value="0.550000,0.550000,0.550000"/>
+        <Model value="Assets\Effects\Zerg\DefilerDarkSwarmSCBW@Splat\DefilerDarkSwarmSCBW@Splat.m3"/>
+        <ScaleMax value="1.100000,1.100000,1.100000"/>
+        <ScaleMin value="1.100000,1.100000,1.100000"/>
     </CModel>
     <CModel id="QueenSCBWEnsnare@Glaze" parent="Glaze">
         <Model value="Assets\Effects\Glaze\Glaze_Symbiote_Carapace\Glaze_Symbiote_Carapace.m3"/>
@@ -1328,8 +1335,8 @@
         <Model value="Assets\Effects\Zerg\DefilerDarkSwarmSCBW\DefilerDarkSwarmSCBW.m3"/>
         <EditorCategories value="Race:Zerg"/>
         <Priority value="30"/>
-        <ScaleMax value="1.400000,1.400000,1.400000"/>
-        <ScaleMin value="1.300000,1.300000,1.300000"/>
+        <ScaleMax value="1.350000,1.350000,1.350000"/>
+        <ScaleMin value="1.250000,1.250000,1.250000"/>
     </CModel>
     <CModel id="DefilerSCBWDarkSwarm@Impact" parent="ImpactFX">
         <Model value="Assets\Effects\Zerg\Defiler_DarkSwarm_Impact\Defiler_DarkSwarm_Impact.m3"/>
