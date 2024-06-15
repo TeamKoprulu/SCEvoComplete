@@ -38,6 +38,51 @@
         <EffectArray value="SC1_ShieldsParam"/>
         <EffectArray value="##x##@DamageAccum"/>
     </CEffectSet>
+    <CEffectApplyBehavior id="SpiderMineSCBWWeapon@Chasing">
+        <WhichUnit Value="Source"/>
+    </CEffectApplyBehavior>
+    <CEffectCreatePersistent id="SpiderMineSCBWWeapon@ChasingDelay">
+        <WhichLocation Value="SourceUnit"/>
+        <InitialDelay value="0.125"/>
+        <InitialEffect value="SpiderMineSCBWWeapon@Chasing"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="SpiderMineSCBWWeapon@InvisImpactDelay">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="SourcePoint"/>
+        <TimeScaleSource Value="Caster"/>
+        <OffsetVectorEndLocation Value="SourcePoint"/>
+        <Flags index="RandomPeriod" value="1"/>
+        <InitialDelay value="0.167"/>
+        <ExpireEffect value="SpiderMineSCBWWeapon@Impact"/>
+        <PeriodCount value="1"/>
+        <PeriodicEffectArray value="SpiderMineSCBWWeapon@InvisImpactDelayDummy"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.01"/>
+        <PeriodicPeriodArray value="0.02"/>
+        <PeriodicPeriodArray value="0.03"/>
+        <PeriodicPeriodArray value="0.04"/>
+        <PeriodicPeriodArray value="0.05"/>
+        <PeriodicPeriodArray value="0.06"/>
+        <PeriodicPeriodArray value="0.07"/>
+        <PeriodicPeriodArray value="0.08"/>
+        <PeriodicPeriodArray value="0.09"/>
+        <PeriodicPeriodArray value="0.1"/>
+        <PeriodicPeriodArray value="0.11"/>
+        <PeriodicPeriodArray value="0.12"/>
+        <PeriodicPeriodArray value="0.13"/>
+        <PeriodicPeriodArray value="0.14"/>
+        <PeriodicPeriodArray value="0.15"/>
+    </CEffectCreatePersistent>
+    <CEffectApplyBehavior id="SpiderMineSCBWWeapon@InvisChasing">
+        <WhichUnit Value="Source"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="SpiderMineSCBWWeapon@InvisChasingRB">
+        <WhichUnit Value="Source"/>
+        <BehaviorLink value="SpiderMineSCBWWeapon@InvisChasing"/>
+    </CEffectRemoveBehavior>
+    <CEffectSet id="SpiderMineSCBWWeapon@InvisImpactDelayDummy">
+        <EditorCategories value="Race:Terran"/>
+    </CEffectSet>
     <CEffectIssueOrder id="ArbiterSCBWStasisField@HaltIssueOrder">
         <EditorCategories value="Race:Terran"/>
         <AbilTechAlias value="_SCVBuild"/>
@@ -195,10 +240,12 @@
         <PeriodicValidator value="SpiderMineSCBWWeapon@InvisPersistentValidator"/>
         <PeriodicEffectArray value="SpiderMineSCBWWeapon@InvisTargeting"/>
         <PeriodicPeriodArray value="0.0625"/>
+        <InitialEffect value="SpiderMineSCBWWeapon@InvisChasing"/>
     </CEffectCreatePersistent>
     <CEffectSwitch id="SpiderMineSCBWWeapon@InvisCPFinal">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="SpiderMineSCBWWeapon@InvisRangeCheckNegate" Effect="SpiderMineSCBWWeapon@Impact"/>
+        <CaseArray Validator="SpiderMineSCBWWeapon@InvisRangeCheckNegate" Effect="SpiderMineSCBWWeapon@InvisImpactDelay"/>
+        <CaseDefault value="SpiderMineSCBWWeapon@InvisChasingRB"/>
     </CEffectSwitch>
     <CEffectApplyBehavior id="SpiderMineSCBWWeapon@InvisTargetMarker">
         <EditorCategories value="Race:Terran"/>
@@ -361,8 +408,9 @@
         <TargetSorts>
             <SortArray value="TSDistanceToTarget"/>
         </TargetSorts>
-        <AreaArray Radius="4" Effect="SpiderMineSCBWWeapon@InvisEnumSet"/>
+        <AreaArray Radius="3" Effect="SpiderMineSCBWWeapon@InvisEnumSet"/>
         <MaxCount value="1"/>
+        <SearchFlags index="ExtendByUnitRadius" value="1"/>
     </CEffectEnumArea>
     <CEffectRemoveBehavior id="CommandCenterSCBW@ComsatRemoveAttached">
         <BehaviorLink value="ComsatStationSCBW@Attached"/>
@@ -1349,6 +1397,7 @@
         <EffectArray value="SpiderMineSCBWWeapon@ImpactSearch"/>
         <EffectArray value="SpiderMineSCBWWeapon@DamageAccum"/>
         <EffectArray value="Suicide"/>
+        <ValidatorArray value="SCBW_CasterNotStasisNotStunnedNotDead"/>
     </CEffectSet>
     <CEffectLaunchMissile id="WraithSCBWWeaponAir@LMLeft">
         <EditorCategories value="Race:Terran"/>
