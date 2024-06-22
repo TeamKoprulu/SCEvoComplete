@@ -4,7 +4,7 @@ int KopruluMenu;
 int KopruluMenuToggleButton;
 trigger KopruluMenuToggle_t;
 trigger KopruluSkinsResponses_t;
-const int c_KopruluSkinsCount = 1;
+const int c_KopruluSkinsCount = 2;
 
 int[c_KopruluSkinsCount + 1] KopruluSkinsItems;
 
@@ -16,16 +16,36 @@ bool KopruluMenuToggle_Func(bool test_conds, bool run_actions){
 bool KopruluSkinsResponses_Func(bool test_conds, bool run_actions){
     playergroup players = PlayerGroupActive();
     int player = EventPlayer();
-    string race = PlayerRace(player);
-    bool checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
+    string race;
+    string skin;
+    bool isBWRace;
+    bool checked;
     if(!PlayerGroupHasPlayer(players, player) || (PlayerStatus(player) != c_playerStatusActive) ) {
         return false;
     }
+    race = PlayerRace(player);
+    checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
+    isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
 
-    Extension_OptionsBankSaveValue(player, c_extBankKey_Setting_ClassicSkins, IntToString(BoolToInt(checked)));
+    if(EventDialogControl() == KopruluSkinsItems[0]){
+        skin = c_extBankKey_Setting_ClassicSkins;
+    }
+    else if(EventDialogControl() == KopruluSkinsItems[1]){
+        skin = c_extBankKey_Setting_AiurNexus;
+    }
+    
+    Extension_OptionsBankSaveValue(player, skin, IntToString(BoolToInt(checked)));
     if(checked){
-        if(race == "BWTe" || race == "BWPr" || race == "BWZe"){
-            libSCBW_gf_SC1_ClassicIconsActivate(checked, PlayerGroupSingle(player));
+        if(skin == c_extBankKey_Setting_ClassicSkins){
+            if(isBWRace){
+                libSCBW_gf_SC1_ClassicIconsActivate(checked, PlayerGroupSingle(player));
+            }
+        }
+
+        else if(skin == c_extBankKey_Setting_AiurNexus){
+            if(isBWRace){
+                libNtve_gf_PlayerApplySkinReplacingExistingUnit(player, "NexusSCBW@Aiur", checked);
+            }
         }
     }
 
@@ -81,6 +101,7 @@ void KopruluMenuCreateUI(){
                     DialogControlSetPropertyAsBool(KopruluSkinsItems[0], c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
                 }
             }
+            DialogControlSetPropertyAsBool(KopruluSkinsItems[1], c_triggerControlPropertyEnabled, pg, true);
 
         // ------------------------------------------------------------------------------------------ //
 

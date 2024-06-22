@@ -58,6 +58,7 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
     int k;
     bool enabled;
     string race;
+    bool isBWRace;
 
     KopruluMenuCreateUI();
     Wait(0.0625,0);
@@ -67,7 +68,8 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
         tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
         if(PlayerType(tmp_player) != c_playerTypeUser){ continue; }
         race = PlayerRace(tmp_player);
-        
+        isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
+
         for (k = 0; k < c_extBankKey_SettingCount; k += 1) {
             if(BankSectionExists(gv_extensionBank[tmp_player], c_extOptionBankSection)){
                 if(BankKeyExists(gv_extensionBank[tmp_player], c_extOptionBankSection, c_extBankKey_Setting+IntToString(k))){
@@ -75,9 +77,15 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
                     if(k == 0){
                         DialogControlSetPropertyAsBool(KopruluSkinsItems[k], c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), enabled);
                         if(enabled){
-                            if(race == "BWTe" || race == "BWPr" || race == "BWZe"){
+                            if(isBWRace){
                                 libSCBW_gf_SC1_ClassicIconsActivate(true, PlayerGroupSingle(tmp_player));
                             }
+                        }
+                    }
+                    else if(k == 1){
+                        DialogControlSetPropertyAsBool(KopruluSkinsItems[k], c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), enabled);
+                        if(enabled){
+                            PlayerApplySkin(tmp_player, "NexusSCBW@Aiur", enabled);
                         }
                     }
 
