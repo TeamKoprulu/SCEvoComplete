@@ -1,0 +1,91 @@
+
+// -------------- KopruluMenu -------------------
+int KopruluMenu;
+int KopruluMenuToggleButton;
+trigger KopruluMenuToggle_t;
+trigger KopruluSkinsResponses_t;
+const int c_KopruluSkinsCount = 1;
+
+int[c_KopruluSkinsCount + 1] KopruluSkinsItems;
+
+bool KopruluMenuToggle_Func(bool test_conds, bool run_actions){
+    DialogControlSetPropertyAsBool(KopruluMenu, c_triggerControlPropertyVisible, PlayerGroupSingle(EventPlayer()), !DialogControlIsVisible(KopruluMenu, EventPlayer()));
+    return true;
+}
+
+bool KopruluSkinsResponses_Func(bool test_conds, bool run_actions){
+    playergroup players = PlayerGroupActive();
+    int player = EventPlayer();
+    string race = PlayerRace(player);
+    bool checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
+    if(!PlayerGroupHasPlayer(players, player) || (PlayerStatus(player) != c_playerStatusActive) ) {
+        return false;
+    }
+
+    Extension_OptionsBankSaveValue(player, c_extBankKey_Setting_ClassicSkins, IntToString(BoolToInt(checked)));
+    if(checked){
+        if(race == "BWTe" || race == "BWPr" || race == "BWZe"){
+            libSCBW_gf_SC1_ClassicIconsActivate(checked, PlayerGroupSingle(player));
+        }
+    }
+
+    return true;
+}
+
+static string l_IntToStringDoubleDigit (int value) {
+    string s;
+    s = IntToString(value);
+    if (StringLength(s) == 1) {
+        s = ("0" + s);
+    }
+    return s;
+}
+
+
+void KopruluMenuCreateUI(){
+    int i;
+    int di;
+    int fullscreenPanel;
+    playergroup pg = PlayerGroupActive();
+    string race;
+    int tmp_player;
+
+    if(KopruluMenu == c_invalidDialogControlId){
+
+        fullscreenPanel = DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer/FullscreenUpperContainer");
+        KopruluMenu = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "KopruluMenu");
+        DialogControlSetPropertyAsBool(KopruluMenu, c_triggerControlPropertyVisible, pg, false);
+        // Toggle Menu Button
+        KopruluMenuToggle_t = TriggerCreate("KopruluMenuToggle_Func");
+        // Toggle Buttons
+        di = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "MenuBar/KopruluButton");
+        DialogControlSetPropertyAsBool(di, c_triggerControlPropertyVisible, pg, true);
+        KopruluMenuToggleButton = DialogControlHookup(di, c_triggerControlTypeButton, "MenuButton");
+        TriggerAddEventDialogControl(KopruluMenuToggle_t, c_playerAny, DialogControlLastCreated(), c_triggerControlEventTypeClick);
+
+        //---------------------------------------- Skins TAB ---------------------------------------- //
+            KopruluSkinsResponses_t = TriggerCreate("KopruluSkinsResponses_Func");
+            TriggerEnable(KopruluSkinsResponses_t, false);
+
+            for (i = 0; i < c_KopruluSkinsCount; i += 1) {
+                KopruluSkinsItems[i] = DialogControlHookup(fullscreenPanel, c_triggerControlTypeCheckBox, "KopruluMenu_SkinsPanel/CheckBox_" + l_IntToStringDoubleDigit(i));
+                DialogControlSetPropertyAsBool(KopruluSkinsItems[i], c_triggerControlPropertyChecked, pg, false);
+                DialogControlSetPropertyAsBool(KopruluSkinsItems[i], c_triggerControlPropertyEnabled, pg, false);
+                TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, KopruluSkinsItems[i], c_triggerControlEventTypeChecked);
+            }
+
+            for (i = 1; i <= PlayerGroupCount(pg); i += 1) {
+                tmp_player = PlayerGroupPlayer(pg, i);
+                race = PlayerRace(tmp_player);
+                if(race == "BWTe" || race == "BWPr" || race == "BWZe"){
+                    DialogControlSetPropertyAsBool(KopruluSkinsItems[0], c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
+                }
+            }
+
+        // ------------------------------------------------------------------------------------------ //
+
+        return;
+    }
+    return;
+
+}
