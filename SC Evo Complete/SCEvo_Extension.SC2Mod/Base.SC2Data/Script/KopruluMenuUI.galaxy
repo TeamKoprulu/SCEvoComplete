@@ -2,8 +2,11 @@
 // -------------- KopruluMenu -------------------
 int KopruluMenu;
 int KopruluMenuToggleButton;
+int KopruluMenuSkinsButton;
 trigger KopruluMenuToggle_t;
 trigger KopruluSkinsResponses_t;
+trigger KopruluSkinsTimerExpire_t;
+timer KopruluSkinsTimer;
 const int c_KopruluSkinsCount = 2;
 
 int[c_KopruluSkinsCount + 1] KopruluSkinsItems;
@@ -61,6 +64,21 @@ static string l_IntToStringDoubleDigit (int value) {
     return s;
 }
 
+bool KopruluSkinsTimerExpire_Func(bool test_conds, bool run_actions){
+    int i;
+    int tmp_player;
+    for (i = 1; i <= PlayerGroupCount(PlayerGroupActive()); i += 1) {
+        tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
+        if(DialogControlIsVisible(KopruluMenu, tmp_player)){
+            DialogControlSetPropertyAsBool(KopruluMenu, c_triggerControlPropertyVisible, PlayerGroupSingle(tmp_player), false);
+        }
+        DialogControlSetPropertyAsBool(KopruluMenuSkinsButton, c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), false);
+    }
+    TriggerEnable(KopruluSkinsResponses_t, false);
+    KopruluSkinsTimer = null;
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
 
 void KopruluMenuCreateUI(){
     int i;
@@ -105,7 +123,15 @@ void KopruluMenuCreateUI(){
                 }
             }
 
+            KopruluMenuSkinsButton = DialogControlHookup(KopruluMenu, c_triggerControlTypeButton, "KopruluTabControl/TabContainer/TabButton2");
+            DialogControlSetPropertyAsBool(KopruluMenuSkinsButton, c_triggerControlPropertyEnabled, pg, true);
+
         // ------------------------------------------------------------------------------------------ //
+
+        TimerStart(TimerCreate(), 420, false, c_timeGame);
+        KopruluSkinsTimer = TimerLastStarted();
+        KopruluSkinsTimerExpire_t = TriggerCreate("KopruluSkinsTimerExpire_Func");
+        TriggerAddEventTimer(KopruluSkinsTimerExpire_t, KopruluSkinsTimer);
 
         return;
     }
