@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Desc>
+
+    <RequiredDefines val="Te"/>
+
     <Constant name="KopruluMenuOffsetY" val="-100"/>
     <Constant name="KopruluMenuWidth" val="200"/>
     <Constant name="KopruluMenuHeight" val="106"/>
@@ -167,10 +170,12 @@
 
                     <Animation name="Click">
                         <Event event="OnHidden" action="Reset,Play" frame="$parent"/>
+                        <Event event="OnDisabled" action="Reset,Play" frame="$parent/TabButton2"/>
                         <Controller type="Event" end="Pause" frame="$this">
                             <Key type="Event" time="0.0" event="ControlClickRequest"/>
                         </Controller>
                     </Animation>
+
 
                 </Frame>
 
@@ -215,21 +220,25 @@
     <Frame type="MenuBar" name="GameUI/UIContainer/FullscreenUpperContainer/MenuBar" file="GameUI">
 
         <Frame type="Frame" name="URL"> 
-            <Visible val="False"/>
+            <RequiredDefines val="Terr|Zerg|Prot"/>
+            <Visible val="True"/>
         </Frame>
 
         <Frame type="Frame" name="KopruluButton">
+            <RequiredDefines val="Terr|Zerg|Prot"/>
             <Anchor side="Left" relative="$parent/MenuBarBackgroundImage" pos="Min" offset="-40"/>
             <Anchor side="Top" relative="$parent/MenuBarBackgroundImage" pos="Min" offset="9"/>
             <Width val="36"/>
             <Height val="36"/>
-            <Visible val="True"/>
+            <Visible val="False"/>
     
             <Frame type="Button" name="MenuButton" template="SCBW_UIOverrides/MenuBarButtonTemplate">
                 <AcceptsMouse val="{$KopruluMenu/KopruluTabControl/@AcceptsMouse}"/>
                 <Anchor relative="$parent"/>
                 <Handle val="MenuBar_KopruluButton"/>
                 <ClicksOn val=""/>
+                <Toggleable val="true"/>
+                <Toggled val="false"/>
                 <Animation name="EnableButton">
                     <Event event="OnMouseEnter" action="DirectionForward,Play" frame="$this"/>
                     <Event event="OnMouseExit" action="DirectionReverse,Play" frame="$this"/>
@@ -240,22 +249,13 @@
                 </Animation>
     
                 <Frame type="Image" name="Icon">
-    
                     <Texture val="Assets\Textures\btn-ability-terran-decloak.dds"/>
-    
                 </Frame>
+
             </Frame>
     
         </Frame>
 
-        <StateGroup name="ExtensionMode">
-            <DefaultState val="Default"/>
-            
-            <State name="Default">
-                <Action type="SetProperty" frame="$this/KopruluButton" Visible="True"/>
-                <Action type="SetProperty" frame="$this/URL" Visible="False"/>
-            </State>
-        </StateGroup>
     </Frame>
 
     <Frame type="Frame" name="GameUI/UIContainer/FullscreenUpperContainer" file="GameUI">
@@ -314,7 +314,7 @@
             <Width val="#KopruluMenuWidth"/>
             <Height val="#KopruluMenuHeight"/>
             <Handle val="KopruluMenu"/>
-            <Visible val="false"/>
+            <Visible val="{$MenuBar_KopruluButton/@Toggled}"/>
             <Frame type="Image" name="Background">
                 <Alpha val="200"/>
             </Frame>
