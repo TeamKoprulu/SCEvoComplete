@@ -131,6 +131,16 @@
         <Aliases value="_ProtossBuildModel"/>
         <On Terms="ActorCreation" Send="Create ProtossBuildingSCBW@ConstructionAttached"/>
     </CActorModel>
+    <CActorSetQueried default="1" id="ProtossBuildingSCBW@FlameSet">
+        <?token id="type"?>
+        <AttachQuery Methods="$BuildingDamageNew"/>
+        <SpawnTarget value="ProtossBuildingSCBW@##type##"/>
+    </CActorSetQueried>
+    <CActorSetQueried default="1" id="ProtossBuildingSCBW@FlameSetTransition">
+        <?token id="type"?>
+        <AttachQuery Methods="$BuildingDamageTransition"/>
+        <SpawnTarget value="ProtossBuildingSCBW@##type##"/>
+    </CActorSetQueried>
     <CActorModel default="1" id="TerranBuildingSCBW@BuildBasis" parent="TerranModelConstruction">
         <Aliases value="_TerranBuildModel"/>
         <On Terms="ActorCreation" Send="Create TerranConstructionSCBW@Attached"/>
@@ -361,6 +371,15 @@
     <CActorModel id="CorsairSCBWWeapon@ImpactModel" parent="GenericAttackImpactModel">
         <On Terms="ActorCreation" Send="SetTintColor {255,255,255 3.000000}"/>
     </CActorModel>
+    <CActorModel id="ProtossBuildingSCBW@FireLarge" parent="ProtossFlameModel"/>
+    <CActorModel id="ProtossBuildingSCBW@FireMedium" parent="ProtossFlameModel"/>
+    <CActorModel id="ProtossBuildingSCBW@FireSmall" parent="ProtossFlameModel"/>
+    <CActorSetQueried id="ProtossBuildingSCBW@FlameSetFireLarge" parent="ProtossBuildingSCBW@FlameSet" type="FireLarge"/>
+    <CActorSetQueried id="ProtossBuildingSCBW@FlameSetFireMedium" parent="ProtossBuildingSCBW@FlameSet" type="FireMedium"/>
+    <CActorSetQueried id="ProtossBuildingSCBW@FlameSetFireSmall" parent="ProtossBuildingSCBW@FlameSet" type="FireSmall"/>
+    <CActorSetQueried id="ProtossBuildingSCBW@FlameSetFireTransitionLarge" parent="ProtossBuildingSCBW@FlameSetTransition" type="FireLarge"/>
+    <CActorSetQueried id="ProtossBuildingSCBW@FlameSetFireTransitionMedium" parent="ProtossBuildingSCBW@FlameSetTransition" type="FireMedium"/>
+    <CActorSetQueried id="ProtossBuildingSCBW@FlameSetFireTransitionSmall" parent="ProtossBuildingSCBW@FlameSetTransition" type="FireSmall"/>
     <CActorSiteOpAttachVolume id="SOpAttachVolumeVizEnhanceUp">
         <HostIncoming Subject="_LaunchGuide" Actor="Find"/>
         <UpwardVisibilityEnhancement value="1"/>
@@ -2890,15 +2909,16 @@
     </CActorProgress>
     <CActorStateMonitor id="ProtossBuildingSCBW@FlamesLarge">
         <On Terms="UnitCreation.NexusSCBW" Send="Create"/>
-        <On Terms="UnitCreation.GatewaySCBW" Send="Create"/>
-        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameSetFireLarge"/>
-        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameSetFireTransitionLarge"/>
-        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameSetFireLarge" Send="Destroy"/>
-        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameSetFireTransitionLarge" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossBuildingSCBW@FlameSetFireLarge"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossBuildingSCBW@FlameSetFireTransitionLarge"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossBuildingSCBW@FlameSetFireLarge" Send="Destroy"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossBuildingSCBW@FlameSetFireTransitionLarge" Send="Destroy"/>
         <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameLoopLarge"/>
         <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameLoopLarge" Send="Destroy"/>
-        <StateArray Name="ProtossNormal" Terms="ValidateUnit ProtossBurnDownNormal"/>
-        <StateArray Name="ProtossFire" Terms="ValidateUnit ProtossBurnDownFire"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create TerranFlameLoopLarge"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="TerranFlameLoopLarge" Send="Destroy"/>
+        <StateArray Name="ProtossNormal" Terms="ValidateUnit ProtossBuildingSCBW@BurnDownNormal"/>
+        <StateArray Name="ProtossFire" Terms="ValidateUnit ProtossBuildingSCBW@BurnDownFire"/>
     </CActorStateMonitor>
     <CActorStateMonitor id="ProtossBuildingSCBW@FlamesMedium">
         <On Terms="UnitCreation.AssimilatorSCBW" Send="Create"/>
@@ -2906,32 +2926,37 @@
         <On Terms="UnitCreation.CitadelOfAdunSCBW" Send="Create"/>
         <On Terms="UnitCreation.CyberneticsCoreSCBW" Send="Create"/>
         <On Terms="UnitCreation.ForgeSCBW" Send="Create"/>
+        <On Terms="UnitCreation.GatewaySCBW" Send="Create"/>
         <On Terms="UnitCreation.RoboticsFacilitySCBW" Send="Create"/>
         <On Terms="UnitCreation.StargateSCBW" Send="Create"/>
         <On Terms="UnitCreation.FleetBeaconSCBW" Send="Create"/>
         <On Terms="UnitCreation.ObservatorySCBW" Send="Create"/>
-        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameSetFireMedium"/>
-        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameSetFireTransitionMedium"/>
-        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameSetFireMedium" Send="Destroy"/>
-        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameSetFireTransitionMedium" Send="Destroy"/>
+        <On Terms="UnitCreation.RoboticsBaySCBW" Send="Create"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossBuildingSCBW@FlameSetFireMedium"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossBuildingSCBW@FlameSetFireTransitionMedium"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossBuildingSCBW@FlameSetFireMedium" Send="Destroy"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossBuildingSCBW@FlameSetFireTransitionMedium" Send="Destroy"/>
         <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameLoopMedium"/>
         <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameLoopMedium" Send="Destroy"/>
-        <StateArray Name="ProtossNormal" Terms="ValidateUnit ProtossBurnDownNormal"/>
-        <StateArray Name="ProtossFire" Terms="ValidateUnit ProtossBurnDownFire"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create TerranFlameLoopMedium"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="TerranFlameLoopMedium" Send="Destroy"/>
+        <StateArray Name="ProtossNormal" Terms="ValidateUnit ProtossBuildingSCBW@BurnDownNormal"/>
+        <StateArray Name="ProtossFire" Terms="ValidateUnit ProtossBuildingSCBW@BurnDownFire"/>
     </CActorStateMonitor>
     <CActorStateMonitor id="ProtossBuildingSCBW@FlamesSmall">
         <On Terms="UnitCreation.PylonSCBW" Send="Create"/>
         <On Terms="UnitCreation.PhotonCannonSCBW" Send="Create"/>
-        <On Terms="UnitCreation.RoboticsBaySCBW" Send="Create"/>
         <On Terms="UnitCreation.ShieldBatterySCBW" Send="Create"/>
-        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameSetFireSmall"/>
-        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameSetFireTransitionSmall"/>
-        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameSetFireSmall" Send="Destroy"/>
-        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameSetFireTransitionSmall" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossBuildingSCBW@FlameSetFireSmall"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossBuildingSCBW@FlameSetFireTransitionSmall"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossBuildingSCBW@FlameSetFireSmall" Send="Destroy"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossBuildingSCBW@FlameSetFireTransitionSmall" Send="Destroy"/>
         <On Terms="StateChange; StateValid ProtossFire" Send="Create ProtossFlameLoopSmall"/>
         <On Terms="StateChange; !StateValid ProtossFire" Target="ProtossFlameLoopSmall" Send="Destroy"/>
-        <StateArray Name="ProtossNormal" Terms="ValidateUnit ProtossBurnDownNormal"/>
-        <StateArray Name="ProtossFire" Terms="ValidateUnit ProtossBurnDownFire"/>
+        <On Terms="StateChange; StateValid ProtossFire" Send="Create TerranFlameLoopSmall"/>
+        <On Terms="StateChange; !StateValid ProtossFire" Target="TerranFlameLoopSmall" Send="Destroy"/>
+        <StateArray Name="ProtossNormal" Terms="ValidateUnit ProtossBuildingSCBW@BurnDownNormal"/>
+        <StateArray Name="ProtossFire" Terms="ValidateUnit ProtossBuildingSCBW@BurnDownFire"/>
     </CActorStateMonitor>
     <CActorSound id="ProbeSCBW@@HarvestSound" parent="SoundContinuous">
         <On Terms="Abil.ProbeSCBW@Harvest.Start" Send="Create"/>
