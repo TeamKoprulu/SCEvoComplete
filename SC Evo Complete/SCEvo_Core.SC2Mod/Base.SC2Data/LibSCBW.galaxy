@@ -805,6 +805,40 @@ void libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: SC1_SpiderMineChaseStop
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_SpiderMineChaseStop_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_source;
+    unit lv_target;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_source = EventUnit();
+    lv_target = OrderGetTargetUnit(UnitOrder(lv_source, 0));
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    while ((UnitIsValid(lv_source) == true) && (UnitIsValid(lv_target) == true) && (UnitHasBehavior2(lv_source, EventUnitBehavior()) == true) && (OrderGetAbilityCommand(UnitOrder(lv_source, 0)) == AbilityCommand("attack", 0))) {
+        if ((PointPathingCost(UnitGetPosition(lv_source), UnitGetPosition(lv_target)) > 7)) {
+            UnitBehaviorRemove(lv_source, EventUnitBehavior(), 1);
+        }
+
+        Wait(0.0, c_timeGame);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_SpiderMineChaseStop_Init () {
+    libSCBW_gt_SC1_SpiderMineChaseStop = TriggerCreate("libSCBW_gt_SC1_SpiderMineChaseStop_Func");
+    TriggerAddEventUnitBehaviorChange(libSCBW_gt_SC1_SpiderMineChaseStop, null, "SpiderMineSCBWWeapon@Chasing", c_unitBehaviorChangeCreate);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: SC1_CheatTracker
 //--------------------------------------------------------------------------------------------------
 bool libSCBW_gt_SC1_CheatTracker_Func (bool testConds, bool runActions) {
@@ -1078,6 +1112,7 @@ void libSCBW_InitTriggers () {
     libSCBW_gt_SC1_Refund_Init();
     libSCBW_gt_SC1_UnitSwap_Init();
     libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Init();
+    libSCBW_gt_SC1_SpiderMineChaseStop_Init();
     libSCBW_gt_SC1_CheatTracker_Init();
     libSCBW_gt_OperationCwalActivate_Init();
     libSCBW_gt_OperationCwal_Train_Init();
