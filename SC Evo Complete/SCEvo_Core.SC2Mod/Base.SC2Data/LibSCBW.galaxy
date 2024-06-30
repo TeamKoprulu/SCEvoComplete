@@ -805,37 +805,75 @@ void libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Trigger: SC1_SpiderMineChaseStop
+// Trigger: MimicCheck:StorePlayerIndex
 //--------------------------------------------------------------------------------------------------
-bool libSCBW_gt_SC1_SpiderMineChaseStop_Func (bool testConds, bool runActions) {
+bool libSCBW_gt_MimicCheckStorePlayerIndex_Func (bool testConds, bool runActions) {
     // Variable Declarations
-    unit lv_source;
-    unit lv_target;
+    int lv_owner;
+    unitgroup lv_ug;
 
     // Automatic Variable Declarations
+    unitgroup autoDF838816_g;
+    int autoDF838816_u;
+    unit autoDF838816_var;
+
     // Variable Initialization
-    lv_source = EventUnit();
-    lv_target = OrderGetTargetUnit(UnitOrder(lv_source, 0));
+    lv_owner = UnitGetOwner(EventPlayerEffectUsedUnit(c_effectUnitTarget));
 
     // Actions
     if (!runActions) {
         return true;
     }
 
-    while ((UnitIsValid(lv_source) == true) && (UnitIsValid(lv_target) == true) && (UnitHasBehavior2(lv_source, EventUnitBehavior()) == true) && (OrderGetAbilityCommand(UnitOrder(lv_source, 0)) == AbilityCommand("attack", 0))) {
-        if ((ValidatorExecute("SpiderMineSCBW@ChaseRange", lv_source, lv_target) == 2)) {
-            UnitBehaviorRemove(lv_source, EventUnitBehavior(), 1);
+    lv_ug = UnitGroup(null, c_playerAny, RegionCircle(UnitGetPosition(EventPlayerEffectUsedUnit(c_effectUnitTarget)), 12.375), UnitFilter((1 << c_targetFilterGround), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoDF838816_g = lv_ug;
+    autoDF838816_u = UnitGroupCount(autoDF838816_g, c_unitCountAll);
+    for (;; autoDF838816_u -= 1) {
+        autoDF838816_var = UnitGroupUnitFromEnd(autoDF838816_g, autoDF838816_u);
+        if (autoDF838816_var == null) { break; }
+        if ((UnitHasBehavior2(autoDF838816_var, "ChangelingDisguisePlayerIndex") == false) && (ValidatorExecute("TargetIsChangelingSCBW", autoDF838816_var, autoDF838816_var) == 0)) {
+            UnitBehaviorAdd(autoDF838816_var, "ChangelingDisguisePlayerIndex", autoDF838816_var, 1);
+            UnitBehaviorEffectTreeSetUserData(autoDF838816_var, "ChangelingDisguisePlayerIndex", "Player", lv_owner);
+            break;
         }
 
-        Wait(0.0625, c_timeGame);
     }
     return true;
 }
 
 //--------------------------------------------------------------------------------------------------
-void libSCBW_gt_SC1_SpiderMineChaseStop_Init () {
-    libSCBW_gt_SC1_SpiderMineChaseStop = TriggerCreate("libSCBW_gt_SC1_SpiderMineChaseStop_Func");
-    TriggerAddEventUnitBehaviorChange(libSCBW_gt_SC1_SpiderMineChaseStop, null, "SpiderMineSCBWWeapon@Chasing", c_unitBehaviorChangeCreate);
+void libSCBW_gt_MimicCheckStorePlayerIndex_Init () {
+    libSCBW_gt_MimicCheckStorePlayerIndex = TriggerCreate("libSCBW_gt_MimicCheckStorePlayerIndex_Func");
+    TriggerAddEventPlayerEffectUsed(libSCBW_gt_MimicCheckStorePlayerIndex, c_playerAny, "DisguiseEx3");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MimicCheck:SpiderMine
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_MimicCheckSpiderMine_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_playerIndex;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_playerIndex = FixedToInt(UnitBehaviorEffectTreeUserData(EventPlayerEffectUsedUnit(c_effectUnitTarget), "ChangelingDisguisePlayerIndex", "Player"));
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitFilterMatch(EventPlayerEffectUsedUnit(c_effectUnitSource), lv_playerIndex, UnitFilter(0, 0, (1 << c_targetFilterPlayer) | (1 << c_targetFilterAlly) | (1 << c_targetFilterNeutral) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)))) == false)) {
+        UnitBehaviorAdd(EventPlayerEffectUsedUnit(c_effectUnitTarget), "SpiderMineSCBWWeapon@MimicDisable", EventPlayerEffectUsedUnit(c_effectUnitSource), 1);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_MimicCheckSpiderMine_Init () {
+    libSCBW_gt_MimicCheckSpiderMine = TriggerCreate("libSCBW_gt_MimicCheckSpiderMine_Func");
+    TriggerAddEventPlayerEffectUsed(libSCBW_gt_MimicCheckSpiderMine, c_playerAny, "SpiderMineSCBWWeapon@MimicCheck");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1112,7 +1150,8 @@ void libSCBW_InitTriggers () {
     libSCBW_gt_SC1_Refund_Init();
     libSCBW_gt_SC1_UnitSwap_Init();
     libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Init();
-    libSCBW_gt_SC1_SpiderMineChaseStop_Init();
+    libSCBW_gt_MimicCheckStorePlayerIndex_Init();
+    libSCBW_gt_MimicCheckSpiderMine_Init();
     libSCBW_gt_SC1_CheatTracker_Init();
     libSCBW_gt_OperationCwalActivate_Init();
     libSCBW_gt_OperationCwal_Train_Init();

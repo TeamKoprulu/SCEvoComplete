@@ -54,6 +54,10 @@
         <CombineArray value="ArbiterSCBWStasisField@InvulnerableHandler"/>
         <CombineArray value="NotSpiderMineSCBW"/>
     </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="SCBW_IsDisguisedChangeling">
+        <Value value="1"/>
+        <Behavior value="ChangelingDisable"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="ProtossBuildingSCBW@BurnDownNormal">
         <CombineArray value="LifeGEHalf"/>
         <CombineArray value="ProtossBurnDownValid"/>
@@ -70,6 +74,10 @@
         <Compare value="GT"/>
         <Behavior value="QueenSCBWEnsnare"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitFilters id="SCBW_CasterNotBuried">
+        <WhichUnit Value="Caster"/>
+        <Filters value="-;Buried"/>
+    </CValidatorUnitFilters>
     <CValidatorUnitState id="SCBW_InsidePlayerTransport">
         <Enabled value="1"/>
         <State value="InsidePlayerTransport"/>
@@ -172,6 +180,14 @@
     <CValidatorUnitFilters id="SCBW_IsResistant">
         <Filters value="Resistant;-"/>
     </CValidatorUnitFilters>
+    <CValidatorUnitFilters id="SCBW_CasterIsBuried">
+        <WhichUnit Value="Caster"/>
+        <Filters value="Buried;-"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitType id="SCBW_NotWidowMineBurrowed">
+        <Value value="WidowMineBurrowed"/>
+        <Find value="0"/>
+    </CValidatorUnitType>
     <CValidatorUnitCompareBehaviorCount id="SCBW_SourceViperBlindingCloud">
         <WhichUnit Value="Source"/>
         <Compare value="GT"/>
@@ -186,9 +202,13 @@
         <BehaviorAlignment value="Negative"/>
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorLocationCompareRange id="SpiderMineSCBW@ChaseRange">
-        <WhichLocation Value="TargetUnit"/>
         <Compare value="LE"/>
-        <Range value="7"/>
+        <Range value="9"/>
+        <Pathing value="1"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorLocationCompareRange id="SpiderMineSCBWWeapon@InvisChaseRange">
+        <Compare value="LE"/>
+        <Range value="9"/>
         <Pathing value="1"/>
     </CValidatorLocationCompareRange>
     <CValidatorLocationCompareRange id="SpiderMineSCBW@RangeBlinded">
@@ -204,6 +224,16 @@
         <CombineArray value="CasterIsAttacking"/>
         <CombineArray value="SpiderMineSCBWWeapon@InvisChasing"/>
     </CValidatorCombine>
+    <CValidatorUnitOrderQueue id="SpiderMineSCBWWeapon@CasterAttackingTarget">
+        <WhichUnit Effect="SpiderMineSCBWWeapon@TargetMarker"/>
+        <AbilLink value="attack"/>
+        <Target Effect="SpiderMineSCBWWeapon@TargetMarker" Value="TargetUnit"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitCompareBehaviorCount id="SpiderMineSCBWWeapon@TargetMarker">
+        <Compare value="GT"/>
+        <Behavior value="SpiderMineSCBWWeapon@TargetMarker"/>
+        <RequireCasterUnit Value="Caster"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorUnitCompareBehaviorCount id="SpiderMineSCBWWeapon@NotInvisChasing">
         <WhichUnit Value="Caster"/>
         <Behavior value="SpiderMineSCBWWeapon@InvisChasing"/>
@@ -217,6 +247,29 @@
         <Compare value="GT"/>
         <Behavior value="SpiderMineSCBWWeapon@InvisChasing"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="SpiderMineSCBWWeapon@NoTargetMarker">
+        <Behavior value="SpiderMineSCBWWeapon@TargetMarker"/>
+        <RequireCasterUnit Value="Caster"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="SpiderMineSCBWWeapon@NoMimicDisable">
+        <Behavior value="SpiderMineSCBWWeapon@MimicDisable"/>
+        <RequireCasterUnit Value="Caster"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitFilters id="SpiderMineSCBWWeapon@TargetMarkerCasterFilters">
+        <WhichUnit Effect="SpiderMineSCBWWeapon@TargetMarker" Value="Caster"/>
+        <Filters value="-;Buried,Stasis,Dead,Hidden"/>
+    </CValidatorUnitFilters>
+    <CValidatorLocationEnumArea id="SpiderMineSCBWWeapon@ScanTargetsEnable">
+        <AreaArray Compare="GT" Count="0" Radius="5"/>
+        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Stasis,Dead,Hidden,Invulnerable,Benign"/>
+    </CValidatorLocationEnumArea>
+    <CValidatorUnitCompareChargeUsed id="VulturePlaceSpiderMineSCBW@NoMines">
+        <Compare value="GE"/>
+        <ChargeLink value="Abil/VulturePlaceSpiderMineSCBW"/>
+        <Location value="Unit"/>
+        <Ability value="VulturePlaceSpiderMineSCBW"/>
+        <Value value="3"/>
+    </CValidatorUnitCompareChargeUsed>
     <CValidatorUnitCompareOrderCount id="VulturePlaceSpiderMineSCBW@CasterHasLE1Order">
         <WhichUnit Effect="VulturePlaceSpiderMineSCBW@SpawnSet"/>
         <Compare value="LE"/>
@@ -255,9 +308,11 @@
     </CValidatorUnitFilters>
     <CValidatorCombine id="SpiderMineSCBW@Burrow">
         <Type value="And"/>
-        <CombineArray value="SpiderMineSCBW@RangeCondition"/>
-        <CombineArray value="TargetNotChangeling"/>
+        <CombineArray value="SpiderMineSCBWWeapon@TargetMarker"/>
+        <CombineArray value="SpiderMineSCBW@ChaseRange"/>
+        <CombineArray value="SpiderMineSCBWWeapon@NoMimicDisable"/>
         <CombineArray value="NotSpiderMineSCBW"/>
+        <CombineArray value="SCBW_NotWidowMineBurrowed"/>
     </CValidatorCombine>
     <CValidatorCombine id="SpiderMineSCBWWeapon@InvisTargetValid">
         <CombineArray value="TargetIsCloakedNotDetectedSCBW"/>
@@ -367,7 +422,7 @@
     </CValidatorPlayerRequirement>
     <CValidatorLocationCompareRange id="SpiderMineSCBW@Range">
         <Compare value="LE"/>
-        <Range value="6"/>
+        <Range value="6.5"/>
         <Pathing value="1"/>
     </CValidatorLocationCompareRange>
     <CValidatorUnitState id="SCBW_AttackNotSuppressed">
@@ -378,6 +433,7 @@
     <CValidatorCombine id="SpiderMineSCBWWeapon@InvisEnumSetTargetFilters">
         <CombineArray value="SpiderMineSCBWWeapon@InvisTargetValid"/>
         <CombineArray value="NotSpiderMineSCBW"/>
+        <CombineArray value="SCBW_NotWidowMineBurrowed"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="TargetIsCloakedNotDetectedSCBW">
@@ -637,8 +693,9 @@
         <Type value="And"/>
         <CombineArray value="SpiderMineSCBW@RangeCondition"/>
         <CombineArray value="SCBW_AttackNotSuppressed"/>
-        <CombineArray value="IsNotDisguisedChangeling"/>
+        <CombineArray value="SpiderMineSCBWWeapon@NoMimicDisable"/>
         <CombineArray value="NotSpiderMineSCBW"/>
+        <CombineArray value="SCBW_NotWidowMineBurrowed"/>
     </CValidatorCombine>
     <CValidatorUnitCompareField id="TargetRadiusGTE1Dot0">
         <Compare value="GE"/>

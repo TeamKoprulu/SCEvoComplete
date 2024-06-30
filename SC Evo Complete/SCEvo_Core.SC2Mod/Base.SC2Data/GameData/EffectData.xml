@@ -38,6 +38,61 @@
         <EffectArray value="SC1_ShieldsParam"/>
         <EffectArray value="##x##@DamageAccum"/>
     </CEffectSet>
+    <CEffectEnumArea id="SpiderMineSCBWWeapon@EnumMimics">
+        <ImpactLocation Value="SourceUnit"/>
+        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Stasis,Dead,Hidden,Invulnerable,Benign"/>
+        <AreaArray Radius="3.25" Effect="SpiderMineSCBWWeapon@MimicCheck"/>
+        <SearchFlags index="ExtendByUnitRadius" value="1"/>
+    </CEffectEnumArea>
+    <CEffectSet id="SpiderMineSCBWWeapon@MimicCheck">
+        <ValidatorArray value="SCBW_IsDisguisedChangeling"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="SpiderMineSCBWWeapon@MimicDisable"/>
+    <CEffectSet id="SpiderMineSCBWWeapon@ScanTargets">
+        <EffectArray value="SpiderMineSCBWWeapon@EnumTargets"/>
+        <EffectArray value="SpiderMineSCBWWeapon@EnumMimics"/>
+    </CEffectSet>
+    <CEffectSet id="SpiderMineSCBWWeapon@UnburrowFinish">
+        <EffectArray value="SpiderMineSCBWWeapon@ChasingDelay"/>
+        <EffectArray value="SpiderMineSCBWWeapon@ScanTargets"/>
+    </CEffectSet>
+    <CEffectEnumArea id="SpiderMineSCBWWeapon@ValidateTarget">
+        <ImpactLocation Value="SourceUnit"/>
+        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Stasis,Dead,Hidden,Invulnerable,Benign"/>
+        <AreaArray Radius="6.5" Effect="SpiderMineSCBWWeapon@ValidateTargetSet"/>
+        <MaxCount value="1"/>
+    </CEffectEnumArea>
+    <CEffectSet id="SpiderMineSCBWWeapon@ValidateTargetSet">
+        <ValidatorArray value="CasterAttackingTargetSCBW"/>
+        <ValidatorArray value="SpiderMineSCBWWeapon@NoTargetMarker"/>
+        <EffectArray value="SpiderMineSCBW@BurrowOrder"/>
+    </CEffectSet>
+    <CEffectIssueOrder id="SpiderMineSCBWWeapon@BurrowOrderChaseTarget">
+        <ValidatorArray value="SpiderMineSCBWWeapon@CasterAttackingTarget"/>
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Effect="SpiderMineSCBWWeapon@TargetMarker" Value="Caster"/>
+        <Abil value="SpiderMineSCBW@Burrow"/>
+        <CmdFlags index="Preempt" value="1"/>
+    </CEffectIssueOrder>
+    <CEffectEnumArea id="SpiderMineSCBWWeapon@EnumTargets">
+        <ImpactLocation Value="SourceUnit"/>
+        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Stasis,Dead,Hidden,Invulnerable,Benign"/>
+        <AreaArray Radius="3.0124" Effect="SpiderMineSCBWWeapon@TargetMarker"/>
+        <SearchFlags index="ExtendByUnitRadius" value="1"/>
+    </CEffectEnumArea>
+    <CEffectSet id="SpiderMineSCBWWeapon@InvisChasingStop">
+        <EffectArray value="SpiderMineSCBWWeapon@InvisChasingRB"/>
+        <EffectArray value="SpiderMineSCBWWeapon@TargetMarkerRB"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="SpiderMineSCBWWeapon@TargetMarker">
+        <ValidatorArray value="SpiderMineSCBW@RangeCondition"/>
+        <ValidatorArray value="SpiderMineSCBWWeapon@NoMimicDisable"/>
+        <ValidatorArray value="NotSpiderMineSCBW"/>
+        <ValidatorArray value="SCBW_NotWidowMineBurrowed"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="SpiderMineSCBWWeapon@TargetMarkerRB">
+        <BehaviorLink value="SpiderMineSCBWWeapon@TargetMarker"/>
+    </CEffectRemoveBehavior>
     <CEffectIssueOrder id="GhostSCBWLockdown@HaltIssueOrder">
         <EditorCategories value="Race:Terran"/>
         <AbilTechAlias value="_SCVBuild"/>
@@ -88,6 +143,7 @@
         <PeriodicPeriodArray value="0.13"/>
         <PeriodicPeriodArray value="0.14"/>
         <PeriodicPeriodArray value="0.15"/>
+        <InitialEffect value="SpiderMineSCBWWeapon@InvisChasingRB"/>
     </CEffectCreatePersistent>
     <CEffectApplyBehavior id="SpiderMineSCBWWeapon@InvisChasing">
         <WhichUnit Value="Source"/>
@@ -257,17 +313,20 @@
         <PeriodicEffectArray value="SpiderMineSCBWWeapon@InvisTargeting"/>
         <PeriodicPeriodArray value="0.0625"/>
         <InitialEffect value="SpiderMineSCBWWeapon@InvisChasing"/>
+        <PeriodCount value="112"/>
     </CEffectCreatePersistent>
     <CEffectSwitch id="SpiderMineSCBWWeapon@InvisCPFinal">
         <EditorCategories value="Race:Terran"/>
         <CaseArray Validator="SpiderMineSCBWWeapon@InvisRangeCheckNegate" Effect="SpiderMineSCBWWeapon@InvisImpactDelay"/>
-        <CaseDefault value="SpiderMineSCBWWeapon@InvisChasingRB"/>
+        <CaseDefault value="SpiderMineSCBWWeapon@InvisChasingStop"/>
     </CEffectSwitch>
     <CEffectApplyBehavior id="SpiderMineSCBWWeapon@InvisTargetMarker">
         <EditorCategories value="Race:Terran"/>
     </CEffectApplyBehavior>
     <CEffectSet id="SpiderMineSCBWWeapon@InvisEnumSet">
+        <ValidatorArray value="SpiderMineSCBWWeapon@TargetMarker"/>
         <ValidatorArray value="SpiderMineSCBWWeapon@InvisEnumSetTargetFilters"/>
+        <ValidatorArray value="SpiderMineSCBWWeapon@InvisChaseRange"/>
         <EditorCategories value="Race:Terran"/>
         <EffectArray value="SpiderMineSCBWWeapon@InvisTargetMarker"/>
         <EffectArray value="SpiderMineSCBWWeapon@InvisCP"/>
@@ -412,20 +471,20 @@
         <Amount value="1"/>
     </CEffectDamage>
     <CEffectIssueOrder id="SpiderMineSCBWWeapon@InvisTargeting">
+        <ValidatorArray value="SpiderMineSCBWWeapon@InvisChaseRange"/>
         <EditorCategories value="Race:Terran"/>
         <WhichUnit Value="Caster"/>
         <Abil value="move"/>
         <Player Value="Caster"/>
-        <Target Value="TargetPoint"/>
+        <Target Value="TargetUnit"/>
     </CEffectIssueOrder>
     <CEffectEnumArea id="SpiderMineSCBWWeapon@InvisEnum">
         <EditorCategories value="Race:Terran"/>
-        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Stasis,Dead,Hidden,Invulnerable,Benign"/>
         <TargetSorts>
             <SortArray value="SpiderMineSCBWWeapon@TargetSort"/>
-            <SortArray value="TSDistanceToTarget"/>
         </TargetSorts>
-        <AreaArray Radius="3" Effect="SpiderMineSCBWWeapon@InvisEnumSet"/>
+        <AreaArray Radius="9" Effect="SpiderMineSCBWWeapon@InvisEnumSet"/>
         <MaxCount value="1"/>
         <SearchFlags index="ExtendByUnitRadius" value="1"/>
     </CEffectEnumArea>
