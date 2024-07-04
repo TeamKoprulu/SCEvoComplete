@@ -1970,6 +1970,13 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
+    <CActorSound id="MedicSCBW@Death" parent="SoundOneShot">
+        <Aliases value="_DeathVoice"/>
+    </CActorSound>
+    <CActorSound id="GhostSCBW@Death" parent="SoundOneShot">
+        <Aliases value="_DeathVoice"/>
+    </CActorSound>
+    <CActorModelMaterial id="ScienceVesselSCBWIrradiate@Glaze" parent="BehaviorGlaze" buff="ScienceVesselSCBWIrradiate@Irradiated"/>
     <CActorModel id="ScienceVesselSCBWIrradiate@ImpactFX" parent="ModelAnimationStyleOneShot">
         <Terms value="Cap 1; ValidateUnit NotHidden"/>
         <On Terms="Effect.ScienceVesselSCBWIrradiate@DamagePeriodic.Start; At Target" Send="Create"/>
@@ -2764,7 +2771,6 @@
         <!--<Macros value="DropshipSCBW@UnloadDropAnim"/>-->
         <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="TerrainSquibAnimations"/>
-        <Macros value="PhysicsDeathsSwarmGround"/>
         <On Terms="WeaponStart.GoliathSCBWWeaponGround.AttackStart" Send="AnimBracketStart Attack Attack"/>
         <On Terms="WeaponStop.GoliathSCBWWeaponGround.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="WeaponStart.GoliathSCBWWeaponAir.AttackStart" Send="AnimBracketStart Spell Spell"/>
@@ -3099,6 +3105,7 @@
     <CActorUnit id="VultureSCBW" parent="GenericUnitStandard" unitName="VultureSCBW">
         <Aliases value="_UnitMedium"/>
         <Macros value="UnloadDropAnim"/>
+        <Macros value="TerrainSquibAnimations"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="VultureSCBW@Death" SoundLink="VultureSCBW@Explode"/>
         <PortraitModel value="VultureSCBW@Portrait"/>
@@ -3135,6 +3142,7 @@
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
+        <On Terms="UnitDeathCustomize; PassChance 100.000000" Send="Create MedicSCBW@Death"/>
         <On Terms="Abil.MedicSCBWHeal.SourceChannelStart" Send="$Spell PlayForever"/>
         <On Terms="Abil.MedicSCBWHeal.SourceChannelStop" Send="AnimClear Spell"/>
         <On Terms="Abil.MedicSCBWRestoration.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
@@ -3164,7 +3172,7 @@
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="MedicSCBW@Death" SoundLink="MedicSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="MedicSCBW@Death" SoundLink="MedicSCBW@DeathFXBloodSpray"/>
         <PortraitModel value="MedicSCBW@Portrait"/>
         <TerrainSquibs>
             <MovementDistance value="0.150000,0.150000"/>
@@ -3553,6 +3561,7 @@
         <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
+        <On Terms="UnitDeathCustomize; PassChance 100.000000" Send="Create GhostSCBW@Death"/>
         <On Terms="Abil.GhostSCBWNuclearStrike.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
         <On Terms="Abil.GhostSCBWNuclearStrike.SourceCastStop" Send="AnimClear SpellA"/>
         <On Terms="Abil.GhostSCBWNuclearStrike.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
@@ -3613,7 +3622,7 @@
         <DeathCustoms ModelLink="GhostSCBW@DeathFire" Name="Variation17"/>
         <AnimBlendTime value="-0.800000"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="GhostSCBW@Death" SoundLink="GhostSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="GhostSCBW@Death" SoundLink="GhostSCBW@DeathFXBloodSpray"/>
         <DeathArray index="Blast" ModelLink="GhostSCBW@DeathBlast"/>
         <DeathArray index="Disintegrate" ModelLink="GhostSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
         <DeathArray index="Eviscerate" ModelLink="GhostSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
@@ -3654,6 +3663,7 @@
         <Macros value="UnloadDropAnim"/>
         <!--<Macros value="DropshipSCBW@UnloadDropAnim"/>-->
         <Macros value="BunkerSCBW@UnloadDropAnim"/>
+        <Macros value="TerrainSquibMacro"/>
         <On Terms="Abil.attack.ReadyStop" Target="FirebatSCBWWeapon@Model" Send="SetOpacity 0.000000 0.250000"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create FirebatSCBW@Land"/>
         <DeathCustoms>
@@ -3683,6 +3693,14 @@
             <Image value="Assets\Textures\wireframe-terran-firebatscbw.dds"/>
         </Wireframe>
         <ModelFlags index="OutlineEmitter" value="1"/>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="0.400000"/>
+            <RangeDown value="0.400000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMedium"/>
+        </TerrainSquibs>
     </CActorUnit>
     <CActorSound id="KerriganSCBW@Land" parent="SoundOneShot"/>
     <CActorSound id="GhostSCBW@Land" parent="SoundOneShot"/>
@@ -4833,6 +4851,28 @@
         </MotionPhases>
         <MotionPhases YawPitchRoll="MAX"/>
     </CMoverMissile>
+    <CSound id="MedicSCBW@DeathFXBloodSpray" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <Volume value="-6.000000,-4.000000"/>
+    </CSound>
+    <CSound id="GhostSCBW@DeathFXBloodSpray" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <Volume value="-6.000000,-4.000000"/>
+    </CSound>
     <CSound id="FirebatSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
@@ -5963,6 +6003,7 @@
         <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
         <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
         <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
+        <Volume value="-6.000000,-4.000000"/>
     </CSound>
     <CSound id="MarineSCBW@DeathFXEat" parent="Death">
         <AssetArray File="Assets\Sounds\Uni\Deaths\Uni_DeathFXEat0.wav"/>

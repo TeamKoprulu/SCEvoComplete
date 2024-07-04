@@ -988,10 +988,12 @@
     </CActorUnit>
     <CActorUnit id="LurkerSCBW" parent="GenericBurrowerStandardSCBW" unitName="LurkerSCBW">
         <Aliases value="_UnitLarge"/>
-        <Aliases value="_UnitLarge"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
         <Macros value="SCBW_ZergMediumBurrowEffectsNoSound"/>
         <Macros value="UnloadDropAnim"/>
+        <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="PhysicsDeathsVoidGround"/>
         <AcceptedHostedPropTransfers index="Scale" value="0"/>
         <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerSCBWEgg" Send="Create"/>
         <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerSCBWEgg" Send="AnimBaselineStop"/>
@@ -1007,6 +1009,9 @@
         <On Terms="UnitHeightUpdate.*.Land" Send="Create LurkerSCBW@Land"/>
         <On Terms="WeaponStart.*.AttackStart" Send="AnimPlay Attack Attack DontResetOnUnhide"/>
         <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth"/>
+        <On Terms="UnitBirth.LurkerSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW@Burrowed; MorphFrom LurkerSCBW" Send="TerrainSquibDeactivate"/>
         <DeathArray index="Normal" ModelLink="LurkerSCBW@Death" SoundLink="LurkerSCBW@Death"/>
         <DeathArray index="Disintegrate" ModelLink="LurkerSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
         <DeathArray index="Fire" ModelLink="LurkerSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
@@ -1039,6 +1044,15 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
+        <TerrainSquibs>
+            <GroupName value="RippleStandard"/>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="1.000000"/>
+            <RangeDown value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleLarge"/>
+        </TerrainSquibs>
     </CActorUnit>
     <CActorUnit id="HydraliskSCBW" parent="GenericUnitBase" unitName="HydraliskSCBW">
         <Aliases value="_UnitMedium"/>
@@ -1066,7 +1080,7 @@
         <On Terms="UnitBirth.HydraliskSCBW@Burrowed" Send="Create"/>
         <On Terms="UnitBirth.HydraliskSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
         <On Terms="UnitMovementUpdate.*.Walk; AnimPlaying Birth" Send="AnimClear Birth"/>
-        <On Terms="UnitBirth.HydraliskSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
+        <On Terms="ActorCreation; ValidateUnitType SCBW_NotBurrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo HydraliskSCBW; MorphFrom HydraliskSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo HydraliskSCBW@Burrowed; MorphFrom HydraliskSCBW" Send="TerrainSquibDeactivate"/>
         <On Terms="AbilMorph.LurkerSCBW@Morph.Finish; MorphTo HydraliskSCBW; !AbilKey BurrowUp" Send="Create"/>
@@ -1146,6 +1160,7 @@
             <Image value="Assets\Textures\wireframe-zerg-hydralisk@scbw.dds"/>
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
+        <ShieldArmorIcon value="Assets\Textures\btn-upgrade-zerg-swarmfrenzy.dds"/>
     </CActorUnit>
     <CActorUnit id="DroneSCBW" parent="GenericBurrowerStandardSCBW" unitName="DroneSCBW">
         <Aliases value="_UnitSmall"/>
@@ -1517,6 +1532,9 @@
         <SquibTypeDefault value="Flesh"/>
         <TechPurchaseCamera value="Star2CameraMid07"/>
         <UnitGlossaryCamera value="Star2CameraMid07"/>
+        <Tipability value="0.750000"/>
+        <TipabilityLength value="1.000000"/>
+        <TipabilityWidth value="1.000000"/>
     </CModel>
     <CModel id="LurkerSCBW@Death" parent="UnitDeath" Race="Zerg">
         <Model value="Assets\Units\Zerg\Lurker_Death_Ex2\Lurker_Death_Ex2.m3"/>
