@@ -853,18 +853,23 @@ void libSCBW_gt_MimicCheckStorePlayerIndex_Init () {
 bool libSCBW_gt_MimicCheckSpiderMine_Func (bool testConds, bool runActions) {
     // Variable Declarations
     int lv_playerIndex;
+    unit lv_target;
 
     // Automatic Variable Declarations
     // Variable Initialization
-    lv_playerIndex = FixedToInt(UnitBehaviorEffectTreeUserData(EventPlayerEffectUsedUnit(c_effectUnitTarget), "ChangelingDisguisePlayerIndex", "Player"));
+    lv_target = EventPlayerEffectUsedUnit(c_effectUnitTarget);
 
     // Actions
     if (!runActions) {
         return true;
     }
 
-    if ((UnitFilterMatch(EventPlayerEffectUsedUnit(c_effectUnitSource), lv_playerIndex, UnitFilter(0, 0, (1 << c_targetFilterPlayer) | (1 << c_targetFilterAlly) | (1 << c_targetFilterNeutral) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)))) == false)) {
-        UnitBehaviorAdd(EventPlayerEffectUsedUnit(c_effectUnitTarget), "SpiderMineSCBWWeapon@MimicDisable", EventPlayerEffectUsedUnit(c_effectUnitSource), 1);
+    if ((UnitHasBehavior2(lv_target, "ChangelingDisguisePlayerIndex") == true)) {
+        lv_playerIndex = FixedToInt(UnitBehaviorEffectTreeUserData(lv_target, "ChangelingDisguisePlayerIndex", "Player"));
+        if ((UnitFilterMatch(EventPlayerEffectUsedUnit(c_effectUnitSource), lv_playerIndex, UnitFilter(0, 0, (1 << c_targetFilterPlayer) | (1 << c_targetFilterAlly) | (1 << c_targetFilterNeutral) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)))) == false)) {
+            UnitBehaviorAdd(lv_target, "SpiderMineSCBWWeapon@MimicDisable", EventPlayerEffectUsedUnit(c_effectUnitSource), 1);
+        }
+
     }
 
     return true;
