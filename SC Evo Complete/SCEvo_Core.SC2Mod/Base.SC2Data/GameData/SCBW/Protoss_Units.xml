@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectApplyBehavior id="DragoonSCBW@CoverAnim"/>
     <CEffectEnumTransport id="DarkArchonSCBWMindControl@IterateTransport">
         <EditorCategories value="Race:Protoss"/>
         <Effect value="DarkArchonSCBWMindControl@IterateTransportSet"/>
@@ -965,6 +966,9 @@
         <Alert value="TrainComplete"/>
         <MaxCount value="5"/>
     </CAbilArmMagazine>
+    <CValidatorUnitCompareBehaviorCount id="DragoonSCBW@NoCoverAnim">
+        <Behavior value="DragoonSCBW@CoverAnim"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorUnitCompareBehaviorCount id="DarkArchonSCBWMindControl@ActivationNot">
         <ResultFailed value="Error,Error/DarkArchonMindControlPrevention"/>
         <Behavior value="DarkArchonSCBWMindControl@Activation"/>
@@ -3182,10 +3186,10 @@
     </CActorSound>
     <CActorUnit id="DragoonSCBW" parent="GenericUnitBase" unitName="DragoonSCBW">
         <Macros value="TerrainSquibAnimations"/>
-        <On Terms="Abil.attack.ReadyStart" Send="TimerKill CoverDelay"/>
-        <On Terms="Abil.attack.ReadyStart" Send="AnimBracketStart Cover Cover,Start Cover Cover,End ClosingFull"/>
+        <On Terms="Behavior.DragoonSCBW@CoverAnim.On" Send="TimerKill CoverDelay"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Cover Cover,Start Cover Cover,End ClosingFull"/>
         <On Terms="Effect.DragoonSCBWWeapon@LM.Start; At Caster" Send="AnimPlay Attack Attack PlayForever,NonLooping"/>
-        <On Terms="Abil.attack.ReadyStop" Send="TimerSet 0.500000 CoverDelay"/>
+        <On Terms="Behavior.DragoonSCBW@CoverAnim.Off" Send="TimerSet 0.125000 CoverDelay"/>
         <On Terms="TimerExpired; TimerName CoverDelay" Send="AnimBracketStop Cover"/>
         <On Terms="TimerExpired; TimerName CoverDelay" Send="AnimClear Attack"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create DragoonSCBW@Land"/>
@@ -7046,6 +7050,7 @@
             <ChanceArray index="Idle" value="90"/>
         </Fidget>
         <TacticalAIThink value="AIThinkDragoonSCBW"/>
+        <BehaviorArray Link="DragoonSCBW@CoverAnimActivate"/>
     </CUnit>
     <CUnit id="ArbiterSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -7225,6 +7230,20 @@
         <GlossaryWeakArray index="2" removed="1"/>
         <HotkeyCategory value=""/>
     </CUnit>
+    <CBehaviorBuff id="DragoonSCBW@CoverAnim">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <RemoveValidatorArray value="CasterIsAttacking"/>
+        <Duration value="1.875"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DragoonSCBW@CoverAnimActivate">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <DisableValidatorArray value="DragoonSCBW@NoCoverAnim"/>
+        <DisableValidatorArray value="CasterIsAnimatingWeapon"/>
+        <Period value="0.0312"/>
+        <PeriodicEffect value="DragoonSCBW@CoverAnim"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="DarkArchonSCBWMindControl@Activation">
         <InfoFlags index="Hidden" value="1"/>
         <InfoIcon value="Assets\Textures\btn-ability-protoss-mindcontrol.dds"/>
