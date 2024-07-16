@@ -13,6 +13,138 @@ void libBWVS_InitLibraries () {
 }
 
 // Functions
+bool libBWVS_gf_UnitisMineralResource (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "BattleStationMineralField") || (UnitGetType(lp_unit) == "BattleStationMineralField750") || (UnitGetType(lp_unit) == "LabMineralField750") || (UnitGetType(lp_unit) == "LabMineralField") || (UnitGetType(lp_unit) == "MineralField") || (UnitGetType(lp_unit) == "MineralField450") || (UnitGetType(lp_unit) == "MineralField750") || (UnitGetType(lp_unit) == "MineralFieldOpaque900") || (UnitGetType(lp_unit) == "MineralFieldOpaque") || (UnitGetType(lp_unit) == "PurifierMineralField") || (UnitGetType(lp_unit) == "PurifierMineralField750") || (UnitGetType(lp_unit) == "PurifierRichMineralField") || (UnitGetType(lp_unit) == "PurifierRichMineralField750") || (UnitGetType(lp_unit) == "RichMineralField") || (UnitGetType(lp_unit) == "RichMineralField750"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libBWVS_gf_UnitisRichMineral (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "PurifierRichMineralField") || (UnitGetType(lp_unit) == "PurifierRichMineralField750") || (UnitGetType(lp_unit) == "RichMineralField") || (UnitGetType(lp_unit) == "RichMineralField750"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libBWVS_gf_UnitisVespeneResource (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "VespeneGeyser") || (UnitGetType(lp_unit) == "ProtossVespeneGeyser") || (UnitGetType(lp_unit) == "PurifierVespeneGeyser") || (UnitGetType(lp_unit) == "ShakurasVespeneGeyser") || (UnitGetType(lp_unit) == "SpacePlatformGeyser"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+void libBWVS_gf_UpdateLegacyMap () {
+    // Variable Declarations
+    string lv_indexInstance;
+    int lv_amount;
+    region lv_region;
+    int lv_index;
+
+    // Automatic Variable Declarations
+    string auto4C72C544_userType;
+    int auto4C72C544_i;
+    unitgroup autoC6E40B4D_g;
+    int autoC6E40B4D_u;
+    unit autoC6E40B4D_var;
+    unitgroup auto0E708E8D_g;
+    int auto0E708E8D_u;
+    unit auto0E708E8D_var;
+    string auto5648BFED_userType;
+    int auto5648BFED_i;
+    unitgroup auto1164DDAB_g;
+    int auto1164DDAB_u;
+    unit auto1164DDAB_var;
+    unitgroup autoEF75F783_g;
+    int autoEF75F783_u;
+    unit autoEF75F783_var;
+
+    // Variable Initialization
+
+    // Implementation
+    auto4C72C544_userType = "MinResourceTable";
+    auto4C72C544_i = 1;
+    for ( ; auto4C72C544_i <= UserDataInstanceCount(auto4C72C544_userType) ; auto4C72C544_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto4C72C544_userType, auto4C72C544_i);
+        lv_amount = UserDataGetInt("MinResourceTable", lv_indexInstance, "Amount", 1);
+        lv_region = RegionFromName(("Min" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+            autoC6E40B4D_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            autoC6E40B4D_u = UnitGroupCount(autoC6E40B4D_g, c_unitCountAll);
+            for (;; autoC6E40B4D_u -= 1) {
+                autoC6E40B4D_var = UnitGroupUnitFromEnd(autoC6E40B4D_g, autoC6E40B4D_u);
+                if (autoC6E40B4D_var == null) { break; }
+                if ((libBWVS_gf_UnitisMineralResource(autoC6E40B4D_var) == true)) {
+                    UnitSetPropertyFixed(autoC6E40B4D_var, c_unitPropResources, lv_amount);
+                }
+
+            }
+        }
+
+        lv_region = RegionFromName(("RichMinReplace" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+            auto0E708E8D_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            auto0E708E8D_u = UnitGroupCount(auto0E708E8D_g, c_unitCountAll);
+            for (;; auto0E708E8D_u -= 1) {
+                auto0E708E8D_var = UnitGroupUnitFromEnd(auto0E708E8D_g, auto0E708E8D_u);
+                if (auto0E708E8D_var == null) { break; }
+                if ((libBWVS_gf_UnitisRichMineral(auto0E708E8D_var) == true)) {
+                    libNtve_gf_CreateUnitsWithDefaultFacing(1, "MineralField", c_unitCreateIgnorePlacement, 0, UnitGetPosition(auto0E708E8D_var));
+                    UnitSetPropertyFixed(UnitLastCreated(), c_unitPropResources, lv_amount);
+                    UnitRemove(auto0E708E8D_var);
+                }
+
+            }
+        }
+
+    }
+    auto5648BFED_userType = "MinResourceTable";
+    auto5648BFED_i = 1;
+    for ( ; auto5648BFED_i <= UserDataInstanceCount(auto5648BFED_userType) ; auto5648BFED_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto5648BFED_userType, auto5648BFED_i);
+        lv_amount = UserDataGetInt("GasResourceTable", lv_indexInstance, "Amount", 1);
+        lv_region = RegionFromName(("Gas" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+        }
+        else {
+            break;
+        }
+        auto1164DDAB_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        auto1164DDAB_u = UnitGroupCount(auto1164DDAB_g, c_unitCountAll);
+        for (;; auto1164DDAB_u -= 1) {
+            auto1164DDAB_var = UnitGroupUnitFromEnd(auto1164DDAB_g, auto1164DDAB_u);
+            if (auto1164DDAB_var == null) { break; }
+            if ((libBWVS_gf_UnitisVespeneResource(auto1164DDAB_var) == true)) {
+                UnitSetPropertyFixed(auto1164DDAB_var, c_unitPropResources, lv_amount);
+            }
+
+        }
+    }
+    lv_region = RegionFromName("GasDelete");
+    autoEF75F783_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoEF75F783_u = UnitGroupCount(autoEF75F783_g, c_unitCountAll);
+    for (;; autoEF75F783_u -= 1) {
+        autoEF75F783_var = UnitGroupUnitFromEnd(autoEF75F783_g, autoEF75F783_u);
+        if (autoEF75F783_var == null) { break; }
+        if ((libBWVS_gf_UnitisVespeneResource(autoEF75F783_var) == true)) {
+            UnitRemove(autoEF75F783_var);
+        }
+
+    }
+}
+
 void libBWVS_gf_RemoveGeysers () {
     // Variable Declarations
     unit lv_searchGeyser;
@@ -257,6 +389,28 @@ void libBWVS_gf_IncreaseResourceCounts () {
     }
 }
 
+void libBWVS_gf_SetFoWState () {
+    // Variable Declarations
+    int lv_index;
+
+    // Automatic Variable Declarations
+    playergroup autoD605F2B7_g;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((GameAttributeGameValue("1") == "0001")) {
+        autoD605F2B7_g = PlayerGroupActive();
+        lv_index = -1;
+        while (true) {
+            lv_index = PlayerGroupNextPlayer(autoD605F2B7_g, lv_index);
+            if (lv_index < 0) { break; }
+            VisFillArea(lv_index, RegionEntireMap(), c_fillTypeHidden, false);
+        }
+    }
+
+}
+
 // Triggers
 //--------------------------------------------------------------------------------------------------
 // Trigger: Race Initialization
@@ -286,11 +440,14 @@ bool libBWVS_gt_MapInitialization_Func (bool testConds, bool runActions) {
     libSCBW_gf_SC1ToggleFeature(libSCBW_ge_SC1_Feature_CorrectedRefunds, true);
     libSCBW_gf_SC1ToggleFeature(libSCBW_ge_SC1_Feature_FractionalLifeArmor, true);
     libSCBW_gf_SC1ToggleFeature(libSCBW_ge_SC1_Feature_HighgroundAdvantage, true);
+    libBWVS_gf_SetFoWState();
     libSCBW_gf_SC1ToggleFeature(libSCBW_ge_SC1_Feature_SC2toSC1UnitSwap, true);
     if ((lv_bwMapCheck == false)) {
         libBWVS_gf_RemoveGeysers();
     }
-
+    else {
+        libBWVS_gf_UpdateLegacyMap();
+    }
     autoEABAE26A_g = PlayerGroupAll();
     lv_playerIndex = -1;
     while (true) {
@@ -336,7 +493,9 @@ bool libBWVS_gt_MapInitialization_Func (bool testConds, bool runActions) {
     if ((lv_bwMapCheck == false)) {
         libBWVS_gf_IncreaseResourceCounts();
     }
-
+    else {
+        libBWVS_gf_UpdateLegacyMap();
+    }
     return true;
 }
 
