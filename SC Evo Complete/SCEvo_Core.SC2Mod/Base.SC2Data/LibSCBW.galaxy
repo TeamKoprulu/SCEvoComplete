@@ -74,7 +74,6 @@ void libSCBW_gf_SC1ToggleFeature (int lp_feature, bool lp_activateDeactivate) {
     }
     else if ((lp_feature == libSCBW_ge_SC1_Feature_HighgroundAdvantage)) {
         libSCBW_gf_SC1_HighgroundMiss_Activate(lp_activateDeactivate);
-        TriggerEnable(libSCBW_gt_SC1_HighgroundMiss_Add, lv_onOff);
     }
     else if ((lp_feature == libSCBW_ge_SC1_Feature_SC2toSC1UnitSwap)) {
         libSCBW_gf_SC1_UnitSwap_Activate(lp_activateDeactivate);
@@ -142,21 +141,30 @@ void libSCBW_gf_SC1_HighgroundMiss_Activate (bool lp_activateDeactivate) {
 
     // Implementation
     if ((lp_activateDeactivate == true)) {
-        autoCF381F81_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterAir) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+        TriggerEnable(libSCBW_gt_SC1_HighgroundMiss_Add, true);
+        TriggerEnable(libSCBW_gt_SC1_ShrubCheck, true);
+        autoCF381F81_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32))), 0);
         autoCF381F81_u = UnitGroupCount(autoCF381F81_g, c_unitCountAll);
         for (;; autoCF381F81_u -= 1) {
             autoCF381F81_var = UnitGroupUnitFromEnd(autoCF381F81_g, autoCF381F81_u);
             if (autoCF381F81_var == null) { break; }
             UnitBehaviorAdd(autoCF381F81_var, "SC1_MissChance", autoCF381F81_var, 1);
+            if ((UnitFilterMatch(autoCF381F81_var, UnitGetOwner(autoCF381F81_var), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true)) {
+                UnitBehaviorAdd(autoCF381F81_var, "SC1_ShrubCheck", autoCF381F81_var, 1);
+            }
+
         }
     }
     else {
+        TriggerEnable(libSCBW_gt_SC1_HighgroundMiss_Add, false);
+        TriggerEnable(libSCBW_gt_SC1_ShrubCheck, false);
         auto17A0307A_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
         auto17A0307A_u = UnitGroupCount(auto17A0307A_g, c_unitCountAll);
         for (;; auto17A0307A_u -= 1) {
             auto17A0307A_var = UnitGroupUnitFromEnd(auto17A0307A_g, auto17A0307A_u);
             if (auto17A0307A_var == null) { break; }
             UnitBehaviorRemove(auto17A0307A_var, "SC1_MissChance", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SC1_ShrubCheck", 1);
         }
     }
 }
@@ -520,6 +528,10 @@ bool libSCBW_gt_SC1_HighgroundMiss_Add_Func (bool testConds, bool runActions) {
     }
 
     UnitBehaviorAdd(EventUnit(), "SC1_MissChance", EventUnit(), 1);
+    if ((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true)) {
+        UnitBehaviorAdd(EventUnit(), "SC1_ShrubCheck", EventUnit(), 1);
+    }
+
     return true;
 }
 
@@ -528,6 +540,39 @@ void libSCBW_gt_SC1_HighgroundMiss_Add_Init () {
     libSCBW_gt_SC1_HighgroundMiss_Add = TriggerCreate("libSCBW_gt_SC1_HighgroundMiss_Add_Func");
     TriggerEnable(libSCBW_gt_SC1_HighgroundMiss_Add, false);
     TriggerAddEventUnitRegion(libSCBW_gt_SC1_HighgroundMiss_Add, null, RegionEntireMap(), true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SC1_ShrubCheck
+//--------------------------------------------------------------------------------------------------
+bool libSCBW_gt_SC1_ShrubCheck_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_target;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_target = EventPlayerEffectUsedUnitImpact();
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitIsValid(lv_target) == true) && (UnitFilterMatch(lv_target, UnitGetOwner(lv_target), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true)) {
+        if ((HasCustomCellAttribute(UnitGetPosition(lv_target), 1) != true)) {
+            UnitBehaviorAdd(lv_target, "SC1_InShrub", lv_target, 1);
+        }
+
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCBW_gt_SC1_ShrubCheck_Init () {
+    libSCBW_gt_SC1_ShrubCheck = TriggerCreate("libSCBW_gt_SC1_ShrubCheck_Func");
+    TriggerEnable(libSCBW_gt_SC1_ShrubCheck, false);
+    TriggerAddEventPlayerEffectUsed(libSCBW_gt_SC1_ShrubCheck, c_playerAny, "SC1_ShrubCheck");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1152,6 +1197,7 @@ void libSCBW_InitTriggers () {
     libSCBW_gt_SC1_ArmorTrackerUpdate_Init();
     libSCBW_gt_SC1_ArmorTrackerUpgrade_Init();
     libSCBW_gt_SC1_HighgroundMiss_Add_Init();
+    libSCBW_gt_SC1_ShrubCheck_Init();
     libSCBW_gt_SC1_Refund_Init();
     libSCBW_gt_SC1_UnitSwap_Init();
     libSCBW_gt_SC1_InfiniteMoneyMap_Trigger_Init();
