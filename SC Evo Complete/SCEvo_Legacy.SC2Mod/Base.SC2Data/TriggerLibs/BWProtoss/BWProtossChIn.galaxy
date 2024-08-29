@@ -1,0 +1,2754 @@
+//==================================================================================================
+//  BWProtoss Melee Cheater-Insane
+//==================================================================================================
+
+// very similar to Very Hard builds, just tweaked for the extra resource rate
+
+bool BWProtossOpenRushZealotStalkerChIn (int player);            // zealot/stalker rush
+bool BWProtossOpenRushAdeptChIn (int player);                    // adept rush
+bool BWProtossOpenRushProxyGateChIn (int player);                // proxygate rush
+bool BWProtossOpenRushCannonRushChIn (int player);               // cannon rush
+bool BWProtossOpenTimingFourGateChIn (int player);               // four gate timing
+bool BWProtossOpenTimingAdeptChIn (int player);                  // adept timing
+bool BWProtossOpenTimingGateImmortalChIn (int player);           // stalker/immortal timing
+bool BWProtossOpenTimingStalkerBlinkChIn (int player);           // blink stalker timing
+bool BWProtossOpenTimingDTRushChIn (int player);                 // dt rush
+bool BWProtossOpenPowerMacroQuickExpGndChIn (int player);        // aggresive quick expand
+bool BWProtossOpenPowerMacroGateExpGndChIn (int player);         // expand guarded by zealot/stalker
+bool BWProtossOpenPowerMacroDefenseExpGndChIn (int player);      // safer stalker/robo expand
+bool BWProtossOpenAirOneBaseAirChIn (int player);                // single base "island" air build
+bool BWProtossOpenAirOneBaseDropChIn (int player);               // single base "island" drop build
+bool BWProtossOpenAirQuickExpandAirChIn (int player);            // quick expand air build
+
+bool BWProtossMidRushTimingFourGateRoboChIn (int player);        // continued four gate pressure
+bool BWProtossMidRushTimingDefensiveExpandChIn (int player);     // transition from early pressure to a macro game
+bool BWProtossMidPowerSevenGateStalkerChIn (int player);         // pure gateway attack
+bool BWProtossMidPowerSevenGateAdeptChIn (int player);           // pure gateway with adept attack
+bool BWProtossMidPowerGateImmortalChIn (int player);             // gateway/immortal attack
+bool BWProtossMidPowerGateColossiChIn (int player);              // gateway/colossi attack
+bool BWProtossMidPowerGateAirChIn (int player);                  // gateway/air attack
+bool BWProtossMidPowerGateVoidPhoenixChIn (int player);          // air harrass (w/ gateway for defense)
+bool BWProtossMidMacroGateRoboChIn (int player);                 // macro toward a gateway/robo late game
+bool BWProtossMidMacroGateAirChIn (int player);                  // macro toward a gateway/stargate late game
+bool BWProtossMidAirOneBasePureAirChIn (int player);             // continue single base "island" air build
+bool BWProtossMidAirOneBasePureDropChIn (int player);            // continue single base "island" drop build
+bool BWProtossMidAirExpansionVoidrayChIn (int player);           // quick expand voidray/pheonix attack
+bool BWProtossMidAirExpansionCapitalAirChIn (int player);        // quick expand carrier/tempest attack
+bool BWProtossMidAirExpansionDropAirChIn (int player);           // quick expand drop + air attack
+bool BWProtossMidAirMacroChIn (int player);                      // macro toward a large late game air force
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenChIn
+//--------------------------------------------------------------------------------------------------
+void BWProtossOpenChIn (int player) {
+    bool done = false;
+    int buildIndex;
+
+    AIEarlyDefenseScouting(player);
+
+    // see if we need to switch builds
+    UpdateHDBWProtossOpening(player);
+    
+    buildIndex = AIGetUserInt(player, c_currentBuildIndex);
+    if (buildIndex == e_BWhdBuildIndex_POpenRush_ZealotStalker)               { done = BWProtossOpenRushZealotStalkerChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenRush_Adept)                  { done = BWProtossOpenRushAdeptChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenRush_ProxyGate)              { done = BWProtossOpenRushProxyGateChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenRush_CannonRush)             { done = BWProtossOpenRushCannonRushChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenTiming_FourGate)             { done = BWProtossOpenTimingFourGateChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenTiming_Adept)                { done = BWProtossOpenTimingAdeptChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenTiming_GateImmortal)         { done = BWProtossOpenTimingGateImmortalChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenTiming_StalkerBlink)         { done = BWProtossOpenTimingStalkerBlinkChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenTiming_DTRush)               { done = BWProtossOpenTimingDTRushChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenPowerMacro_QuickExpGnd)      { done = BWProtossOpenPowerMacroQuickExpGndChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenPowerMacro_GateExpGnd)       { done = BWProtossOpenPowerMacroGateExpGndChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenPowerMacro_DefenseExpGnd)    { done = BWProtossOpenPowerMacroDefenseExpGndChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenAir_OneBaseAir)              { done = BWProtossOpenAirOneBaseAirChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenAir_OneBaseDrop)             { done = BWProtossOpenAirOneBaseDropChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_POpenAir_QuickExpandAir)          { done = BWProtossOpenAirQuickExpandAirChIn (player); }
+    else { ErrorMeleeScript(player, "Invalid Open BuildIndex BWProtossChIn"); }
+
+    if (done) {
+        BWProtossHDInitMid(player); // Transition to MidGame
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidChIn
+//--------------------------------------------------------------------------------------------------
+void BWProtossMidChIn (int player) {
+    bool done = false;
+    int buildIndex;
+    
+    // enable scouting as appropriate
+    if (AIGetUserInt(player, c_numGroundStartLocs) > 0) {
+        AIScoutingEnable(player, 12, c_BWPU_Probe);
+        AIEarlyDefenseScouting(player);
+    }
+    else {
+        AIScoutingEnable(player, 1, c_BWPU_Observer);
+    }
+
+    // see if we need to switch builds
+    UpdateHDBWProtossMidGame(player);
+    
+    buildIndex = AIGetUserInt(player, c_currentBuildIndex);
+    if (buildIndex == e_BWhdBuildIndex_PMidRushTiming_FourGateRobo)           { done = BWProtossMidRushTimingFourGateRoboChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidRushTiming_DefensiveExpand)   { done = BWProtossMidRushTimingDefensiveExpandChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidPower_SevenGateStalker)       { done = BWProtossMidPowerSevenGateStalkerChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidPower_SevenGateAdept)         { done = BWProtossMidPowerSevenGateAdeptChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidPower_GateImmortal)           { done = BWProtossMidPowerGateImmortalChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidPower_GateColossi)            { done = BWProtossMidPowerGateColossiChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidPower_GateAir)                { done = BWProtossMidPowerGateAirChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidPower_GateVoidPhoenix)        { done = BWProtossMidPowerGateVoidPhoenixChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidMacro_GateRobo)               { done = BWProtossMidMacroGateRoboChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidMacro_GateAir)                { done = BWProtossMidMacroGateAirChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidAir_OneBasePureAir)           { done = BWProtossMidAirOneBasePureAirChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidAir_OneBasePureDrop)          { done = BWProtossMidAirOneBasePureDropChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidAir_ExpansionVoidray)         { done = BWProtossMidAirExpansionVoidrayChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidAir_ExpansionCapitalAir)      { done = BWProtossMidAirExpansionCapitalAirChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidAir_ExpansionDropAir)         { done = BWProtossMidAirExpansionDropAirChIn (player); }
+    else if (buildIndex == e_BWhdBuildIndex_PMidAir_Macro)                    { done = BWProtossMidAirMacroChIn (player); }
+    else { ErrorMeleeScript(player, "Invalid Mid BuildIndex BWProtossChIn"); }
+
+    if (done) {
+        BWProtossHDInitLate(player); // Transition to LateGame
+    }
+}
+
+//==================================================================================================
+//  OPENINGS
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenRushZealotStalkerChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenRushZealotStalkerChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 3, c_BWPB_Gateway );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Zealot );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 16, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWPU_Zealot, c_techCountCompleteOnly) >= 3) {
+        AISetAttackStatus(player, c_BWPU_Dragoon, 1, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 540) {
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 10) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenRushAdeptChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenRushAdeptChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 11, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 16, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWPU_Zealot, c_techCountCompleteOnly) >= 2) {
+        AISetAttackStatus(player, c_BWPU_Dragoon, 1, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 540) {
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 11) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenRushProxyGateChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenRushProxyGateChIn (int player) {
+
+    // not yet a proxy build, needs to be fixed
+    // this build is not used
+
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 12, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );        // proxy
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Gateway );      // proxy
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );        // proxy
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 7, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    AISetStock( player, 11, c_BWPU_Zealot );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    AIScoutingEnableWithPreReq(player, 9, c_BWPU_Probe, 1, c_BWPB_Nexus, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 1, 1, c_continuousMerge);
+
+    if (AIGetTime() < 450) {
+        if (AITechCount(player, c_BWPU_Zealot, c_techCountInProgressOrBetter) < 9) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenRushCannonRushChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenRushCannonRushChIn (int player) {
+    AIClearStock(player);
+
+    // not yet a proxy build, needs to be fixed
+    // this build is not used
+
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 14, c_BWPU_Probe );    
+    AISetStock( player, 2, c_BWPB_Pylon );            // proxy
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_PhotonCannon );     // proxy
+    AISetStock( player, 3, c_BWPB_Pylon );            // proxy
+    AISetStock( player, 4, c_BWPB_PhotonCannon );     // proxy
+    
+    BWProtossBasicDefenseStock(player);
+    
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );          // proxy
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );            // proxy
+    AISetStock( player, 6, c_BWPB_PhotonCannon );     // proxy
+    AISetStock( player, 3, c_BWPU_Zealot );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    AIScoutingEnableWithPreReq(player, 9, c_BWPU_Probe, 1, c_BWPB_Nexus, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 1, 999, c_continuousMerge);
+
+    if (AIGetTime() < 450) {
+        if (AITechCount(player, c_BWPB_Gateway, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenTimingFourGateChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenTimingFourGateChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 4, c_BWPB_Gateway );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPB_Pylon );            // could be proxy
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 16, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 16, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 570) {
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 14) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenTimingAdeptChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenTimingAdeptChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 4, c_BWPB_Gateway );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPB_Pylon );            // could be proxy
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 16, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 16, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 8, c_continuousMerge);
+    
+    if (AIGetTime() < 540) {
+        if (AITechCount(player, c_BWPB_Assimilator, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 16) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenTimingGateImmortalChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenTimingGateImmortalChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_RoboticsSupportBay );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 2, c_BWPU_Reaver );
+    AISetStock( player, 2, c_BWPR_ReaverSCBWHangarIncreaseUpgrade );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Reaver );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPU_Reaver );
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 16, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWPU_Dragoon, c_techCountCompleteOnly) >= 9) {
+        AISetAttackStatus(player, c_BWPU_Reaver, 1, 2, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 600) {
+        if (AITechCount(player, c_BWPU_Reaver, c_techCountInProgressOrBetter) < 5) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 9) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenTimingStalkerBlinkChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenTimingStalkerBlinkChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    AISetStock( player, 1, c_BWPB_CitadelofAdun );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 3, c_BWPB_Gateway );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPB_Pylon );            // could be proxy
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 9, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 1, 8, c_continuousMerge);
+
+    if (AIGetTime() < 600) {
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 13) {
+            return false;
+        }
+    }
+    
+    AISetAttackStatus(player, c_BWPU_Dragoon, 1, 6, c_continuousMerge);
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenTimingDTRushChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenTimingDTRushChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CitadelofAdun );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 1, c_BWPR_ZealotSCBWSpeedUpgrade );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 1, c_BWPB_TemplarArchives );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Gateway );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );            // could be proxy
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Zealot );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_DarkTemplar );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 28, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPU_DarkTemplar );
+    AISetStock( player, 12, c_BWPU_Zealot );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 9, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountInProgressOrBetter);
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_DarkTemplar, 1, 3, c_continuousMerge);
+
+    if (AIGetTime() < 570) {
+        if (AITechCount(player, c_BWPU_DarkTemplar, c_techCountInProgressOrBetter) < 5) {
+            return false;
+        }
+    }
+    
+    AISetAttackStatus(player, c_BWPU_DarkTemplar, 1, 2, c_continuousMerge);
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenPowerMacroQuickExpGndChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenPowerMacroQuickExpGndChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 16, c_BWPU_Probe );
+    
+    BWProtossBasicDefenseStock(player);
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 19) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 15, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 390) {
+        if (AITechCount(player, c_BWPB_Nexus, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_CyberneticsCore, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Assimilator, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenPowerMacroGateExpGndChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenPowerMacroGateExpGndChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 15, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 450) {
+        if (AITechCount(player, c_BWPB_Nexus, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Gateway, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenPowerMacroDefenseExpGndChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenPowerMacroDefenseExpGndChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 7, c_BWPU_Zealot );
+    AISetStock( player, 27, c_BWPU_Probe );
+    
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 27) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 28, c_BWPU_Probe );
+    AISetStock( player, 10, c_BWPU_Zealot );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 30, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AIScoutingEnableWithPreReq(player, 15, c_BWPU_Probe, 1, c_BWPB_Gateway, c_techCountCompleteOnly);
+
+    if (AIGetTime() < 510) {
+        if (AITechCount(player, c_BWPB_Nexus, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_RoboticsFacility, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenAirOneBaseAirChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenAirOneBaseAirChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Stargate );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPU_Scout );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Scout );
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Scout );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 5, c_BWPU_Zealot );
+    AISetStock( player, 28, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Scout );
+    AISetStock( player, 29, c_BWPU_Probe );
+
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWPU_Scout, 1, 2, c_continuousMerge);
+
+    if (AIGetTime() < 510) {
+        if (AITechCount(player, c_BWPU_Scout, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenAirOneBaseDropChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenAirOneBaseDropChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPU_Shuttle );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 2, c_BWPU_Shuttle );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Shuttle );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    if (AITechCount(player, c_BWPU_Shuttle, c_techCountCompleteOnly) >= 2) {
+        AISetAttackStatus(player, c_BWPU_Zealot, 2, 2, c_continuousMerge);
+        AISetAttackStatus(player, c_BWPU_Dragoon, 4, 2, c_continuousMerge);
+    }
+
+    if (AIGetTime() < 570) {
+        if (AITechCount(player, c_BWPU_Shuttle, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossOpenAirQuickExpandAirChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossOpenAirQuickExpandAirChIn (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 15, c_BWPU_Probe );
+    
+    BWProtossBasicDefenseStock(player);
+    
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 13) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 21, c_BWPU_Probe );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    if (AIGetTime() < 360) {
+        if (AITechCount(player, c_BWPB_Nexus, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to MidGame
+}
+
+//==================================================================================================
+//  MID GAME
+//==================================================================================================
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidRushTimingFourGateRoboChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidRushTimingFourGateRoboChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 4, c_BWPB_Gateway );
+
+    BWProtossHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPB_Pylon );            // could be proxy
+    AISetStock( player, 24, c_BWPU_Probe );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 14, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPU_Zealot );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 18, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_RoboticsSupportBay );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPB_Forge );
+    AISetStock( player, 1, c_BWPU_Reaver );
+    AISetStock( player, 1, c_BWPR_ReaverSCBWHangarIncreaseUpgrade );
+    AISetStock( player, 22, c_BWPU_Dragoon );
+    AISetStock( player, 2, c_BWPU_Reaver );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 26, c_BWPU_Dragoon );
+    AISetStock( player, 11, c_BWPB_Pylon );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+   
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) >= 22) {
+        AISetAttackStatus(player, c_BWPU_Reaver, 1, 2, c_continuousMerge);
+    }
+
+    if (AIGetTime() < 780) {
+        if (AITechCount(player, c_BWPU_Reaver, c_techCountCompleteOnly) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 22) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Pylon, c_techCountInProgressOrBetter) < 11) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidRushTimingDefensiveExpandChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidRushTimingDefensiveExpandChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 1, c_BWPB_Observatory );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_RoboticsSupportBay );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 1, c_BWPU_Reaver );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 25, c_BWPU_Probe );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 25) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Observer );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 28, c_BWPU_Probe );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Reaver, 2, 999, c_continuousMerge);
+
+    if (AIGetTime() < 600) {
+        if (AITechCount(player, c_BWPB_Nexus, c_techCountQueuedOrBetter) < 2) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidPowerSevenGateStalkerChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidPowerSevenGateStalkerChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Gateway );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 28, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 32, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 36, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 38, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 40, c_BWPU_Probe );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    AISetStock( player, 42, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 44, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Dragoon );
+    AISetStock( player, 46, c_BWPU_Probe );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 48, c_BWPU_Probe );
+    AISetStock( player, 16, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 50, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CitadelofAdun );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 19, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Gateway );
+    AISetStock( player, 1, c_BWPR_ZealotSCBWSpeedUpgrade );
+    AISetStock( player, 2, c_BWPB_Forge );
+    AISetStock( player, 22, c_BWPU_Dragoon );
+    AISetStock( player, 11, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 52, c_BWPU_Probe );
+    AISetStock( player, 25, c_BWPU_Dragoon );
+    AISetStock( player, 12, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPR_ProtossGroundWeaponsSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWPR_ProtossGroundArmorsSCBW_Lvl1 );    
+    AISetStock( player, 8, c_BWPU_Zealot );
+    AISetStock( player, 13, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 29, c_BWPU_Dragoon );
+    AISetStock( player, 14, c_BWPB_Pylon );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+ 
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    if (AITechCount(player, c_BWPU_Dragoon, c_techCountCompleteOnly) >= 17) {
+        AISetAttackStatus(player, c_BWPU_Zealot, 1, 4, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 780) {
+        if (AITechCount(player, c_BWPB_RoboticsFacility, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPR_ProtossGroundWeaponsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPR_ProtossGroundArmorsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidPowerSevenGateAdeptChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidPowerSevenGateAdeptChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    AISetStock( player, 1, c_BWPB_Forge );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Gateway );
+    AISetStock( player, 27, c_BWPU_Probe );    
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 28, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 32, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 34, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 36, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 38, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    AISetStock( player, 40, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CitadelofAdun );
+    AISetStock( player, 42, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 44, c_BWPU_Probe ); 
+    AISetStock( player, 13, c_BWPU_Dragoon );   
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPR_DragoonSCBWRangeUpgrade );
+    AISetStock( player, 16, c_BWPU_Dragoon );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPB_Forge );
+    AISetStock( player, 19, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 46, c_BWPU_Probe );
+    AISetStock( player, 22, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPR_ProtossGroundWeaponsSCBW_Lvl1 );
+    AISetStock( player, 1, c_BWPR_ProtossGroundArmorsSCBW_Lvl1 );
+    AISetStock( player, 10, c_BWPB_Pylon );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+ 
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 720) {
+        if (AITechCount(player, c_BWPB_RoboticsFacility, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPR_ProtossGroundWeaponsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPR_ProtossGroundArmorsSCBW_Lvl1, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidPowerGateImmortalChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidPowerGateImmortalChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_RoboticsSupportBay );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Reaver );
+    AISetStock( player, 1, c_BWPR_ReaverSCBWHangarIncreaseUpgrade );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 9, c_BWPU_Dragoon );
+    AISetStock( player, 41, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_RoboticsFacility );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    AISetStock( player, 2, c_BWPU_Reaver );
+    AISetStock( player, 43, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 45, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPR_ScarabSCBWWeaponDamageUpgrade );
+    AISetStock( player, 4, c_BWPU_Reaver );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPB_Forge );
+    AISetStock( player, 14, c_BWPU_Dragoon );
+    AISetStock( player, 6, c_BWPU_Reaver );
+    AISetStock( player, 10, c_BWPB_Pylon );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Reaver, 1, 4, c_continuousMerge);
+    
+    if (AIGetTime() < 750) {
+        if (AITechCount(player, c_BWPU_Reaver, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Pylon, c_techCountInProgressOrBetter) < 10) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Forge, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidPowerGateColossiChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidPowerGateColossiChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 1, c_BWPB_Observatory );
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_RoboticsSupportBay );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Observer );
+    AISetStock( player, 2, c_BWPB_RoboticsFacility );
+    AISetStock( player, 40, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 9, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 42, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Reaver );
+    AISetStock( player, 1, c_BWPR_ReaverSCBWHangarIncreaseUpgrade );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 5, c_BWPU_Zealot );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 8, c_BWPU_Zealot );
+    AISetStock( player, 3, c_BWPU_Reaver );
+    AISetStock( player, 1, c_BWPR_ScarabSCBWWeaponDamageUpgrade );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 4, c_BWPU_Reaver );
+    AISetStock( player, 11, c_BWPU_Zealot );
+    AISetStock( player, 11, c_BWPB_Pylon );
+    AISetStock( player, 11, c_BWPU_Dragoon );
+    AISetStock( player, 5, c_BWPU_Reaver );
+    AISetStock( player, 12, c_BWPB_Pylon );
+    AISetStock( player, 6, c_BWPU_Reaver );
+    AISetStock( player, 13, c_BWPB_Pylon );
+    AISetStock( player, 44, c_BWPU_Probe );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Reaver, 1, 4, c_continuousMerge);
+
+    if (AIGetTime() < 780) {
+        if (AITechCount(player, c_BWPU_Reaver, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPR_ScarabSCBWWeaponDamageUpgrade, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidPowerGateAirChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidPowerGateAirChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Stargate );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Scout );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Zealot );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Scout );
+    AISetStock( player, 41, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 43, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 5, c_BWPU_Scout );
+    AISetStock( player, 45, c_BWPU_Probe );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 9, c_BWPU_Dragoon );
+    AISetStock( player, 9, c_BWPU_Scout );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 47, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 11, c_BWPB_Pylon );
+    AISetStock( player, 49, c_BWPU_Probe );
+    AISetStock( player, 11, c_BWPU_Dragoon );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Scout, 1, 5, c_continuousMerge);
+
+    if (AIGetTime() < 750) {
+        if (AITechCount(player, c_BWPU_Scout, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_RoboticsFacility, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidPowerGateVoidPhoenixChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidPowerGateVoidPhoenixChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Stargate );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Scout );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Zealot );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Scout );
+    AISetStock( player, 41, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 43, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Corsair );
+    AISetStock( player, 45, c_BWPU_Probe );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 9, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPU_Corsair );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 47, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Forge );
+    AISetStock( player, 8, c_BWPU_Zealot );
+    AISetStock( player, 7, c_BWPU_Scout );
+    AISetStock( player, 11, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 49, c_BWPU_Probe );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Scout, 1, 999, c_continuousMerge);
+
+    if (AITechCount(player, c_BWPU_Scout, c_techCountCompleteOnly) >= 3) {
+        AISetAttackStatus(player, c_BWPU_Corsair, 1, 4, c_continuousMerge);
+    }
+
+    if (AIGetTime() < 750) {
+        if (AITechCount(player, c_BWPU_Scout, c_techCountInProgressOrBetter) < 5) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Corsair, c_techCountInProgressOrBetter) < 4) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_RoboticsFacility, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidMacroGateRoboChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidMacroGateRoboChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 1, c_BWPB_Observatory );
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_RoboticsSupportBay );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Observer );
+    AISetStock( player, 2, c_BWPB_RoboticsFacility );
+    AISetStock( player, 40, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 9, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 42, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Reaver );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 5, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPR_ScarabSCBWWeaponDamageUpgrade );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 8, c_BWPU_Zealot );
+    AISetStock( player, 4, c_BWPU_Reaver );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 11, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPB_Stargate );
+    AISetStock( player, 44, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Gateway );
+    AISetStock( player, 13, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPU_Archon );
+    AISetStock( player, 2, c_BWPB_Forge );
+    AISetStock( player, 3, c_BWPU_Archon );
+    AISetStock( player, 15, c_BWPU_Dragoon );
+    
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+
+    if (AIGetTime() < 780) {
+        if (AITechCount(player, c_BWPB_Stargate, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Forge, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Archon, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+    }
+
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidMacroGateAirChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidMacroGateAirChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    AISetStock( player, 1, c_BWPB_Forge );
+
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 20, c_BWPU_Probe );
+
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 20) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+
+    AISetStock( player, 21, c_BWPU_Probe );
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Dragoon );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+    
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Dragoon );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Stargate );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Scout );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Zealot );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Scout );
+    AISetStock( player, 41, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 7, c_BWPU_Dragoon );
+    AISetStock( player, 43, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Corsair );
+    AISetStock( player, 45, c_BWPU_Probe );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 9, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPU_Corsair );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 47, c_BWPU_Probe );
+    AISetStock( player, 10, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 49, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Forge );
+    AISetStock( player, 11, c_BWPB_Pylon );
+    AISetStock( player, 7, c_BWPU_Scout );
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWPU_Zealot, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Dragoon, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Scout, 1, 999, c_continuousMerge);
+
+    if (AIGetTime() < 750) {
+        if (AITechCount(player, c_BWPB_RoboticsFacility, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Forge, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidAirOneBasePureAirChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidAirOneBasePureAirChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Stargate );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 24, c_BWPU_Probe );
+        
+    BWProtossHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPU_Scout );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Scout );
+    AISetStock( player, 26, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Scout );
+    AISetStock( player, 27, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 28, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Forge );
+    AISetStock( player, 4, c_BWPU_Scout );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 30, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Zealot );
+    AISetStock( player, 5, c_BWPU_Scout );
+    AISetStock( player, 7, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 9, c_BWPU_Scout );
+
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWPU_Scout, 1, 3, c_continuousMerge);
+
+    if (AIGetTime() < 660) {
+        if (AITechCount(player, c_BWPU_Scout, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidAirOneBasePureDropChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidAirOneBasePureDropChIn (int player) {
+    AIClearStock(player);
+    
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 13, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 14, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 15, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossBasicDefenseStock(player);
+
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 20, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+        
+    BWProtossHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 1, c_BWPU_Shuttle );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 1, c_BWPB_Observatory );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 2, c_BWPU_Shuttle );
+    AISetStock( player, 23, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Shuttle );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 10, c_BWPU_Dragoon );
+    AISetStock( player, 4, c_BWPU_Shuttle );
+    AISetStock( player, 11, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 9, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPU_Observer );
+    AISetStock( player, 25, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 14, c_BWPU_Dragoon );
+
+    BWProtossHDEmergencyDetectionAntiAir(player);
+
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+    
+    if (AITechCount(player, c_BWPU_Shuttle, c_techCountCompleteOnly) >= 2) {
+        AISetAttackStatus(player, c_BWPU_Zealot, 2, 2, c_continuousMerge);
+        AISetAttackStatus(player, c_BWPU_Dragoon, 2, 2, c_continuousMerge);
+    }
+
+    if (AIGetTime() < 720) {
+        if (AITechCount(player, c_BWPB_Stargate, c_techCountInProgressOrBetter) < 2) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Observer, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPB_Pylon, c_techCountInProgressOrBetter) < 8) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidAirExpansionVoidrayChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidAirExpansionVoidrayChIn (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 15, c_BWPU_Probe );
+    
+    BWProtossBasicDefenseStock(player);
+    
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 13) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    
+    BWProtossHDDefaultExtraMidStock(player);
+        
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Scout );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Scout );
+    AISetStock( player, 41, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Stargate );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 45, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Scout );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 10, c_BWPU_Scout );
+    AISetStock( player, 47, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 14, c_BWPU_Scout );
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    AISetAttackStatus(player, c_BWPU_Scout, 1, 6, c_continuousMerge);
+    
+    if (AIGetTime() < 690) {
+        if (AITechCount(player, c_BWPU_Scout, c_techCountInProgressOrBetter) < 12) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidAirExpansionCapitalAirChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidAirExpansionCapitalAirChIn (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 15, c_BWPU_Probe );
+    
+    BWProtossBasicDefenseStock(player);
+    
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 13) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    
+    BWProtossHDDefaultExtraMidStock(player);
+        
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Scout );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_FleetBeacon );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Scout );
+    AISetStock( player, 3, c_BWPB_Stargate );
+    AISetStock( player, 5, c_BWPB_Pylon );  
+    AISetStock( player, 41, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Carrier );
+    AISetStock( player, 1, c_BWPR_CarrierSCBWHangarIncreaseUpgrade );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Carrier );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 43, c_BWPU_Probe );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 45, c_BWPU_Probe );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 49, c_BWPU_Probe );
+    AISetStock( player, 5, c_BWPU_Carrier );
+    AISetStock( player, 11, c_BWPB_Pylon );
+    AISetStock( player, 51, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPU_Carrier );
+
+    AIEnableStock(player);
+    
+    //---------------------------------------------------------
+    
+    AISetAttackStatus(player, c_BWPU_Scout, 2, 999, c_continuousMerge);
+    AISetAttackStatus(player, c_BWPU_Carrier, 1, 2, c_continuousMerge);
+    
+    if (AIGetTime() < 780) {
+        if (AITechCount(player, c_BWPU_Carrier, c_techCountInProgressOrBetter) < 6) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidAirExpansionDropAirChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidAirExpansionDropAirChIn (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 15, c_BWPU_Probe );
+    
+    BWProtossBasicDefenseStock(player);
+    
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 13) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 21, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    AISetStock( player, 2, c_BWPU_Zealot );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    BWProtossHDDefaultExtraMidStock(player);
+
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Gateway );
+    AISetStock( player, 26, c_BWPU_Probe );
+
+    AISetStock( player, 28, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 30, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Zealot );
+    AISetStock( player, 32, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 7, c_BWPU_Zealot );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 34, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 36, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPU_Dragoon );
+    AISetStock( player, 38, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Observatory );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 40, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Gateway );
+    AISetStock( player, 1, c_BWPU_Observer );
+    AISetStock( player, 4, c_BWPU_Dragoon );
+    AISetStock( player, 42, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 44, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Shuttle );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 6, c_BWPU_Dragoon );
+    AISetStock( player, 46, c_BWPU_Probe );
+    AISetStock( player, 8, c_BWPU_Dragoon );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Shuttle );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 12, c_BWPU_Dragoon );
+    AISetStock( player, 9, c_BWPB_Pylon );
+    AISetStock( player, 48, c_BWPU_Probe );
+    AISetStock( player, 10, c_BWPB_Pylon );
+    AISetStock( player, 3, c_BWPU_Shuttle );
+    AISetStock( player, 16, c_BWPU_Dragoon );
+    AISetStock( player, 11, c_BWPB_Pylon );
+    AISetStock( player, 50, c_BWPU_Probe );
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    if (AITechCount(player, c_BWPU_Shuttle, c_techCountCompleteOnly) >= 2) {
+        AISetAttackStatus(player, c_BWPU_Dragoon, 2, 8, c_continuousMerge);
+    }
+    
+    if (AIGetTime() < 720) {
+        if (AITechCount(player, c_BWPU_Shuttle, c_techCountInProgressOrBetter) < 3) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Dragoon, c_techCountInProgressOrBetter) < 14) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossMidAirMacroChIn
+//--------------------------------------------------------------------------------------------------
+bool BWProtossMidAirMacroChIn (int player) {
+    AIClearStock(player);
+
+    AISetStock( player, 1, c_BWPB_Nexus );
+    AISetStock( player, 11, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Pylon );
+    AISetStock( player, 15, c_BWPU_Probe );
+    
+    BWProtossBasicDefenseStock(player);
+    
+    if (AITechCount(player, c_BWPU_Probe, c_techCountQueuedOrBetter) >= 13) {
+        if (BWProtossHDFastExpand(player)) { return false; }
+    }
+    
+    AISetStock( player, 16, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Assimilator );
+    AISetStock( player, 17, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Assimilator );
+    AISetStock( player, 18, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_Gateway );
+    AISetStock( player, 19, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Pylon );
+    AISetStock( player, 22, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_CyberneticsCore );
+    
+    BWProtossHDEmergencyDetectionAntiAir(player);
+    
+    AISetStock( player, 24, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Assimilator );
+    AISetStock( player, 29, c_BWPU_Probe );
+    AISetStock( player, 2, c_BWPB_Stargate );
+    AISetStock( player, 31, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPB_Pylon );
+    AISetStock( player, 33, c_BWPU_Probe );
+    
+    BWProtossHDDefaultExtraMidStock(player);
+        
+    AISetStock( player, 35, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPB_Pylon );
+    AISetStock( player, 2, c_BWPU_Scout );
+    AISetStock( player, 37, c_BWPU_Probe );
+    AISetStock( player, 3, c_BWPU_Zealot );
+    AISetStock( player, 39, c_BWPU_Probe );
+    AISetStock( player, 4, c_BWPU_Scout );
+    AISetStock( player, 5, c_BWPB_Pylon );
+    AISetStock( player, 41, c_BWPU_Probe );
+    AISetStock( player, 6, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_RoboticsFacility );
+    AISetStock( player, 43, c_BWPU_Probe );
+    AISetStock( player, 7, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPB_Observatory );
+    AISetStock( player, 9, c_BWPU_Scout );
+    AISetStock( player, 45, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPB_FleetBeacon );
+    AISetStock( player, 47, c_BWPU_Probe );
+    AISetStock( player, 1, c_BWPU_Observer );
+    AISetStock( player, 8, c_BWPB_Pylon );
+    AISetStock( player, 1, c_BWPR_ScoutSCBWSpeedUpgrade );
+    AISetStock( player, 12, c_BWPU_Scout );
+    AISetStock( player, 1, c_BWPR_ScoutSCBWSightUpgrade );
+    
+    AIEnableStock(player);
+
+    //---------------------------------------------------------
+
+    // don't attack alone, but be willing to support an attack
+    AISetAttackStatus(player, c_BWPU_Scout, 2, 999, c_continuousMerge);
+    
+    if (AIGetTime() < 720) {
+        if (AITechCount(player, c_BWPB_FleetBeacon, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Observer, c_techCountInProgressOrBetter) < 1) {
+            return false;
+        }
+        if (AITechCount(player, c_BWPU_Scout, c_techCountInProgressOrBetter) < 11) {
+            return false;
+        }
+    }
+    
+    return true;  // Transition to LateGame
+}
+
+//==================================================================================================
+//  LATE GAME
+//==================================================================================================
+
+// Late Game is very similar to VyHd, but no upgrade limits and aggressive expanding since we should have the resources
+
+//--------------------------------------------------------------------------------------------------
+//  BWProtossLateChIn
+//--------------------------------------------------------------------------------------------------
+void BWProtossLateChIn (int player) {
+    int armyCompareEstimate = AIArmyComparisonEstimate(player);
+    int foodUsed = PlayerGetPropertyInt(player, c_playerPropSuppliesUsed);
+    int minPylonCount;
+
+    // only allow scouting if I have an observer to scout with, ie stop using workers
+    AIScoutingEnable(player, 1, c_BWPU_Observer);
+    // don't limit teching on insane, assume we'll have the resources
+    //AISetTechLimitLevels(player);
+
+
+// ****************** Start Restock ****************** //
+    AIClearStock(player);
+
+// Very basic recovery start
+    BWProtossHDRecoveryStart(player);
+    
+// Minimum farms & peons
+    AISetStockFarms( player, c_BWPB_Pylon, c_stockNormalFarms);
+    AISetStockPeons( player, 13, c_BWPU_Probe, c_stockMinPeons, c_stockAlways);
+
+// Desperate expand (we're about to run out of minerals/gas)
+    AIDefaultExpansion(player, c_BWPB_Nexus, 3000, 1000, c_expandVitalHard);
+
+// Choose what type of endgame army we'd like to make
+    UpdateHDBWProtossLateGameArmy(player);
+
+// Bare minimum army
+    if (foodUsed < 180) {
+        BWProtossHDLateGameArmy(player, e_armyTypeMinimum);
+    }
+
+// Basic peons
+    AISetStockPeons( player, 21, c_BWPU_Probe, c_stockMinPeons, c_stockAlways);
+
+// Make sure we have enough pylon space to build things at the main town
+    minPylonCount = 2;
+    if (AIIsTownFull(player, c_townMain)) { 
+        minPylonCount = 6;
+    }
+    if (AIGetBuildingCountInTown(player, c_townMain, c_BWPB_Pylon, c_techCountQueuedOrBetter) < minPylonCount) {
+        minPylonCount = AITechCount(player, c_BWPB_Pylon, c_techCountQueuedOrBetter) + 1;
+        AISetStockUnitNext( player, minPylonCount, c_BWPB_Pylon, c_stockAlways );
+    }
+
+// Urgent early detection
+    if (AINeedsDetection(player)) {
+        AISetStock( player, 1, c_BWPB_Observatory );
+        AISetStock( player, 1, c_BWPU_Observer );
+    }
+
+// Barely adequete army including anti-air
+    if (foodUsed < 180) {
+        BWProtossHDLateGameArmy(player, e_armyTypeBase);
+    }
+   
+// Basic towns, farms, & peons
+    AIDefaultEconomy(player, c_BWPB_Nexus, c_BWPB_Assimilator, c_BWPB_Pylon, c_BWPU_Probe, 60, c_stockAlways);
+
+// Low expand (we're running low on minerals/gas)
+    AIAdjustedDefaultExpansion(player, c_BWPB_Nexus, 7000, 3000, c_expandVitalHard, armyCompareEstimate);
+ 
+// Minimum normal detection
+    if (AISuspectDetectionDanger(player, c_lateDetectionDangerTime)) {
+        AISetStock( player, 1, c_BWPB_Observatory );
+        AISetStock( player, 1, c_BWPU_Observer );
+    }
+
+// On an air map build at least one transport as long as we have some other units/army
+    if (AIGetUserInt(player, c_numGroundStartLocs) == 0) {
+        AISetStock( player, 1, c_BWPU_Shuttle );
+    }
+
+// Nearly food capped units
+    if (foodUsed > 160) {
+        AISetStock( player, 3, c_BWPU_Observer );
+        AISetStock( player, 2, c_BWPU_Shuttle );
+        if (AIWantsMultipleTransport(player)) {
+            AISetStock( player, 5, c_BWPU_Shuttle );
+        }
+
+        if (foodUsed >= 180) {
+            BWProtossHDLateGameArmy(player, e_armyTypeMinimum);
+            BWProtossHDLateGameArmy(player, e_armyTypeBase);
+        }
+    }
+
+// Basic small army
+    BWProtossHDLateGameArmy(player, e_armyTypeSmall);
+    
+// Basic production buildings
+    AISetStock( player, 2,  c_BWPB_Gateway );
+    AISetStock( player, 1,  c_BWPB_RoboticsFacility );
+    
+// Normal expand
+    AIAdjustedDefaultExpansion(player, c_BWPB_Nexus, 17000, 7000, c_expandNormalHard, armyCompareEstimate);
+
+// Make Counter Units
+    BWProtossHDMakeCounters(player);
+
+// Vital upgrades
+    BWProtossHDVitalUpgrades(player);
+    
+// Medium sized army
+    BWProtossHDLateGameArmy(player, e_armyTypeMedium);
+
+// Observer to scout/detect
+    AISetStock( player, 1, c_BWPB_Observatory );
+    AISetStock( player, 1, c_BWPU_Observer );
+
+// General upgrades
+    BWProtossHDGeneralUpgrades(player);
+
+// Addition production buildings
+    AISetStockUnitNext( player, 3, c_BWPB_Gateway, c_stockIdle );
+
+// Other towns defense
+    BWProtossHDDefenseOtherTowns(player);
+
+// Large sized army
+    BWProtossHDLateGameArmy(player, e_armyTypeLarge);
+    
+// Main base defense
+    BWProtossHDDefenseMainTown(player);
+
+// Multiple detectors & scouts & a transport
+    AISetStockUnitNext( player, 2, c_BWPU_Observer, c_stockAlways );
+    AISetStock( player, 1, c_BWPU_Shuttle );
+
+// Middle expand
+    AIAdjustedDefaultExpansion(player, c_BWPB_Nexus, 24000, 10000, c_expandNormalHard, armyCompareEstimate);
+
+// Extra detection & scouts & transports
+    AISetStockUnitNext( player, 3, c_BWPU_Observer, c_stockAlways );
+    AISetStockUnitNext( player, 2, c_BWPU_Shuttle, c_stockAlways );
+
+// Late expand
+    AIAdjustedDefaultExpansion(player, c_BWPB_Nexus, 28000, 12000, c_expandNormalHard, armyCompareEstimate);
+
+// Extra production buildings
+    AISetStockUnitNext( player, 1, c_BWPB_CitadelofAdun, c_stockIdle );
+    AISetStockUnitNext( player, 6, c_BWPB_Gateway, c_stockIdle );
+    AISetStockUnitNext( player, 1, c_BWPB_TemplarArchives, c_stockIdle );
+    AISetStockUnitNext( player, 3, c_BWPB_RoboticsFacility, c_stockIdle );
+    AISetStockUnitNext( player, 1, c_BWPB_Stargate, c_stockIdle );
+
+// Extra research buildings
+    if (AIHasRes(player,700,500)) {
+        AISetStockUnitNext( player, 3, c_BWPB_Forge, c_stockAlways );
+    }
+
+// Minor upgrades
+    BWProtossHDMinorUpgrades(player);
+
+// Idle expand (very low priority, to prevent us from sitting around with idle peons)
+    AIAdjustedDefaultExpansion(player, c_BWPB_Nexus, 40000, 16000, c_expandIdleHard, armyCompareEstimate);
+
+// Entire Army
+    BWProtossHDLateGameArmy(player, e_armyTypeFull);
+
+    AIEnableStock(player);    
+// ****************** End Restock ****************** //
+
+}

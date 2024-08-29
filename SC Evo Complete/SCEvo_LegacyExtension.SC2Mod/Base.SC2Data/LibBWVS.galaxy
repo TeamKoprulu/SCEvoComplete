@@ -59,12 +59,24 @@ bool libBWVS_gf_UnitisVespeneResource (unit lp_unit) {
     }
 }
 
+bool libBWVS_gf_UnitisRichVespene (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "RichVespeneGeyser"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 void libBWVS_gf_UpdateLegacyMap () {
     // Variable Declarations
     string lv_indexInstance;
     int lv_amount;
     region lv_region;
     int lv_index;
+    int lv_richMinValueTemp;
 
     // Automatic Variable Declarations
     string auto4C72C544_userType;
@@ -75,14 +87,23 @@ void libBWVS_gf_UpdateLegacyMap () {
     unitgroup auto0E708E8D_g;
     int auto0E708E8D_u;
     unit auto0E708E8D_var;
+    unitgroup auto30F100DC_g;
+    int auto30F100DC_u;
+    unit auto30F100DC_var;
     string auto5648BFED_userType;
     int auto5648BFED_i;
     unitgroup auto1164DDAB_g;
     int auto1164DDAB_u;
     unit auto1164DDAB_var;
+    unitgroup autoBA2307DA_g;
+    int autoBA2307DA_u;
+    unit autoBA2307DA_var;
     unitgroup autoEF75F783_g;
     int autoEF75F783_u;
     unit autoEF75F783_var;
+    unitgroup autoFAC714CE_g;
+    int autoFAC714CE_u;
+    unit autoFAC714CE_var;
 
     // Variable Initialization
 
@@ -122,40 +143,85 @@ void libBWVS_gf_UpdateLegacyMap () {
             }
         }
 
+        lv_region = RegionFromName("RichMinReplace");
+        if ((lv_region != null)) {
+            auto30F100DC_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            auto30F100DC_u = UnitGroupCount(auto30F100DC_g, c_unitCountAll);
+            for (;; auto30F100DC_u -= 1) {
+                auto30F100DC_var = UnitGroupUnitFromEnd(auto30F100DC_g, auto30F100DC_u);
+                if (auto30F100DC_var == null) { break; }
+                if ((libBWVS_gf_UnitisRichMineral(auto30F100DC_var) == true)) {
+                    lv_richMinValueTemp = libNtve_gf_UnitGetPropertyResources(auto30F100DC_var, c_unitPropCurrent);
+                    libNtve_gf_CreateUnitsWithDefaultFacing(1, "MineralField", c_unitCreateIgnorePlacement, 0, UnitGetPosition(auto30F100DC_var));
+                    UnitSetPropertyFixed(UnitLastCreated(), c_unitPropResources, lv_richMinValueTemp);
+                    UnitRemove(auto30F100DC_var);
+                }
+
+            }
+        }
+
     }
-    auto5648BFED_userType = "MinResourceTable";
+    auto5648BFED_userType = "GasResourceTable";
     auto5648BFED_i = 1;
     for ( ; auto5648BFED_i <= UserDataInstanceCount(auto5648BFED_userType) ; auto5648BFED_i += 1 ) {
         lv_indexInstance = UserDataInstance(auto5648BFED_userType, auto5648BFED_i);
         lv_amount = UserDataGetInt("GasResourceTable", lv_indexInstance, "Amount", 1);
         lv_region = RegionFromName(("Gas" + IntToString(lv_amount)));
         if ((lv_region != null)) {
+            auto1164DDAB_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            auto1164DDAB_u = UnitGroupCount(auto1164DDAB_g, c_unitCountAll);
+            for (;; auto1164DDAB_u -= 1) {
+                auto1164DDAB_var = UnitGroupUnitFromEnd(auto1164DDAB_g, auto1164DDAB_u);
+                if (auto1164DDAB_var == null) { break; }
+                if ((libBWVS_gf_UnitisVespeneResource(auto1164DDAB_var) == true)) {
+                    UnitSetPropertyFixed(auto1164DDAB_var, c_unitPropResources, lv_amount);
+                }
+
+            }
         }
-        else {
-            break;
+
+        lv_region = RegionFromName(("RichGasReplace" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+            autoBA2307DA_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            autoBA2307DA_u = UnitGroupCount(autoBA2307DA_g, c_unitCountAll);
+            for (;; autoBA2307DA_u -= 1) {
+                autoBA2307DA_var = UnitGroupUnitFromEnd(autoBA2307DA_g, autoBA2307DA_u);
+                if (autoBA2307DA_var == null) { break; }
+                if ((libBWVS_gf_UnitisRichVespene(autoBA2307DA_var) == true)) {
+                    libNtve_gf_CreateUnitsWithDefaultFacing(1, "VespeneGeyser", c_unitCreateIgnorePlacement, 0, UnitGetPosition(autoBA2307DA_var));
+                    UnitSetPropertyFixed(UnitLastCreated(), c_unitPropResources, lv_amount);
+                    UnitRemove(autoBA2307DA_var);
+                }
+
+            }
         }
-        auto1164DDAB_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-        auto1164DDAB_u = UnitGroupCount(auto1164DDAB_g, c_unitCountAll);
-        for (;; auto1164DDAB_u -= 1) {
-            auto1164DDAB_var = UnitGroupUnitFromEnd(auto1164DDAB_g, auto1164DDAB_u);
-            if (auto1164DDAB_var == null) { break; }
-            if ((libBWVS_gf_UnitisVespeneResource(auto1164DDAB_var) == true)) {
-                UnitSetPropertyFixed(auto1164DDAB_var, c_unitPropResources, lv_amount);
+
+    }
+    lv_region = RegionFromName("GasDelete");
+    if ((lv_region != null)) {
+        autoEF75F783_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        autoEF75F783_u = UnitGroupCount(autoEF75F783_g, c_unitCountAll);
+        for (;; autoEF75F783_u -= 1) {
+            autoEF75F783_var = UnitGroupUnitFromEnd(autoEF75F783_g, autoEF75F783_u);
+            if (autoEF75F783_var == null) { break; }
+            if ((libBWVS_gf_UnitisVespeneResource(autoEF75F783_var) == true)) {
+                UnitRemove(autoEF75F783_var);
             }
 
         }
     }
-    lv_region = RegionFromName("GasDelete");
-    autoEF75F783_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
-    autoEF75F783_u = UnitGroupCount(autoEF75F783_g, c_unitCountAll);
-    for (;; autoEF75F783_u -= 1) {
-        autoEF75F783_var = UnitGroupUnitFromEnd(autoEF75F783_g, autoEF75F783_u);
-        if (autoEF75F783_var == null) { break; }
-        if ((libBWVS_gf_UnitisVespeneResource(autoEF75F783_var) == true)) {
-            UnitRemove(autoEF75F783_var);
-        }
 
+    lv_region = RegionFromName("TowerDelete");
+    if ((lv_region != null)) {
+        autoFAC714CE_g = UnitGroup("XelNagaTower", 0, lv_region, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        autoFAC714CE_u = UnitGroupCount(autoFAC714CE_g, c_unitCountAll);
+        for (;; autoFAC714CE_u -= 1) {
+            autoFAC714CE_var = UnitGroupUnitFromEnd(autoFAC714CE_g, autoFAC714CE_u);
+            if (autoFAC714CE_var == null) { break; }
+            UnitRemove(autoFAC714CE_var);
+        }
     }
+
 }
 
 void libBWVS_gf_RemoveGeysers () {
