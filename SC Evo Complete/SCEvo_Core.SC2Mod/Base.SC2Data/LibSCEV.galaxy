@@ -1,0 +1,1724 @@
+include "TriggerLibs/NativeLib"
+
+include "LibSCEV_h"
+
+//--------------------------------------------------------------------------------------------------
+// Library: SCEvo
+//--------------------------------------------------------------------------------------------------
+// External Library Initialization
+void libSCEV_InitLibraries () {
+    libNtve_InitVariables();
+}
+
+// Variable Initialization
+bool libSCEV_InitVariables_completed = false;
+
+void libSCEV_InitVariables () {
+    int init_i;
+    int init_j;
+
+    if (libSCEV_InitVariables_completed) {
+        return;
+    }
+
+    libSCEV_InitVariables_completed = true;
+
+    libSCEV_gv_missChanceRevealTimer = TimerCreate();
+    for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
+        for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
+            libSCEV_gv_minimapAllyViewPings[init_i][init_j] = c_invalidPingId;
+        }
+    }
+}
+
+// Custom Script
+//--------------------------------------------------------------------------------------------------
+// Custom Script: Functions
+//--------------------------------------------------------------------------------------------------
+void DbgInternal(string message) {
+    TriggerDebugOutput(10, StringToText(message), true);
+    return;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Custom Script: Main
+//--------------------------------------------------------------------------------------------------
+include "Script/SCBW"
+void SCBW_main(){
+    SCBW_Init();
+}
+
+void libSCEV_InitCustomScript () {
+    SCBW_main();
+}
+
+// Presets
+string libSCEV_ge_LegacyCheat_Ident (int lp_val) {
+         if (lp_val == 1) { return "InstantBuild"; }
+    return null;
+}
+
+// Functions
+void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate) {
+    // Variable Declarations
+    bool lv_onOff;
+    bool lv_enabledisable;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Implementation
+    if ((lp_activateDeactivate == true)) {
+        lv_onOff = true;
+        lv_enabledisable = true;
+    }
+
+    if ((lp_feature == libSCEV_ge_SCEvoFeatures_FractionalArmor)) {
+        libSCEV_gf_FractionalArmorActivate(lv_onOff);
+    }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_MissChance)) {
+        libSCEV_gf_MissChanceActivate(lp_activateDeactivate);
+    }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_LegacyUnitSwap)) {
+        libSCEV_gf_LegacyUnitSwapActivate(lp_activateDeactivate);
+        TriggerEnable(libSCEV_gt_LegacyUnitSwap, lv_onOff);
+    }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_LegacyUnitSwapErrorLog)) {
+        libSCEV_gv_legacyUnitSwapErrorLogOnly = lv_onOff;
+    }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_LegacyCheats)) {
+        libSCEV_gv_cheatsActive = lv_onOff;
+        TriggerEnable(libSCEV_gt_LegacyCheatCheatTracker, lv_onOff);
+    }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_LegacyRefund)) {
+        TriggerEnable(libSCEV_gt_LegacyRefund, lv_onOff);
+    }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_LegacyIcons)) {
+        libSCEV_gf_LegacyIconsActivate(lp_activateDeactivate, PlayerGroupAll());
+    }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_AllyMinimapView)) {
+        libSCEV_gf_MinimapAllyViewEnableDisable(lv_enabledisable);
+    }
+    else if (true) {
+    }
+}
+
+void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
+    // Automatic Variable Declarations
+    unitgroup autoEC8BC7E2_g;
+    int autoEC8BC7E2_u;
+    unit autoEC8BC7E2_var;
+    unitgroup auto41E7D108_g;
+    int auto41E7D108_u;
+    unit auto41E7D108_var;
+
+    // Implementation
+    TriggerEnable(libSCEV_gt_FractionalArmorAdd, lp_onOff);
+    TriggerEnable(libSCEV_gt_FractionalArmorUpdateTrigger, lp_onOff);
+    TriggerEnable(libSCEV_gt_FractionalArmorUpgrade, lp_onOff);
+    if ((lp_onOff == true)) {
+        auto41E7D108_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+        auto41E7D108_u = UnitGroupCount(auto41E7D108_g, c_unitCountAll);
+        for (;; auto41E7D108_u -= 1) {
+            auto41E7D108_var = UnitGroupUnitFromEnd(auto41E7D108_g, auto41E7D108_u);
+            if (auto41E7D108_var == null) { break; }
+            libSCEV_gf_FractionalArmorUpdate(auto41E7D108_var);
+        }
+    }
+    else {
+        autoEC8BC7E2_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
+        autoEC8BC7E2_u = UnitGroupCount(autoEC8BC7E2_g, c_unitCountAll);
+        for (;; autoEC8BC7E2_u -= 1) {
+            autoEC8BC7E2_var = UnitGroupUnitFromEnd(autoEC8BC7E2_g, autoEC8BC7E2_u);
+            if (autoEC8BC7E2_var == null) { break; }
+            UnitBehaviorRemove(autoEC8BC7E2_var, "SCBW_FractionalArmor", 1);
+        }
+    }
+}
+
+void libSCEV_gf_FractionalArmorUpdate (unit lp_target) {
+    // Automatic Variable Declarations
+    // Implementation
+    UnitBehaviorAdd(lp_target, "SCBW_FractionalArmor", lp_target, 1);
+    UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_FractionalArmor", "LifeArmor", UnitGetPropertyFixed(lp_target, c_unitPropLifeArmor, c_unitPropCurrent));
+    UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_FractionalArmor", "ShieldArmor", UnitGetPropertyFixed(lp_target, c_unitPropShieldArmor, c_unitPropCurrent));
+}
+
+void libSCEV_gf_MissChanceRevealTimerStart () {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((TimerGetRemaining(libSCEV_gv_missChanceRevealTimer) <= 0.0)) {
+        TimerStart(libSCEV_gv_missChanceRevealTimer, RandomFixed(0.0625, 6.25), false, c_timeGame);
+        TriggerEnable(libSCEV_gt_MissChanceRevealTimerExpire, true);
+    }
+
+}
+
+void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
+    // Automatic Variable Declarations
+    unitgroup auto17A0307A_g;
+    int auto17A0307A_u;
+    unit auto17A0307A_var;
+    unitgroup autoCF381F81_g;
+    int autoCF381F81_u;
+    unit autoCF381F81_var;
+
+    // Implementation
+    if ((lp_activateDeactivate == true)) {
+        TriggerEnable(libSCEV_gt_MissChanceAdd, true);
+        TriggerEnable(libSCEV_gt_MissChanceShrubCheck, true);
+        if ((CatalogFieldValueGet(c_gameCatalogGame, "Dflt", "AttackRevealBehavior", c_playerAny) == "")) {
+            TriggerEnable(libSCEV_gt_MissChanceRevealAttacker, true);
+        }
+
+        autoCF381F81_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32))), 0);
+        autoCF381F81_u = UnitGroupCount(autoCF381F81_g, c_unitCountAll);
+        for (;; autoCF381F81_u -= 1) {
+            autoCF381F81_var = UnitGroupUnitFromEnd(autoCF381F81_g, autoCF381F81_u);
+            if (autoCF381F81_var == null) { break; }
+            UnitBehaviorAdd(autoCF381F81_var, "SCBW_MissChance", autoCF381F81_var, 1);
+            if ((UnitFilterMatch(autoCF381F81_var, UnitGetOwner(autoCF381F81_var), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true)) {
+                UnitBehaviorAdd(autoCF381F81_var, "SCBW_ShrubCheck", autoCF381F81_var, 1);
+            }
+
+        }
+    }
+    else {
+        TriggerEnable(libSCEV_gt_MissChanceAdd, false);
+        TriggerEnable(libSCEV_gt_MissChanceShrubCheck, false);
+        TriggerEnable(libSCEV_gt_MissChanceRevealAttacker, false);
+        auto17A0307A_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
+        auto17A0307A_u = UnitGroupCount(auto17A0307A_g, c_unitCountAll);
+        for (;; auto17A0307A_u -= 1) {
+            auto17A0307A_var = UnitGroupUnitFromEnd(auto17A0307A_g, auto17A0307A_u);
+            if (auto17A0307A_var == null) { break; }
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_InShrub", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_NotInShrub", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_ShrubCheck", 1);
+        }
+    }
+}
+
+void libSCEV_gf_LegacyUnitSwapActivate (bool lp_activateDeactivate) {
+    // Automatic Variable Declarations
+    playergroup auto112B7167_g;
+    int auto112B7167_var;
+    playergroup auto0B2E2FFE_g;
+    int auto0B2E2FFE_var;
+
+    // Implementation
+    if ((lp_activateDeactivate == true)) {
+        auto0B2E2FFE_g = PlayerGroupAll();
+        auto0B2E2FFE_var = -1;
+        while (true) {
+            auto0B2E2FFE_var = PlayerGroupNextPlayer(auto0B2E2FFE_g, auto0B2E2FFE_var);
+            if (auto0B2E2FFE_var < 0) { break; }
+            PlayerAddResponse(auto0B2E2FFE_var, "SCBWUnitSwap");
+        }
+    }
+    else {
+        auto112B7167_g = PlayerGroupAll();
+        auto112B7167_var = -1;
+        while (true) {
+            auto112B7167_var = PlayerGroupNextPlayer(auto112B7167_g, auto112B7167_var);
+            if (auto112B7167_var < 0) { break; }
+            PlayerRemoveResponse(auto112B7167_var, "SCBWUnitSwap");
+        }
+    }
+}
+
+void libSCEV_gf_LegacyIconsActivate (bool lp_activateDeactivate, playergroup lp_players) {
+    // Variable Declarations
+    int lv_panel;
+
+    // Automatic Variable Declarations
+    playergroup autoF07F57A5_g;
+    int autoF07F57A5_var;
+    playergroup auto4B565C14_g;
+    int auto4B565C14_var;
+
+    // Variable Initialization
+    lv_panel = c_invalidDialogControlId;
+
+    // Implementation
+    DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer");
+    lv_panel = DialogControlLastCreated();
+    if ((lp_activateDeactivate == true)) {
+        autoF07F57A5_g = lp_players;
+        autoF07F57A5_var = -1;
+        while (true) {
+            autoF07F57A5_var = PlayerGroupNextPlayer(autoF07F57A5_g, autoF07F57A5_var);
+            if (autoF07F57A5_var < 0) { break; }
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(autoF07F57A5_var, "ClassicIcons", lp_activateDeactivate);
+        }
+        DialogControlSetAnimationState(lv_panel, lp_players, "UseClassicIcons", "True");
+    }
+    else {
+        auto4B565C14_g = lp_players;
+        auto4B565C14_var = -1;
+        while (true) {
+            auto4B565C14_var = PlayerGroupNextPlayer(auto4B565C14_g, auto4B565C14_var);
+            if (auto4B565C14_var < 0) { break; }
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(auto4B565C14_var, "ClassicIcons", lp_activateDeactivate);
+        }
+        DialogControlSetAnimationState(lv_panel, lp_players, "UseClassicIcons", "False");
+    }
+}
+
+void libSCEV_gf_LegacyCheatEvent (trigger t, int lp_cheat) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventGeneric(t, libSCEV_ge_LegacyCheat_Ident(lp_cheat));
+}
+
+string libSCEV_gf_LegacyCheatCheatToString (int lp_cheat) {
+    // Automatic Variable Declarations
+    // Implementation
+    return libSCEV_ge_LegacyCheat_Ident(lp_cheat);
+}
+
+void libSCEV_gf_OperationCwal (unit lp_unit, int lp_type) {
+    // Variable Declarations
+    int lv_i;
+
+    // Automatic Variable Declarations
+    int auto1DB0A704_val;
+    int auto91789F07_ae;
+    const int auto91789F07_ai = 1;
+
+    // Variable Initialization
+    lv_i = 1;
+
+    // Implementation
+    auto1DB0A704_val = lp_type;
+    if (auto1DB0A704_val == libSCEV_ge_OperationCwal_Type_Construction) {
+        UnitSetProgressComplete(lp_unit, 1, 99);
+    }
+    else if (auto1DB0A704_val == libSCEV_ge_OperationCwal_Type_Morph) {
+        UnitBehaviorAdd(lp_unit, "InstantMorph", lp_unit, 1);
+    }
+    else {
+        auto91789F07_ae = UnitQueueItemCount(lp_unit, 1);
+        lv_i = 1;
+        for ( ; ( (auto91789F07_ai >= 0 && lv_i <= auto91789F07_ae) || (auto91789F07_ai < 0 && lv_i >= auto91789F07_ae) ) ; lv_i += auto91789F07_ai ) {
+            UnitSetProgressComplete(lp_unit, lv_i, 100);
+        }
+    }
+}
+
+void libSCEV_gf_InfiniteMoneyMapCheck () {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((CatalogFieldValueGetAsInt(c_gameCatalogAbil, "SCVHarvest", "FlagArray[" + IntToString(0) + "]", c_playerAny) == 1)) {
+        TriggerEnable(libSCEV_gt_InfiniteMoneyMapTrigger, true);
+        libSCEV_gf_InfiniteMoneyMapAction(UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter((1 << c_targetFilterWorker), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0));
+    }
+    else {
+        TriggerEnable(libSCEV_gt_InfiniteMoneyMapTrigger, false);
+    }
+}
+
+void libSCEV_gf_InfiniteMoneyMapAction (unitgroup lp_unitGroup) {
+    // Variable Declarations
+    unit lv_unit;
+
+    // Automatic Variable Declarations
+    unitgroup autoA874CF5B_g;
+    int autoA874CF5B_u;
+
+    // Variable Initialization
+
+    // Implementation
+    autoA874CF5B_g = lp_unitGroup;
+    autoA874CF5B_u = UnitGroupCount(autoA874CF5B_g, c_unitCountAll);
+    for (;; autoA874CF5B_u -= 1) {
+        lv_unit = UnitGroupUnitFromEnd(autoA874CF5B_g, autoA874CF5B_u);
+        if (lv_unit == null) { break; }
+        if ((UnitGetType(lv_unit) == "SCVSCBW")) {
+            libSCEV_gf_InfiniteMoneyMapNewOrder(lv_unit, AbilityCommand("SCVSCBW@Harvest", 0), AbilityCommand("SCVSCBW@HarvestNoQue", 0));
+        }
+        else if ((UnitGetType(lv_unit) == "DroneSCBW")) {
+            libSCEV_gf_InfiniteMoneyMapNewOrder(lv_unit, AbilityCommand("DroneSCBW@Harvest", 0), AbilityCommand("DroneSCBW@HarvestNoQue", 0));
+        }
+        else if ((UnitGetType(lv_unit) == "ProbeSCBW")) {
+            libSCEV_gf_InfiniteMoneyMapNewOrder(lv_unit, AbilityCommand("ProbeSCBW@Harvest", 0), AbilityCommand("ProbeSCBW@HarvestNoQue", 0));
+        }
+        else if (true) {
+        }
+    }
+}
+
+void libSCEV_gf_InfiniteMoneyMapNewOrder (unit lp_unit, abilcmd lp_oldAbil, abilcmd lp_newAbil) {
+    // Variable Declarations
+    int lv_i;
+    int lv_count;
+    order[4] lv_orders;
+    order lv_currOrder;
+
+    // Automatic Variable Declarations
+    const int auto3A14DDC0_ae = 3;
+    const int auto3A14DDC0_ai = 1;
+    int auto6462CCD0_ae;
+    const int auto6462CCD0_ai = 1;
+
+    // Variable Initialization
+    lv_count = -1;
+
+    // Implementation
+    lv_i = 0;
+    for ( ; ( (auto3A14DDC0_ai >= 0 && lv_i <= auto3A14DDC0_ae) || (auto3A14DDC0_ai < 0 && lv_i >= auto3A14DDC0_ae) ) ; lv_i += auto3A14DDC0_ai ) {
+        lv_currOrder = UnitOrder(lp_unit, lv_i);
+        if ((lv_currOrder != null)) {
+            if ((OrderGetAbilityCommand(lv_currOrder) == lp_oldAbil)) {
+                lv_orders[lv_i] = OrderTargetingUnit(lp_newAbil, OrderGetTargetUnit(lv_currOrder));
+            }
+            else {
+                lv_orders[lv_i] = UnitOrder(lp_unit, lv_i);
+            }
+            lv_count = lv_i;
+        }
+        else {
+            break;
+        }
+    }
+    UnitAbilityAdd(lp_unit, AbilityCommandGetAbility(lp_newAbil));
+    UnitAbilityRemove(lp_unit, AbilityCommandGetAbility(lp_oldAbil));
+    if ((lv_count == -1)) {
+        return;
+    }
+
+    auto6462CCD0_ae = lv_count;
+    lv_i = 0;
+    for ( ; ( (auto6462CCD0_ai >= 0 && lv_i <= auto6462CCD0_ae) || (auto6462CCD0_ai < 0 && lv_i >= auto6462CCD0_ae) ) ; lv_i += auto6462CCD0_ai ) {
+        if ((lv_i == 0)) {
+            UnitIssueOrder(lp_unit, lv_orders[lv_i], c_orderQueueReplace);
+        }
+        else {
+            UnitIssueOrder(lp_unit, lv_orders[lv_i], c_orderQueueAddToEnd);
+        }
+    }
+}
+
+void libSCEV_gf_DisableClassicSkins (int lp_player) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((PlayerType(lp_player) == c_playerTypeUser)) {
+        if ((PlayerSkin(lp_player) == "CommandCenterRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "CommandCenterRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "NexusRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "NexusRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "HatcheryRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "HatcheryRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "HydraliskRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "HydraliskRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "ZealotRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "ZealotRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "MarineRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "MarineRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "UltraliskRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "UltraliskRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "CarrierRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "CarrierRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "BattlecruiserRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "BattlecruiserRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "ProbeRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "ProbeRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "SCVRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "SCVRemastered", false);
+        }
+
+        if ((PlayerSkin(lp_player) == "DroneRemastered")) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "DroneRemastered", false);
+        }
+
+    }
+
+}
+
+playergroup libSCEV_gf_HumanPlayers () {
+    // Variable Declarations
+    int lv_indexPlayer;
+    playergroup lv_result;
+
+    // Automatic Variable Declarations
+    playergroup autoD9EA6CB5_g;
+
+    // Variable Initialization
+    lv_result = PlayerGroupEmpty();
+
+    // Implementation
+    autoD9EA6CB5_g = PlayerGroupAll();
+    lv_indexPlayer = -1;
+    while (true) {
+        lv_indexPlayer = PlayerGroupNextPlayer(autoD9EA6CB5_g, lv_indexPlayer);
+        if (lv_indexPlayer < 0) { break; }
+        if ((PlayerType(lv_indexPlayer) == c_playerTypeUser) && (PlayerStatus(lv_indexPlayer) == c_playerStatusActive)) {
+            PlayerGroupAdd(lv_result, lv_indexPlayer);
+        }
+
+    }
+    return lv_result;
+}
+
+void libSCEV_gf_MinimapAllyViewCameraSnapPointersListUpdate (int lp_p) {
+    // Variable Declarations
+    int lv_i;
+    playergroup lv_allies;
+
+    // Automatic Variable Declarations
+    int autoC2EE7628_ae;
+    const int autoC2EE7628_ai = 1;
+
+    // Variable Initialization
+    lv_allies = PlayerGroupEmpty();
+
+    // Implementation
+    lv_allies = libNtve_gf_IntersectionOfPlayerGroups(PlayerGroupAlliance(c_playerGroupAlly, lp_p), libSCEV_gf_HumanPlayers());
+    PlayerGroupRemove(lv_allies, lp_p);
+    libSCEV_gv_minimapAllyViewCameraSnapPointersListLength[lp_p] = PlayerGroupCount(lv_allies);
+    libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition[lp_p] = 0;
+    autoC2EE7628_ae = PlayerGroupCount(lv_allies);
+    lv_i = 0;
+    for ( ; ( (autoC2EE7628_ai >= 0 && lv_i <= autoC2EE7628_ae) || (autoC2EE7628_ai < 0 && lv_i >= autoC2EE7628_ae) ) ; lv_i += autoC2EE7628_ai ) {
+        libSCEV_gv_minimapAllyViewCameraSnapPointersList[lp_p][lv_i] = PlayerGroupPlayer(lv_allies, lv_i);
+    }
+}
+
+trigger auto_libSCEV_gf_MinimapAllyViewUpdateArea_Trigger = null;
+region auto_libSCEV_gf_MinimapAllyViewUpdateArea_lp_region;
+
+void libSCEV_gf_MinimapAllyViewUpdateArea (region lp_region) {
+    auto_libSCEV_gf_MinimapAllyViewUpdateArea_lp_region = lp_region;
+
+    if (auto_libSCEV_gf_MinimapAllyViewUpdateArea_Trigger == null) {
+        auto_libSCEV_gf_MinimapAllyViewUpdateArea_Trigger = TriggerCreate("auto_libSCEV_gf_MinimapAllyViewUpdateArea_TriggerFunc");
+    }
+
+    TriggerExecute(auto_libSCEV_gf_MinimapAllyViewUpdateArea_Trigger, false, false);
+}
+
+bool auto_libSCEV_gf_MinimapAllyViewUpdateArea_TriggerFunc (bool testConds, bool runActions) {
+    region lp_region = auto_libSCEV_gf_MinimapAllyViewUpdateArea_lp_region;
+
+    // Automatic Variable Declarations
+    // Implementation
+    RegionPlayableMapSet(lp_region);
+    Wait(0.0625, c_timeGame);
+    libSCEV_gf_MinimapAllyViewRescale();
+    return true;
+}
+
+void libSCEV_gf_MinimapAllyViewRescale () {
+    // Variable Declarations
+    const fixed lv_baseScale = 0.5;
+    const fixed lv_baseMapSize = 108.0;
+    fixed lv_mapScale;
+    int lv_indexPlayer;
+    int lv_jindexPlayer;
+
+    // Automatic Variable Declarations
+    playergroup auto8F8F5FE9_g;
+    playergroup auto9657FE26_g;
+
+    // Variable Initialization
+    lv_mapScale = 0.5;
+
+    // Implementation
+    lv_mapScale = (lv_baseMapSize / MaxF(libNtve_gf_WidthOfRegion(RegionPlayableMap()), libNtve_gf_HeightOfRegion(RegionPlayableMap())));
+    lv_mapScale = (lv_mapScale * lv_baseScale);
+    auto8F8F5FE9_g = PlayerGroupAll();
+    lv_indexPlayer = -1;
+    while (true) {
+        lv_indexPlayer = PlayerGroupNextPlayer(auto8F8F5FE9_g, lv_indexPlayer);
+        if (lv_indexPlayer < 0) { break; }
+        auto9657FE26_g = PlayerGroupAll();
+        lv_jindexPlayer = -1;
+        while (true) {
+            lv_jindexPlayer = PlayerGroupNextPlayer(auto9657FE26_g, lv_jindexPlayer);
+            if (lv_jindexPlayer < 0) { break; }
+            PingSetScale(libSCEV_gv_minimapAllyViewPings[lv_indexPlayer][lv_jindexPlayer], lv_mapScale);
+        }
+    }
+}
+
+void libSCEV_gf_MinimapAllyViewEnableDisable (bool lp_enableDisable) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerExecute(libSCEV_gt_MinimapAllyViewInit, true, true);
+    libSCEV_gf_MinimapAllyViewRescale();
+    if ((lp_enableDisable == true)) {
+        TriggerEnable(libSCEV_gt_MinimapAllyViewCameraUpdate, true);
+        TriggerEnable(libSCEV_gt_MinimapAllyViewCameraSnap, true);
+        TriggerEnable(libSCEV_gt_MinimapAllyViewAllianceUpdate, true);
+        TriggerExecute(libSCEV_gt_MinimapAllyViewAllianceUpdate, true, false);
+        TriggerEnable(libSCEV_gt_MinimapAllyViewCameraSnap, true);
+    }
+    else {
+        TriggerEnable(libSCEV_gt_MinimapAllyViewCameraUpdate, false);
+        TriggerEnable(libSCEV_gt_MinimapAllyViewCameraSnap, false);
+        TriggerEnable(libSCEV_gt_MinimapAllyViewAllianceUpdate, false);
+        TriggerEnable(libSCEV_gt_MinimapAllyViewCameraSnap, false);
+    }
+}
+
+// Triggers
+//--------------------------------------------------------------------------------------------------
+// Trigger: SCEvo: Feature Init
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SCEvoFeatureInit_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    playergroup autoB31C4DE1_g;
+    int autoB31C4DE1_var;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_InfiniteMoneyMapCheck();
+    autoB31C4DE1_g = PlayerGroupActive();
+    autoB31C4DE1_var = -1;
+    while (true) {
+        autoB31C4DE1_var = PlayerGroupNextPlayer(autoB31C4DE1_g, autoB31C4DE1_var);
+        if (autoB31C4DE1_var < 0) { break; }
+        libSCEV_gf_DisableClassicSkins(autoB31C4DE1_var);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SCEvoFeatureInit_Init () {
+    libSCEV_gt_SCEvoFeatureInit = TriggerCreate("libSCEV_gt_SCEvoFeatureInit_Func");
+    TriggerAddEventMapInit(libSCEV_gt_SCEvoFeatureInit);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: FractionalArmor:Add
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_FractionalArmorAdd_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_FractionalArmorUpdate(EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_FractionalArmorAdd_Init () {
+    libSCEV_gt_FractionalArmorAdd = TriggerCreate("libSCEV_gt_FractionalArmorAdd_Func");
+    TriggerEnable(libSCEV_gt_FractionalArmorAdd, false);
+    TriggerAddEventUnitRegion(libSCEV_gt_FractionalArmorAdd, null, RegionEntireMap(), true);
+    TriggerAddEventUnitProperty(libSCEV_gt_FractionalArmorAdd, null, c_unitPropLifeArmor);
+    TriggerAddEventUnitProperty(libSCEV_gt_FractionalArmorAdd, null, c_unitPropShieldArmor);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: FractionalArmor:Upgrade
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_FractionalArmorUpgrade_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    unitgroup autoBBF6BE40_g;
+    int autoBBF6BE40_u;
+    unit autoBBF6BE40_var;
+
+    // Conditions
+    if (testConds) {
+        if (!((StringContains(CatalogFieldValueGet(c_gameCatalogUpgrade, EventUpgradeName(), "EditorCategories", c_playerAny), "ArmorBonus", c_stringAnywhere, c_stringNoCase) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    autoBBF6BE40_g = UnitGroup(null, EventPlayer(), RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+    autoBBF6BE40_u = UnitGroupCount(autoBBF6BE40_g, c_unitCountAll);
+    for (;; autoBBF6BE40_u -= 1) {
+        autoBBF6BE40_var = UnitGroupUnitFromEnd(autoBBF6BE40_g, autoBBF6BE40_u);
+        if (autoBBF6BE40_var == null) { break; }
+        libSCEV_gf_FractionalArmorUpdate(autoBBF6BE40_var);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_FractionalArmorUpgrade_Init () {
+    libSCEV_gt_FractionalArmorUpgrade = TriggerCreate("libSCEV_gt_FractionalArmorUpgrade_Func");
+    TriggerEnable(libSCEV_gt_FractionalArmorUpgrade, false);
+    TriggerAddEventUpgradeLevelChanged(libSCEV_gt_FractionalArmorUpgrade, c_playerAny);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: FractionalArmor:UpdateTrigger
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_FractionalArmorUpdateTrigger_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_effect;
+    unit lv_unit;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_effect = EventPlayerEffectUsed();
+    lv_unit = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+
+    // Conditions
+    if (testConds) {
+        if (!(((lv_effect == "SCBW_FractionalArmorUpdate") || (StringContains((lv_effect), "DamageApply", c_stringAnywhere, c_stringNoCase) == true)))) {
+            return false;
+        }
+
+        if (!((UnitIsValid(lv_unit) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_FractionalArmorUpdate(lv_unit);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_FractionalArmorUpdateTrigger_Init () {
+    libSCEV_gt_FractionalArmorUpdateTrigger = TriggerCreate("libSCEV_gt_FractionalArmorUpdateTrigger_Func");
+    TriggerEnable(libSCEV_gt_FractionalArmorUpdateTrigger, false);
+    TriggerAddEventPlayerEffectUsedFromScope(libSCEV_gt_FractionalArmorUpdateTrigger, c_playerAny, "CEffectUserData");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MissChance:RevealTimerExpire
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MissChanceRevealTimerExpire_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    GameDestroyEffects(RegionGetCenter(RegionEntireMap()), 512.0, 0, "SCBW_AttackRevealArea");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MissChanceRevealTimerExpire_Init () {
+    libSCEV_gt_MissChanceRevealTimerExpire = TriggerCreate("libSCEV_gt_MissChanceRevealTimerExpire_Func");
+    TriggerEnable(libSCEV_gt_MissChanceRevealTimerExpire, false);
+    TriggerAddEventTimer(libSCEV_gt_MissChanceRevealTimerExpire, libSCEV_gv_missChanceRevealTimer);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MissChance:RevealAttacker
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MissChanceRevealAttacker_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_source;
+    unit lv_victim;
+    int lv_victimPlayer;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_source = EventPlayerEffectUsedUnit(c_effectUnitCaster);
+    lv_victim = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+    lv_victimPlayer = UnitGetOwner(lv_victim);
+
+    // Conditions
+    if (testConds) {
+        if (!((CatalogFieldValueGet(c_gameCatalogEffect, EventPlayerEffectUsed(), "Visibility", c_playerAny) == "Visible"))) {
+            return false;
+        }
+
+        if (!(((UnitIsValid(lv_source) && UnitIsValid(lv_victim)) == true))) {
+            return false;
+        }
+
+        if (!((UnitGetOwner(lv_source) != UnitGetOwner(lv_victim)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter(0, 0, (1 << c_targetFilterBuried) | (1 << c_targetFilterCloaked), 0)) == true)) {
+        if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter(0, 0, (1 << c_targetFilterAir), 0)) == true) && (ValidatorExecute("SCBW_MissCheck", lv_source, lv_victim) == 2)) {
+            PlayerCreateEffectPoint(lv_victimPlayer, "SCBW_AttackRevealArea", UnitGetPosition(lv_source));
+            libSCEV_gf_MissChanceRevealTimerStart();
+        }
+        else {
+            if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter((1 << c_targetFilterAir), 0, 0, 0)) == true)) {
+                UnitBehaviorAddPlayer(lv_source, "SCBW_AttackReveal", lv_victimPlayer, 1);
+            }
+
+        }
+    }
+    else {
+        if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter((1 << c_targetFilterGround) | (1 << c_targetFilterVisible), 0, 0, 0)) == true) && (UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter(0, 0, (1 << c_targetFilterBuried) | (1 << c_targetFilterCloaked), 0)) == false)) {
+            PlayerCreateEffectPoint(lv_victimPlayer, "SCBW_AttackRevealArea", UnitGetPosition(lv_source));
+            libSCEV_gf_MissChanceRevealTimerStart();
+        }
+
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MissChanceRevealAttacker_Init () {
+    libSCEV_gt_MissChanceRevealAttacker = TriggerCreate("libSCEV_gt_MissChanceRevealAttacker_Func");
+    TriggerEnable(libSCEV_gt_MissChanceRevealAttacker, false);
+    TriggerAddEventPlayerEffectUsedFromScope(libSCEV_gt_MissChanceRevealAttacker, c_playerAny, "CEffectDamage");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MissChance:Add
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitBehaviorAdd(EventUnit(), "SCBW_MissChance", EventUnit(), 1);
+    if ((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true)) {
+        UnitBehaviorAdd(EventUnit(), "SCBW_ShrubCheck", EventUnit(), 1);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MissChanceAdd_Init () {
+    libSCEV_gt_MissChanceAdd = TriggerCreate("libSCEV_gt_MissChanceAdd_Func");
+    TriggerEnable(libSCEV_gt_MissChanceAdd, false);
+    TriggerAddEventUnitRegion(libSCEV_gt_MissChanceAdd, null, RegionEntireMap(), true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MissChance:ShrubCheck
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MissChanceShrubCheck_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_target;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_target = EventPlayerEffectUsedUnitImpact();
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitIsValid(lv_target) == true) && (UnitFilterMatch(lv_target, UnitGetOwner(lv_target), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true)) {
+        if ((HasCustomCellAttribute(UnitGetPosition(lv_target), 1) != true)) {
+            UnitBehaviorAdd(lv_target, "SCBW_InShrub", lv_target, 1);
+        }
+
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MissChanceShrubCheck_Init () {
+    libSCEV_gt_MissChanceShrubCheck = TriggerCreate("libSCEV_gt_MissChanceShrubCheck_Func");
+    TriggerEnable(libSCEV_gt_MissChanceShrubCheck, false);
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_MissChanceShrubCheck, c_playerAny, "SCBW_ShrubCheck");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Legacy:UnitSwap
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_LegacyUnitSwap_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_u;
+    string lv_link;
+    string lv_replaceLink;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_u = EventPlayerEffectUsedUnit(c_effectUnitCaster);
+    lv_link = UnitGetType(lv_u);
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_u) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_u, UnitGetOwner(lv_u), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHallucination - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libNtve_gf_SendActorMessageToUnit(lv_u, libNtve_gf_Print(("Found " + (UnitGetType(lv_u)) + "#" + IntToString(UnitGetTag(lv_u)) + " Unit at [" + libNtve_gf_ConvertXYToString(Trunc(PointGetX(UnitGetPosition(lv_u))), Trunc(PointGetY(UnitGetPosition(lv_u)))) + "] ")));
+    if ((libSCEV_gv_legacyUnitSwapErrorLogOnly == true)) {
+        return true;
+    }
+
+    // Replace Links
+    // Protoss
+    if (lv_link == "Nexus")             { lv_replaceLink = "NexusSCBW"; }
+    else if (lv_link == "Pylon")        { lv_replaceLink = "PylonSCBW"; }
+    else if (lv_link == "Assimilator")  { lv_replaceLink = "AssimilatorSCBW"; }
+    else if (lv_link == "AssimilatorRich")  { lv_replaceLink = "AssimilatorSCBW@Rich"; }
+    else if (lv_link == "Gateway")      { lv_replaceLink = "GatewaySCBW"; }
+    else if (lv_link == "Forge")        { lv_replaceLink = "ForgeSCBW"; }
+    else if (lv_link == "CyberneticsCore")  { lv_replaceLink = "CyberneticsCoreSCBW"; }
+    else if (lv_link == "ShieldBattery")    { lv_replaceLink = "ShieldBatterySCBW"; }
+    else if (lv_link == "PhotonCannon")     { lv_replaceLink = "PhotonCannonSCBW"; }
+    else if (lv_link == "RoboticsFacility") { lv_replaceLink = "RoboticsFacilitySCBW"; }
+    else if (lv_link == "RoboticsBay")      { lv_replaceLink = "RoboticsBaySCBW"; }
+    else if (lv_link == "TwilightCouncil")  { lv_replaceLink = "CitadelOfAdunSCBW"; }
+    else if (lv_link == "TemplarArchive")   { lv_replaceLink = "TemplarArchiveSCBW"; }
+    else if (lv_link == "Stargate")     { lv_replaceLink = "StargateSCBW"; }
+    else if (lv_link == "FleetBeacon")  { lv_replaceLink = "FleetBeaconSCBW"; }
+    else if (lv_link == "Probe")        { lv_replaceLink = "ProbeSCBW"; }
+    else if (lv_link == "Zealot")       { lv_replaceLink = "ZealotSCBW"; }
+    else if (lv_link == "Dragoon")      { lv_replaceLink = "DragoonSCBW"; }
+    else if (lv_link == "HighTemplar")  { lv_replaceLink = "HighTemplarSCBW"; }
+    else if (lv_link == "Archon")       { lv_replaceLink = "ArchonSCBW"; }
+    else if (lv_link == "DarkTemplar")  { lv_replaceLink = "DarkTemplarSCBW"; }
+    else if (lv_link == "DarkArchon")   { lv_replaceLink = "DarkArchonSCBW"; }
+    else if (lv_link == "WarpPrism")    { lv_replaceLink = "ShuttleSCBW"; }
+    else if (lv_link == "Reaver")       { lv_replaceLink = "ReaverSCBW"; }
+    else if (lv_link == "Observer")     { lv_replaceLink = "ObserverSCBW"; }
+    else if (lv_link == "Scout")        { lv_replaceLink = "ScoutSCBW"; }
+    else if (lv_link == "CorsairMP")    { lv_replaceLink = "CorsairSCBW"; }
+    else if (lv_link == "Carrier")      { lv_replaceLink = "CarrierSCBW"; }
+    else if (lv_link == "ArbiterMP")    { lv_replaceLink = "ArbiterSCBW"; }
+    // Terran
+    else if (lv_link == "SCV")          { lv_replaceLink = "SCVSCBW"; }
+    else if (lv_link == "Marine")       { lv_replaceLink = "MarineSCBW"; }
+    else if (lv_link == "Firebat")      { lv_replaceLink = "FirebatSCBW"; }
+    else if (lv_link == "Medic")        { lv_replaceLink = "MedicSCBW"; }
+    else if (lv_link == "Ghost")        { lv_replaceLink = "GhostSCBW"; }
+    else if (lv_link == "Vulture")      { lv_replaceLink = "VultureSCBW"; }
+    else if (lv_link == "SiegeTank")    { lv_replaceLink = "SiegeTankSCBW"; }
+    else if (lv_link == "SiegeTankSieged"){ lv_replaceLink = "SiegeTankSiegedSCBW"; }
+    else if (lv_link == "Goliath")      { lv_replaceLink = "GoliathSCBW"; }
+    else if (lv_link == "SpiderMine")   { lv_replaceLink = "SpiderMineSCBW"; }
+    else if (lv_link == "SpiderMineBurrowed")   { lv_replaceLink = "SpiderMineSCBW@Burrowed"; }
+    else if (lv_link == "Wraith")       { lv_replaceLink = "WraithSCBW"; }
+    else if (lv_link == "Medivac")      { lv_replaceLink = "DropshipSCBW"; }
+    else if (lv_link == "ScienceVessel"){ lv_replaceLink = "ScienceVesselSCBW"; }
+    else if (lv_link == "Battlecruiser")  { lv_replaceLink = "BattlecruiserSCBW"; }
+    else if (lv_link == "CommandCenter")  { lv_replaceLink = "CommandCenterSCBW"; }
+    else if (lv_link == "Refinery")     { lv_replaceLink = "RefinerySCBW"; }
+    else if (lv_link == "SupplyDepot")  { lv_replaceLink = "SupplyDepotSCBW"; }
+    else if (lv_link == "Barracks")  { lv_replaceLink = "BarracksSCBW"; }
+    else if (lv_link == "BarracksFlying")  { lv_replaceLink = "BarracksFlyingSCBW"; }
+    else if (lv_link == "EngineeringBay")  { lv_replaceLink = "EngineeringBaySCBW"; }
+    else if (lv_link == "Factory")  { lv_replaceLink = "FactorySCBW"; }
+    else if (lv_link == "Starport")  { lv_replaceLink = "StarportSCBW"; }
+    else if (lv_link == "Bunker")  { lv_replaceLink = "BunkerSCBW"; }
+    else if (lv_link == "MissileTurret")  { lv_replaceLink = "MissileTurretSCBW"; }
+    else if (lv_link == "Armory")  { lv_replaceLink = "ArmorySCBW"; }
+    else if (lv_link == "FusionCore")  { lv_replaceLink = "FusionCoreSCBW"; }
+    // Zerg
+    else if (lv_link == "Hatchery")  { lv_replaceLink = "HatcherySCBW"; }
+    else if (lv_link == "Lair")  { lv_replaceLink = "LairSCBW"; }
+    else if (lv_link == "Hive")  { lv_replaceLink = "HiveSCBW"; }
+    else if (lv_link == "SporeCrawler")  { lv_replaceLink = "SporeColonySCBW"; }
+    else if (lv_link == "SpineCrawler")  { lv_replaceLink = "SunkenColonySCBW"; }
+    else if (lv_link == "Extractor")  { lv_replaceLink = "ExtractorSCBW"; }
+    else if (lv_link == "ExtractorRich")  { lv_replaceLink = "ExtractorSCBW@Rich"; }
+    else if (lv_link == "SpawningPool")  { lv_replaceLink = "SpawningPoolSCBW"; }
+    else if (lv_link == "EvolutionChamber")  { lv_replaceLink = "EvolutionChamberSCBW"; }
+    else if (lv_link == "HydraliskDen")  { lv_replaceLink = "HydraliskDenSCBW"; }
+    else if (lv_link == "Spire")  { lv_replaceLink = "SpireSCBW"; }
+    else if (lv_link == "GreaterSpire")  { lv_replaceLink = "GreaterSpireSCBW"; }
+    else if (lv_link == "InfestationPit")  { lv_replaceLink = "QueensNestSCBW"; }
+    else if (lv_link == "RoachWarren")  { lv_replaceLink = "DefilerMoundSCBW"; }
+    else if (lv_link == "NydusCanal")  { lv_replaceLink = "NydusCanalSCBW"; }
+    else if (lv_link == "Larva")  { lv_replaceLink = "LarvaSCBW"; }
+    else if (lv_link == "Drone")  { lv_replaceLink = "DroneSCBW"; }
+    else if (lv_link == "Zergling")  { lv_replaceLink = "ZerglingSCBW"; }
+    else if (lv_link == "Overlord")  { lv_replaceLink = "OverlordSCBW"; }
+    else if (lv_link == "Hydralisk")  { lv_replaceLink = "HydraliskSCBW"; }
+    else if (lv_link == "Mutalisk")  { lv_replaceLink = "MutaliskSCBW"; }
+    else if (lv_link == "Scourge")  { lv_replaceLink = "ScourgeSCBW"; }
+    else if (lv_link == "QueenMP")  { lv_replaceLink = "QueenSCBW"; }
+    else if (lv_link == "Ultralisk")  { lv_replaceLink = "UltraliskSCBW"; }
+    else if (lv_link == "DefilerMP")  { lv_replaceLink = "DefilerSCBW"; }
+    else if (lv_link == "Broodling")  { lv_replaceLink = "BroodlingSCBW"; }
+    else if (lv_link == "InfestedTerran")  { lv_replaceLink = "InfestedTerranSCBW"; }
+    else {
+    }
+    if ((lv_replaceLink == null)) {
+        TriggerDebugOutput(1, StringExternal("Param/Value/lib_SCEV_3E8673A0"), false);
+    }
+    else {
+        libNtve_gf_ReplaceUnit(lv_u, lv_replaceLink, libNtve_ge_ReplaceUnitOptions_OldUnitsRelative);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_LegacyUnitSwap_Init () {
+    libSCEV_gt_LegacyUnitSwap = TriggerCreate("libSCEV_gt_LegacyUnitSwap_Func");
+    TriggerEnable(libSCEV_gt_LegacyUnitSwap, false);
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_LegacyUnitSwap, c_playerAny, "SCBWUnitSwapDummy");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Legacy:Refund
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_LegacyRefund_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_owner;
+    int[4] lv_cost;
+    int lv_i;
+    int lv_index;
+    int lv_infoCount;
+    string lv_originUnit;
+    string lv_targetUnit;
+    string lv_ability;
+    int lv_count;
+    fixed lv_fraction;
+
+    // Automatic Variable Declarations
+    int auto5B7533DD_ae;
+    const int auto5B7533DD_ai = 1;
+    const int auto0D444168_ae = 3;
+    const int auto0D444168_ai = 1;
+    const int autoFED5C6F9_ae = 3;
+    const int autoFED5C6F9_ai = 1;
+
+    // Variable Initialization
+    lv_owner = UnitGetOwner(EventUnit());
+    lv_ability = AbilityCommandGetAbility(EventUnitAbility());
+    lv_count = 1;
+    lv_fraction = -1.0;
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsAlive(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!(((AbilityClass(lv_ability) == c_classIdCAbilMorph) || (AbilityClass(lv_ability) == c_classIdCAbilTrain) || (AbilityClass(lv_ability) == c_classIdCAbilResearch)))) {
+            return false;
+        }
+
+        if (!((CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "AbilityCategories[" + IntToString(0) + "]", c_playerAny) == "1"))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitTypeTestAttribute(UnitGetType(EventUnit()), c_unitAttributeStructure) == true)) {
+        lv_fraction = -0.75;
+    }
+
+    lv_originUnit = UnitGetType(EventUnit());
+    lv_infoCount = CatalogFieldValueCount(c_gameCatalogAbil, lv_ability, "InfoArray", c_playerAny);
+    if ((AbilityClass(lv_ability) == c_classIdCAbilMorph)) {
+        lv_targetUnit = (CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString((lv_infoCount - 1)) + "].Unit", c_playerAny));
+    }
+    else if (((AbilityClass(lv_ability) == c_classIdCAbilTrain) || (AbilityClass(lv_ability) == c_classIdCAbilResearch))) {
+        auto5B7533DD_ae = (lv_infoCount - 1);
+        lv_i = 0;
+        for ( ; ( (auto5B7533DD_ai >= 0 && lv_i <= auto5B7533DD_ae) || (auto5B7533DD_ai < 0 && lv_i >= auto5B7533DD_ae) ) ; lv_i += auto5B7533DD_ai ) {
+            if ((EventUnitAbility() == AbilityCommand(lv_ability, lv_i))) {
+                if ((AbilityClass(lv_ability) == c_classIdCAbilResearch)) {
+                    lv_index = lv_i;
+                    lv_fraction = -0.25;
+                }
+                else {
+                    lv_count = CatalogFieldValueCount(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString(lv_i) + "].Unit", c_playerAny);
+                    lv_targetUnit = (CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString(lv_i) + "].Unit[" + IntToString(0) + "]", c_playerAny));
+                }
+                break;
+            }
+
+        }
+        if ((CatalogFieldValueGet(c_gameCatalogAbil, lv_ability, "AbilityCategories[" + IntToString(2) + "]", c_playerAny) == "1")) {
+            UnitKill(EventUnit());
+        }
+
+    }
+    if ((AbilityClass(lv_ability) == c_classIdCAbilResearch)) {
+        lv_i = 0;
+        for ( ; ( (auto0D444168_ai >= 0 && lv_i <= auto0D444168_ae) || (auto0D444168_ai < 0 && lv_i >= auto0D444168_ae) ) ; lv_i += auto0D444168_ai ) {
+            lv_cost[lv_i] += CatalogFieldValueGetAsInt(c_gameCatalogAbil, lv_ability, "InfoArray[" + IntToString(lv_index) + "].Resource[" + IntToString(lv_i) + "]", lv_owner);
+            CatalogFieldValueSet(c_gameCatalogEffect, "DummyResourceSpend", "Cost.Resource[" + IntToString(lv_i) + "]", lv_owner, IntToString(FixedToInt((lv_cost[lv_i] * lv_fraction))));
+        }
+    }
+    else {
+        lv_i = 0;
+        for ( ; ( (autoFED5C6F9_ai >= 0 && lv_i <= autoFED5C6F9_ae) || (autoFED5C6F9_ai < 0 && lv_i >= autoFED5C6F9_ae) ) ; lv_i += autoFED5C6F9_ai ) {
+            lv_cost[lv_i] += ((CatalogFieldValueGetAsInt(c_gameCatalogUnit, lv_targetUnit, "CostResource[" + IntToString(lv_i) + "]", lv_owner) * lv_count) - CatalogFieldValueGetAsInt(c_gameCatalogUnit, lv_originUnit, "CostResource[" + IntToString(lv_i) + "]", lv_owner));
+            CatalogFieldValueSet(c_gameCatalogEffect, "DummyResourceSpend", "Cost.Resource[" + IntToString(lv_i) + "]", lv_owner, IntToString(FixedToInt((lv_cost[lv_i] * lv_fraction))));
+        }
+    }
+    PlayerCreateEffectUnit(lv_owner, "DummyResourceSpend", EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_LegacyRefund_Init () {
+    libSCEV_gt_LegacyRefund = TriggerCreate("libSCEV_gt_LegacyRefund_Func");
+    TriggerEnable(libSCEV_gt_LegacyRefund, false);
+    TriggerAddEventUnitAbility(libSCEV_gt_LegacyRefund, null, null, c_unitAbilStageCancel, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: LegacyCheat:CheatTracker
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_LegacyCheatCheatTracker_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_cheat;
+    string lv_stringRemain;
+    string lv_match;
+    int lv_cheatIndex;
+    string lv_param;
+    string lv_param2;
+
+    // Automatic Variable Declarations
+    int auto5838152C_val;
+
+    // Variable Initialization
+    lv_cheat = StringCase(EventChatMessage(false), false);
+    lv_stringRemain = "";
+    lv_match = "";
+    lv_param = "";
+    lv_param2 = "";
+
+    // Conditions
+    if (testConds) {
+        if (!((libSCEV_gv_cheatsActive == true))) {
+            return false;
+        }
+
+        if (!((GameIsOnline() == false))) {
+            return false;
+        }
+
+        if (!((GameCheatsEnabled(c_gameCheatCategoryPublic) == true))) {
+            return false;
+        }
+
+        if (!((lv_cheat != ""))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((StringContains(lv_cheat, "operation cwal", c_stringBegin, c_stringNoCase) == true)) {
+        lv_match = "operation cwal";
+        lv_cheatIndex = 1;
+    }
+    else if ((StringContains(lv_cheat, "instantbuild", c_stringBegin, c_stringNoCase) == true)) {
+        lv_match = "instantbuild";
+        lv_cheatIndex = 1;
+    }
+    else if (true) {
+        return false;
+    }
+    lv_param = TriggerEventParamName(libSCEV_gf_LegacyCheatCheatToString(lv_cheatIndex), "PlayerParam");
+    lv_param2 = TriggerEventParamName(libSCEV_gf_LegacyCheatCheatToString(lv_cheatIndex), "TriggeringPlayer");
+    DataTableSetInt(false, lv_param, EventPlayer());
+    DataTableSetInt(false, lv_param2, EventPlayer());
+    lv_stringRemain = StringReplaceWord(lv_cheat, lv_match, "", c_stringReplaceAll, c_stringNoCase);
+    auto5838152C_val = lv_cheatIndex;
+    if (auto5838152C_val == 1) {
+        if ((StringLength(lv_stringRemain) > 0)) {
+            DataTableSetInt(false, lv_param, StringToInt(StringWord(lv_stringRemain, 1)));
+        }
+
+        TriggerSendEvent(libSCEV_gf_LegacyCheatCheatToString(lv_cheatIndex));
+    }
+    else {
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_LegacyCheatCheatTracker_Init () {
+    libSCEV_gt_LegacyCheatCheatTracker = TriggerCreate("libSCEV_gt_LegacyCheatCheatTracker_Func");
+    TriggerEnable(libSCEV_gt_LegacyCheatCheatTracker, false);
+    TriggerAddEventChatMessage(libSCEV_gt_LegacyCheatCheatTracker, c_playerAny, "", false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: OperationCwal:Activate
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_OperationCwalActivate_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_triggeringPlayer;
+    text lv_onOff;
+    int lv_i;
+
+    // Automatic Variable Declarations
+    const int autoAD16DA14_ae = 15;
+    const int autoAD16DA14_ai = 1;
+    unitgroup auto4F590E5F_g;
+    int auto4F590E5F_u;
+    unit auto4F590E5F_var;
+
+    // Variable Initialization
+    lv_player = DataTableGetInt(false, TriggerEventParamName(libSCEV_gf_LegacyCheatCheatToString(1), "PlayerParam"));
+    lv_triggeringPlayer = DataTableGetInt(false, TriggerEventParamName(libSCEV_gf_LegacyCheatCheatToString(1), "TriggeringPlayer"));
+
+    // Conditions
+    if (testConds) {
+        if (!((GameIsOnline() == false))) {
+            return false;
+        }
+
+        if (!((GameCheatsEnabled(c_gameCheatCategoryPublic) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gv_operationCwalActive[lv_player] = !(libSCEV_gv_operationCwalActive[lv_player]);
+    if ((libSCEV_gv_operationCwalActive[lv_player] == true)) {
+        lv_onOff = StringExternal("Param/Value/lib_SCEV_F8267F6E");
+    }
+    else {
+        lv_onOff = StringExternal("Param/Value/lib_SCEV_19B4CC20");
+    }
+    TextExpressionSetToken("Param/Expression/lib_SCEV_EA340C89", "B", lv_onOff);
+    TextExpressionSetToken("Param/Expression/lib_SCEV_EA340C89", "A", PlayerName(lv_player));
+    UIDisplayMessage(PlayerGroupSingle(lv_triggeringPlayer), c_messageAreaSubtitle, TextExpressionAssemble("Param/Expression/lib_SCEV_EA340C89"));
+    lv_i = 0;
+    for ( ; ( (autoAD16DA14_ai >= 0 && lv_i <= autoAD16DA14_ae) || (autoAD16DA14_ai < 0 && lv_i >= autoAD16DA14_ae) ) ; lv_i += autoAD16DA14_ai ) {
+        if ((libSCEV_gv_operationCwalActive[lv_i] == true)) {
+            TriggerEnable(libSCEV_gt_OperationCwalTrain, true);
+            TriggerEnable(libSCEV_gt_OperationCwalConstuction, true);
+            TriggerEnable(libSCEV_gt_OperationCwalMorph, true);
+            break;
+        }
+
+        if ((lv_i >= 15)) {
+            TriggerEnable(libSCEV_gt_OperationCwalTrain, false);
+            TriggerEnable(libSCEV_gt_OperationCwalConstuction, false);
+            TriggerEnable(libSCEV_gt_OperationCwalMorph, false);
+        }
+
+    }
+    if ((libSCEV_gv_operationCwalActive[lv_player] == true)) {
+        auto4F590E5F_g = UnitGroup(null, lv_player, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        auto4F590E5F_u = UnitGroupCount(auto4F590E5F_g, c_unitCountAll);
+        for (;; auto4F590E5F_u -= 1) {
+            auto4F590E5F_var = UnitGroupUnitFromEnd(auto4F590E5F_g, auto4F590E5F_u);
+            if (auto4F590E5F_var == null) { break; }
+            if ((ValidatorExecute("SCBW_IsMorphing", auto4F590E5F_var, auto4F590E5F_var) == 0)) {
+                libSCEV_gf_OperationCwal(auto4F590E5F_var, libSCEV_ge_OperationCwal_Type_Morph);
+            }
+            else if ((UnitFilterMatch(auto4F590E5F_var, lv_player, UnitFilter(0, (1 << (c_targetFilterUnderConstruction - 32)), 0, 0)) == true)) {
+                libSCEV_gf_OperationCwal(auto4F590E5F_var, libSCEV_ge_OperationCwal_Type_Construction);
+            }
+            else if ((UnitFilterMatch(auto4F590E5F_var, lv_player, UnitFilter((1 << c_targetFilterStructure), 0, 0, 0)) == true)) {
+                libSCEV_gf_OperationCwal(auto4F590E5F_var, libSCEV_ge_OperationCwal_Type_Normal);
+            }
+        }
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_OperationCwalActivate_Init () {
+    libSCEV_gt_OperationCwalActivate = TriggerCreate("libSCEV_gt_OperationCwalActivate_Func");
+    libSCEV_gf_LegacyCheatEvent(libSCEV_gt_OperationCwalActivate, 1);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: OperationCwal:Train
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_OperationCwalTrain_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((libSCEV_gv_operationCwalActive[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_OperationCwal(EventUnit(), libSCEV_ge_OperationCwal_Type_Normal);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_OperationCwalTrain_Init () {
+    libSCEV_gt_OperationCwalTrain = TriggerCreate("libSCEV_gt_OperationCwalTrain_Func");
+    TriggerEnable(libSCEV_gt_OperationCwalTrain, false);
+    TriggerAddEventUnitResearchProgress(libSCEV_gt_OperationCwalTrain, null, c_unitProgressStageStart);
+    TriggerAddEventUnitTrainProgress(libSCEV_gt_OperationCwalTrain, null, c_unitProgressStageStart);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: OperationCwal:Constuction
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_OperationCwalConstuction_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((libSCEV_gv_operationCwalActive[UnitGetOwner(EventUnitProgressUnit())] == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_OperationCwal(EventUnitProgressUnit(), libSCEV_ge_OperationCwal_Type_Construction);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_OperationCwalConstuction_Init () {
+    libSCEV_gt_OperationCwalConstuction = TriggerCreate("libSCEV_gt_OperationCwalConstuction_Func");
+    TriggerEnable(libSCEV_gt_OperationCwalConstuction, false);
+    TriggerAddEventUnitConstructProgress(libSCEV_gt_OperationCwalConstuction, null, c_unitProgressStageStart);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: OperationCwal:Morph
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_OperationCwalMorph_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((libSCEV_gv_operationCwalActive[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((AbilityClass(AbilityCommandGetAbility(EventUnitAbility())) == c_classIdCAbilMorph))) {
+            return false;
+        }
+
+        if (!((CatalogFieldValueGet(c_gameCatalogAbil, AbilityCommandGetAbility(EventUnitAbility()), "AbilityCategories[" + IntToString(3) + "]", c_playerAny) == "1"))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_OperationCwal(EventUnit(), libSCEV_ge_OperationCwal_Type_Morph);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_OperationCwalMorph_Init () {
+    libSCEV_gt_OperationCwalMorph = TriggerCreate("libSCEV_gt_OperationCwalMorph_Func");
+    TriggerEnable(libSCEV_gt_OperationCwalMorph, false);
+    TriggerAddEventUnitAbility(libSCEV_gt_OperationCwalMorph, null, null, c_unitAbilStageExecute, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: InfiniteMoneyMap:Trigger
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_InfiniteMoneyMapTrigger_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!(((UnitGetType(EventUnit()) == "SCVSCBW") || (UnitGetType(EventUnit()) == "ProbeSCBW") || (UnitGetType(EventUnit()) == "DroneSCBW")))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_InfiniteMoneyMapAction(libNtve_gf_ConvertUnitToUnitGroup(EventUnit()));
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_InfiniteMoneyMapTrigger_Init () {
+    libSCEV_gt_InfiniteMoneyMapTrigger = TriggerCreate("libSCEV_gt_InfiniteMoneyMapTrigger_Func");
+    TriggerEnable(libSCEV_gt_InfiniteMoneyMapTrigger, false);
+    TriggerAddEventUnitRegion(libSCEV_gt_InfiniteMoneyMapTrigger, null, RegionEntireMap(), true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MimicCheck:StorePlayerIndex
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MimicCheckStorePlayerIndex_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_owner;
+    unitgroup lv_ug;
+
+    // Automatic Variable Declarations
+    unitgroup autoDF838816_g;
+    int autoDF838816_u;
+    unit autoDF838816_var;
+
+    // Variable Initialization
+    lv_owner = UnitGetOwner(EventPlayerEffectUsedUnit(c_effectUnitTarget));
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_ug = UnitGroup(null, c_playerAny, RegionCircle(UnitGetPosition(EventPlayerEffectUsedUnit(c_effectUnitTarget)), 12.375), UnitFilter((1 << c_targetFilterGround), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoDF838816_g = lv_ug;
+    autoDF838816_u = UnitGroupCount(autoDF838816_g, c_unitCountAll);
+    for (;; autoDF838816_u -= 1) {
+        autoDF838816_var = UnitGroupUnitFromEnd(autoDF838816_g, autoDF838816_u);
+        if (autoDF838816_var == null) { break; }
+        if ((UnitHasBehavior2(autoDF838816_var, "ChangelingDisguisePlayerIndex") == false) && (ValidatorExecute("TargetIsChangelingSCBW", autoDF838816_var, autoDF838816_var) == 0) && (UnitHasBehavior2(autoDF838816_var, "ChangelingDisable") == true)) {
+            UnitBehaviorAdd(autoDF838816_var, "ChangelingDisguisePlayerIndex", autoDF838816_var, 1);
+            UnitBehaviorEffectTreeSetUserData(autoDF838816_var, "ChangelingDisguisePlayerIndex", "Player", lv_owner);
+            break;
+        }
+
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MimicCheckStorePlayerIndex_Init () {
+    libSCEV_gt_MimicCheckStorePlayerIndex = TriggerCreate("libSCEV_gt_MimicCheckStorePlayerIndex_Func");
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_MimicCheckStorePlayerIndex, c_playerAny, "DisguiseEx3");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MimicCheck:SpiderMine
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MimicCheckSpiderMine_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_playerIndex;
+    unit lv_target;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_target = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitHasBehavior2(lv_target, "ChangelingDisguisePlayerIndex") == true)) {
+        lv_playerIndex = FixedToInt(UnitBehaviorEffectTreeUserData(lv_target, "ChangelingDisguisePlayerIndex", "Player"));
+        if ((UnitFilterMatch(EventPlayerEffectUsedUnit(c_effectUnitSource), lv_playerIndex, UnitFilter(0, 0, (1 << c_targetFilterPlayer) | (1 << c_targetFilterAlly) | (1 << c_targetFilterNeutral) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)))) == false)) {
+            UnitBehaviorAdd(lv_target, "SpiderMineSCBWWeapon@MimicDisable", EventPlayerEffectUsedUnit(c_effectUnitSource), 1);
+        }
+
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MimicCheckSpiderMine_Init () {
+    libSCEV_gt_MimicCheckSpiderMine = TriggerCreate("libSCEV_gt_MimicCheckSpiderMine_Func");
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_MimicCheckSpiderMine, c_playerAny, "SpiderMineSCBWWeapon@MimicCheck");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MinimapAllyView:CameraSnap
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MinimapAllyViewCameraSnap_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_p;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_p = EventPlayer();
+
+    // Conditions
+    if (testConds) {
+        if (!((libSCEV_gv_minimapAllyViewCameraSnapPointersListLength[lv_p] != 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    CameraPan(lv_p, CameraGetTarget(libSCEV_gv_minimapAllyViewCameraSnapPointersList[lv_p][libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition[lv_p]]), 0.0, -1, 10.0, false);
+    if (libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition[lv_p] >= libSCEV_gv_minimapAllyViewCameraSnapPointersListLength[lv_p]) {
+        libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition[lv_p] = 0;
+    }
+    else {
+        libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition[lv_p] = libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition[lv_p] + 1;
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MinimapAllyViewCameraSnap_Init () {
+    libSCEV_gt_MinimapAllyViewCameraSnap = TriggerCreate("libSCEV_gt_MinimapAllyViewCameraSnap_Func");
+    TriggerEnable(libSCEV_gt_MinimapAllyViewCameraSnap, false);
+    TriggerAddEventKeyPressed(libSCEV_gt_MinimapAllyViewCameraSnap, c_playerAny, c_keyV, true, c_keyModifierStateExclude, c_keyModifierStateExclude, c_keyModifierStateRequire);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MinimapAllyView:CameraUpdate
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MinimapAllyViewCameraUpdate_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_p;
+    int lv_jindexPlayer;
+
+    // Automatic Variable Declarations
+    playergroup autoF827FF5A_g;
+
+    // Variable Initialization
+    lv_p = EventPlayer();
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition[lv_p] = 0;
+    autoF827FF5A_g = libSCEV_gf_HumanPlayers();
+    lv_jindexPlayer = -1;
+    while (true) {
+        lv_jindexPlayer = PlayerGroupNextPlayer(autoF827FF5A_g, lv_jindexPlayer);
+        if (lv_jindexPlayer < 0) { break; }
+        PingSetPosition(libSCEV_gv_minimapAllyViewPings[lv_p][lv_jindexPlayer], CameraGetTarget(lv_jindexPlayer));
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MinimapAllyViewCameraUpdate_Init () {
+    libSCEV_gt_MinimapAllyViewCameraUpdate = TriggerCreate("libSCEV_gt_MinimapAllyViewCameraUpdate_Func");
+    TriggerEnable(libSCEV_gt_MinimapAllyViewCameraUpdate, false);
+    TriggerAddEventChatMessage(libSCEV_gt_MinimapAllyViewCameraUpdate, c_playerAny, null, true);
+    TriggerAddEventCameraMove(libSCEV_gt_MinimapAllyViewCameraUpdate, c_playerAny, c_cameraMoveReasonAny);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MinimapAllyView:AllianceUpdate
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MinimapAllyViewAllianceUpdate_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_indexPlayer;
+    int lv_jindexPlayer;
+
+    // Automatic Variable Declarations
+    playergroup auto1D2F2625_g;
+    playergroup auto9E065487_g;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    auto1D2F2625_g = libSCEV_gf_HumanPlayers();
+    lv_indexPlayer = -1;
+    while (true) {
+        lv_indexPlayer = PlayerGroupNextPlayer(auto1D2F2625_g, lv_indexPlayer);
+        if (lv_indexPlayer < 0) { break; }
+        libSCEV_gf_MinimapAllyViewCameraSnapPointersListUpdate(lv_indexPlayer);
+        auto9E065487_g = libSCEV_gf_HumanPlayers();
+        lv_jindexPlayer = -1;
+        while (true) {
+            lv_jindexPlayer = PlayerGroupNextPlayer(auto9E065487_g, lv_jindexPlayer);
+            if (lv_jindexPlayer < 0) { break; }
+            libSCEV_gv_minimapAllyViewPings[lv_indexPlayer][lv_jindexPlayer] = PingLastCreated();
+            if ((PlayerGroupHasPlayer(PlayerGroupAlliance(c_playerGroupAlly, lv_indexPlayer), lv_jindexPlayer) == true) && (lv_jindexPlayer != lv_indexPlayer)) {
+                PingSetVisible(libSCEV_gv_minimapAllyViewPings[lv_indexPlayer][lv_jindexPlayer], true);
+            }
+            else {
+                PingSetVisible(libSCEV_gv_minimapAllyViewPings[lv_indexPlayer][lv_jindexPlayer], false);
+            }
+        }
+    }
+    libSCEV_gf_MinimapAllyViewRescale();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MinimapAllyViewAllianceUpdate_Init () {
+    libSCEV_gt_MinimapAllyViewAllianceUpdate = TriggerCreate("libSCEV_gt_MinimapAllyViewAllianceUpdate_Func");
+    TriggerEnable(libSCEV_gt_MinimapAllyViewAllianceUpdate, false);
+    TriggerAddEventPlayerAllianceChange(libSCEV_gt_MinimapAllyViewAllianceUpdate, c_playerAny);
+    TriggerAddEventPlayerLeft(libSCEV_gt_MinimapAllyViewAllianceUpdate, c_playerAny, c_gameResultUndecided);
+    TriggerAddEventPlayerJoin(libSCEV_gt_MinimapAllyViewAllianceUpdate, c_playerAny);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MinimapAllyView:Init
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MinimapAllyViewInit_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_indexPlayer;
+    int lv_jindexPlayer;
+
+    // Automatic Variable Declarations
+    playergroup auto3820D084_g;
+    playergroup autoF0D67B2A_g;
+
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((TriggerIsEnabled(TriggerGetCurrent()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    auto3820D084_g = libSCEV_gf_HumanPlayers();
+    lv_indexPlayer = -1;
+    while (true) {
+        lv_indexPlayer = PlayerGroupNextPlayer(auto3820D084_g, lv_indexPlayer);
+        if (lv_indexPlayer < 0) { break; }
+        autoF0D67B2A_g = libSCEV_gf_HumanPlayers();
+        lv_jindexPlayer = -1;
+        while (true) {
+            lv_jindexPlayer = PlayerGroupNextPlayer(autoF0D67B2A_g, lv_jindexPlayer);
+            if (lv_jindexPlayer < 0) { break; }
+            libNtve_gf_CreatePingFacingAngle(PlayerGroupSingle(lv_indexPlayer), "SCBW_PingViewArea", CameraGetTarget(lv_jindexPlayer), libNtve_gf_ConvertPlayerColorToColor(PlayerGetColorIndex(lv_jindexPlayer, false)), 0.0, 270.0);
+            libSCEV_gv_minimapAllyViewPings[lv_indexPlayer][lv_jindexPlayer] = PingLastCreated();
+        }
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MinimapAllyViewInit_Init () {
+    libSCEV_gt_MinimapAllyViewInit = TriggerCreate("libSCEV_gt_MinimapAllyViewInit_Func");
+}
+
+void libSCEV_InitTriggers () {
+    libSCEV_gt_SCEvoFeatureInit_Init();
+    libSCEV_gt_FractionalArmorAdd_Init();
+    libSCEV_gt_FractionalArmorUpgrade_Init();
+    libSCEV_gt_FractionalArmorUpdateTrigger_Init();
+    libSCEV_gt_MissChanceRevealTimerExpire_Init();
+    libSCEV_gt_MissChanceRevealAttacker_Init();
+    libSCEV_gt_MissChanceAdd_Init();
+    libSCEV_gt_MissChanceShrubCheck_Init();
+    libSCEV_gt_LegacyUnitSwap_Init();
+    libSCEV_gt_LegacyRefund_Init();
+    libSCEV_gt_LegacyCheatCheatTracker_Init();
+    libSCEV_gt_OperationCwalActivate_Init();
+    libSCEV_gt_OperationCwalTrain_Init();
+    libSCEV_gt_OperationCwalConstuction_Init();
+    libSCEV_gt_OperationCwalMorph_Init();
+    libSCEV_gt_InfiniteMoneyMapTrigger_Init();
+    libSCEV_gt_MimicCheckStorePlayerIndex_Init();
+    libSCEV_gt_MimicCheckSpiderMine_Init();
+    libSCEV_gt_MinimapAllyViewCameraSnap_Init();
+    libSCEV_gt_MinimapAllyViewCameraUpdate_Init();
+    libSCEV_gt_MinimapAllyViewAllianceUpdate_Init();
+    libSCEV_gt_MinimapAllyViewInit_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_InitLib_completed = false;
+
+void libSCEV_InitLib () {
+    if (libSCEV_InitLib_completed) {
+        return;
+    }
+
+    libSCEV_InitLib_completed = true;
+
+    libSCEV_InitLibraries();
+    libSCEV_InitVariables();
+    libSCEV_InitCustomScript();
+    libSCEV_InitTriggers();
+}
+

@@ -54,6 +54,58 @@
         <CombineArray value="ArbiterSCBWStasisField@InvulnerableHandler"/>
         <CombineArray value="NotSpiderMineSCBW"/>
     </CValidatorCombine>
+    <CValidatorCombine id="ArchonSCBWWeapon@TargetCondition">
+        <CombineArray value="CasterAttackingTargetSCBW"/>
+        <CombineArray value="ArchonSCBWWeapon@DamageFilters"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArchonSCBWWeapon@Damage" parent="SCBW_Effect">
+        <CombineArray value="ArchonSCBWWeapon@TargetCondition"/>
+    </CValidatorCombine>
+    <CValidatorUnitFilters id="ArchonSCBWWeapon@DamageFilters">
+        <Filters value="-;Player"/>
+    </CValidatorUnitFilters>
+    <CValidatorLocationShrub id="SCBW_TargetNoShrub">
+        <WhichLocation Value="TargetUnitOrPoint"/>
+        <Find value="0"/>
+    </CValidatorLocationShrub>
+    <CValidatorUnitCompareBehaviorCount id="SCBW_TargetHasNotInShrubBuff">
+        <Behavior value="SCBW_NotInShrub"/>
+        <Compare value="GT"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareField id="SiegeTankSCBWSiegedWeapon@RadiusMassive">
+        <Compare value="GE"/>
+        <Field value="Radius"/>
+        <Value value="1.5"/>
+    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareField id="SiegeTankSCBWSiegedWeapon@RadiusLarge">
+        <Compare value="GE"/>
+        <Field value="Radius"/>
+        <Value value="1.0"/>
+    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareField id="SiegeTankSCBWSiegedWeapon@RadiusMedium">
+        <Compare value="GE"/>
+        <Field value="Radius"/>
+        <Value value="0.75"/>
+    </CValidatorUnitCompareField>
+    <CValidatorEffectTreeUserData id="SCBWWeapon@NotMissed">
+        <CheckExistence value="0"/>
+        <Key value="Missed"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="SCBWWeapon@NotMissedTarget">
+        <CheckExistence value="0"/>
+        <Key value="Missed"/>
+        <BehaviorScope Value="Target"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="SCBWWeapon@MissedTarget">
+        <Key value="Missed"/>
+        <Value value="1"/>
+        <BehaviorScope Value="Target"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorLocationCompareRange id="SCBW_DistanceLessThanDot5">
+        <WhichLocation Value="TargetUnit"/>
+        <Compare value="LT"/>
+        <Range value="0.5"/>
+    </CValidatorLocationCompareRange>
     <CValidatorCombine id="SCBW_PlayerIsProtoss">
         <CombineArray value="PlayerIsProtoss"/>
         <CombineArray value="PlayerIsBWPr"/>
@@ -203,6 +255,24 @@
         <Value value="WidowMineBurrowed"/>
         <Find value="0"/>
     </CValidatorUnitType>
+    <CValidatorCombine id="SCBW_CasterAndTargetNotAir">
+        <Type value="And"/>
+        <CombineArray value="SCBW_CasterNotAir"/>
+        <CombineArray value="SCBW_TargetNotAir"/>
+    </CValidatorCombine>
+    <CValidatorUnitFilters id="SCBW_CasterIsAirFilter">
+        <WhichUnit Value="Caster"/>
+        <Filters value="Air;-"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitFilters id="SCBW_CasterNotAir">
+        <WhichUnit Value="Caster"/>
+        <Filters value="-;Air"/>
+    </CValidatorUnitFilters>
+    <CValidatorCombine id="SCBW_CasterOrTargetInAir">
+        <CombineArray value="SCBW_CasterNotAir"/>
+        <CombineArray value="SCBW_TargetNotAir"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="SCBW_SourceViperBlindingCloud">
         <WhichUnit Value="Source"/>
         <Compare value="GT"/>
@@ -278,9 +348,19 @@
         <AreaArray Compare="GT" Count="0" Radius="5"/>
         <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Missile,Stasis,Dead,Hidden,Invulnerable,Benign"/>
     </CValidatorLocationEnumArea>
-    <CValidatorUnitCompareBehaviorCount id="SC1_TargetNoShrubBuff">
-        <Behavior value="SC1_InShrub"/>
+    <CValidatorUnitCompareBehaviorCount id="SCBW_TargetNoShrubBuff">
+        <Behavior value="SCBW_InShrub"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareField id="SCBW_TargetRadiusGTE0Dot875">
+        <Compare value="GE"/>
+        <Field value="Radius"/>
+        <Value value="0.875"/>
+    </CValidatorUnitCompareField>
+    <CValidatorUnitCompareField id="SCBW_TargetRadiusGTE0Dot75">
+        <Compare value="GE"/>
+        <Field value="Radius"/>
+        <Value value="0.75"/>
+    </CValidatorUnitCompareField>
     <CValidatorUnitCompareChargeUsed id="VulturePlaceSpiderMineSCBW@NoMines">
         <Compare value="GE"/>
         <ChargeLink value="Abil/VulturePlaceSpiderMineSCBW"/>
@@ -394,18 +474,13 @@
     </CValidatorCombine>
     <CValidatorCombine id="ArchonSCBWWeapon@SplashInnerValidator">
         <Type value="And"/>
-        <CombineArray value="NotUnderDarkSwarm"/>
-        <CombineArray value="TargetIsEnemyORNeutralSCBW"/>
+        <CombineArray value="ArchonSCBWWeapon@TargetCondition"/>
     </CValidatorCombine>
     <CValidatorCombine id="ScarabSCBWWeapon@SplashValidator">
         <Type value="And"/>
         <CombineArray value="SCBW_NotBurrowed"/>
         <CombineArray value="ScarabSCBWWeapon@TargetCondition"/>
     </CValidatorCombine>
-    <CValidatorCondition id="ArchonSCBWWeapon@TargetCondition">
-        <IfArray Test="UnderDarkSwarmCombine" Return="CasterAttackingTargetSCBW"/>
-        <Else value="TargetIsEnemyORNeutralSCBW"/>
-    </CValidatorCondition>
     <CValidatorCombine id="CasterAttackingTargetORFirebatSCBW@DamageFilters">
         <CombineArray value="CasterAttackingTargetSCBW"/>
         <CombineArray value="FirebatSCBW@DamageFilters"/>
@@ -416,14 +491,14 @@
         <CombineArray value="NotLurkerSCBWEgg"/>
         <CombineArray value="NotEggSCBW"/>
     </CValidatorCombine>
-    <CValidatorCombine id="SC1_MissCheckPrimary">
+    <CValidatorCombine id="SCBW_MissCheckPrimary">
         <Type value="And"/>
-        <CombineArray value="SC1_HasMissChance"/>
-        <CombineArray value="SC1_MissCheck"/>
+        <CombineArray value="SCBW_HasMissChance"/>
+        <CombineArray value="SCBW_MissCheck"/>
     </CValidatorCombine>
-    <CValidatorUnitCompareBehaviorCount id="SC1_HasMissChance">
+    <CValidatorUnitCompareBehaviorCount id="SCBW_HasMissChance">
         <Compare value="GT"/>
-        <Behavior value="SC1_MissChance"/>
+        <Behavior value="SCBW_MissChance"/>
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="SCBW_TargetNotStasisNotStunnedNotDead">
         <Type value="And"/>
@@ -486,8 +561,8 @@
         <Value Value="TargetUnitOrPoint"/>
     </CValidatorLocationCompareRange>
     <CValidatorCombine id="DefenderInShrubOrHasShrubBuff">
-        <CombineArray value="SC1_TargetHasShrub"/>
-        <CombineArray value="SC1_TargetHasShrubBuff"/>
+        <CombineArray value="SCBW_TargetHasShrub"/>
+        <CombineArray value="SCBW_TargetHasShrubBuff"/>
     </CValidatorCombine>
     <CValidatorUnitCompareResourceContents id="GeyserExhausted"/>
     <CValidatorEffectTreeUserData id="GeyserExhaustedUser">
@@ -597,7 +672,7 @@
     </CValidatorPlayerRequirement>
     <CValidatorCombine id="UnderDarkSwarmMissCheck">
         <Type value="And"/>
-        <CombineArray value="SC1_HasMissChance"/>
+        <CombineArray value="SCBW_HasMissChance"/>
         <CombineArray value="UnderDarkSwarmCombine"/>
     </CValidatorCombine>
     <CValidatorCombine id="ValkyrieSCBWWeapon@PersistentValidator">
@@ -631,20 +706,20 @@
     <CValidatorPlayerCompareRace id="PlayerIsBWTe">
         <Value value="BWTe"/>
     </CValidatorPlayerCompareRace>
-    <CValidatorCombine id="SC1_MissCheck">
-        <CombineArray value="SC1_MissCheckShrubGround"/>
-        <CombineArray value="SC1_MissCheckHighGround"/>
-        <CombineArray value="SC1_MissCheckShrubAir"/>
+    <CValidatorCombine id="SCBW_MissCheck">
+        <CombineArray value="SCBW_MissCheckShrubGround"/>
+        <CombineArray value="SCBW_MissCheckHighGround"/>
+        <CombineArray value="SCBW_MissCheckShrubAir"/>
     </CValidatorCombine>
-    <CValidatorCombine id="SC1_MissCheckAttacker">
+    <CValidatorCombine id="SCBW_MissCheckAttacker">
         <CombineArray value="UnderDarkSwarmCombine"/>
-        <CombineArray value="SC1_MissCheckShrubGround"/>
-        <CombineArray value="SC1_MissCheckHighGround"/>
+        <CombineArray value="SCBW_MissCheckShrubGround"/>
+        <CombineArray value="SCBW_MissCheckHighGround"/>
     </CValidatorCombine>
-    <CValidatorCombine id="SC1_MissCheckShrubAir">
+    <CValidatorCombine id="SCBW_MissCheckShrubAir">
         <Type value="And"/>
         <CombineArray value="SCBW_SourceIsAirFilter"/>
-        <CombineArray value="SC1_TargetHasShrubBuff"/>
+        <CombineArray value="SCBW_TargetHasShrubBuff"/>
     </CValidatorCombine>
     <CValidatorEffectTreeUserData id="SCBWWeapon@Missed">
         <Key value="Missed"/>
@@ -655,10 +730,10 @@
         <CombineArray value="SCBW_TargetNotAir"/>
         <Negate value="1"/>
     </CValidatorCombine>
-    <CValidatorLocationShrub id="SC1_TargetHasShrub">
+    <CValidatorLocationShrub id="SCBW_TargetHasShrub">
         <WhichLocation Value="TargetUnitOrPoint"/>
     </CValidatorLocationShrub>
-    <CValidatorCombine id="SC1_HasShieldsOrMatrix">
+    <CValidatorCombine id="SCBW_HasShieldsOrMatrix">
         <ResultFailed value="NotEnoughShields"/>
         <CombineArray value="SCBW_ShieldsGT0"/>
         <CombineArray value="ScienceVesselSCBWDefensiveMatrix@HasShield"/>
@@ -668,16 +743,16 @@
         <OtherLocation Value="SourceUnitOrPoint"/>
         <Compare value="GT"/>
     </CValidatorLocationCompareCliffLevel>
-    <CValidatorCombine id="SC1_MissCheckHighGround">
+    <CValidatorCombine id="SCBW_MissCheckHighGround">
         <Type value="And"/>
         <CombineArray value="SCBW_SourceAndTargetNotAir"/>
         <CombineArray value="DefenderCliffLevelHigher"/>
         <CombineArray value="DefenderHeightCheck"/>
     </CValidatorCombine>
-    <CValidatorCombine id="SC1_MissCheckShrubGround">
+    <CValidatorCombine id="SCBW_MissCheckShrubGround">
         <Type value="And"/>
         <CombineArray value="SCBW_SourceAndTargetNotAir"/>
-        <CombineArray value="SC1_TargetHasShrubBuff"/>
+        <CombineArray value="SCBW_TargetHasShrubBuff"/>
         <CombineArray value="DefendedToAttackerDistanceCheck"/>
     </CValidatorCombine>
     <CValidatorCombine id="SCBW_SourceAndTargetNotAir">
@@ -685,9 +760,9 @@
         <CombineArray value="SCBW_SourceNotAir"/>
         <CombineArray value="SCBW_TargetNotAir"/>
     </CValidatorCombine>
-    <CValidatorUnitCompareBehaviorCount id="SC1_TargetHasShrubBuff">
+    <CValidatorUnitCompareBehaviorCount id="SCBW_TargetHasShrubBuff">
         <Compare value="GT"/>
-        <Behavior value="SC1_InShrub"/>
+        <Behavior value="SCBW_InShrub"/>
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorUnitFilters id="SCBW_SourceNotAir">
         <WhichUnit Value="Source"/>
@@ -715,7 +790,7 @@
         <CombineArray value="NotSpiderMineSCBW"/>
         <CombineArray value="SCBW_NotWidowMineBurrowed"/>
     </CValidatorCombine>
-    <CValidatorUnitCompareField id="TargetRadiusGTE1Dot0">
+    <CValidatorUnitCompareField id="SCBW_TargetRadiusGTE1Dot0">
         <Compare value="GE"/>
         <Field value="Radius"/>
         <Value value="1.0"/>
@@ -732,7 +807,7 @@
     </CValidatorUnitCompareField>
     <CValidatorCombine id="TargetRadius_Medium">
         <Type value="And"/>
-        <CombineArray value="TargetRadiusGTE1Dot0"/>
+        <CombineArray value="SCBW_TargetRadiusGTE1Dot0"/>
         <CombineArray value="TargetRadiusLT1Dot5"/>
     </CValidatorCombine>
     <CValidatorCombine id="TargetRadius_Large">
@@ -1138,10 +1213,10 @@
         <Line index="2" Success="UltraliskSCBW@TacticalBurrowUltraliskThreatTest"/>
         <Line index="6" Success="UltraliskSCBW@TacticalBurrowUltraliskCampaignBullyUnburrow"/>
     </CValidatorFunction>
-    <CValidatorEffectTreeUserData id="SC1_DamagePassesShields">
+    <CValidatorEffectTreeUserData id="SCBW_DamagePassesShields">
         <Compare value="LT"/>
         <Key value="ShieldsParam"/>
-        <BehaviorScope Value="Target" Behavior="SC1_ArmorTracker"/>
+        <BehaviorScope Value="Target" Behavior="SCBW_FractionalArmor"/>
     </CValidatorEffectTreeUserData>
     <CValidatorUnitCompareHeight id="DefenderHeightCheck">
         <OtherUnit Value="Source"/>
@@ -1339,19 +1414,19 @@
     </CValidatorLocationCompareRange>
     <CValidatorCombine id="HallucinationTargetRadius_Medium">
         <Type value="And"/>
-        <CombineArray value="TargetRadiusGTE0Dot5"/>
+        <CombineArray value="SCBW_TargetRadiusGTE0Dot5"/>
         <CombineArray value="TargetRadiusLT1Dot0"/>
     </CValidatorCombine>
     <CValidatorCombine id="HallucinationTargetRadius_Large">
         <Type value="And"/>
-        <CombineArray value="TargetRadiusGTE1Dot0"/>
+        <CombineArray value="SCBW_TargetRadiusGTE1Dot0"/>
     </CValidatorCombine>
     <CValidatorUnitCompareField id="HallucinationTargetRadius_Small">
         <Compare value="LT"/>
         <Field value="Radius"/>
         <Value value="0.5"/>
     </CValidatorUnitCompareField>
-    <CValidatorUnitCompareField id="TargetRadiusGTE0Dot5">
+    <CValidatorUnitCompareField id="SCBW_TargetRadiusGTE0Dot5">
         <Compare value="GE"/>
         <Field value="Radius"/>
         <Value value="0.5"/>

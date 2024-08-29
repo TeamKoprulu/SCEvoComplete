@@ -362,6 +362,21 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorUnit id="SCBW_InvulnerableDummy" parent="GenericUnitMinimal" unitName="SCBW_InvulnerableDummy">
+        <Model value="Invisible"/>
+        <EditorModel value="Sphere"/>
+        <WalkAnimMoveSpeed value="0"/>
+        <StatusBarFlags index="Shields" value="0"/>
+        <StatusBarFlags index="Life" value="0"/>
+        <StatusBarFlags index="Energy" value="0"/>
+        <StatusBarFlags index="Cargo" value="0"/>
+        <StatusBarFlags index="Progress" value="0"/>
+        <StatusBarFlags index="Duration" value="0"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+        <UnitFlags index="StandAnimBirthVariation" value="1"/>
+        <HighlightTooltip value="Unit/Name/Bogus"/>
+    </CActorUnit>
+    <CActorSite id="MutaliskSCBWWeapon@BounceImpactSite" parent="GenericAttackImpactSite"/>
     <CActorSound id="CorsairSCBWWeapon@ImpactSound" parent="GenericAttackImpactSound">
         <Sound value="CorsairSCBWWeapon@Impact"/>
         <Layers Sound="CorsairSCBWWeapon@ImpactAlt" PitchSource="Sound" VolumeSource="Sound">
@@ -395,6 +410,18 @@
         <HoldPosition value="1"/>
         <HoldRotation value="1"/>
     </CActorSiteOpShadow>
+    <CActorForceSphere id="SiegeTankSCBWSiegedWeapon@MissAttackUpForce" parent="SiegeTankSiegedUpForce">
+        <Host Subject=""/>
+        <HostSiteOps Ops="SOpTargetPointStationary SOp2DRotation SOp180 SOpRotVariancerUp35 SOpPointDown1ByDot25 SOpRotationRandomPitch30"/>
+        <Magnitude value="27.000000,10.000000"/>
+        <Radius value="2.500000,0.200000"/>
+    </CActorForceSphere>
+    <CActorForceSphere id="SiegeTankSCBWSiegedWeapon@MissAttackForce" parent="SiegeTankSiegedForce">
+        <On index="0" Terms="ActorCreation" Send="Create SiegeTankSCBWSiegedWeapon@MissAttackUpForce"/>
+        <HostSiteOps Ops="SOpTargetPointStationary SOpMoveUpBy1 SOpRandomPointInSphereDot15"/>
+        <Magnitude value="40.000000,10.000000"/>
+        <Radius value="2.500000,0.200000"/>
+    </CActorForceSphere>
     <CActorLookAt id="SunkenColonySCBW@LookAt" parent="UnitTurret">
         <HostTargetSiteOps Ops="SOpShadowHold"/>
         <Type value="SunkenColonySCBW"/>
@@ -770,6 +797,84 @@
         <Distribution value="GaussianInverse"/>
         <Variance value="0.100000"/>
     </CActorSiteOpRandomPointInCrossbar>
+    <CActorEventMacro id="WhiffSequenceUnitMacro">
+        <On Terms="Signal.*.SequenceCheck; HasStatus InSequence" Target="::Sender" Send="StatusSet IsSequence 1"/>
+        <On Terms="Signal.*.ResetSequence" Send="StatusSet InSequence 0"/>
+        <On Terms="Signal.*.ResetTimer" Send="TimerKill ResetSequence"/>
+        <On Terms="Signal.*.ResetTimer" Send="TimerSet 1.000000 ResetSequence"/>
+        <On Terms="TimerExpired; TimerName ResetSequence" Send="StatusSet InSequence 0"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="WhiffSequenceAttackSiteMacro">
+        <On Terms="ActorCreation" Target="_Unit" Send="Signal SequenceCheck"/>
+        <On Terms="Signal.*.ResetSequence" Target="_Unit" Send="MessageForward"/>
+        <On Terms="Signal.*.ResetTimer" Target="_Unit" Send="MessageForward"/>
+        <On Terms="StatusSet.*.InSequence" Target="_Unit" Send="MessageForward"/>
+        <On Terms="EffectActionCommence; HasStatus IsSequence" Target="::HostImpactInternal" Send="Signal IsSequence"/>
+        <On Terms="EffectActionCenter" Target="::HostImpactInternal" Send="Signal Impact"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="WhiffSequenceSiteMacro">
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide SOpShadow} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="::Creator" Send="StatusSet InSequence 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="::Creator" Send="Signal ResetTimer"/>
+        <On Terms="Signal.*.IsSequence" Send="StatusSet InSequence 1"/>
+        <On Terms="Signal.*.IsSequence" Send="StatusSet Missed 1"/>
+        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide SOpShadow} 1 1"/>
+        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide} 1 1"/>
+        <On Terms="Signal.*.Impact; HasStatus InSequence" Target="::Creator" Send="Signal ResetSequence"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Send="TimerSet 1.000000 A"/>
+        <On Terms="TimerExpired; TimerName A" Send="Destroy"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="WhiffSequenceAttackMacro">
+        <On Terms="ActorCreation" Target="_Unit" Send="Signal SequenceCheck"/>
+        <On Terms="Signal.*.ResetSequence" Target="_Unit" Send="MessageForward"/>
+        <On Terms="Signal.*.ResetTimer" Target="_Unit" Send="MessageForward"/>
+        <On Terms="StatusSet.*.InSequence" Target="_Unit" Send="MessageForward"/>
+        <On Terms="EffectActionCommence; HasStatus IsSequence" Target="::HostImpactInternal" Send="Signal IsSequence"/>
+        <On Terms="EffectActionCommence" Target="::HostImpactInternal" Send="Signal Impact"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="WhiffSequenceModelMacro">
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="::Creator" Send="StatusSet InSequence 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="::Creator" Send="Signal ResetTimer"/>
+        <On Terms="Signal.*.IsSequence" Send="StatusSet InSequence 1"/>
+        <On Terms="Signal.*.IsSequence" Send="StatusSet Missed 1"/>
+        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow} 1 1"/>
+        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide} 1 1"/>
+        <On Terms="Signal.*.Impact; HasStatus InSequence" Target="::Creator" Send="Signal ResetSequence"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+    </CActorEventMacro>
+    <CActorEventMacro id="WhiffSequenceBulletModelMacro">
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Small" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect WhiffOffsetRandomSmall SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Medium" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot25 WhiffOffsetRandomMedium SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Large" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot2 SOpMoveUpByDot2 WhiffOffsetRandomLarge SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit TargetRadius_Massive" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot5 WhiffOffsetRandomMassive SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="ModelSwap WhiffBeam"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="Create Bullet_Whiz"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="::Creator" Send="StatusSet InSequence 1"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="::Creator" Send="Signal ResetTimer"/>
+        <On Terms="Signal.*.IsSequence" Send="StatusSet InSequence 1"/>
+        <On Terms="Signal.*.IsSequence" Send="StatusSet Missed 1"/>
+        <On Terms="Signal.*.IsSequence" Send="ModelSwap WhiffBeam"/>
+        <On Terms="Signal.*.IsSequence" Send="Create Bullet_Whiz"/>
+        <On Terms="Signal.*.IsSequence; ValidateUnit TargetRadius_Small" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect WhiffOffsetRandomSmall SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="Signal.*.IsSequence; ValidateUnit TargetRadius_Medium" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot25 WhiffOffsetRandomMedium SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="Signal.*.IsSequence; ValidateUnit TargetRadius_Large" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot2 SOpMoveUpByDot2 WhiffOffsetRandomLarge SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="Signal.*.IsSequence; ValidateUnit TargetRadius_Massive" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpMoveUpByDot5 WhiffOffsetRandomMassive SOpForwardLaunchGuideInverted} 1 1"/>
+        <On Terms="ModelSwapped" Send="$Birth"/>
+        <On Terms="ModelSwapped; ModelSwapTo WhiffBeam" Send="SetOpacity 0.400000"/>
+        <On Terms="AnimDone; AnimName Birth; HasStatus Missed" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus InSequence" Target="::Creator" Send="Signal ResetSequence"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+    </CActorEventMacro>
     <CActorSimple id="Missed">
         <Supporter Subject="_Unit"/>
         <On Terms="Behavior.*.Evade" Send="Create"/>
@@ -804,6 +909,7 @@
     </CActorModel>
     <CActorModel id="SiegeTankSCBWSiegedWeapon@MissImpact" parent="GenericAttackModelPoint">
         <On Terms="Effect.SiegeTankSCBWSiegedWeapon@MissDummy.Start; At Effect" Send="Create"/>
+        <On Terms="ActorCreation" Send="Create SiegeTankSCBWSiegedWeapon@MissAttackForce"/>
         <Model value="SiegeTankSCBWSiegedWeapon@Impact"/>
     </CActorModel>
     <CActorForceBox id="UltraliskSCBWWeapon@LateralLeftForce">
@@ -1444,19 +1550,26 @@
         <ImpactPhysics Name="AcidSpewImpact" MatchKeys="Basic" Physics="SporeCrawlerAttackForce"/>
     </CActorAction>
     <CActorMissile id="GuardianSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="GuardianSCBWWeapon@Missile"/>
-    <CActorAction id="MutaliskSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@LM">
+    <CActorAction id="MutaliskSCBWWeapon@Action" parent="GenericAttack" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@LM">
         <LaunchAssets Sound="MutaliskSCBWWeapon@Launch"/>
         <Missile value="MutaliskSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="MutaliskSCBWWeapon@Impact" Sound="MutaliskSCBWWeapon@Impact"/>
         <ImpactPhysics Name="GlaveWurmImpact" MatchKeys="Basic" Physics="MutaliskAttackDeathForce"/>
         <ImpactPhysics Name="GlaveWurmImpactAir" MatchKeys="BasicAir" Physics="MutaliskAttackAirDeathForce"/>
     </CActorAction>
-    <CActorAction id="MutaliskSCBWWeapon@ActionBounce" parent="GenericAttackMissileWhiff" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@BounceLM">
+    <CActorAction id="MutaliskSCBWWeapon@ActionMiss" parent="MutaliskSCBWWeapon@Action" effectImpact="MutaliskSCBWWeapon@MissDummy" effectLaunch="MutaliskSCBWWeapon@LMMiss">
+        <On index="1" Terms="Effect.MutaliskSCBWWeapon@MissDummy.Start; FromEffectTreeDescendant"/>
+        <On index="2" Terms="Effect.MutaliskSCBWWeapon@MissDummy.Stop; FromEffectTreeDescendant"/>
+        <On index="6" Terms="Effect.MutaliskSCBWWeapon@LMMiss.Start; At Caster" Send="Create"/>
+    </CActorAction>
+    <CActorAction id="MutaliskSCBWWeapon@ActionBounce" parent="GenericAttack" effectImpact="MutaliskSCBWWeapon@Damage" effectLaunch="MutaliskSCBWWeapon@BounceLM">
         <LaunchAssets Sound=""/>
         <Missile value="MutaliskSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="MutaliskSCBWWeapon@Impact" Sound="MutaliskSCBWWeapon@Impact"/>
         <ImpactPhysics Name="GlaveWurmImpact" MatchKeys="Basic" Physics="MutaliskAttackDeathForce"/>
         <ImpactPhysics Name="GlaveWurmImpactAir" MatchKeys="BasicAir" Physics="MutaliskAttackAirDeathForce"/>
+        <LaunchRequest Subject="_ImpactGuide" Actor="Find"/>
+        <ImpactSite value="MutaliskSCBWWeapon@BounceImpactSite"/>
     </CActorAction>
     <CActorMissile id="MutaliskSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="MutaliskSCBWWeapon@Missile"/>
     <CActorForceCylinder id="UltraliskSCBWWeapon@Force">
@@ -1633,10 +1746,11 @@
         <On Terms="UnitBirth.DefilerSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo DefilerSCBW; MorphFrom DefilerSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo DefilerSCBW@Burrowed; MorphFrom DefilerSCBW" Send="TerrainSquibDeactivate"/>
+        <On Terms="UnitDeathCustomize; PassChance 100.000000" Send="Create DefilerSCBW@Death"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="DefilerSCBW@Death" SoundLink="DefilerSCBW@Death"/>
-        <DeathArray index="Disintegrate" ModelLink="DefilerSCBW@DeathAcid" SoundLink="Zerg_ExplosionSmall"/>
-        <DeathArray index="Fire" ModelLink="DefilerSCBW@DeathFire" SoundLink="Zerg_ExplosionSmall"/>
+        <DeathArray index="Normal" ModelLink="DefilerSCBW@Death" SoundLink=""/>
+        <DeathArray index="Disintegrate" ModelLink="DefilerSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
+        <DeathArray index="Fire" ModelLink="DefilerSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
         <PortraitModel value="DefilerSCBW@Portrait"/>
         <WalkAnimMoveSpeed value="2"/>
         <BarOffset value="50"/>
@@ -2619,7 +2733,7 @@
         <LaunchAttachQuery Methods="AMFilterWeapon01 AMPatternRollingStripe"/>
         <LaunchAssets Model="SiegeTankSCBWWeapon@Launch" Sound="SiegeTankSCBWWeapon@Launch"/>
         <ImpactMap index="None" Model="SiegeTankSCBWWeapon@Impact" Sound="SiegeTankSCBWWeapon@Impact"/>
-        <ImpactPhysics Name="SiegeTankSCBWWeapon@Impact" MatchKeys="Basic" Physics="SiegeTankAttackForce"/>
+        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="SiegeTankAttackForce"/>
     </CActorAction>
     <CActorModel id="SiegeTankSCBWSiegedWeapon@DamageModel" parent="ModelAnimationStyleOneShotNoOrphan">
         <Flags index="SuppressCreationErrors" value="1"/>
@@ -2633,7 +2747,7 @@
         <LaunchAssets Model="SiegeTankSCBWSiegedWeapon@Launch" Sound="SiegeTankSCBWSiegedWeapon@Launch"/>
         <ImpactSiteOps Ops="SOpActionCenter SOpTargetUnitZ" HoldPosition="1"/>
         <ImpactMap index="None" Model="SiegeTankSCBWSiegedWeapon@Impact" Sound="SiegeTankSCBWSiegedWeapon@Impact"/>
-        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="SiegeTankSiegedForce"/>
+        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="SiegeTankSCBWSiegedWeapon@ImpactAttackForce"/>
         <DamageSiteOps Ops="SOpAttachHarness"/>
         <DamageMap index="None" Model="SiegeTankSCBWSiegedWeapon@Damage"/>
         <DamageModel value="SiegeTankSCBWSiegedWeapon@DamageModel"/>
@@ -2791,7 +2905,7 @@
         <Field value="Directional"/>
         <Duration value="0.250000"/>
         <Magnitude value="20.000000,5.000000"/>
-        <Radius value="0.500000,0.250000"/>
+        <Radius value="0.750000,0.250000"/>
         <Direction value="Forward"/>
     </CActorForceSphere>
     <CActorMissile id="DragoonSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DragoonSCBWWeapon@Missile">
@@ -3137,9 +3251,10 @@
         <On Terms="UnitDeathCustomize; KilledByEffect {BattlecruiserSCBWWeaponGround@Damage BattlecruiserSCBWWeaponAir@Damage}" Send="DeathCustomize RagdollFire"/>
     </CActorEventMacro>
     <CActorEventMacro id="PhysicsDeathsSwarmGround" parent="PhysicsDeathsSwarmBase">
-        <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSiegedSCBWWeapon@DamageAccum SpiderMineSCBWWeapon@DamageAccum ReaverSCBWWeapon@Damage ScarabSCBWWeapon@Damage}" Send="DeathCustomize RagdollSiegeTank"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSCBWSiegedWeapon@DamageAccum SpiderMineSCBWWeapon@DamageAccum ReaverSCBWWeapon@Damage ScarabSCBWWeapon@Damage}" Send="DeathCustomize RagdollSiegeTank"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {LurkerSCBWWeapon@Damage SunkenColonySCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {InfestedTerranSCBWWeapon@DamageAccum InfestedTerranSCBWWeapon@DamageSearch GuardianSCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect TwinIbiksCannon" Send="DeathCustomize RagdollFire"/>
     </CActorEventMacro>
     <CActorEventMacro id="PhysicsDeathsSwarmAir" parent="PhysicsDeathsSwarmBase">
         <On Terms="UnitDeathCustomize; KilledByEffect {ValkyrieSCBWWeapon@DamageAccum CorsairSCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
