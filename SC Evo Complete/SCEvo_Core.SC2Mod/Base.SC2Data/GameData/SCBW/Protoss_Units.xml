@@ -1,10 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectCancelOrder id="ReaverSCBWWeapon@ChaseCancelAttack">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Value="Caster"/>
+        <AbilCmd value="attack,Execute"/>
+    </CEffectCancelOrder>
+    <CEffectSet id="ReaverSCBWWeapon@ChaseSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@ChaseOrder"/>
+        <EffectArray value="ReaverSCBWWeapon@SetCooldown"/>
+    </CEffectSet>
+    <CEffectSwitch id="ReaverSCBWWeapon@ChaseSwitch">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="CasterNotHoldingPosition" Effect="ReaverSCBWWeapon@ChaseSet"/>
+        <CaseDefault value="ReaverSCBWWeapon@ChaseCancelAttack"/>
+    </CEffectSwitch>
+    <CEffectIssueOrder id="ReaverSCBWWeapon@ChaseOrder">
+        <ValidatorArray value="CasterNotHoldingPosition"/>
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Value="Caster"/>
+        <Abil value="ReaverSCBWWeapon@Chase"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <Player Value="Caster"/>
+        <Target Value="TargetUnitOrPoint"/>
+    </CEffectIssueOrder>
+    <CEffectCreatePersistent id="ReaverSCBWWeapon@Chase">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnitOrPoint"/>
+        <OffsetVectorEndLocation Value="TargetUnitOrPoint"/>
+        <FinalEffect value="ReaverSCBWWeapon@ChaseAttack"/>
+    </CEffectCreatePersistent>
+    <CEffectIssueOrder id="ReaverSCBWWeapon@ChaseAttack">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@Chase" Value="Caster"/>
+        <Abil value="attack"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <Player Effect="ReaverSCBWWeapon@Chase" Value="Caster"/>
+        <Target Effect="ReaverSCBWWeapon@Chase" Value="TargetUnit"/>
+    </CEffectIssueOrder>
+    <CEffectCreatePersistent id="ReaverSCBWWeapon@Launch">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <OffsetVectorEndLocation Value="TargetUnit"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ReaverSCBWWeapon@LaunchCheck">
+        <ValidatorArray value="ReaverSCBWWeapon@LaunchCheck"/>
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <OffsetVectorEndLocation Value="TargetUnit"/>
+        <InitialEffect value="ReaverSCBWWeapon@Launch"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ReaverSCBWWeapon@QueueOrders">
+        <EditorCategories value="Race:Protoss"/>
+        <PeriodCount value="90"/>
+        <PeriodicEffectArray value="ReaverSCBWWeapon@Attack"/>
+        <PeriodicPeriodArray value="0.0625"/>
+        <WhichLocation Value="TargetUnit"/>
+        <OffsetVectorEndLocation Value="TargetUnit"/>
+        <InitialEffect value="ReaverSCBWWeapon@Attack"/>
+        <PeriodicValidator value="ReaverSCBWWeapon@QueueOrders"/>
+    </CEffectCreatePersistent>
     <CEffectApplyBehavior id="DragoonSCBW@CoverAnim"/>
     <CEffectEnumTransport id="DarkArchonSCBWMindControl@IterateTransport">
         <EditorCategories value="Race:Protoss"/>
         <Effect value="DarkArchonSCBWMindControl@IterateTransportSet"/>
     </CEffectEnumTransport>
+    <CEffectDamage id="ReaverSCBWWeapon@SuicideDud">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="SourceUnit"/>
+        <Flags index="Kill" value="1"/>
+        <Flags index="NoKillCredit" value="1"/>
+    </CEffectDamage>
     <CEffectSet id="DarkArchonSCBWMaelstrom@Set">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="DarkArchonSCBWMaelstrom@HaltIssueOrder"/>
@@ -15,10 +81,6 @@
         <AbilTechAlias value="_SCVBuild"/>
         <AbilCmdIndex value="30"/>
     </CEffectIssueOrder>
-    <CEffectSet id="ReaverSCBWWeapon@SuicideDud">
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="Suicide"/>
-    </CEffectSet>
     <CEffectApplyBehavior id="DarkArchonSCBWMindControl@ActivationAB">
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="DarkArchonSCBWMindControl@Activation"/>
@@ -67,13 +129,6 @@
     <CEffectApplyBehavior id="ReaverSCBWWeapon@InsideTransport">
         <ValidatorArray index="0" value="NotDead"/>
     </CEffectApplyBehavior>
-    <CEffectCreatePersistent id="ReaverSCBWWeapon@CPScarab">
-        <EditorCategories value="Race:Protoss"/>
-        <WhichLocation Value="TargetUnit"/>
-        <OffsetVectorStartLocation Value="TargetUnit"/>
-        <OffsetVectorEndLocation Value="TargetUnit"/>
-        <InitialEffect value="ReaverSCBWWeapon@ScarabSetSource"/>
-    </CEffectCreatePersistent>
     <CEffectDamage id="ScarabSCBWWeapon@Damage" parent="DU_WEAP">
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="SourcePoint"/>
@@ -92,12 +147,6 @@
         <SearchFlags index="OffsetByUnitRadius" value="0"/>
         <SearchFlags index="SameCliff" value="0"/>
     </CEffectDamage>
-    <CEffectCancelOrder id="ReaverSCBWWeapon@ScarabStop">
-        <EditorCategories value="Race:Protoss"/>
-        <AbilCmd value="attack,Execute"/>
-        <Flags index="Queued" value="1"/>
-        <WhichUnit Effect="ReaverSCBWWeapon@CUSet"/>
-    </CEffectCancelOrder>
     <CEffectSet id="ScarabSCBWWeapon@Impact">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="ScarabSCBWWeapon@Damage"/>
@@ -471,51 +520,12 @@
     <CEffectSet id="ReaverSCBWWeapon@CUSet">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="ReaverSCBWWeapon@HallucinationScarab"/>
-        <EffectArray value="ReaverSCBWWeapon@Attack"/>
+        <EffectArray value="ReaverSCBWWeapon@QueueOrders"/>
         <EffectArray value="ReaverSCBWWeapon@NeuralUpgrades"/>
         <EffectArray value="ReaverSCBWWeapon@Warning"/>
         <EffectArray value="ReaverSCBWWeapon@TrackTargetLastPosition"/>
         <EffectArray value="ReaverSCBWWeapon@ScarabTrack"/>
         <EffectArray value="ReaverSCBWWeapon@KillsToCaster"/>
-    </CEffectSet>
-    <CEffectDamage id="ReaverSCBWWeapon@Damage" parent="DU_WEAP">
-        <EditorCategories value="Race:Protoss"/>
-        <Visibility value="Visible"/>
-        <Kind value="Ranged"/>
-        <KindSplash value="Splash"/>
-        <Amount value="100"/>
-        <Death value="Blast"/>
-        <AreaArray Radius="0.625" Fraction="1"/>
-        <AreaArray Radius="1.25" Fraction="0.5" Validator="SCBW_NotBurrowed"/>
-        <AreaArray Radius="1.875" Fraction="0.25" Validator="SCBW_NotBurrowed"/>
-        <ExcludeArray Value="Target"/>
-        <SearchFilters value="Ground;Self,Player,Missile,Stasis,Dead,Hidden,Invulnerable"/>
-    </CEffectDamage>
-    <CEffectLaunchMissile id="ReaverSCBWWeapon@LM">
-        <EditorCategories value="Race:Protoss"/>
-        <ImpactEffect value="ReaverSCBWWeapon@Suicide"/>
-        <AmmoUnit value="ReaverSCBWWeapon@Missile"/>
-        <ImpactRange value="1"/>
-    </CEffectLaunchMissile>
-    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABReveal">
-        <Behavior value="ReaverSCBWWeapon@Reveal"/>
-    </CEffectApplyBehavior>
-    <CEffectCreatePersistent id="ReaverSCBWWeapon@CP">
-        <ValidatorArray value="ReaverSCBWWeapon@CP"/>
-        <EditorCategories value="Race:Protoss"/>
-        <WhichLocation Value="TargetUnit"/>
-        <TimeScaleSource Value="Caster"/>
-        <Flags index="Channeled" value="1"/>
-        <PeriodCount value="1"/>
-        <PeriodicValidator value="ReaverSCBWWeapon@CP@Periodic"/>
-        <PeriodicEffectArray value="ReaverSCBWWeapon@Set"/>
-        <PeriodicPeriodArray value="0.75"/>
-    </CEffectCreatePersistent>
-    <CEffectSet id="ReaverSCBWWeapon@Suicide">
-        <ValidatorArray value="ReaverSCBWWeapon@Suicide"/>
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@Damage"/>
-        <EffectArray value="Suicide"/>
     </CEffectSet>
     <CEffectSet id="ReaverSCBWWeapon@SetInitial">
         <EditorCategories value="Race:Protoss"/>
@@ -523,17 +533,8 @@
         <EffectArray value="ReaverSCBWWeapon@TrackTargetPosition"/>
         <EffectArray value="ReaverSCBWWeapon@UM"/>
         <TargetLocationType value="UnitOrPoint"/>
+        <ValidatorArray value="ReaverSCBWHangar@Armed"/>
     </CEffectSet>
-    <CEffectSet id="ReaverSCBWWeapon@Set">
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@ABReveal"/>
-        <EffectArray value="ReaverSCBWWeapon@UM"/>
-        <EffectArray value="ReaverSCBWWeapon@LM"/>
-    </CEffectSet>
-    <CEffectApplyBehavior id="ReaverSCBWWeapon@ABTimedLife">
-        <EditorCategories value="Race:Protoss"/>
-        <Behavior value="ReaverSCBWWeapon@TimedLife"/>
-    </CEffectApplyBehavior>
     <CEffectDamage id="ReaverSCBWWeapon@ScarabSuicide">
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="TargetUnit"/>
@@ -548,8 +549,8 @@
     <CEffectIssueOrder id="ReaverSCBWWeapon@Attack">
         <EditorCategories value="Race:Protoss"/>
         <Abil value="attack"/>
-        <Target Effect="ReaverSCBWWeapon@SetInitial" Value="TargetUnitOrPoint"/>
-        <CmdFlags index="AttackOnce" value="1"/>
+        <Target Effect="ReaverSCBWWeapon@SetInitial" Value="TargetUnit"/>
+        <CmdFlags index="Queued" value="1"/>
     </CEffectIssueOrder>
     <CEffectRemoveBehavior id="ReaverSCBWWeapon@RemoveTeleportDetectorFromSelf">
         <ValidatorArray index="0" removed="1"/>
@@ -607,6 +608,12 @@
     <CEffectApplyBehavior id="ReaverSCBWWeapon@TrackTargetPosition">
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
+    <CEffectModifyUnit id="ReaverSCBWWeapon@SetCooldown">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactUnit Value="Caster"/>
+        <Weapon Weapon="ReaverSCBWWeapon" CooldownOperation="Max"/>
+        <Weapon Weapon="ReaverSCBWWeapon@NoScan" CooldownOperation="Max"/>
+    </CEffectModifyUnit>
     <CEffectEnumTrackedUnits id="ReaverSCBWWeapon@EnumScarabsStop">
         <EditorCategories value="Race:Protoss"/>
         <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
@@ -616,11 +623,6 @@
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="KillsToCaster"/>
     </CEffectApplyBehavior>
-    <CEffectModifyUnit id="ReaverSCBWWeapon@SetCooldown">
-        <EditorCategories value="Race:Protoss"/>
-        <ImpactUnit Value="Caster"/>
-        <Weapon Weapon="ReaverSCBWWeapon" CooldownOperation="Max" CooldownAmount="0.501"/>
-    </CEffectModifyUnit>
     <CEffectApplyBehavior id="ReaverSCBWWeapon@NeuralUseUpgrade1">
         <ValidatorArray value="ReaverSCBWWeapon@NeuralUseUpgrade1"/>
         <EditorCategories value="Race:Protoss"/>
@@ -706,6 +708,20 @@
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="InterceptorSCBW@ReturnDamaged"/>
     </CEffectApplyBehavior>
+    <CAbilEffectTarget id="ReaverSCBWWeapon@Chase">
+        <OrderArray index="0" removed="1"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <Flags index="AllowMovement" value="1"/>
+        <Flags index="Chase" value="1"/>
+        <Flags index="RangeUsePathing" value="1"/>
+        <Flags index="RequireTargetVision" value="0"/>
+        <Flags index="UpdateTarget" value="1"/>
+        <Range value="9"/>
+        <RangeSlop value="0"/>
+        <Arc value="360"/>
+        <TrackingArc value="360"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="Attack"/>
+    </CAbilEffectTarget>
     <CAbilRedirectInstant id="ShuttleSCBW@RedirectScarab">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Abil value="ReaverSCBWHangar"/>
@@ -753,6 +769,7 @@
         <CmdButtonArray index="WithTarget" DefaultButtonFace="ArchonSCBWMerge@Target" State="Restricted"/>
         <Flags index="IgnoreUnitCost" value="1"/>
         <Info Unit="ArchonSCBW" Time="18.75"/>
+        <Effect value="SCBW_MergeBegin"/>
     </CAbilMerge>
     <CAbilArmMagazine id="CarrierSCBWHangar" parent="SCBW_ArmMagazine" Ammo1="InterceptorSCBW">
         <AbilSetId value="CarrierHanger"/>
@@ -796,6 +813,7 @@
         <CmdButtonArray index="WithTarget" DefaultButtonFace="DarkArchonSCBWMerge@Target"/>
         <Flags index="IgnoreUnitCost" value="1"/>
         <Info Unit="DarkArchonSCBW" Time="18.75"/>
+        <Effect value="SCBW_MergeBegin"/>
     </CAbilMerge>
     <CAbilMergeable id="DarkArchonSCBW@Mergeable">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -966,6 +984,25 @@
         <Alert value="TrainComplete"/>
         <MaxCount value="5"/>
     </CAbilArmMagazine>
+    <CValidatorUnitPathable id="ReaverSCBWWeapon@Pathable">
+        <MaxDistance value="13"/>
+    </CValidatorUnitPathable>
+    <CValidatorCondition id="ReaverSCBWWeapon@LaunchCheck">
+        <IfArray Test="ReaverSCBWWeapon@Pathable"/>
+        <Else value="Failure"/>
+    </CValidatorCondition>
+    <CValidatorCompareTrackedUnitsCount id="ReaverSCBWWeapon@ScarabNotLive">
+        <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
+    </CValidatorCompareTrackedUnitsCount>
+    <CValidatorCombine id="ReaverSCBWWeapon@QueueOrders">
+        <Type value="And"/>
+        <CombineArray value="TargetNotDead"/>
+        <CombineArray value="ReaverSCBWWeapon@QueueOrdersTargetFilter"/>
+    </CValidatorCombine>
+    <CValidatorUnitFilters id="ReaverSCBWWeapon@QueueOrdersTargetFilter">
+        <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
+        <Filters value="-;Dead,Hidden"/>
+    </CValidatorUnitFilters>
     <CValidatorUnitCompareBehaviorCount id="DragoonSCBW@NoCoverAnim">
         <Behavior value="DragoonSCBW@CoverAnim"/>
     </CValidatorUnitCompareBehaviorCount>
@@ -1011,10 +1048,6 @@
         <CombineArray value="DarkArchonSCBWMindControl@Caster"/>
         <CombineArray value="CasterIsNeuralParasited"/>
     </CValidatorCombine>
-    <CValidatorUnitOrderQueue id="ReaverSCBWWeapon@CasterIsNotMoving">
-        <AbilLink value="move"/>
-        <Find value="0"/>
-    </CValidatorUnitOrderQueue>
     <CValidatorUnitFilters id="ReaverSCBWWeapon@ScarabIsAlive">
         <Filters value="-;Dead"/>
     </CValidatorUnitFilters>
@@ -1030,19 +1063,6 @@
         <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
         <Filters value="-;Structure"/>
     </CValidatorUnitFilters>
-    <CValidatorCombine id="ReaverSCBWWeapon@CP" parent="SCBW_Effect">
-        <CombineArray value="ReaverSCBWHangar@NotArmed"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="ReaverSCBWWeapon@Reveal@Disable" parent="SCBW_Behavior"/>
-    <CValidatorCombine id="ReaverSCBWWeapon@Reveal@Remove" parent="SCBW_Behavior">
-        <CombineArray value="NotCloaked"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="ReaverSCBWWeapon@Suicide" parent="SCBW_Effect">
-        <CombineArray value="CasterIsNotHidden"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="ReaverSCBWWeapon@CP@Periodic" parent="SCBW_Effect">
-        <CombineArray value="CasterNotDead"/>
-    </CValidatorCombine>
     <CValidatorLocationCrossCliff id="ArbiterSCBWRecall@CrossCliff">
         <ResultFailed value="Error,Error/CantCrossCliffs"/>
         <WhichLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
@@ -1163,6 +1183,7 @@
     <CValidatorPlayerRequirement id="ReaverSCBWHangar@Armed">
         <WhichPlayer Value="Caster"/>
         <Value value="ReaverSCBWHangar@Armed"/>
+        <Find value="1"/>
     </CValidatorPlayerRequirement>
     <CValidatorPlayerRequirement id="ReaverSCBWHangar@NotArmed">
         <WhichPlayer Value="Caster"/>
@@ -1490,6 +1511,10 @@
         <DefaultButtonLayout Row="1" Column="1"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
+    <CRequirementGT id="ScarabSCBW@CountAtUnitGT0">
+        <OperandArray index="0" value="ScarabSCBW@CountAtUnit"/>
+        <OperandArray index="1" value="0"/>
+    </CRequirementGT>
     <CRequirementAnd id="CarrierSCBWHangar@ArmUpgrade">
         <OperandArray value="InterceptorSCBW@QoBAtUnitLT8"/>
     </CRequirementAnd>
@@ -1543,7 +1568,7 @@
         <OperandArray value="ScarabSCBW@QoBAtUnitLT5"/>
     </CRequirementAnd>
     <CRequirementAnd id="ReaverSCBWHangar@Armed">
-        <OperandArray value="ScarabSCBW@QoBAtUnitGT0"/>
+        <OperandArray value="ScarabSCBW@CountAtUnitGT0"/>
     </CRequirementAnd>
     <CRequirementAnd id="ReaverSCBWHangar@NotArmed">
         <OperandArray value="ScarabSCBW@NotCountAtUnit"/>
@@ -2355,6 +2380,7 @@
         <On Terms="UnitDeathCustomize; ValidatePlayer ReaverSCBWWeapon@NeuralUseDamageUpgrade" Send="DeathCustomize Upgrade"/>
         <On Terms="ActorCreation; ValidatePlayer ReaverSCBWWeapon@NeuralUseDamageUpgrade" Send="ModelSwap ScarabSCBW@Upgraded"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect ReaverSCBWWeapon@SuicideDud" Send="DeathCustomize Detached"/>
         <DeathArray index="Normal" ModelLink="ReaverSCBWWeapon@Impact" SoundLink="ReaverSCBWWeapon@Explode"/>
         <BarOffset value="25"/>
         <BarWidth value="36"/>
@@ -2370,6 +2396,7 @@
         <UnitIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactUpgraded" Name="Upgrade"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathSmall" Name="Hallucination"/>
+        <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactDud" Name="Detached"/>
         <Preload value="ReaverSCBWWeapon@Impact"/>
     </CActorUnit>
     <CActorSound id="ZealotSCBW@Death" parent="SoundOneShot">
@@ -3062,13 +3089,12 @@
         <SoundArray index="Pissed" value="ZealotSCBW@Pissed"/>
         <StandAnimTurnTime value="4.5"/>
     </CActorUnit>
-    <CActorUnit id="ReaverSCBW" parent="GenericUnitStandard" unitName="ReaverSCBW">
+    <CActorUnit id="ReaverSCBW" parent="GenericUnitBase" unitName="ReaverSCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
-        <On Terms="WeaponStart.ReaverSCBWScarabsLaunch.AttackStart; AnimPlaying Birth" Send="AnimClear Birth"/>
-        <On Terms="Effect.ReaverSCBWWeapon@LM.Start; At Caster" Send="AnimPlay Attack Attack"/>
+        <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="AnimPlay Attack Attack NonLooping"/>
         <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="AnimBracketStart Cover Cover,Start Cover Cover,End"/>
         <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="TimerKill CoverDelay"/>
         <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="TimerSet 5.000000 CoverDelay"/>
@@ -3412,14 +3438,6 @@
         <DamagePhysics Name="Explosion" MatchKeys="Basic" Physics="ScarabExplosionUpForce"/>
         <ShieldFlashType value="Header"/>
     </CActorAction>
-    <CActorAction id="ReaverSCBWWeapon@ActionOld" parent="GenericAttack" effectImpact="ReaverSCBWWeapon@Damage" effectLaunch="ReaverSCBWWeapon@LM">
-        <LaunchAssets Sound="ReaverSCBWWeapon@Launch"/>
-        <Missile value="ReaverSCBWWeapon@Missile"/>
-        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
-        <ImpactMap index="None" Model="ReaverSCBWWeapon@Impact" Sound="ReaverSCBWWeapon@Explode"/>
-        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="ScarabExplosionForce"/>
-        <ShieldFlashType value="Header"/>
-    </CActorAction>
     <CActorForceSphere id="ScarabSCBWWeapon@ExplosionForce">
         <On Terms="Effect.ScarabSCBWWeapon@Damage.Start; At Effect" Send="Create"/>
         <On Terms="ActorCreation" Send="Create ScarabSCBWWeapon@ExplosionForceUp"/>
@@ -3435,9 +3453,6 @@
         <Magnitude value="19.500000,10.000000"/>
         <Radius value="2.150000,0.200000"/>
     </CActorForceSphere>
-    <CActorMissile id="ReaverSCBWWeapon@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="ReaverSCBWWeapon@Missile">
-        <Macros value="GlobalLoopMacro"/>
-    </CActorMissile>
     <CActorModel id="ReaverSCBW@UnloadWeaponStun" parent="ModelAnimationStyleContinuous">
         <Aliases value="_Snapshot"/>
         <Inherits index="Visibility" value="1"/>
@@ -3466,9 +3481,13 @@
         <Scale value="1.750000"/>
         <AutoScaleFromSelectionFactor value="1.000000"/>
     </CActorModel>
-    <CModel id="DragoonSCBW@DeathRagdoll" parent="UnitDeathRagdoll">
-        <Model value="Assets\Units\Protoss\DragoonSCBW\DragoonSCBW@DeathRagdoll_00.m3"/>
+    <CModel id="ReaverSCBWWeapon@ImpactDud" parent="ImpactFX">
+        <Model value="Assets\Effects\Protoss\SardineS_ReaverMod\Reaver_Missile_Impact_NoDistortion.m3"/>
         <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CModel id="DragoonSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Protoss">
+        <Model value="Assets\Units\Protoss\DragoonSCBW\DragoonSCBW@DeathRagdoll_00.m3"/>
+        <Radius value="0.750000"/>
     </CModel>
     <CModel id="ReaverSCBW@UnloadWeaponStun" parent="PersistentSpellFX">
         <Model value="Assets\Effects\Neutral\Stun_Void\Stun_Void.m3"/>
@@ -3496,9 +3515,6 @@
         <Model value="Assets\Effects\Protoss\ReaverSCBWWeapon@Impact\ReaverSCBWWeapon@Impact.m3"/>
         <EditorCategories value="Race:Protoss"/>
         <AnimAliases Anim="Stand" Alias="Death"/>
-    </CModel>
-    <CModel id="ReaverSCBWWeapon@Missile" parent="MissileFX">
-        <Model value="Assets\Effects\Protoss\ReaverSCBWWeapon@Missile\ReaverSCBWWeapon@Missile.m3"/>
     </CModel>
     <CModel id="HighTemplarSCBWWeapon@Missile" parent="MissileFX">
         <Model value="Assets\Effects\Protoss\AdeptSoulMissile\AdeptSoulMissile.m3"/>
@@ -3670,9 +3686,11 @@
     </CModel>
     <CModel id="DarkTemplarSCBW@Death" parent="DarkTemplarDeathBase">
         <Model value="Assets\Units\Protoss\DarkTemplarDeath\DarkTemplarDeath_01.m3"/>
+        <Radius value="0.400000"/>
     </CModel>
     <CModel id="DarkTemplarSCBW@DeathRagdoll" parent="DarkTemplarDeathRagdollBase">
         <Model value="Assets\Units\Protoss\DarkTemplarDeathRagdoll\DarkTemplarDeathRagdoll_01.m3"/>
+        <Radius value="0.400000"/>
     </CModel>
     <CModel id="DarkTemplarSCBW@Placement" parent="Placement" Race="Protoss">
         <Model value="Assets\Units\Protoss\DarkTemplarPlacement\DarkTemplarPlacement.m3"/>
@@ -3775,7 +3793,7 @@
         <Occlusion value="Show"/>
         <PlanetPanelCamera value="Star2CameraLow04"/>
         <Radius value="0.750000"/>
-        <SelectionOffset value="0.000000,0.000000,-0.400000"/>
+        <SelectionOffset value="0.000000,0.000000,-0.500000"/>
         <SelectionRadius value="0.882000"/>
         <ShadowRadius value="0.882000"/>
         <SquibTypeDefault value="Metal"/>
@@ -3828,11 +3846,15 @@
         <Model value="Assets\Units\Protoss\HighTemplarSCBW\HighTemplarSCBW@Death.m3"/>
         <ScaleMax value="0.800000,0.800000,0.800000"/>
         <ScaleMin value="0.800000,0.800000,0.800000"/>
+        <Radius value="0.400000"/>
+        <SelectionRadius value="0.500000"/>
+        <ShadowRadius value="0.500000"/>
     </CModel>
     <CModel id="HighTemplarSCBW@DeathRagdoll" parent="HighTemplarDeathRagdollBase">
         <Model value="Assets\Units\Protoss\HighTemplarSCBW\HighTemplarSCBW@DeathRagdoll.m3"/>
         <ScaleMax value="0.800000,0.800000,0.800000"/>
         <ScaleMin value="0.800000,0.800000,0.800000"/>
+        <Radius value="0.400000"/>
     </CModel>
     <CModel id="DarkArchonSCBW@Death" parent="UnitDeath" Race="Protoss">
         <Model value="Assets\Units\Protoss\Void_DarkArchon_Death\Void_DarkArchon_Death.m3"/>
@@ -3951,11 +3973,11 @@
         <Model value="Assets\Units\Protoss\Probe_Remastered_Death\Probe_Remastered_Death.m3"/>
         <LowQualityModel value="ProtossSmallUnitDeathLow"/>
         <Occlusion value="Show"/>
-        <SelectionRadius value="0.555400"/>
-        <ShadowRadius value="0.555400"/>
+        <Radius value="0.375000"/>
     </CModel>
     <CModel id="ProbeSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Protoss">
         <Model value="Assets\Units\Protoss\Probe_Remastered_DeathRagdoll\Probe_Remastered_DeathRagdoll.m3"/>
+        <Radius value="0.375000"/>
     </CModel>
     <CModel id="ObserverSCBW@WarpIn" parent="ObserverWarpInBase">
         <Model value="Assets\Units\Protoss\ObserverWarpIn\ObserverWarpIn.m3"/>
@@ -4031,10 +4053,17 @@
         <Radius value="0.750000"/>
         <SelectionRadius value="0.750000"/>
         <ShadowRadius value="0.750000"/>
-        <TechPurchaseCamera value="Star2CameraMid05"/>
-        <UnitGlossaryCamera value="Star2CameraMid05"/>
         <SquibTypeDefault value="Metal"/>
+        <TechPurchaseCamera value="Star2CameraMid05"/>
         <Tipability value="0.500000"/>
+        <UnitGlossaryCamera value="Star2CameraMid05"/>
+        <SelectionOffset value="0.000000,0.000000,-0.500000"/>
+        <AttachProps Id="Ref_Weapon Left">
+            <Keys index="SetA" value="0"/>
+        </AttachProps>
+        <AttachProps Id="Ref_Weapon Right">
+            <Keys index="SetA" value="0"/>
+        </AttachProps>
     </CModel>
     <CModel id="ScoutSCBW@Portrait" parent="Portrait" Race="Protoss">
         <Model value="Assets\Portraits\Protoss\ScoutPortrait\ScoutPortrait.m3"/>
@@ -4064,6 +4093,7 @@
     </CModel>
     <CModel id="DragoonSCBW@Death" parent="UnitDeath" Race="Protoss">
         <Model value="Assets\Units\Protoss\DragoonSCBW\DragoonSCBW@Death.m3"/>
+        <Radius value="0.750000"/>
     </CModel>
     <CModel id="ZealotSCBW" parent="Zealot">
         <Model value="Assets\Units\Protoss\ZealotSCBW\ZealotSCBW.m3"/>
@@ -4082,12 +4112,12 @@
         <Model value="Assets\Units\Protoss\ZealotSCBW\ZealotSCBW@Death.m3"/>
         <LowQualityModel value="ProtossSpiritDeathLow"/>
         <Occlusion value="Show"/>
-        <SelectionRadius value="0.555400"/>
-        <ShadowRadius value="0.555400"/>
+        <Radius value="0.375000"/>
     </CModel>
     <CModel id="ZealotSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Protoss">
         <Model value="Assets\Units\Protoss\Zealot_Remastered_DeathRagdoll\Zealot_Remastered_DeathRagdoll.m3"/>
         <PhysicsForceFactor value="2.000000"/>
+        <Radius value="0.375000"/>
     </CModel>
     <CModel id="ZealotSCBW@Placement" parent="Placement" Race="Protoss">
         <Model value="Assets\Units\Protoss\ZealotPlacement\ZealotPlacement.m3"/>
@@ -4200,9 +4230,7 @@
     </CModel>
     <CWeaponLegacy id="ReaverSCBWWeapon">
         <EditorCategories value="Race:Protoss"/>
-        <Options index="Melee" value="1"/>
         <Options index="ContinuousScan" value="1"/>
-        <Options index="LinkedCooldown" value="0"/>
         <Icon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <DisplayEffect value="ScarabSCBWWeapon@Damage"/>
         <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
@@ -4210,10 +4238,9 @@
         <Arc value="9.9975"/>
         <Period value="3.75"/>
         <DamagePoint value="0"/>
-        <Effect value="ReaverSCBWWeapon@SetInitial"/>
+        <Effect value="ReaverSCBWWeapon@LaunchCheck"/>
         <AllowedMovement value="Slowing"/>
         <MinScanRange value="8"/>
-        <LegacyOptions index="CanRetargetWhileChanneling" value="1"/>
         <AttackType value="Pierce"/>
         <TeleportResetRange value="5"/>
     </CWeaponLegacy>
@@ -4226,6 +4253,23 @@
         <Range value="6"/>
         <Period value="1.754"/>
         <Effect value="HighTemplarSCBWWeapon@LM"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="ReaverSCBWWeapon@NoScan" parent="ReaverSCBWWeapon">
+        <Name value="Weapon/Name/ReaverSCBWWeapon@NoScan"/>
+        <Options index="Hidden" value="1"/>
+        <Options index="ContinuousScan" value="0"/>
+        <AcquireScanFilters value="-;Player,Ally,Neutral,Enemy"/>
+        <MinScanRange value="0"/>
+        <Effect value="ReaverSCBWWeapon@Launch"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="ReaverSCBWWeapon@Dummy" parent="ReaverSCBWWeapon">
+        <Name value="Weapon/Name/ReaverSCBWWeapon@Dummy"/>
+        <Options index="Hidden" value="1"/>
+        <Options index="ContinuousScan" value="0"/>
+        <Options index="LinkedCooldown" value="0"/>
+        <AcquireScanFilters value="-;Player,Ally,Neutral,Enemy"/>
+        <MinScanRange value="0"/>
+        <Effect value=""/>
     </CWeaponLegacy>
     <CMoverMissile id="ReaverSCBWWeapon@Mover">
         <MotionPhases>
@@ -5226,66 +5270,120 @@
         <Volume value="-12.000000,-9.000000"/>
     </CSound>
     <CDataCollectionAbil id="ReaverSCBWWeapon" parent="ProtossRoboticWeaponSCBW">
-        <DataRecord Entry="Weapon,ReaverSCBWWeapon"/>
-        <DataRecord Entry="Actor,ReaverSCBWWeapon@Action"/>
-        <DataRecord Entry="Actor,ReaverSCBWWeapon@Missile"/>
-        <DataRecord Entry="Behavior,ReaverSCBWWeapon@Reveal"/>
-        <DataRecord Entry="Behavior,ReaverSCBWWeapon@TimedLife"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ABReveal"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@LM"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@CP"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@Set"/>
+        <DataRecord Entry="Abil,ReaverSCBWWeapon@Chase"/>
+        <DataRecord Entry="Actor,ReaverSCBWWeapon@Launch"/>
+        <DataRecord Entry="Actor,ReaverSCBWWeapon@UpgradeRangeIndicator"/>
+        <DataRecord Entry="Actor,ReaverSCBWWeapon@TargetWarning"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@DelayAttackWhenUnloaded"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@NotInsideTransport"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@InsideTransport"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@TrackTargetPosition"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@Warning"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@WarningSign"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@ScarabTracker"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@TrackTargetLastPosition"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@ScarabTimedLife"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@NoOrders"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@Disabled"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@ChaseSuppressCombat"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@Launch"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@LaunchCheck"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@QueueOrders"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@Attack"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@SuicideDud"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@HallucinationScarab"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@DelayAttackWhenUnloaded"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@InsideTransportSet"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@NotInsideTransport"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@InsideTransport"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@CU"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@CUSet"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@IssueQueuedMoveCommand"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@SetInitial"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ClearLastMoveOrderTracker"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ShiftMoveTargetTrackerSet"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@NeuralUpgrades"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@Warning"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TrackTargetLastPosition"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ScarabTrack"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@KillsToCaster"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TrackTargetPosition"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@UM"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ABTimedLife"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@Damage"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@Suicide"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ScarabSuicide"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@RemoveTeleportDetectorFromSelf"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportRemoveBehaviorSelf"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@RemoveTeleportDetectorFromTarget"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@WarningSign"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@WarningSignRB"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@EnumScarabsStop"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@SetCooldown"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@NeuralUseUpgrade1"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@NeuralUseUpgrade2"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@NeuralUseUpgrade3"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@NeuralUseDamageUpgrade"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@NeuralDummyUpgrade"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@SetCooldownShort"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseOrder"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseAttack"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@Chase"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseOrderSuppressCombat"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseSet"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseSwitch"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@Impact"/>
-        <DataRecord Entry="Model,ReaverSCBWWeapon@Missile"/>
+        <DataRecord Entry="Model,ReaverSCBWWeapon@ImpactUpgraded"/>
+        <DataRecord Entry="Model,ReaverSCBWWeapon@ImpactDud"/>
+        <DataRecord Entry="Model,ReaverSCBWWeapon@TargetWarningIndicatorUpgraded"/>
+        <DataRecord Entry="Model,ReaverSCBWWeapon@TargetWarningIndicator"/>
         <DataRecord Entry="Mover,ReaverSCBWWeapon@Mover"/>
+        <DataRecord Entry="Preload,ReaverSCBWWeapon@Impact"/>
+        <DataRecord Entry="Requirement,ReaverSCBWWeapon@NeuralUseUpgrade1"/>
+        <DataRecord Entry="Requirement,ReaverSCBWWeapon@NeuralUseUpgrade2"/>
+        <DataRecord Entry="Requirement,ReaverSCBWWeapon@NeuralUseUpgrade3"/>
         <DataRecord Entry="Sound,ReaverSCBWWeapon@Launch"/>
         <DataRecord Entry="Sound,ReaverSCBWWeapon@Explode"/>
-        <DataRecord Entry="Unit,ReaverSCBWWeapon@Missile"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@Reveal@Remove"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@Reveal@Disable"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@Suicide"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@CP"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@CP@Periodic"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@CU"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ScarabSuicide"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@CUSet"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@Attack"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@Warning"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@TrackTargetPosition"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@TrackScarab"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@KillsToCaster"/>
-        <DataRecord Entry="Unit,ScarabSCBW@Dummy"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheck"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@QueueOrders"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabWarningFilter"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@NeuralUseUpgrade1"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@NeuralUseUpgrade2"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@NeuralUseUpgrade3"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@NeuralUseDamageUpgrade"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@Pathable"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabNotLive"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@QueueOrdersTargetFilter"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabIsAlive"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabIsAttacking"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabIsLive"/>
+        <DataRecord Entry="Weapon,ReaverSCBWWeapon"/>
+        <DataRecord Entry="Weapon,ReaverSCBWWeapon@NoScan"/>
+        <DataRecord Entry="Weapon,ReaverSCBWWeapon@Dummy"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HighTemplarSCBWWeapon" parent="ProtossWeaponSCBW">
-        <DataRecord Entry="Weapon,HighTemplarSCBWWeapon"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWWeapon@Damage"/>
         <DataRecord Entry="Actor,HighTemplarSCBWWeapon@Action"/>
-        <DataRecord Entry="Sound,HighTemplarSCBWWeapon@Impact"/>
-        <DataRecord Entry="Sound,HighTemplarSCBWWeapon@Launch"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWWeapon@LM"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWWeapon@PhysicsImpactForce"/>
         <DataRecord Entry="Actor,HighTemplarSCBWWeapon@ActionMissile"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWWeapon@PhysicsImpactForce"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWWeapon@LM"/>
         <DataRecord Entry="Effect,HighTemplarSCBWWeapon@Set"/>
         <DataRecord Entry="Model,HighTemplarSCBWWeapon@Missile"/>
         <DataRecord Entry="Mover,HighTemplarSCBWWeapon@Mover"/>
         <DataRecord Entry="Sound,HighTemplarSCBWWeapon@AttackLaunch"/>
         <DataRecord Entry="Sound,HighTemplarSCBWWeapon@AttackImpact"/>
+        <DataRecord Entry="Sound,HighTemplarSCBWWeapon@Impact"/>
+        <DataRecord Entry="Sound,HighTemplarSCBWWeapon@Launch"/>
         <DataRecord Entry="Unit,HighTemplarSCBWWeapon@Missile"/>
+        <DataRecord Entry="Weapon,HighTemplarSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="CarrierSCBWHangar" parent="SCBW_Abil">
         <EditorCategories value="DataGroup:Ability,Race:Protoss,DataFamily:Melee,ObjectType:Unit"/>
         <DataRecord Entry="Abil,CarrierSCBWHangar"/>
-        <DataRecord Entry="Requirement,CarrierSCBWHangar"/>
         <DataRecord Entry="Requirement,CarrierSCBWHangar@Arm"/>
-        <DataRecord Entry="RequirementNode,CarrierSCBWHangar"/>
-        <DataRecord Entry="RequirementNode,CarrierSCBWHangar@Arm"/>
         <DataRecord Entry="Requirement,CarrierSCBWHangar@ArmUpgrade"/>
+        <DataRecord Entry="Requirement,CarrierSCBWHangar"/>
+        <DataRecord Entry="RequirementNode,CarrierSCBWHangar@Arm"/>
         <DataRecord Entry="RequirementNode,CarrierSCBWHangar@ArmUpgrade"/>
+        <DataRecord Entry="RequirementNode,CarrierSCBWHangar"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ArchonSCBWMerge" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ArchonSCBWMerge"/>
@@ -5298,238 +5396,254 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWMerge" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWMerge"/>
+        <DataRecord Entry="Actor,DarkArchonSCBWMerge@Sound"/>
         <DataRecord Entry="Button,DarkArchonSCBWMerge@Selection"/>
         <DataRecord Entry="Button,DarkArchonSCBWMerge@Target"/>
         <DataRecord Entry="Requirement,DarkArchonSCBWMerge"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBWMerge"/>
-        <DataRecord Entry="Actor,DarkArchonSCBWMerge@Sound"/>
         <DataRecord Entry="Sound,DarkArchonSCBWMerge@Sound"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ReaverSCBWHangar" parent="SCBW_Abil">
         <EditorCategories value="DataGroup:Ability,Race:Protoss,DataFamily:Melee,ObjectType:Unit"/>
         <DataRecord Entry="Abil,ReaverSCBWHangar"/>
-        <DataRecord Entry="Requirement,ReaverSCBWHangar"/>
         <DataRecord Entry="Requirement,ReaverSCBWHangar@Arm"/>
-        <DataRecord Entry="RequirementNode,ReaverSCBWHangar"/>
-        <DataRecord Entry="Requirement,ReaverSCBWHangar@Arm"/>
-        <DataRecord Entry="RequirementNode,ReaverSCBWHangar@Arm"/>
-        <DataRecord Entry="Requirement,ReaverSCBWHangar@ArmUpgrade"/>
-        <DataRecord Entry="RequirementNode,ReaverSCBWHangar@ArmUpgrade"/>
         <DataRecord Entry="Requirement,ReaverSCBWHangar@Armed"/>
         <DataRecord Entry="Requirement,ReaverSCBWHangar@NotArmed"/>
+        <DataRecord Entry="Requirement,ReaverSCBWHangar"/>
+        <DataRecord Entry="Requirement,ReaverSCBWHangar@ArmUpgrade"/>
+        <DataRecord Entry="RequirementNode,ReaverSCBWHangar"/>
+        <DataRecord Entry="RequirementNode,ReaverSCBWHangar@Arm"/>
         <DataRecord Entry="RequirementNode,ReaverSCBWHangar@Armed"/>
         <DataRecord Entry="RequirementNode,ReaverSCBWHangar@NotArmed"/>
-        <DataRecord Entry="Validator,ReaverSCBWHangar@NotArmed"/>
+        <DataRecord Entry="RequirementNode,ReaverSCBWHangar@ArmUpgrade"/>
         <DataRecord Entry="Validator,ReaverSCBWHangar@Armed"/>
+        <DataRecord Entry="Validator,ReaverSCBWHangar@NotArmed"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ArbiterSCBWRecall" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ArbiterSCBWRecall"/>
-        <DataRecord Entry="Button,ArbiterSCBWRecall"/>
-        <DataRecord Entry="Requirement,ArbiterSCBWRecall"/>
-        <DataRecord Entry="RequirementNode,ArbiterSCBWRecall"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchEnd"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchStart"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@CursorSplat"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@Opacity"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@Range"/>
-        <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchEnd"/>
-        <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchStart"/>
-        <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactSoundRecalled"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactRecalled"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactRecalling"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactSoundRecalling"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactSoundRecalled"/>
         <DataRecord Entry="Behavior,ArbiterSCBWRecall@Recalled"/>
         <DataRecord Entry="Behavior,ArbiterSCBWRecall@Recalling"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@Search"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@Set"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@EnumMagazine"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@SetInitial"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPDelayFinal"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPDelayInitial"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@Teleport"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalled"/>
-        <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalling"/>
-        <DataRecord Entry="Model,ArbiterSCBWRecall@SearchStart"/>
-        <DataRecord Entry="Model,ArbiterSCBWRecall@ImpactRecalling"/>
-        <DataRecord Entry="Model,ArbiterSCBWRecall@ImpactRecalled"/>
-        <DataRecord Entry="Sound,ArbiterSCBWRecall@End"/>
-        <DataRecord Entry="Sound,ArbiterSCBWRecall@Start"/>
-        <DataRecord Entry="Validator,ArbiterSCBWRecall@ABRecalling"/>
-        <DataRecord Entry="Validator,ArbiterSCBWRecall@Set"/>
+        <DataRecord Entry="Button,ArbiterSCBWRecall"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheckTP"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@Search"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheckFail"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@SetInitial"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheck"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@TeleportAir"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheckAir"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@ClearRecalls"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPDelayInitial"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPDelayFinal"/>
         <DataRecord Entry="Effect,ArbiterSCBWRecall@EnumMagazineSet"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalling"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalled"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@Teleport"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@EnumMagazine"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@Set"/>
+        <DataRecord Entry="Model,ArbiterSCBWRecall@SearchStart"/>
+        <DataRecord Entry="Model,ArbiterSCBWRecall@ImpactRecalled"/>
+        <DataRecord Entry="Model,ArbiterSCBWRecall@ImpactRecalling"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWRecall"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWRecall"/>
+        <DataRecord Entry="Sound,ArbiterSCBWRecall@Start"/>
+        <DataRecord Entry="Sound,ArbiterSCBWRecall@End"/>
         <DataRecord Entry="Validator,ArbiterSCBWRecall@SourceNotPathable"/>
         <DataRecord Entry="Validator,ArbiterSCBWRecall@CrossChasmOrCliff"/>
         <DataRecord Entry="Validator,ArbiterSCBWRecall@Enum"/>
-        <DataRecord Entry="Validator,ArbiterSCBWRecall@ValidatorGround"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@ABRecalling"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@Set"/>
         <DataRecord Entry="Validator,ArbiterSCBWRecall@CrossCliff"/>
         <DataRecord Entry="Validator,ArbiterSCBWRecall@EnumAir"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@ValidatorGround"/>
         <DataRecord Entry="Validator,ArbiterSCBWRecall@PlacementCheck"/>
         <DataRecord Entry="Validator,ArbiterSCBWRecall@CrossChasm"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ArbiterSCBWStasisField" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ArbiterSCBWStasisField"/>
-        <DataRecord Entry="Behavior,ArbiterSCBWStasisField"/>
-        <DataRecord Entry="Button,ArbiterSCBWStasisField"/>
-        <DataRecord Entry="Requirement,ArbiterSCBWStasisField"/>
-        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisField"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@CastModel"/>
-        <DataRecord Entry="Actor,ArbiterSCBWStasisField@Impact"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@CursorSplat"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@Impact"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@ImpactSound"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@OffSound"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@Range"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@Shockwave"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWStasisField"/>
         <DataRecord Entry="Behavior,ArbiterSCBWStasisField@TimedLife"/>
+        <DataRecord Entry="Button,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@HaltIssueOrder"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@PhasedUnit"/>
         <DataRecord Entry="Effect,ArbiterSCBWStasisField@AB"/>
-        <DataRecord Entry="Effect,ArbiterSCBWStasisField@ABTimedLife"/>
         <DataRecord Entry="Effect,ArbiterSCBWStasisField@Search"/>
         <DataRecord Entry="Effect,ArbiterSCBWStasisField@Set"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@ABTimedLife"/>
         <DataRecord Entry="Model,ArbiterSCBWStasisField@CastModel"/>
         <DataRecord Entry="Model,ArbiterSCBWStasisField@Impact"/>
-        <DataRecord Entry="Sound,ArbiterSCBWStasisField@Off"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisField"/>
         <DataRecord Entry="Sound,ArbiterSCBWStasisField@On"/>
+        <DataRecord Entry="Sound,ArbiterSCBWStasisField@Off"/>
         <DataRecord Entry="Sound,ArbiterSCBWStasisField@Shockwave"/>
+        <DataRecord Entry="Validator,ArbiterSCBWStasisField@InvulnerableHandler"/>
+        <DataRecord Entry="Validator,ArbiterSCBWStasisField@Set"/>
         <DataRecord Entry="Validator,ArbiterSCBWStasisField@AB"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="CorsairSCBWDisruptionWeb" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,CorsairSCBWDisruptionWeb"/>
-        <DataRecord Entry="Behavior,CorsairSCBWDisruptionWeb"/>
-        <DataRecord Entry="Button,CorsairSCBWDisruptionWeb"/>
-        <DataRecord Entry="Requirement,CorsairSCBWDisruptionWeb"/>
-        <DataRecord Entry="RequirementNode,CorsairSCBWDisruptionWeb"/>
+        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@CursorSplat"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Impact"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@LaunchSound"/>
-        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Cast"/>
-        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@CursorSplat"/>
-        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@LoopSound"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Range"/>
+        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@LoopSound"/>
+        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Cast"/>
+        <DataRecord Entry="Behavior,CorsairSCBWDisruptionWeb"/>
+        <DataRecord Entry="Button,CorsairSCBWDisruptionWeb"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@AB"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@CP"/>
-        <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@IterateTransport"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@Search"/>
+        <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@IterateTransport"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@Set"/>
         <DataRecord Entry="Model,CorsairSCBWDisruptionWeb@Impact"/>
         <DataRecord Entry="Model,CorsairSCBWDisruptionWeb@Cast"/>
+        <DataRecord Entry="Requirement,CorsairSCBWDisruptionWeb"/>
+        <DataRecord Entry="RequirementNode,CorsairSCBWDisruptionWeb"/>
         <DataRecord Entry="Sound,CorsairSCBWDisruptionWeb@Launch"/>
         <DataRecord Entry="Sound,CorsairSCBWDisruptionWeb@Loop"/>
-        <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@Filters"/>
-        <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@HasNotBehavior"/>
         <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@IterateTransport"/>
+        <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@HasNotBehavior"/>
+        <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@Filters"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWFeedback" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWFeedback"/>
-        <DataRecord Entry="Button,DarkArchonSCBWFeedback"/>
-        <DataRecord Entry="Effect,DarkArchonSCBWFeedback@Damage"/>
-        <DataRecord Entry="Requirement,DarkArchonSCBWFeedback"/>
-        <DataRecord Entry="RequirementNode,DarkArchonSCBWFeedback"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@Impact"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@ImpactSound"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@Launch"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@LaunchSound"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@Range"/>
+        <DataRecord Entry="Button,DarkArchonSCBWFeedback"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWFeedback@Damage"/>
         <DataRecord Entry="Effect,DarkArchonSCBWFeedback@MU"/>
         <DataRecord Entry="Effect,DarkArchonSCBWFeedback@Set"/>
         <DataRecord Entry="Model,DarkArchonSCBWFeedback@Impact"/>
         <DataRecord Entry="Model,DarkArchonSCBWFeedback@Launch"/>
+        <DataRecord Entry="Requirement,DarkArchonSCBWFeedback"/>
+        <DataRecord Entry="RequirementNode,DarkArchonSCBWFeedback"/>
         <DataRecord Entry="Sound,DarkArchonSCBWFeedback@Impact"/>
         <DataRecord Entry="Sound,DarkArchonSCBWFeedback@Launch"/>
         <DataRecord Entry="Validator,DarkArchonSCBWFeedback@Set"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWMaelstrom" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWMaelstrom"/>
-        <DataRecord Entry="Behavior,DarkArchonSCBWMaelstrom"/>
-        <DataRecord Entry="Button,DarkArchonSCBWMaelstrom"/>
-        <DataRecord Entry="Requirement,DarkArchonSCBWMaelstrom"/>
-        <DataRecord Entry="RequirementNode,DarkArchonSCBWMaelstrom"/>
+        <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@CastModel"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@CursorSplat"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@Impact"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@LaunchSound"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@Range"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@StunImpact"/>
+        <DataRecord Entry="Behavior,DarkArchonSCBWMaelstrom"/>
+        <DataRecord Entry="Button,DarkArchonSCBWMaelstrom"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMaelstrom@Set"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMaelstrom@HaltIssueOrder"/>
         <DataRecord Entry="Effect,DarkArchonSCBWMaelstrom@AB"/>
         <DataRecord Entry="Effect,DarkArchonSCBWMaelstrom@Search"/>
+        <DataRecord Entry="Model,DarkArchonSCBWMaelstrom@CastModel"/>
         <DataRecord Entry="Model,DarkArchonSCBWMaelstrom@Impact"/>
         <DataRecord Entry="Model,DarkArchonSCBWMaelstrom@StunImpact"/>
+        <DataRecord Entry="Requirement,DarkArchonSCBWMaelstrom"/>
+        <DataRecord Entry="RequirementNode,DarkArchonSCBWMaelstrom"/>
         <DataRecord Entry="Sound,DarkArchonSCBWMaelstrom@Launch"/>
-        <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@CastModel"/>
-        <DataRecord Entry="Model,DarkArchonSCBWMaelstrom@CastModel"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWMindControl" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWMindControl"/>
+        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Impact"/>
+        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Beam"/>
+        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Range"/>
+        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Sound"/>
+        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@State"/>
+        <DataRecord Entry="Behavior,DarkArchonSCBWMindControl@Activation"/>
         <DataRecord Entry="Behavior,DarkArchonSCBWMindControl"/>
+        <DataRecord Entry="Behavior,DarkArchonSCBWMindControl@Prevention"/>
         <DataRecord Entry="Button,DarkArchonSCBWMindControl"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@IterateTransport"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@IterateTransportSet"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@ActivationAB"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@RB"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@Clear"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@AB"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@MUChangeOwner"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@MU"/>
+        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@Set"/>
+        <DataRecord Entry="Model,DarkArchonSCBWMindControl@Impact"/>
+        <DataRecord Entry="Model,DarkArchonSCBWMindControl@Beam"/>
+        <DataRecord Entry="Model,DarkArchonSCBWMindControl@State"/>
         <DataRecord Entry="Requirement,DarkArchonSCBWMindControl"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBWMindControl"/>
-        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Beam"/>
-        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Impact"/>
-        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Range"/>
-        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@State"/>
-        <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Sound"/>
-        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@AB"/>
-        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@Set"/>
-        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@Clear"/>
-        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@MU"/>
-        <DataRecord Entry="Model,DarkArchonSCBWMindControl@Beam"/>
-        <DataRecord Entry="Model,DarkArchonSCBWMindControl@Impact"/>
-        <DataRecord Entry="Model,DarkArchonSCBWMindControl@State"/>
         <DataRecord Entry="Sound,DarkArchonSCBWMindControl@Sound"/>
-        <DataRecord Entry="Behavior,DarkArchonSCBWMindControl@Prevention"/>
-        <DataRecord Entry="Effect,DarkArchonSCBWMindControl@MUChangeOwner"/>
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl@Set"/>
+        <DataRecord Entry="Validator,DarkArchonSCBWMindControl@ActivationNot"/>
+        <DataRecord Entry="Validator,DarkArchonSCBWMindControl@Caster"/>
+        <DataRecord Entry="Validator,DarkArchonSCBWMindControl@Not"/>
+        <DataRecord Entry="Validator,DarkArchonSCBWMindControl"/>
+        <DataRecord Entry="Validator,DarkArchonSCBWMindControl@ActivationNotCaster"/>
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl@PreventionNot"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HighTemplarSCBWHallucination" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,HighTemplarSCBWHallucination"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWHallucination@BirthSound"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWHallucination@Range"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWHallucination@Birth"/>
         <DataRecord Entry="Actor,HighTemplarSCBWHallucination"/>
         <DataRecord Entry="Behavior,HighTemplarSCBWHallucination"/>
-        <DataRecord Entry="Button,HighTemplarSCBWHallucination"/>
-        <DataRecord Entry="Requirement,HighTemplarSCBWHallucination"/>
-        <DataRecord Entry="RequirementNode,HighTemplarSCBWHallucination"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWHallucination@Birth"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWHallucination@BirthSound"/>
         <DataRecord Entry="Behavior,HighTemplarSCBWHallucination@TimedLife"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWHallucination@SetInitial"/>
+        <DataRecord Entry="Button,HighTemplarSCBWHallucination"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWHallucination@SetAB"/>
         <DataRecord Entry="Effect,HighTemplarSCBWHallucination@AB"/>
         <DataRecord Entry="Effect,HighTemplarSCBWHallucination@ABTimedLife"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWHallucination@CU"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWHallucination@SetAB"/>
         <DataRecord Entry="Effect,HighTemplarSCBWHallucination@KillHallucination"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWHallucination@SetInitial"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWHallucination@CU"/>
         <DataRecord Entry="Model,HighTemplarSCBWHallucination@Birth"/>
+        <DataRecord Entry="Requirement,HighTemplarSCBWHallucination"/>
+        <DataRecord Entry="RequirementNode,HighTemplarSCBWHallucination"/>
         <DataRecord Entry="Sound,HighTemplarSCBWHallucination@Launch"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWHallucination@Range"/>
         <DataRecord Entry="Sound,HighTemplarSCBWHallucination@Death"/>
+        <DataRecord Entry="Validator,HighTemplarSCBWHallucination@Behavior"/>
         <DataRecord Entry="Validator,HighTemplarSCBWHallucination@KillHallucinationTargetFilters"/>
         <DataRecord Entry="Validator,HighTemplarSCBWHallucination@SetInitial"/>
-        <DataRecord Entry="Validator,HighTemplarSCBWHallucination@Behavior"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HighTemplarSCBWPsiStorm" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,HighTemplarSCBWPsiStorm"/>
-        <DataRecord Entry="Behavior,HighTemplarSCBWPsiStorm"/>
-        <DataRecord Entry="Button,HighTemplarSCBWPsiStorm"/>
-        <DataRecord Entry="Requirement,HighTemplarSCBWPsiStorm"/>
-        <DataRecord Entry="RequirementNode,HighTemplarSCBWPsiStorm"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CursorSplat"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@ImpactSound"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@LaunchSound"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Model"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Range"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Sound"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@AB"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@DamageInitial"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CursorSplat"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Range"/>
+        <DataRecord Entry="Behavior,HighTemplarSCBWPsiStorm"/>
+        <DataRecord Entry="Button,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Search"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Damage"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@CPDelayInital"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@CP"/>
-        <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@CursorSplat"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@AB"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Damage"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@DamageInitial"/>
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@Model"/>
+        <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@CursorSplat"/>
+        <DataRecord Entry="Preload,HighTemplarSCBWPsiStorm@Impact"/>
+        <DataRecord Entry="Requirement,HighTemplarSCBWPsiStorm"/>
+        <DataRecord Entry="RequirementNode,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Launch"/>
-        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@CPDelayInital"/>
         <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@Damage"/>
         <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@DamageTargetFilters"/>
     </CDataCollectionAbil>
@@ -5538,14 +5652,11 @@
         <DataRecord Entry="Actor,ArbiterSCBW@LandSoundSweetener"/>
         <DataRecord Entry="Actor,ArbiterSCBW@Land"/>
         <DataRecord Entry="Actor,ArbiterSCBW@WarpInStargate"/>
-        <DataRecord Entry="Light,ArbiterSCBW@Portrait"/>
         <DataRecord Entry="Model,ArbiterSCBW@WarpInStargate"/>
         <DataRecord Entry="Model,ArbiterSCBW@WarpIn"/>
-        <DataRecord Entry="Model,ArbiterSCBW@Death"/>
         <DataRecord Entry="Model,ArbiterSCBW@Placement"/>
-        <DataRecord Entry="Model,ArbiterSCBW@Portrait"/>
-        <DataRecord Entry="Requirement,ArbiterSCBW"/>
-        <DataRecord Entry="RequirementNode,ArbiterSCBW"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ArbiterSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ArbiterSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ArbiterSCBW@QoBAtUnit"/>
@@ -5553,15 +5664,11 @@
         <DataRecord Entry="RequirementNode,ArbiterSCBW@NotQoB"/>
         <DataRecord Entry="Sound,ArbiterSCBW@LandSoundSweetener"/>
         <DataRecord Entry="Sound,ArbiterSCBW@Land"/>
-        <DataRecord Entry="Sound,ArbiterSCBW@Attack"/>
         <DataRecord Entry="Sound,ArbiterSCBW@Death"/>
         <DataRecord Entry="Sound,ArbiterSCBW@Help"/>
-        <DataRecord Entry="Sound,ArbiterSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ArbiterSCBW@Ready"/>
-        <DataRecord Entry="Sound,ArbiterSCBW@What"/>
         <DataRecord Entry="Sound,ArbiterSCBW@Yes"/>
-        <DataRecord Entry="RequirementNode,ArbiterSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ArbiterSCBW@Show"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Attack"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Pissed"/>
         <DataRecord Entry="Tactical,ArbiterSCBW"/>
         <DataRecord Entry="Validator,ArbiterSCBW@Not"/>
         <DataRecord Entry="Validator,ArbiterSCBW"/>
@@ -5569,161 +5676,118 @@
     <CDataCollectionUnit id="CarrierSCBW" parent="ProtossAirUnitSCBW">
         <TechInfoUpgradeUsed value="CarrierSCBWHangarIncreaseUpgrade"/>
         <DataRecord Entry="Actor,CarrierSCBW@Land"/>
-        <DataRecord Entry="Actor,CarrierSCBW"/>
         <DataRecord Entry="Actor,CarrierSCBW@WarpInStargate"/>
-        <DataRecord Entry="Button,CarrierSCBW"/>
-        <DataRecord Entry="Light,CarrierSCBW@Portrait"/>
         <DataRecord Entry="Model,CarrierSCBW@WarpInStargate"/>
-        <DataRecord Entry="Model,CarrierSCBW"/>
-        <DataRecord Entry="Model,CarrierSCBW@WarpIn"/>
-        <DataRecord Entry="Model,CarrierSCBW@Death"/>
         <DataRecord Entry="Model,CarrierSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,CarrierSCBW@WarpIn"/>
         <DataRecord Entry="Model,CarrierSCBW@Placement"/>
-        <DataRecord Entry="Model,CarrierSCBW@Portrait"/>
         <DataRecord Entry="Model,CarrierSCBW@DeathLow"/>
-        <DataRecord Entry="Requirement,CarrierSCBW"/>
-        <DataRecord Entry="RequirementNode,CarrierSCBW"/>
+        <DataRecord Entry="RequirementNode,CarrierSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,CarrierSCBW@Show"/>
         <DataRecord Entry="RequirementNode,CarrierSCBW@Count"/>
         <DataRecord Entry="RequirementNode,CarrierSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,CarrierSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,CarrierSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,CarrierSCBW@NotQoB"/>
         <DataRecord Entry="Sound,CarrierSCBW@Land"/>
-        <DataRecord Entry="Sound,CarrierSCBW@Attack"/>
         <DataRecord Entry="Sound,CarrierSCBW@Death"/>
         <DataRecord Entry="Sound,CarrierSCBW@Help"/>
-        <DataRecord Entry="Sound,CarrierSCBW@Pissed"/>
-        <DataRecord Entry="Sound,CarrierSCBW@Ready"/>
-        <DataRecord Entry="Sound,CarrierSCBW@What"/>
         <DataRecord Entry="Sound,CarrierSCBW@Yes"/>
+        <DataRecord Entry="Sound,CarrierSCBW@Attack"/>
+        <DataRecord Entry="Sound,CarrierSCBW@Pissed"/>
         <DataRecord Entry="Sound,CarrierSCBW@Movement"/>
-        <DataRecord Entry="Unit,CarrierSCBW"/>
-        <DataRecord Entry="RequirementNode,CarrierSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,CarrierSCBW@Show"/>
         <DataRecord Entry="Tactical,CarrierSCBW"/>
         <DataRecord Entry="Validator,CarrierSCBW@HangarQueueEmpty"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="CorsairSCBW" parent="ProtossAirUnitSCBW">
         <TechInfoUpgradeUsed value="CorsairSCBWEnergyUpgrade"/>
         <DataRecord Entry="Actor,CorsairSCBW@Land"/>
-        <DataRecord Entry="Actor,CorsairSCBW"/>
         <DataRecord Entry="Actor,CorsairSCBW@WarpInStargate"/>
-        <DataRecord Entry="Button,CorsairSCBW"/>
-        <DataRecord Entry="Light,CorsairSCBW@Portrait"/>
         <DataRecord Entry="Model,CorsairSCBW@WarpInStargate"/>
-        <DataRecord Entry="Model,CorsairSCBW"/>
         <DataRecord Entry="Model,CorsairSCBW@WarpIn"/>
-        <DataRecord Entry="Model,CorsairSCBW@Death"/>
         <DataRecord Entry="Model,CorsairSCBW@Placement"/>
-        <DataRecord Entry="Model,CorsairSCBW@Portrait"/>
-        <DataRecord Entry="Requirement,CorsairSCBW"/>
-        <DataRecord Entry="RequirementNode,CorsairSCBW"/>
+        <DataRecord Entry="RequirementNode,CorsairSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,CorsairSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,CorsairSCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,CorsairSCBW@NotCount"/>
         <DataRecord Entry="RequirementNode,CorsairSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,CorsairSCBW@NotCountAtUnit"/>
         <DataRecord Entry="RequirementNode,CorsairSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,CorsairSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,CorsairSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,CorsairSCBW@NotQoB"/>
         <DataRecord Entry="Sound,CorsairSCBW@Land"/>
-        <DataRecord Entry="Sound,CorsairSCBW@Attack"/>
         <DataRecord Entry="Sound,CorsairSCBW@Death"/>
         <DataRecord Entry="Sound,CorsairSCBW@Help"/>
-        <DataRecord Entry="Sound,CorsairSCBW@Pissed"/>
-        <DataRecord Entry="Sound,CorsairSCBW@Ready"/>
-        <DataRecord Entry="Sound,CorsairSCBW@What"/>
         <DataRecord Entry="Sound,CorsairSCBW@Yes"/>
-        <DataRecord Entry="Unit,CorsairSCBW"/>
-        <DataRecord Entry="RequirementNode,CorsairSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,CorsairSCBW@Show"/>
-        <DataRecord Entry="RequirementNode,CorsairSCBW@CountAtUnit"/>
-        <DataRecord Entry="RequirementNode,CorsairSCBW@NotCount"/>
-        <DataRecord Entry="RequirementNode,CorsairSCBW@NotCountAtUnit"/>
+        <DataRecord Entry="Sound,CorsairSCBW@Attack"/>
+        <DataRecord Entry="Sound,CorsairSCBW@Pissed"/>
+        <DataRecord Entry="Sound,CorsairSCBW@Movement"/>
         <DataRecord Entry="Tactical,CorsairSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ScoutSCBW" parent="ProtossAirUnitSCBW">
-        <DataRecord Entry="Actor,ScoutSCBW"/>
         <DataRecord Entry="Actor,ScoutSCBW@WarpInStargate"/>
-        <DataRecord Entry="Button,ScoutSCBW"/>
-        <DataRecord Entry="Light,ScoutSCBW@Portrait"/>
-        <DataRecord Entry="Model,ScoutSCBW@WarpIn"/>
-        <DataRecord Entry="Model,ScoutSCBW@Death"/>
-        <DataRecord Entry="Model,ScoutSCBW@Portrait"/>
-        <DataRecord Entry="Model,ScoutSCBW"/>
         <DataRecord Entry="Model,ScoutSCBW@WarpInStargate"/>
-        <DataRecord Entry="Requirement,ScoutSCBW"/>
-        <DataRecord Entry="RequirementNode,ScoutSCBW"/>
+        <DataRecord Entry="Model,ScoutSCBW@WarpIn"/>
+        <DataRecord Entry="RequirementNode,ScoutSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ScoutSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ScoutSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ScoutSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ScoutSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ScoutSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ScoutSCBW@NotQoB"/>
-        <DataRecord Entry="Sound,ScoutSCBW@Attack"/>
         <DataRecord Entry="Sound,ScoutSCBW@Death"/>
         <DataRecord Entry="Sound,ScoutSCBW@Help"/>
-        <DataRecord Entry="Sound,ScoutSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ScoutSCBW@Ready"/>
-        <DataRecord Entry="Sound,ScoutSCBW@What"/>
         <DataRecord Entry="Sound,ScoutSCBW@Yes"/>
-        <DataRecord Entry="Unit,ScoutSCBW"/>
-        <DataRecord Entry="RequirementNode,ScoutSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ScoutSCBW@Show"/>
+        <DataRecord Entry="Sound,ScoutSCBW@Attack"/>
+        <DataRecord Entry="Sound,ScoutSCBW@Pissed"/>
+        <DataRecord Entry="Sound,ScoutSCBW@Movement"/>
         <DataRecord Entry="Tactical,ScoutSCBW"/>
         <TechInfoUpgradeUsed value="ScoutSCBWSightUpgrade"/>
         <TechInfoUpgradeUsed value="ScoutSCBWSpeedUpgrade"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ShuttleSCBW" parent="ProtossAirUnitSCBW">
         <TechInfoUpgradeUsed value="ShuttleSCBWSpeedUpgrade"/>
-        <DataRecord Entry="Actor,ShuttleSCBW"/>
-        <DataRecord Entry="Button,ShuttleSCBW"/>
-        <DataRecord Entry="Light,ShuttleSCBW@Portrait"/>
-        <DataRecord Entry="Model,ShuttleSCBW"/>
-        <DataRecord Entry="Model,ShuttleSCBW@WarpIn"/>
-        <DataRecord Entry="Model,ShuttleSCBW@Death"/>
-        <DataRecord Entry="Model,ShuttleSCBW@DeathRagdoll"/>
-        <DataRecord Entry="Model,ShuttleSCBW@Portrait"/>
-        <DataRecord Entry="Requirement,ShuttleSCBW"/>
-        <DataRecord Entry="RequirementNode,ShuttleSCBW"/>
-        <DataRecord Entry="RequirementNode,ShuttleSCBW@Count"/>
-        <DataRecord Entry="RequirementNode,ShuttleSCBW@QoB"/>
-        <DataRecord Entry="RequirementNode,ShuttleSCBW@QoBAtUnit"/>
-        <DataRecord Entry="RequirementNode,ShuttleSCBW@NotQoBAtUnit"/>
-        <DataRecord Entry="RequirementNode,ShuttleSCBW@NotQoB"/>
-        <DataRecord Entry="Sound,ShuttleSCBW@Attack"/>
-        <DataRecord Entry="Sound,ShuttleSCBW@Death"/>
-        <DataRecord Entry="Sound,ShuttleSCBW@Help"/>
-        <DataRecord Entry="Sound,ShuttleSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ShuttleSCBW@Ready"/>
-        <DataRecord Entry="Sound,ShuttleSCBW@What"/>
-        <DataRecord Entry="Sound,ShuttleSCBW@Yes"/>
-        <DataRecord Entry="Unit,ShuttleSCBW"/>
         <DataRecord Entry="Abil,ShuttleSCBW@Transport"/>
+        <DataRecord Entry="Abil,ShuttleSCBW@RedirectScarab"/>
+        <DataRecord Entry="Abil,ShuttleSCBW@RedirectScarabCancel"/>
         <DataRecord Entry="Actor,ShuttleSCBW@TransportLoadModel"/>
         <DataRecord Entry="Actor,ShuttleSCBW@TransportLoadSound"/>
         <DataRecord Entry="Actor,ShuttleSCBW@TransportUnloadModel"/>
         <DataRecord Entry="Actor,ShuttleSCBW@TransportUnloadSound"/>
         <DataRecord Entry="Actor,ShuttleSCBW@TransportUnloadFX"/>
+        <DataRecord Entry="Button,ShuttleSCBW@Transport"/>
+        <DataRecord Entry="Button,ShuttleSCBW@RedirectScarab"/>
         <DataRecord Entry="Model,ShuttleSCBW@TransportLoadModel"/>
         <DataRecord Entry="Model,ShuttleSCBW@TransportUnloadModel"/>
         <DataRecord Entry="Model,ShuttleSCBW@TransportUnloadFX"/>
+        <DataRecord Entry="Model,ShuttleSCBW@WarpIn"/>
+        <DataRecord Entry="Model,ShuttleSCBW@DeathRagdoll"/>
         <DataRecord Entry="RequirementNode,ShuttleSCBW@AllowUnit"/>
         <DataRecord Entry="RequirementNode,ShuttleSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,ShuttleSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,ShuttleSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,ShuttleSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ShuttleSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ShuttleSCBW@NotQoB"/>
         <DataRecord Entry="Sound,ShuttleSCBW@TransportLoad"/>
         <DataRecord Entry="Sound,ShuttleSCBW@TransportUnload"/>
+        <DataRecord Entry="Sound,ShuttleSCBW@Death"/>
+        <DataRecord Entry="Sound,ShuttleSCBW@Help"/>
+        <DataRecord Entry="Sound,ShuttleSCBW@Yes"/>
+        <DataRecord Entry="Sound,ShuttleSCBW@Attack"/>
+        <DataRecord Entry="Sound,ShuttleSCBW@Pissed"/>
         <DataRecord Entry="Tactical,ShuttleSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="DarkTemplarSCBW" parent="ProtossGroundUnitSCBW">
         <DataRecord Entry="Actor,DarkTemplarSCBW@LandSweetener"/>
         <DataRecord Entry="Actor,DarkTemplarSCBW@Land"/>
-        <DataRecord Entry="Actor,DarkTemplarSCBW"/>
-        <DataRecord Entry="Button,DarkTemplarSCBW"/>
-        <DataRecord Entry="Light,DarkTemplarSCBW@Portrait"/>
-        <DataRecord Entry="Model,DarkTemplarSCBW@WarpIn"/>
-        <DataRecord Entry="Model,DarkTemplarSCBW@Death"/>
+        <DataRecord Entry="Actor,DarkTemplarSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,DarkTemplarSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,DarkTemplarSCBW@WarpIn"/>
         <DataRecord Entry="Model,DarkTemplarSCBW@Placement"/>
-        <DataRecord Entry="Model,DarkTemplarSCBW@Portrait"/>
-        <DataRecord Entry="Model,DarkTemplarSCBW"/>
-        <DataRecord Entry="Requirement,DarkTemplarSCBW"/>
-        <DataRecord Entry="RequirementNode,DarkTemplarSCBW"/>
+        <DataRecord Entry="RequirementNode,DarkTemplarSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,DarkTemplarSCBW@Show"/>
         <DataRecord Entry="RequirementNode,DarkTemplarSCBW@Count"/>
         <DataRecord Entry="RequirementNode,DarkTemplarSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,DarkTemplarSCBW@QoBAtUnit"/>
@@ -5731,79 +5795,87 @@
         <DataRecord Entry="RequirementNode,DarkTemplarSCBW@NotQoB"/>
         <DataRecord Entry="Sound,DarkTemplarSCBW@LandSweetener"/>
         <DataRecord Entry="Sound,DarkTemplarSCBW@Land"/>
-        <DataRecord Entry="Sound,DarkTemplarSCBW@Attack"/>
         <DataRecord Entry="Sound,DarkTemplarSCBW@Death"/>
         <DataRecord Entry="Sound,DarkTemplarSCBW@Help"/>
-        <DataRecord Entry="Sound,DarkTemplarSCBW@Pissed"/>
-        <DataRecord Entry="Sound,DarkTemplarSCBW@Ready"/>
-        <DataRecord Entry="Sound,DarkTemplarSCBW@What"/>
         <DataRecord Entry="Sound,DarkTemplarSCBW@Yes"/>
+        <DataRecord Entry="Sound,DarkTemplarSCBW@Attack"/>
+        <DataRecord Entry="Sound,DarkTemplarSCBW@Pissed"/>
         <DataRecord Entry="Sound,DarkTemplarSCBW@DeathFX"/>
-        <DataRecord Entry="Unit,DarkTemplarSCBW"/>
-        <DataRecord Entry="RequirementNode,DarkTemplarSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,DarkTemplarSCBW@Show"/>
         <DataRecord Entry="Tactical,DarkTemplarSCBW"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="InterceptorSCBW" parent="ProtossAirUnitSCBW">
         <DataRecord Entry="Actor,InterceptorSCBW@Land"/>
-        <DataRecord Entry="Actor,InterceptorSCBW"/>
-        <DataRecord Entry="Button,InterceptorSCBW"/>
-        <DataRecord Entry="Effect,InterceptorSCBW@AB"/>
-        <DataRecord Entry="Model,InterceptorSCBW@Death"/>
+        <DataRecord Entry="Behavior,InterceptorSCBW@NotLaunchable"/>
+        <DataRecord Entry="Behavior,InterceptorSCBW@RegenerateLife"/>
+        <DataRecord Entry="Behavior,InterceptorSCBW@RegenerateShields"/>
+        <DataRecord Entry="Behavior,InterceptorSCBW@ReturnSlow"/>
+        <DataRecord Entry="Behavior,InterceptorSCBW@ReturnHalt"/>
+        <DataRecord Entry="Behavior,InterceptorSCBW@ReturnDamaged"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@Return"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@HealShieldsRB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@HealLifeRB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@NotLaunchableRB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@ReturnSet"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@HealSet"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@NotLaunchableAB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@HealShields"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@HealShieldsAB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@HealLifeAB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@ReturnSlowAB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@ReturnHaltAB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@CreateSet"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@ReturnDamagedAB"/>
         <DataRecord Entry="Model,InterceptorSCBW@DeathRagdoll"/>
-        <DataRecord Entry="Model,InterceptorSCBW"/>
-        <DataRecord Entry="Requirement,InterceptorSCBW"/>
-        <DataRecord Entry="RequirementNode,InterceptorSCBW"/>
+        <DataRecord Entry="RequirementNode,InterceptorSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,InterceptorSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,InterceptorSCBW@QoBAtUnitLT8"/>
         <DataRecord Entry="RequirementNode,InterceptorSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,InterceptorSCBW@QoBAtUnitLT4"/>
         <DataRecord Entry="RequirementNode,InterceptorSCBW@Count"/>
         <DataRecord Entry="RequirementNode,InterceptorSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,InterceptorSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,InterceptorSCBW@NotQoB"/>
-        <DataRecord Entry="RequirementNode,InterceptorSCBW@QoBAtUnitLT4"/>
-        <DataRecord Entry="RequirementNode,InterceptorSCBW@QoBAtUnitLT8"/>
         <DataRecord Entry="Sound,InterceptorSCBW@Land"/>
         <DataRecord Entry="Sound,InterceptorSCBW@Death"/>
-        <DataRecord Entry="Unit,InterceptorSCBW"/>
-        <DataRecord Entry="RequirementNode,InterceptorSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,InterceptorSCBW@Show"/>
         <DataRecord Entry="Tactical,InterceptorSCBW"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@VitalityCondition"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@VitalityCheckOne"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@VitalityCheckTwo"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@LifeLT20"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@NotRepairing"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@IsMovingThreshold"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@CloseToCarrier"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@RightNextToCarrier"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@ShieldsLE10"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ScarabSCBW" parent="ProtossUnitSCBW">
-        <DataRecord Entry="Actor,ScarabSCBW"/>
-        <DataRecord Entry="Button,ScarabSCBW"/>
-        <DataRecord Entry="Model,ScarabSCBW"/>
-        <DataRecord Entry="Requirement,ScarabSCBW"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW"/>
+        <DataRecord Entry="Actor,ScarabSCBW@Dummy"/>
+        <DataRecord Entry="Model,ScarabSCBW@Upgraded"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@CountAtUnitGT0"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitLT10"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitGT0"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitLT5"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@NotCountAtUnit"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@NotQoB"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@NotCount"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW@CountAtUnit"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW@NotCountAtUnit"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitLT10"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitLT5"/>
-        <DataRecord Entry="Unit,ScarabSCBW"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ScarabSCBW@Show"/>
         <DataRecord Entry="Tactical,ScarabSCBW"/>
+        <DataRecord Entry="Unit,ScarabSCBW@Dummy"/>
         <TechInfoUpgradeUsed value="ScarabSCBWWeaponDamageUpgrade"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ArchonSCBW" parent="ProtossGroundUnitSCBW">
         <DataRecord Entry="Abil,ArchonSCBW@Mergeable"/>
         <DataRecord Entry="Actor,ArchonSCBW@LandSweetener"/>
         <DataRecord Entry="Actor,ArchonSCBW@Land"/>
-        <DataRecord Entry="Actor,ArchonSCBW"/>
-        <DataRecord Entry="Button,ArchonSCBW"/>
-        <DataRecord Entry="Light,ArchonSCBW@Portrait"/>
-        <DataRecord Entry="Model,ArchonSCBW"/>
-        <DataRecord Entry="Model,ArchonSCBW@Death"/>
-        <DataRecord Entry="Model,ArchonSCBW@Portrait"/>
-        <DataRecord Entry="Requirement,ArchonSCBW"/>
-        <DataRecord Entry="RequirementNode,ArchonSCBW"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ArchonSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ArchonSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ArchonSCBW@QoBAtUnit"/>
@@ -5811,47 +5883,33 @@
         <DataRecord Entry="RequirementNode,ArchonSCBW@NotQoB"/>
         <DataRecord Entry="Sound,ArchonSCBW@LandSweetener"/>
         <DataRecord Entry="Sound,ArchonSCBW@Land"/>
-        <DataRecord Entry="Sound,ArchonSCBW@Attack"/>
-        <DataRecord Entry="Sound,ArchonSCBW@Death"/>
-        <DataRecord Entry="Sound,ArchonSCBW@Help"/>
-        <DataRecord Entry="Sound,ArchonSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ArchonSCBW@Ready"/>
-        <DataRecord Entry="Sound,ArchonSCBW@What"/>
-        <DataRecord Entry="Sound,ArchonSCBW@Yes"/>
         <DataRecord Entry="Sound,ArchonSCBW@Explode"/>
-        <DataRecord Entry="Unit,ArchonSCBW"/>
-        <DataRecord Entry="RequirementNode,ArchonSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ArchonSCBW@Show"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Help"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Yes"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Attack"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Pissed"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Death"/>
         <DataRecord Entry="Tactical,ArchonSCBW"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="DarkArchonSCBW" parent="ProtossGroundUnitSCBW">
         <TechInfoUpgradeUsed value="DarkArchonSCBWEnergyUpgrade"/>
         <DataRecord Entry="Abil,DarkArchonSCBW@Mergeable"/>
-        <DataRecord Entry="Actor,DarkArchonSCBW"/>
-        <DataRecord Entry="Light,DarkArchonSCBW@Portrait"/>
-        <DataRecord Entry="Model,DarkArchonSCBW"/>
-        <DataRecord Entry="Model,DarkArchonSCBW@Death"/>
+        <DataRecord Entry="Model,DarkArchonSCBW@DeathLow"/>
         <DataRecord Entry="Model,DarkArchonSCBW@Placement"/>
-        <DataRecord Entry="Model,DarkArchonSCBW@Portrait"/>
         <DataRecord Entry="Model,DarkArchonSCBW@WarpIn"/>
-        <DataRecord Entry="Requirement,DarkArchonSCBW"/>
-        <DataRecord Entry="RequirementNode,DarkArchonSCBW"/>
+        <DataRecord Entry="RequirementNode,DarkArchonSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,DarkArchonSCBW@Show"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBW@Count"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBW@NotQoB"/>
-        <DataRecord Entry="Sound,DarkArchonSCBW@Attack"/>
         <DataRecord Entry="Sound,DarkArchonSCBW@Death"/>
         <DataRecord Entry="Sound,DarkArchonSCBW@Help"/>
-        <DataRecord Entry="Sound,DarkArchonSCBW@Pissed"/>
-        <DataRecord Entry="Sound,DarkArchonSCBW@Ready"/>
-        <DataRecord Entry="Sound,DarkArchonSCBW@What"/>
         <DataRecord Entry="Sound,DarkArchonSCBW@Yes"/>
-        <DataRecord Entry="Unit,DarkArchonSCBW"/>
-        <DataRecord Entry="RequirementNode,DarkArchonSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,DarkArchonSCBW@Show"/>
+        <DataRecord Entry="Sound,DarkArchonSCBW@Attack"/>
+        <DataRecord Entry="Sound,DarkArchonSCBW@Pissed"/>
         <DataRecord Entry="Tactical,DarkArchonSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="HighTemplarSCBW" parent="ProtossGroundUnitSCBW">
@@ -5859,18 +5917,13 @@
         <DataRecord Entry="Actor,HighTemplarSCBW@LandSweetener"/>
         <DataRecord Entry="Actor,HighTemplarSCBW@Shadow"/>
         <DataRecord Entry="Actor,HighTemplarSCBW@Land"/>
-        <DataRecord Entry="Actor,HighTemplarSCBW"/>
-        <DataRecord Entry="Button,HighTemplarSCBW"/>
-        <DataRecord Entry="Light,HighTemplarSCBW@Portrait"/>
         <DataRecord Entry="Model,HighTemplarSCBW@Shadow"/>
-        <DataRecord Entry="Model,HighTemplarSCBW@WarpIn"/>
-        <DataRecord Entry="Model,HighTemplarSCBW@Death"/>
         <DataRecord Entry="Model,HighTemplarSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Model,HighTemplarSCBW@WarpIn"/>
         <DataRecord Entry="Model,HighTemplarSCBW@Placement"/>
-        <DataRecord Entry="Model,HighTemplarSCBW@Portrait"/>
-        <DataRecord Entry="Model,HighTemplarSCBW"/>
-        <DataRecord Entry="Requirement,HighTemplarSCBW"/>
-        <DataRecord Entry="RequirementNode,HighTemplarSCBW"/>
+        <DataRecord Entry="Model,HighTemplarSCBW@AttackImpact"/>
+        <DataRecord Entry="RequirementNode,HighTemplarSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,HighTemplarSCBW@Show"/>
         <DataRecord Entry="RequirementNode,HighTemplarSCBW@Count"/>
         <DataRecord Entry="RequirementNode,HighTemplarSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,HighTemplarSCBW@QoBAtUnit"/>
@@ -5878,16 +5931,10 @@
         <DataRecord Entry="RequirementNode,HighTemplarSCBW@NotQoB"/>
         <DataRecord Entry="Sound,HighTemplarSCBW@LandSweetener"/>
         <DataRecord Entry="Sound,HighTemplarSCBW@Land"/>
-        <DataRecord Entry="Sound,HighTemplarSCBW@Attack"/>
         <DataRecord Entry="Sound,HighTemplarSCBW@Death"/>
-        <DataRecord Entry="Sound,HighTemplarSCBW@Help"/>
-        <DataRecord Entry="Sound,HighTemplarSCBW@Pissed"/>
-        <DataRecord Entry="Sound,HighTemplarSCBW@Ready"/>
-        <DataRecord Entry="Sound,HighTemplarSCBW@What"/>
         <DataRecord Entry="Sound,HighTemplarSCBW@Yes"/>
-        <DataRecord Entry="Unit,HighTemplarSCBW"/>
-        <DataRecord Entry="RequirementNode,HighTemplarSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,HighTemplarSCBW@Show"/>
+        <DataRecord Entry="Sound,HighTemplarSCBW@Attack"/>
+        <DataRecord Entry="Sound,HighTemplarSCBW@Pissed"/>
         <DataRecord Entry="Tactical,HighTemplarSCBW"/>
         <DataRecord Entry="TargetFind,HighTemplarSCBW@PsiStorm"/>
         <DataRecord Entry="TargetFind,HighTemplarSCBW@PsiStormNormal"/>
@@ -5900,107 +5947,79 @@
     <CDataCollectionUnit id="ObserverSCBW" parent="ProtossAirUnitSCBW">
         <TechInfoUpgradeUsed value="ObserverSCBWSightUpgrade"/>
         <TechInfoUpgradeUsed value="ObserverSCBWSpeedUpgrade"/>
-        <DataRecord Entry="Actor,ObserverSCBW"/>
-        <DataRecord Entry="Button,ObserverSCBW"/>
-        <DataRecord Entry="Light,ObserverSCBW@Portrait"/>
-        <DataRecord Entry="Model,ObserverSCBW@Death"/>
+        <DataRecord Entry="Abil,ObserverSCBW@Morph"/>
+        <DataRecord Entry="Behavior,ObserverSCBW@Detector"/>
+        <DataRecord Entry="Button,ObserverSCBW@Morph"/>
         <DataRecord Entry="Model,ObserverSCBW@DeathRagdoll"/>
-        <DataRecord Entry="Model,ObserverSCBW@Portrait"/>
-        <DataRecord Entry="Model,ObserverSCBW"/>
         <DataRecord Entry="Model,ObserverSCBW@Placement"/>
         <DataRecord Entry="Model,ObserverSCBW@WarpIn"/>
-        <DataRecord Entry="Requirement,ObserverSCBW"/>
-        <DataRecord Entry="RequirementNode,ObserverSCBW"/>
+        <DataRecord Entry="RequirementNode,ObserverSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ObserverSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ObserverSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ObserverSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ObserverSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ObserverSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ObserverSCBW@NotQoB"/>
-        <DataRecord Entry="Sound,ObserverSCBW@Attack"/>
         <DataRecord Entry="Sound,ObserverSCBW@Death"/>
         <DataRecord Entry="Sound,ObserverSCBW@Help"/>
-        <DataRecord Entry="Sound,ObserverSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ObserverSCBW@Ready"/>
-        <DataRecord Entry="Sound,ObserverSCBW@What"/>
         <DataRecord Entry="Sound,ObserverSCBW@Yes"/>
-        <DataRecord Entry="Behavior,ObserverSCBW@Detector"/>
-        <DataRecord Entry="Behavior,ObserverSCBW@Detector"/>
-        <DataRecord Entry="RequirementNode,ObserverSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ObserverSCBW@Show"/>
+        <DataRecord Entry="Sound,ObserverSCBW@Attack"/>
+        <DataRecord Entry="Sound,ObserverSCBW@Pissed"/>
         <DataRecord Entry="Tactical,ObserverSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ProbeSCBW" parent="ProtossRoboticUnitSCBW">
-        <DataRecord Entry="Abil,ProbeSCBW@Harvest"/>
-        <DataRecord Entry="Abil,ProbeSCBW@HarvestNoQue"/>
         <DataRecord Entry="Abil,ProbeSCBW@Build"/>
         <DataRecord Entry="Abil,ProbeSCBW@BuildAdv"/>
+        <DataRecord Entry="Abil,ProbeSCBW@Harvest"/>
+        <DataRecord Entry="Abil,ProbeSCBW@HarvestNoQue"/>
+        <DataRecord Entry="Actor,ProbeSCBW@@HarvestSound"/>
         <DataRecord Entry="Actor,ProbeSCBW@Death"/>
         <DataRecord Entry="Actor,ProbeSCBW@Land"/>
-        <DataRecord Entry="Actor,ProbeSCBW"/>
-        <DataRecord Entry="Button,ProbeSCBW"/>
+        <DataRecord Entry="Button,ProbeSCBW@Build"/>
+        <DataRecord Entry="Button,ProbeSCBW@BuildAdv"/>
         <DataRecord Entry="Button,ProbeSCBW@Harvest"/>
         <DataRecord Entry="Button,ProbeSCBW@ReturnCargo"/>
-        <DataRecord Entry="Button,ProbeSCBW@BuildAdv"/>
-        <DataRecord Entry="Button,ProbeSCBW@Build"/>
-        <DataRecord Entry="Light,ProbeSCBW@Portrait"/>
-        <DataRecord Entry="Model,ProbeSCBW@Death"/>
         <DataRecord Entry="Model,ProbeSCBW@DeathRagdoll"/>
-        <DataRecord Entry="Model,ProbeSCBW@Portrait"/>
-        <DataRecord Entry="Model,ProbeSCBW"/>
-        <DataRecord Entry="Requirement,ProbeSCBW"/>
-        <DataRecord Entry="RequirementNode,ProbeSCBW"/>
+        <DataRecord Entry="RequirementNode,ProbeSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ProbeSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ProbeSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ProbeSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ProbeSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ProbeSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ProbeSCBW@NotQoB"/>
+        <DataRecord Entry="Sound,ProbeSCBW@Harvest"/>
         <DataRecord Entry="Sound,ProbeSCBW@Death"/>
         <DataRecord Entry="Sound,ProbeSCBW@Land"/>
-        <DataRecord Entry="Sound,ProbeSCBW@Attack"/>
         <DataRecord Entry="Sound,ProbeSCBW@Help"/>
-        <DataRecord Entry="Sound,ProbeSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ProbeSCBW@Ready"/>
-        <DataRecord Entry="Sound,ProbeSCBW@What"/>
         <DataRecord Entry="Sound,ProbeSCBW@Yes"/>
+        <DataRecord Entry="Sound,ProbeSCBW@Attack"/>
+        <DataRecord Entry="Sound,ProbeSCBW@Pissed"/>
         <DataRecord Entry="Sound,ProbeSCBW@Explode"/>
-        <DataRecord Entry="Unit,ProbeSCBW"/>
-        <DataRecord Entry="Actor,ProbeSCBW@@HarvestSound"/>
-        <DataRecord Entry="RequirementNode,ProbeSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ProbeSCBW@Show"/>
-        <DataRecord Entry="Sound,ProbeSCBW@Harvest"/>
         <DataRecord Entry="Tactical,ProbeSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ReaverSCBW" parent="ProtossRoboticUnitSCBW">
         <TechInfoUpgradeUsed value="ScarabSCBWWeaponDamageUpgrade"/>
         <TechInfoUpgradeUsed value="ReaverSCBWHangarIncreaseUpgrade"/>
         <DataRecord Entry="Actor,ReaverSCBW@Land"/>
-        <DataRecord Entry="Actor,ReaverSCBW"/>
-        <DataRecord Entry="Button,ReaverSCBW"/>
-        <DataRecord Entry="Light,ReaverSCBW@Portrait"/>
+        <DataRecord Entry="Actor,ReaverSCBW@UnloadWeaponStun"/>
+        <DataRecord Entry="Button,ReaverSCBW@OpticsRecalibration"/>
         <DataRecord Entry="Model,ReaverSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,ReaverSCBW@WarpIn"/>
-        <DataRecord Entry="Model,ReaverSCBW@Death"/>
         <DataRecord Entry="Model,ReaverSCBW@Placement"/>
-        <DataRecord Entry="Model,ReaverSCBW@Portrait"/>
-        <DataRecord Entry="Model,ReaverSCBW"/>
-        <DataRecord Entry="Requirement,ReaverSCBW"/>
-        <DataRecord Entry="RequirementNode,ReaverSCBW"/>
+        <DataRecord Entry="Model,ReaverSCBW@UnloadWeaponStun"/>
+        <DataRecord Entry="RequirementNode,ReaverSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ReaverSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@NotQoB"/>
         <DataRecord Entry="Sound,ReaverSCBW@Land"/>
-        <DataRecord Entry="Sound,ReaverSCBW@Attack"/>
         <DataRecord Entry="Sound,ReaverSCBW@Death"/>
         <DataRecord Entry="Sound,ReaverSCBW@Help"/>
-        <DataRecord Entry="Sound,ReaverSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ReaverSCBW@Ready"/>
-        <DataRecord Entry="Sound,ReaverSCBW@What"/>
         <DataRecord Entry="Sound,ReaverSCBW@Yes"/>
-        <DataRecord Entry="Unit,ReaverSCBW"/>
-        <DataRecord Entry="RequirementNode,ReaverSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ReaverSCBW@Show"/>
+        <DataRecord Entry="Sound,ReaverSCBW@Attack"/>
+        <DataRecord Entry="Sound,ReaverSCBW@Pissed"/>
         <DataRecord Entry="Tactical,ReaverSCBW"/>
         <DataRecord Entry="Validator,ReaverSCBW@HangarQueueEmpty"/>
     </CDataCollectionUnit>
@@ -6010,59 +6029,54 @@
         <DataRecord Entry="Actor,ZealotSCBW@DeathRagdoll"/>
         <DataRecord Entry="Actor,ZealotSCBW@Land"/>
         <DataRecord Entry="Model,ZealotSCBW@WarpIn"/>
-        <DataRecord Entry="Model,ZealotSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,ZealotSCBW@Placement"/>
+        <DataRecord Entry="Model,ZealotSCBW@DeathRagdoll"/>
+        <DataRecord Entry="RequirementNode,ZealotSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ZealotSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ZealotSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ZealotSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,ZealotSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ZealotSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ZealotSCBW@NotQoB"/>
+        <DataRecord Entry="Sound,ZealotSCBW@Attack"/>
         <DataRecord Entry="Sound,ZealotSCBW@Death"/>
         <DataRecord Entry="Sound,ZealotSCBW@Land"/>
-        <DataRecord Entry="Sound,ZealotSCBW@Attack"/>
-        <DataRecord Entry="Sound,ZealotSCBW@Help"/>
-        <DataRecord Entry="Sound,ZealotSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ZealotSCBW@Yes"/>
         <DataRecord Entry="Sound,ZealotSCBW@DeathFX"/>
-        <DataRecord Entry="RequirementNode,ZealotSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,ZealotSCBW@Show"/>
+        <DataRecord Entry="Sound,ZealotSCBW@Help"/>
+        <DataRecord Entry="Sound,ZealotSCBW@Yes"/>
+        <DataRecord Entry="Sound,ZealotSCBW@Pissed"/>
         <DataRecord Entry="Tactical,ZealotSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="DragoonSCBW" parent="ProtossGroundUnitSCBW">
+        <DataRecord Entry="Actor,DragoonSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Actor,DragoonSCBW@DeathRagdollDetonationForce"/>
         <DataRecord Entry="Actor,DragoonSCBW@Land"/>
         <DataRecord Entry="Actor,DragoonSCBW@Death"/>
-        <DataRecord Entry="Actor,DragoonSCBW"/>
-        <DataRecord Entry="Button,DragoonSCBW"/>
+        <DataRecord Entry="Behavior,DragoonSCBW@CoverAnim"/>
+        <DataRecord Entry="Behavior,DragoonSCBW@CoverAnimActivate"/>
         <DataRecord Entry="Button,DragoonSCBW@Passive"/>
-        <DataRecord Entry="Light,DragoonSCBW@Portrait"/>
+        <DataRecord Entry="Effect,DragoonSCBW@CoverAnim"/>
+        <DataRecord Entry="Model,DragoonSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,DragoonSCBW@WarpIn"/>
-        <DataRecord Entry="Model,DragoonSCBW@Death"/>
         <DataRecord Entry="Model,DragoonSCBW@Placement"/>
-        <DataRecord Entry="Model,DragoonSCBW@Portrait"/>
-        <DataRecord Entry="Model,DragoonSCBW"/>
-        <DataRecord Entry="Requirement,DragoonSCBW"/>
-        <DataRecord Entry="RequirementNode,DragoonSCBW"/>
+        <DataRecord Entry="RequirementNode,DragoonSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,DragoonSCBW@Show"/>
         <DataRecord Entry="RequirementNode,DragoonSCBW@Count"/>
         <DataRecord Entry="RequirementNode,DragoonSCBW@QoB"/>
         <DataRecord Entry="RequirementNode,DragoonSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,DragoonSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,DragoonSCBW@NotQoB"/>
         <DataRecord Entry="Sound,DragoonSCBW@Land"/>
-        <DataRecord Entry="Sound,DragoonSCBW@Attack"/>
         <DataRecord Entry="Sound,DragoonSCBW@Death"/>
         <DataRecord Entry="Sound,DragoonSCBW@Help"/>
-        <DataRecord Entry="Sound,DragoonSCBW@Pissed"/>
-        <DataRecord Entry="Sound,DragoonSCBW@Ready"/>
-        <DataRecord Entry="Sound,DragoonSCBW@What"/>
         <DataRecord Entry="Sound,DragoonSCBW@Yes"/>
+        <DataRecord Entry="Sound,DragoonSCBW@Attack"/>
+        <DataRecord Entry="Sound,DragoonSCBW@Pissed"/>
         <DataRecord Entry="Sound,DragoonSCBW@MoveStart"/>
         <DataRecord Entry="Sound,DragoonSCBW@Explode"/>
-        <DataRecord Entry="Turret,DragoonSCBW"/>
-        <DataRecord Entry="Unit,DragoonSCBW"/>
-        <DataRecord Entry="RequirementNode,DragoonSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,DragoonSCBW@Show"/>
         <DataRecord Entry="Tactical,DragoonSCBW"/>
         <DataRecord Entry="Turret,DragoonSCBW"/>
+        <DataRecord Entry="Validator,DragoonSCBW@NoCoverAnim"/>
         <TechInfoUpgradeUsed value="DragoonSCBWRangeUpgrade"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="2"/>
     </CDataCollectionUnit>
@@ -6077,11 +6091,6 @@
         <EditorFlags index="NoPalettes" value="1"/>
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="15"/>
-        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
-    </CUnit>
-    <CUnit id="ReaverSCBWWeapon@Missile" parent="MISSILE_INVULNERABLE">
-        <Race value="BWPr"/>
-        <Mover value="ReaverSCBWWeapon@Mover"/>
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
     </CUnit>
     <CUnit id="HighTemplarSCBWWeapon@Missile" parent="MISSILE_INVULNERABLE">
@@ -6168,6 +6177,7 @@
         <FlagArray index="Untargetable" value="1"/>
         <FlagArray index="KillCredit" value="0"/>
         <FlagArray index="Invulnerable" value="1"/>
+        <FlagArray index="TurnBeforeMove" value="1"/>
         <FlagArray index="AILifetime" value="1"/>
         <FlagArray index="AICantAddToWave" value="1"/>
         <FlagArray index="Unstoppable" value="1"/>
@@ -6190,8 +6200,6 @@
         <ShieldsMax value="10"/>
         <Speed value="9"/>
         <Acceleration value="1000"/>
-        <StationaryTurningRate value="180"/>
-        <TurningRate value="360"/>
         <Height value="0.5"/>
         <CostCategory value="Army"/>
         <AttackTargetPriority value="20"/>
@@ -6228,6 +6236,9 @@
         <BehaviorArray Link="ReaverSCBWWeapon@ScarabTimedLife"/>
         <BehaviorArray Link="ReaverSCBWWeapon@NoOrders"/>
         <InnerRadius value="0.1875"/>
+        <Fidget>
+            <ChanceArray index="Idle" value="0"/>
+        </Fidget>
     </CUnit>
     <CUnit id="ShuttleSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -6801,7 +6812,10 @@
         <AbilArray Link="ProgressRally"/>
         <AbilArray Link="ReaverSCBWHangar"/>
         <AbilArray Link="HangarQueue5"/>
+        <AbilArray Link="ReaverSCBWWeapon@Chase"/>
         <WeaponArray Link="ReaverSCBWWeapon"/>
+        <WeaponArray Link="ReaverSCBWWeapon@NoScan"/>
+        <WeaponArray Link="ReaverSCBWWeapon@Dummy"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -7375,7 +7389,7 @@
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <MaxStackCount value="0"/>
-        <Duration value="5.6"/>
+        <Duration value="5.625"/>
         <FinalEffect value="ReaverSCBWWeapon@EnumScarabsStop"/>
         <BuffFlags index="RefreshStack" value="1"/>
         <MaxStackCountPerCaster value="1"/>
@@ -7385,65 +7399,38 @@
         <BehaviorFlags index="EnabledWhileDead" value="1"/>
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
-        <RemoveValidatorArray value="ReaverSCBWWeapon@ScarabIsAttacking"/>
+        <RemoveValidatorArray value="TargetNotDead"/>
+        <RemoveValidatorArray value="NotHidden"/>
         <InitialEffect value="ReaverSCBWWeapon@WarningSign"/>
         <FinalEffect value="ReaverSCBWWeapon@WarningSignRB"/>
-    </CBehaviorBuff>
-    <CBehaviorBuff id="ReaverSCBWWeapon@NoWeaponWhenScarabIsLive">
-        <InfoFlags index="Hidden" value="1"/>
-        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
-        <DisableValidatorArray value="ReaverSCBWWeapon@ScarabIsAlive"/>
-        <Period value="0.5"/>
-        <RefreshEffect value="ReaverSCBWWeapon@SetCooldown"/>
-        <PeriodicEffect value="ReaverSCBWWeapon@SetCooldown"/>
+        <DisableValidatorArray value="ReaverSCBWWeapon@ScarabIsAttacking"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@Disabled">
         <Alignment value="Negative"/>
         <InfoIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
-        <Requirements value="ReaverSCBWHangar@NotArmed"/>
+        <Requirements value="ReaverSCBWHangar@Armed"/>
         <Period value="0.5"/>
         <RefreshEffect value="ReaverSCBWWeapon@SetCooldown"/>
         <PeriodicEffect value="ReaverSCBWWeapon@SetCooldown"/>
         <InfoFlags index="Hidden" value="1"/>
+        <DisableValidatorArray value="ReaverSCBWWeapon@ScarabIsLive"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@ScarabTimedLife">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <RemoveValidatorArray value="CasterNotDead"/>
-        <Duration value="5.6"/>
+        <Duration value="5.625"/>
         <ExpireEffect value="ReaverSCBWWeapon@SuicideDud"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@NoOrders">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <DisableValidatorArray value="CasterNotAttacking"/>
-        <DisableValidatorArray value="SCBWCasterIsNotMoving"/>
+        <DisableValidatorArray value="SCBW_CasterIsNotMoving"/>
         <RemoveValidatorArray value="CasterNotDead"/>
-        <Period value="0.05"/>
+        <Period value="0.0625"/>
         <PeriodCount value="1"/>
         <PeriodicEffect value="ScarabSCBWWeapon@Impact"/>
         <InfoFlags index="Hidden" value="1"/>
-    </CBehaviorBuff>
-    <CBehaviorBuff id="ReaverSCBWWeapon@Reveal">
-        <Alignment value="Negative"/>
-        <InfoFlags index="Hidden" value="1"/>
-        <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
-        <RemoveValidatorArray value="ReaverSCBWWeapon@Reveal@Remove"/>
-        <Duration value="7"/>
-        <Modification>
-            <ModifyFlags index="Reveal" value="1"/>
-        </Modification>
-        <DisableValidatorArray value="ReaverSCBWWeapon@Reveal@Disable"/>
-    </CBehaviorBuff>
-    <CBehaviorBuff id="ReaverSCBWWeapon@TimedLife">
-        <InfoFlags index="Hidden" value="1"/>
-        <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
-        <Duration value="0.0625"/>
-        <InitialEffect value="SuicideRemove"/>
-        <ExpireEffect value="SuicideRemove"/>
-        <Modification>
-            <StateFlags index="Summoned" value="1"/>
-        </Modification>
-        <KillCredit Value="Caster"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ObserverSCBWSieged@Detector" parent="Detector9">
         <Name value="Behavior/Name/ObserverSCBWSieged@Detector"/>

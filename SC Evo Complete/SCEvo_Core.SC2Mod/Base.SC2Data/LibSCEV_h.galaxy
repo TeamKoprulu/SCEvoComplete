@@ -4,6 +4,7 @@ include "TriggerLibs/natives"
 // Library: SCEvo
 //--------------------------------------------------------------------------------------------------
 // Preset Declarations
+const int libSCEV_ge_SCEvoAIOption_MineralWallClearing = 0;
 const int libSCEV_ge_SCEvoFeatures_FractionalArmor = 0;
 const int libSCEV_ge_SCEvoFeatures_MissChance = 1;
 const int libSCEV_ge_SCEvoFeatures_LegacyUnitSwap = 2;
@@ -21,16 +22,23 @@ const int libSCEV_ge_OperationCwal_Type_Morph = 2;
 const int libSCEV_gv_mAX_PLAYERS = 15;
 
 // Variable Declarations
+int[libSCEV_gv_mAX_PLAYERS + 1] libSCEV_gv_mineralWallsHarvesterAmount;
+unitgroup libSCEV_gv_mineralWallsGlobalMineralWalls;
+timer libSCEV_gv_mineralWallsTimer;
 timer libSCEV_gv_missChanceRevealTimer;
 bool libSCEV_gv_legacyUnitSwapErrorLogOnly;
 bool libSCEV_gv_cheatsActive;
 bool[16] libSCEV_gv_operationCwalActive;
+string libSCEV_gv_CURRENT_WORD;
+int libSCEV_gv_CURRENT_WORD_INDEX;
 int[libSCEV_gv_mAX_PLAYERS + 1][libSCEV_gv_mAX_PLAYERS + 1] libSCEV_gv_minimapAllyViewCameraSnapPointersList;
 int[libSCEV_gv_mAX_PLAYERS + 1] libSCEV_gv_minimapAllyViewCameraSnapPointersListLength;
 int[libSCEV_gv_mAX_PLAYERS + 1] libSCEV_gv_minimapAllyViewCameraSnapPointersListPosition;
 int[libSCEV_gv_mAX_PLAYERS + 1][libSCEV_gv_mAX_PLAYERS + 1] libSCEV_gv_minimapAllyViewPings;
 
 // Function Declarations
+void libSCEV_gf_SCEvoEnableAIOption (bool lp_activateDeactivate, int lp_option);
+void libSCEV_gf_MineralWallsActivate (bool lp_onOff);
 void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate);
 void libSCEV_gf_FractionalArmorActivate (bool lp_onOff);
 void libSCEV_gf_FractionalArmorUpdate (unit lp_target);
@@ -45,6 +53,11 @@ void libSCEV_gf_InfiniteMoneyMapCheck ();
 void libSCEV_gf_InfiniteMoneyMapAction (unitgroup lp_unitGroup);
 void libSCEV_gf_InfiniteMoneyMapNewOrder (unit lp_unit, abilcmd lp_oldAbil, abilcmd lp_newAbil);
 void libSCEV_gf_DisableClassicSkins (int lp_player);
+string libSCEV_gf_MergeStatusEffectsMiscDataGet (string lp_buff, unit lp_unit);
+bool libSCEV_gf_MergeStatusEffectsBuffTransferrable (string lp_buff);
+void libSCEV_gf_MergeStatusEffectsMiscDataSet (string lp_buff, unit lp_unit, string lp_miscData);
+string libSCEV_gf_CurrentWord ();
+int libSCEV_gf_CurrentWordIndex ();
 playergroup libSCEV_gf_HumanPlayers ();
 void libSCEV_gf_MinimapAllyViewCameraSnapPointersListUpdate (int lp_p);
 void libSCEV_gf_MinimapAllyViewUpdateArea (region lp_region);
@@ -52,6 +65,7 @@ void libSCEV_gf_MinimapAllyViewRescale ();
 void libSCEV_gf_MinimapAllyViewEnableDisable (bool lp_enableDisable);
 
 // Trigger Declarations
+trigger libSCEV_gt_MineralWallsUpdate;
 trigger libSCEV_gt_SCEvoFeatureInit;
 trigger libSCEV_gt_FractionalArmorAdd;
 trigger libSCEV_gt_FractionalArmorUpgrade;
@@ -70,6 +84,9 @@ trigger libSCEV_gt_OperationCwalMorph;
 trigger libSCEV_gt_InfiniteMoneyMapTrigger;
 trigger libSCEV_gt_MimicCheckStorePlayerIndex;
 trigger libSCEV_gt_MimicCheckSpiderMine;
+trigger libSCEV_gt_ReaverPathingCheck;
+trigger libSCEV_gt_MergeStatusEffectsTrack;
+trigger libSCEV_gt_MergeStatusEffectsBegin;
 trigger libSCEV_gt_MinimapAllyViewCameraSnap;
 trigger libSCEV_gt_MinimapAllyViewCameraUpdate;
 trigger libSCEV_gt_MinimapAllyViewAllianceUpdate;

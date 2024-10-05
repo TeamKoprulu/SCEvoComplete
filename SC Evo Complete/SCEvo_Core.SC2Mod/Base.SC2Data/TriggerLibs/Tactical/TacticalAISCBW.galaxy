@@ -2262,7 +2262,8 @@ order BWQueenEnsnare (int player, unit aiUnit, unitgroup scanGroup, marker mark)
     filter = AIFilter(player);
     AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_QueenSCBWEnsnare_AB);
     AISetFilterBehaviorCount(filter, c_noBehaviorMin, c_noBehaviorMax, c_BWBF_QueenSCBWEnsnareMovement_AB);
-    AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_QueenSCBWEnsnare, c_fieldTargetFiltersAB)));
+    //AISetFilterBits(filter, UnitFilterStr(AIAbilityStr(player, c_BWAB_QueenSCBWEnsnare, c_fieldTargetFilters)));
+    AISetFilterBits(filter, UnitFilterStr(AIEffectStr(player, c_BWEF_QueenSCBWEnsnare_Search, c_fieldFilters)));
     //AISetFilterLifePerMarker(filter, damage, mark);
     AISetFilterMarker(filter, c_noMarkersMin, c_noMarkersMax, mark);
     AISetFilterCanAttackEnemy(filter, enemyGroundCount, enemyAirCount);
@@ -2821,8 +2822,16 @@ const int c_creepColonyBuildCooldown = c_tactTimerFirst;
 order AIOrderCreepColonyBuild (int player, unit aiUnit) {
     order ord;
     point p;
+    int difficultyColonyCount;
+    int colonyCount;
+
 
     if (AIIsCampaign(player)) {
+        return null;
+    }
+
+    // Wait at least 5 minutes before expanding Creep
+    if (GameGetMissionTime() < 300) {
         return null;
     }
 
@@ -2835,11 +2844,8 @@ order AIOrderCreepColonyBuild (int player, unit aiUnit) {
         return null;
     }
 
-    if (!AIHasRes(player,200,0)) {
-        return null;
-    }
 
-    Wait(RandomFixed(0.0, 30.0), c_timeGame);
+    //Wait(RandomFixed(0.0, 30.0), c_timeGame);
 
     // If any queued or in progress exist break
     if (AITechCount(player, c_BWZB_CreepColony, c_techCountQueuedOnly) > 0) {
@@ -2847,6 +2853,20 @@ order AIOrderCreepColonyBuild (int player, unit aiUnit) {
     }
 
     if (AITechCount(player, c_BWZB_CreepColony, c_techCountInProgressOnly) > 0) {
+        return null;
+    }
+
+    // Do not allow more than
+    if (AIPlayerDifficulty(player) >= c_skirHard_VH) {
+        difficultyColonyCount = 2;
+    }
+    else if (AIPlayerDifficulty(player) <= c_skirHard) {
+        difficultyColonyCount = 1;
+    }
+    
+    colonyCount = difficultyColonyCount * AIGetNumEstablishedTowns(player);
+
+    if (AITechCount(player, c_BWZB_CreepColony_Alias, c_techCountInProgressOrBetter) > colonyCount) {
         return null;
     }
 
