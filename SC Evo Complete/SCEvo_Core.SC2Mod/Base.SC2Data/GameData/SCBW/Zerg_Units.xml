@@ -601,8 +601,8 @@
         <DefaultButtonLayout Row="1"/>
     </CButton>
     <CButton id="LurkerSCBW">
-        <Icon value="Assets\Textures\btn-unit-zerg-lurker.dds"/>
-        <AlertIcon value="Assets\Textures\btn-unit-zerg-lurker.dds"/>
+        <Icon value="Assets\Textures\btn-unit-zerg-lurker@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-zerg-lurker@scbw.dds"/>
         <EditorCategories value="Race:Zerg"/>
         <DefaultButtonLayout Row="2"/>
     </CButton>
@@ -717,8 +717,15 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsZerg"/>
     </CLight>
-    <CActorSound id="DefilerSCBW@Death" parent="SoundOneShot">
-        <Aliases value="_DeathVoice"/>
+    <CActorForceSphere id="LurkerSCBW@DetonationForce" parent="DeathRagdollDetonationForce">
+        <Magnitude value="8.000000,4.000000"/>
+        <Radius value="1.000000,0.500000"/>
+    </CActorForceSphere>
+    <CActorModel id="LurkerSCBW@DeathRagdoll" parent="UnitDeathRagdoll">
+        <On Terms="ActorCreation" Send="Create LurkerSCBW@DetonationForce"/>
+    </CActorModel>
+    <CActorSound id="DefilerSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="DefilerSCBW">
+        <On Terms="UnitDeath.DefilerSCBW@Burrowed; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
     </CActorSound>
     <CActorModel id="DefilerSCBWPlague@TargetModelMassive" parent="ModelAddition">
         <HostSiteOps Ops="SOpAttachCenter"/>
@@ -1015,17 +1022,38 @@
         <On Terms="UnitBirth.LurkerSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW; MorphFrom LurkerSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBW@Burrowed; MorphFrom LurkerSCBW" Send="TerrainSquibDeactivate"/>
-        <DeathArray index="Normal" ModelLink="LurkerSCBW@Death" SoundLink="LurkerSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="LurkerSCBW@Death" SoundLink="LurkerSCBW@Explode"/>
         <DeathArray index="Disintegrate" ModelLink="LurkerSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
         <DeathArray index="Fire" ModelLink="LurkerSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
+        <DeathCustoms ActorModel="LurkerSCBW@DeathRagdoll" ModelLink="LurkerSCBW@DeathRagdoll" Name="RagdollBasic">
+            <BodySquibs Name="FireOnMetal"/>
+            <BodySquibs Name="BloodReduced" IsFallback="1"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
         <PortraitModel value="LurkerSCBW@Portrait"/>
         <WalkAnimMoveSpeed value="3"/>
         <BarOffset value="70"/>
         <BarWidth value="80"/>
         <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Zerg-Lurker.dds"/>
+            <Image value="Assets\Textures\wireframe-zerg-lurker@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-zerg-lurker.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-lurker@scbw.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-groundcarapace-level0.dds"/>
         <ShieldArmorIcon value="Assets\Textures\btn-upgrade-zerg-swarmfrenzy.dds"/>
         <SoundArray index="Ready" value="LurkerSCBW@Ready"/>
@@ -1037,13 +1065,13 @@
         <StatusColors index="Shields">
             <ColorArray index="0" value="255,0,128,0"/>
         </StatusColors>
-        <UnitIcon value="Assets\Textures\btn-unit-zerg-lurker.dds"/>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-lurker@scbw.dds"/>
         <VitalColors index="Shields">
             <ColorArray value="255,0,128,0"/>
         </VitalColors>
         <VitalNames index="Shields" value="Vital/ZergShields"/>
         <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Zerg-Lurker.dds"/>
+            <Image value="Assets\Textures\wireframe-zerg-lurker@scbw.dds"/>
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
@@ -1057,7 +1085,7 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleLarge"/>
         </TerrainSquibs>
     </CActorUnit>
-    <CActorUnit id="HydraliskSCBW" parent="GenericUnitBase" unitName="HydraliskSCBW">
+    <CActorUnit id="HydraliskSCBW" parent="GenericBurrowerStandardSCBW" unitName="HydraliskSCBW">
         <Aliases value="_UnitMedium"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
         <Macros value="SCBW_ZergMediumBurrowEffects"/>
@@ -1073,6 +1101,12 @@
         <On Terms="WeaponStop.HydraliskSCBWWeapon.AttackStop" Send="AnimBracketStop AttackSuperior"/>
         <On Terms="WeaponStop.HydraliskSCBWWeapon.AttackStop" Send="AnimBracketStop AttackInferior"/>
         <On Terms="WeaponStop.HydraliskSCBWWeapon.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="WeaponStart.HydraliskSCBWWeaponAlt.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart AttackSuperior Attack,Superior"/>
+        <On Terms="WeaponStart.HydraliskSCBWWeaponAlt.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart AttackInferior Attack,Inferior"/>
+        <On Terms="WeaponStart.HydraliskSCBWWeaponAlt.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.HydraliskSCBWWeaponAlt.AttackStop" Send="AnimBracketStop AttackSuperior"/>
+        <On Terms="WeaponStop.HydraliskSCBWWeaponAlt.AttackStop" Send="AnimBracketStop AttackInferior"/>
+        <On Terms="WeaponStop.HydraliskSCBWWeaponAlt.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
         <On Terms="WeaponStart.HydraliskMelee.AttackStart; AnimPlaying AttackCover Cover,00" Send="TimerSet 0.400000 MeleeAttackLaunch"/>
         <On Terms="WeaponStart.HydraliskMelee.AttackStart; AnimPlaying AttackCover Cover,01" Send="TimerSet 0.100000 MeleeAttackLaunch"/>
@@ -1080,8 +1114,6 @@
         <On Terms="AbilMorph.*.Cancel; MorphFrom HydraliskSCBW; MorphTo HydraliskSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo HydraliskSCBW; MorphFrom HydraliskSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo HydraliskSCBW; MorphFrom HydraliskSCBW@Burrowed" Send="AnimClear Burrow"/>
-        <On Terms="UnitBirth.HydraliskSCBW@Burrowed" Send="Create"/>
-        <On Terms="UnitBirth.HydraliskSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
         <On Terms="UnitMovementUpdate.*.Walk; AnimPlaying Birth" Send="AnimClear Birth"/>
         <On Terms="ActorCreation; ValidateUnitType SCBW_NotBurrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo HydraliskSCBW; MorphFrom HydraliskSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
@@ -1123,7 +1155,7 @@
         </DeathCustoms>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <EventDataSound Name="HydraliskAttackImpactMelee" Actor="UnitSound" Sound="Hydralisk_AttackImpactMelee"/>
-        <DeathArray index="Normal" ModelLink="HydraliskSCBW@Death" SoundLink="HydraliskSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="HydraliskSCBW@Death" SoundLink="HydraliskSCBW@Explode"/>
         <DeathArray index="Disintegrate" ModelLink="HydraliskSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
         <DeathArray index="Fire" ModelLink="HydraliskSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
@@ -1165,6 +1197,9 @@
         <WireframeShieldColor value="255,0,128,0"/>
         <ShieldArmorIcon value="Assets\Textures\btn-upgrade-zerg-swarmfrenzy.dds"/>
     </CActorUnit>
+    <CActorSound id="HydraliskSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="HydraliskSCBW">
+        <On Terms="UnitDeath.HydraliskSCBW@Burrowed; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+    </CActorSound>
     <CActorUnit id="DroneSCBW" parent="GenericBurrowerStandardSCBW" unitName="DroneSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
@@ -1261,7 +1296,7 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorUnit id="ZerglingSCBW" parent="GenericBurrowerStandard" unitName="ZerglingSCBW">
+    <CActorUnit id="ZerglingSCBW" parent="GenericBurrowerStandardSCBW" unitName="ZerglingSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
         <Macros value="SCBW_ZergSmallBurrowEffects"/>
@@ -1270,15 +1305,13 @@
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="GrabbedAnimationMacro"/>
-        <On Terms="UnitBirth.ZerglingSCBW@Burrowed" Send="Create"/>
-        <On Terms="UnitBirth.ZerglingSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom ZerglingSCBW; MorphTo ZerglingSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo ZerglingSCBW; MorphFrom ZerglingSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo ZerglingSCBW; MorphFrom ZerglingSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="UnitMovementUpdate.*.Walk; AnimPlaying Birth" Send="AnimClear Birth"/>
         <On Terms="UnitBirth.ZerglingSCBW" Send="TerrainSquibActivateGroup RippleStandard"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Zergling; MorphFrom ZerglingBurrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo ZerglingBurrowed; MorphFrom Zergling" Send="TerrainSquibDeactivate"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo ZerglingSCBW; MorphFrom ZerglingSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo ZerglingSCBW@Burrowed; MorphFrom ZerglingSCBW" Send="TerrainSquibDeactivate"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Zergling_Land"/>
         <DeathCustoms ActorModel="UnitDeathRagdoll" ModelLink="ZerglingSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="FireOnMetal"/>
@@ -1347,6 +1380,10 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
+    <CModel id="LurkerSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Zerg">
+        <Model value="Assets\Units\Zerg\LurkerSCBW\LurkerSCBW@DeathRagdoll.m3"/>
+        <Radius value="0.700000"/>
+    </CModel>
     <CModel id="DefilerSCBWDarkSwarm@PersistentBurrowed" parent="PersistentSpellFX">
         <Model value="Assets\Effects\Zerg\DefilerDarkSwarmSCBW@Persistent\DefilerDarkSwarmSCBW@PersistentBurrowed.m3"/>
         <EditorCategories value="Race:Zerg"/>
@@ -1532,13 +1569,10 @@
         <Model value="Assets\Portraits\Zerg\Hydralisk@PortraitSCBW\Hydralisk@PortraitSCBW.m3"/>
     </CModel>
     <CModel id="LurkerSCBW" parent="Unit" Race="Zerg">
-        <Model value="Assets\Units\Zerg\Lurker_Ex2\Lurker_Ex2.m3"/>
         <Occlusion value="Show"/>
         <PlanetPanelCamera value="Star2CameraMid07"/>
         <Radius value="0.700000"/>
-        <ScaleMax value="1.100000,1.100000,1.100000"/>
-        <ScaleMin value="1.100000,1.100000,1.100000"/>
-        <SelectionRadius value="0.590500"/>
+        <SelectionRadius value="0.720000"/>
         <ShadowRadius value="0.900000"/>
         <SquibTypeDefault value="Flesh"/>
         <TechPurchaseCamera value="Star2CameraMid07"/>
@@ -1546,22 +1580,23 @@
         <Tipability value="0.750000"/>
         <TipabilityLength value="1.000000"/>
         <TipabilityWidth value="1.000000"/>
+        <ScaleMax value="1.100000,1.100000,1.100000"/>
+        <ScaleMin value="1.100000,1.100000,1.100000"/>
     </CModel>
     <CModel id="LurkerSCBW@Death" parent="UnitDeath" Race="Zerg">
-        <Model value="Assets\Units\Zerg\Lurker_Death_Ex2\Lurker_Death_Ex2.m3"/>
+        <Model value="Assets\Units\Zerg\LurkerSCBW\LurkerSCBW@Death.m3"/>
         <LowQualityModel value="ZergMediumUnitDeathLow"/>
         <Occlusion value="Show"/>
-        <VariationCount value="2"/>
         <Radius value="0.700000"/>
     </CModel>
     <CModel id="LurkerSCBW@DeathAcid" parent="UnitDeath" Race="Zerg">
-        <Model value="Assets\Units\Zerg\LurkerDeath_Ex2_Acid\LurkerDeath_Ex2_Acid.m3"/>
+        <Model value="Assets\Units\Zerg\LurkerSCBW\LurkerSCBW@DeathAcid.m3"/>
         <LowQualityModel value="ZergMediumUnitDeathLow"/>
         <Occlusion value="Show"/>
         <Radius value="0.700000"/>
     </CModel>
     <CModel id="LurkerSCBW@DeathFire" parent="UnitDeath" Race="Zerg">
-        <Model value="Assets\Units\Zerg\LurkerDeath_Ex2_Fire\LurkerDeath_Ex2_Fire.m3"/>
+        <Model value="Assets\Units\Zerg\LurkerSCBW\LurkerSCBW@DeathFire.m3"/>
         <LowQualityModel value="ZergMediumUnitDeathLow"/>
         <Occlusion value="Show"/>
         <Radius value="0.700000"/>
@@ -2555,7 +2590,10 @@
         <DataRecord Entry="Sound,LurkerSCBWWeapon@Launch"/>
         <DataRecord Entry="Validator,LurkerSCBWWeapon@Search"/>
         <DataRecord Entry="Weapon,LurkerSCBWWeapon"/>
-        <DataRecord Entry="Weapon,LurkerSCBWWeapon@Disabled"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="LurkerSCBWWeaponAlt" parent="ZergWeaponSCBW">
+        <Name value="Weapon/Name/LurkerSCBWWeapon"/>
+        <DataRecord Entry="Weapon,LurkerSCBWWeaponAlt"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HydraliskSCBWWeapon" parent="ZergWeaponSCBW">
         <DataRecord Entry="Actor,HydraliskSCBWWeapon@Action"/>
@@ -2575,6 +2613,14 @@
         <DataRecord Entry="Weapon,HydraliskSCBWWeapon"/>
         <DataRecord Entry="Accumulator,HydraliskSCBWWeapon@Damage"/>
         <Pattern value="SCBW_Weapon_Accumulator"/>
+    </CDataCollectionAbil>
+    <!--Uses data from missile version-->
+    <CDataCollectionAbil id="HydraliskSCBWWeaponAlt" parent="ZergWeaponSCBW">
+        <Name value="Weapon/Name/HydraliskSCBWWeapon"/>
+        <DataRecord Entry="Actor,HydraliskSCBWWeaponAlt@PhysicsImpact"/>
+        <DataRecord Entry="Actor,HydraliskSCBWWeaponAlt@Action"/>
+        <DataRecord Entry="Effect,HydraliskSCBWWeaponAlt@Impact"/>
+        <DataRecord Entry="Weapon,HydraliskSCBWWeaponAlt"/>
     </CDataCollectionAbil>
     <CDataCollectionUnit id="HydraliskSCBW" parent="ZergRangedUnitSCBW">
         <TechInfoUpgradeUsed value="HydraliskSCBWRangeUpgrade"/>
@@ -2631,7 +2677,7 @@
     <CDataCollectionUnit id="LurkerSCBWEgg" parent="ZergUnitSCBW">
         <DataRecord Entry="Actor,LurkerSCBWEgg@Birth"/>
         <DataRecord Entry="Actor,LurkerSCBWEgg@Hatch"/>
-        <DataRecord Entry="Actor,LurkerSCBWEgg@DeathRagdoll"/>
+        <DataRecord Entry="Actor,LurkerSCBW@DeathRagdoll"/>
         <DataRecord Entry="Sound,LurkerSCBWEgg@Birth"/>
         <DataRecord Entry="Sound,LurkerSCBWEgg@Explode"/>
         <DataRecord Entry="Tactical,LurkerSCBWEgg"/>
@@ -2968,7 +3014,7 @@
         <AbilArray Link="move"/>
         <AbilArray Link="HydraliskSCBW@BurrowDown"/>
         <AbilArray Link="LurkerSCBW@Morph"/>
-        <WeaponArray Link="HydraliskSCBWWeapon"/>
+        <WeaponArray Link="HydraliskSCBWWeaponAlt"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -3086,7 +3132,7 @@
         <AbilArray Link="move"/>
         <AbilArray Link="LurkerSCBW@BurrowDown"/>
         <AbilArray Link="attack"/>
-        <EquipmentArray Weapon="LurkerSCBWWeapon@Disabled"/>
+        <EquipmentArray Weapon="LurkerSCBWWeaponAlt"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -3324,6 +3370,30 @@
             <StateFlags index="Stun" value="1"/>
         </Modification>
     </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWEnsnare">
+        <Alignment value="Negative"/>
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-fungalgrowth.dds"/>
+        <BehaviorCategories index="Restorable" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <TechAliasArray value="_Transfer"/>
+        <Duration value="37.5"/>
+        <Modification>
+            <ModifyFlags index="Detected" value="1"/>
+            <AdditiveAttackSpeedFactor value="0">
+                <AccumulatorArray value="QueenSCBWEnsnare@AttackAccum"/>
+            </AdditiveAttackSpeedFactor>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWEnsnare@Movement" parent="QueenSCBWEnsnare">
+        <Name value="Behavior/Name/QueenSCBWEnsnare@Movement"/>
+        <Tooltip value="Behavior/Tooltip/QueenSCBWEnsnare@Movement"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <Modification MoveSpeedMultiplier="0.5" AccelerationMultiplier="0.75">
+            <AdditiveAttackSpeedFactor value="0">
+                <AccumulatorArray index="0" removed="1"/>
+            </AdditiveAttackSpeedFactor>
+        </Modification>
+    </CBehaviorBuff>
     <CBehaviorBuff id="DefilerSCBWDarkSwarm">
         <Alignment value="Positive"/>
         <InfoIcon value="Assets\Textures\btn-ability-zerg-darkswarm.dds"/>
@@ -3359,17 +3429,6 @@
         <Duration value="112.5"/>
         <KillCredit Value="Unknown"/>
     </CBehaviorBuff>
-    <CBehaviorBuff id="QueenSCBWEnsnare">
-        <Alignment value="Negative"/>
-        <InfoIcon value="Assets\Textures\btn-ability-zerg-fungalgrowth.dds"/>
-        <BehaviorCategories index="Restorable" value="1"/>
-        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
-        <Duration value="37.5"/>
-        <Modification AttackSpeedMultiplier="0.75">
-            <ModifyFlags index="Detected" value="1"/>
-        </Modification>
-        <TechAliasArray value="_Transfer"/>
-    </CBehaviorBuff>
     <CBehaviorBuff id="QueenSCBWParasite">
         <Alignment value="Negative"/>
         <InfoIcon value="Assets\Textures\btn-ability-zerg-viper-ocularparasite.dds"/>
@@ -3381,11 +3440,5 @@
         </Modification>
         <BehaviorCategories index="Restorable" value="1"/>
         <TechAliasArray value="_Transfer"/>
-    </CBehaviorBuff>
-    <CBehaviorBuff id="QueenSCBWEnsnare@Movement" parent="QueenSCBWEnsnare">
-        <Name value="Behavior/Name/QueenSCBWEnsnare@Movement"/>
-        <Tooltip value="Behavior/Tooltip/QueenSCBWEnsnare@Movement"/>
-        <InfoFlags index="Hidden" value="1"/>
-        <Modification MoveSpeedMultiplier="0.5" AccelerationMultiplier="0.75" AttackSpeedMultiplier="1"/>
     </CBehaviorBuff>
 </Catalog>

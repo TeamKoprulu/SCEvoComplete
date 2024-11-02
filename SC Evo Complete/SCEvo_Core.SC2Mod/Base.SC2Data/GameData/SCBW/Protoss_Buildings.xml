@@ -217,8 +217,8 @@
         <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="PhotonCannonSCBW">
-        <Icon value="Assets\Textures\btn-building-protoss-photoncannon.dds"/>
-        <AlertIcon value="Assets\Textures\btn-building-protoss-photoncannon.dds"/>
+        <Icon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
         <DefaultButtonLayout Row="1" Column="2"/>
     </CButton>
@@ -497,22 +497,29 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
-    <CActorUnit id="PhotonCannonSCBW" parent="ProtossBuildingSCBW" unitName="PhotonCannonSCBW">
-        <Macros value="UnpoweredAnim"/>
-        <Macros value="BuildingFlattenTerrainMacro"/>
-        <Macros value="ProtossBuildingPowerUp"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstruction" Send="DeathCustomize Variation2"/>
+    <CActorUnit id="PhotonCannonSCBW" parent="ProtossBuildingSCBWNoWeapon" unitName="PhotonCannonSCBW">
         <!--
         <On Terms="ActorCreation" Send="Create PhotonCannonTurretLookAt"/>
         <On Terms="Abil.attack.ReadyStart" Target="PhotonCannonTurretLookAt" Send="LookAtEngage"/>
         <On Terms="Abil.attack.ReadyStop" Target="PhotonCannonTurretLookAt" Send="LookAtDisengage"/>
         -->
+        <On Terms="Abil.attack.ReadyStart" Target="" Send="AnimGroupApply Ready"/>
+        <On Terms="Abil.attack.ReadyStart" Target="" Send="TimerKill ReadyDelay"/>
+        <On Terms="WeaponStart.*.AttackStart" Target="" Send="TimerKill ReadyDelay"/>
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Target="" Send="AnimClear Birth"/>
+        <On Terms="WeaponStart.*.AttackStart" Target="" Send="AnimPlay Attack Attack"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimPlay Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimPlay Attack Attack,Inferior"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="TimerSet 1.500000,0.500000 ReadyDelay"/>
+        <On Terms="Abil.attack.ReadyStop" Send="TimerSet 1.500000,0.500000 ReadyDelay"/>
+        <On Terms="TimerExpired; TimerName ReadyDelay" Send="AnimClear Attack"/>
+        <On Terms="TimerExpired; TimerName ReadyDelay" Send="AnimGroupRemove Ready"/>
+        <On Terms="Signal.*.ProtossPowerDown" Send="TimerKill ReadyDelay"/>
+        <On Terms="Signal.*.ProtossPowerDown" Send="AnimClear Attack"/>
+        <On Terms="Signal.*.ProtossPowerDown" Send="AnimGroupRemove Ready"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstruction" Send="DeathCustomize Variation2"/>
         <On Terms="AbilMorph.*.Finish; MorphTo PhotonCannonSCBW" Send="Create"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom PhotonCannonSCBW" Send="Destroy"/>
-        <On Terms="Behavior.PhaseCannonInitialStun.On" Send="ModelSwap PhotonCannonBirth"/>
-        <On Terms="Behavior.PhaseCannonInitialStun.On" Send="AnimPlay Birth Stand,Build,End"/>
-        <On Terms="Behavior.PhaseCannonInitialStun.On" Send="AnimSetTime Birth 5.000000"/>
-        <On Terms="Behavior.PhaseCannonInitialStun.On" Send="AnimSetTimeScale Birth 2.000000"/>
         <On Terms="AnimDone; AnimPlaying Birth" Send="ModelSwap PhotonCannonSCBW"/>
         <On Terms="AnimDone; AnimPlaying Birth" Send="AnimPlay Creation Stand,Unpowered,End"/>
         <On Terms="AnimDone; AnimPlaying Birth" Send="AnimSetTimeScale Creation 2.000000"/>
@@ -526,18 +533,18 @@
         <BarOffset value="60"/>
         <BarWidth value="75"/>
         <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Protoss-PhotonCannon.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-building-protoss-photoncannon.dds"/>
+        <HeroIcon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
         <UnitFlags index="ShowBlobShadow" value="0"/>
-        <UnitIcon value="Assets\Textures\btn-building-protoss-photoncannon.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
         <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Protoss-PhotonCannon.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon@scbw.dds"/>
         </Wireframe>
         <WireframeShield>
-            <Image value="Assets\Textures\Wireframe-Protoss-PhotonCannon-Shield01.dds"/>
-            <Image value="Assets\Textures\Wireframe-Protoss-PhotonCannon-Shield02.dds"/>
-            <Image value="Assets\Textures\Wireframe-Protoss-PhotonCannon-Shield03.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon-shield01@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon-shield02@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon-shield03@scbw.dds"/>
         </WireframeShield>
         <PlacementActorModel value="PhotonCannonSCBW@SkinnablePlacementModel"/>
     </CActorUnit>
@@ -667,9 +674,6 @@
     </CActorModel>
     <CActorUnit id="ObservatorySCBW" parent="ProtossBuildingSCBW" unitName="ObservatorySCBW">
         <Aliases value="_UnitHuge"/>
-        <Macros value="ProtossBuildingPowerUp"/>
-        <Macros value="VoidMPUnpoweredAnim"/>
-        <Macros value="QueueAnim"/>
         <CreepHeightClass value="Small"/>
         <DeathActorModel value="ObservatorySCBW@Death"/>
         <BarOffset value="135"/>
@@ -699,9 +703,6 @@
     </CActorModel>
     <CActorUnit id="TemplarArchiveSCBW" parent="ProtossBuildingSCBW" unitName="TemplarArchiveSCBW">
         <Aliases value="_UnitHuge"/>
-        <Macros value="ProtossBuildingPowerUp"/>
-        <Macros value="VoidMPUnpoweredAnim"/>
-        <Macros value="QueueAnim"/>
         <CreepHeightClass value="Small"/>
         <DeathActorModel value="TemplarArchiveSCBW@Death"/>
         <BarOffset value="135"/>
@@ -1026,10 +1027,6 @@
         <Image value="Assets\Textures\ProtossAdvisorSCBW@portrait_static.dds"/>
     </CModel>
     <CModel id="PhotonCannonSCBW" parent="Building" Race="Protoss">
-        <Model value="Assets\Buildings\Protoss\PhotonCannonEx2\PhotonCannonEx2.m3"/>
-        <AttachProps Id="Ref_TurretZ">
-            <Keys index="Turret" value="0"/>
-        </AttachProps>
         <Lighting value="PhotonCannon"/>
         <PlanetPanelCamera value="Star2CameraMid06"/>
         <Radius value="1.000000"/>
@@ -1043,8 +1040,7 @@
         <UnitGlossaryCamera value="Star2CameraMid06"/>
     </CModel>
     <CModel id="PhotonCannonSCBW@Birth" parent="PhotonCannonSCBW">
-        <Model value="Assets\Buildings\Protoss\PhotonCannonWarpIn\PhotonCannonWarpIn.m3"/>
-        <AttachProps index="0" removed="1"/>
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@WarpIn.m3"/>
         <Events>
             <Anim value="Stand,Build,End"/>
             <Name value="BuildingWarpIn"/>
@@ -1053,19 +1049,19 @@
         </Events>
     </CModel>
     <CModel id="PhotonCannonSCBW@Death" parent="UnitDeath">
-        <Model value="Assets\Buildings\Protoss\PhotonCannonDeathEx2\PhotonCannonDeathEx2_01.m3"/>
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@Death.m3"/>
         <LowQualityModel value="ProtossSmallBuildingDeathLow"/>
         <EditorCategories value="Race:Protoss"/>
         <Lighting value="PhotonCannonDeath"/>
     </CModel>
     <CModel id="PhotonCannonSCBW@DeathUnpowered" parent="UnitDeath">
-        <Model value="Assets\Buildings\Protoss\PhotonCannonDeathUnpoweredEx1\PhotonCannonDeathUnpoweredEx1.m3"/>
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@Death.m3"/>
         <LowQualityModel value="ProtossSmallBuildingDeathLow"/>
         <EditorCategories value="Race:Protoss"/>
         <Lighting value="PhotonCannonDeathUnpowered"/>
     </CModel>
     <CModel id="PhotonCannonSCBW@Placement" parent="PlacementEx" Race="Protoss" low="PhotonCannonSCBW">
-        <Model value="Assets\Buildings\Protoss\PhotonCannonPlacement\PhotonCannonPlacement.m3"/>
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@Placement.m3"/>
         <Radius value="-1.000000"/>
         <ScaleMax value="0.850000,0.850000,0.850000"/>
         <ScaleMin value="0.850000,0.850000,0.850000"/>

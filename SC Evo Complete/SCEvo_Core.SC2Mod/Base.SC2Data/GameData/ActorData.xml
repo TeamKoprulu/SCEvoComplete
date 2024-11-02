@@ -93,6 +93,16 @@
         <Macros index="6" removed="1"/>
         <Macros index="7" removed="1"/>
     </CActorUnit>
+    <CActorUnit default="1" id="ProtossBuildingSCBWNoWeapon" parent="ProtossBuildingSCBW">
+        <On index="64" Terms="UnitDeathCustomize; CreepEngulfs" Send="CreepEngulfmentStopTransition"/>
+        <On index="65" Terms="ActorCreation; CreepIntersects" Send="CreepEngulfmentStartTransition"/>
+        <On index="66" Terms="UnitConstruction.Bogus.Start" Send="Create Bogus@Build"/>
+        <On index="67" removed="1"/>
+        <On index="68" removed="1"/>
+        <On index="69" removed="1"/>
+        <On index="70" removed="1"/>
+        <On index="71" removed="1"/>
+    </CActorUnit>
     <CActorLookAt default="1" id="BattlecruiserSCBW@LookAtBase" parent="UnitTurret">
         <On Terms="SupporterDestruction.*.UnitDeathModel" Send="Destroy"/>
         <Type value="BattlecruiserSCBW@Turret"/>
@@ -362,6 +372,11 @@
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
     </CActorModel>
+    <CActorSound default="1" id="SCBW_DeathVoiceBase" parent="SoundOneShot">
+        <Aliases value="_DeathVoice"/>
+        <On Terms="UnitDeath.##unitName##; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+        <Sound value="##unitName##@Death"/>
+    </CActorSound>
     <CActorUnit id="SCBW_InvulnerableDummy" parent="GenericUnitMinimal" unitName="SCBW_InvulnerableDummy">
         <Model value="Invisible"/>
         <EditorModel value="Sphere"/>
@@ -455,6 +470,13 @@
         <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create LargeBurrowUpEffects"/>
         <On Terms="AbilMorph.*.Start; AbilKey BurrowUp" Send="Create ZergUnitSCBW@Unburrow"/>
     </CActorEventMacro>
+    <CActorTerrain id="TerrainMgr">
+        <PhysicsImpacts index="46" SoundLink="PhysicsImpactLavaHeavy"/>
+        <PhysicsImpacts index="52" ModelLink="PhysicsImpactDustLight" SoundLink="PhysicsImpactBoneLight"/>
+        <PhysicsImpacts index="53" ModelLink="PhysicsImpactDustMedium" SoundLink="PhysicsImpactBoneMedium"/>
+        <PhysicsImpacts index="54" ModelLink="PhysicsImpactDustLarge" SoundLink="PhysicsImpactBoneHeavy"/>
+        <PhysicsImpacts index="55" ModelLink="PhysicsImpactDustMassive" SoundLink="PhysicsImpactBoneMassive"/>
+    </CActorTerrain>
     <CActorModel id="UnitDeathModelWithDeathMotionFlier">
         <Aliases value="_DeathMotion"/>
     </CActorModel>
@@ -1084,6 +1106,9 @@
     <CActorSplat id="LurkerSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="LurkerSCBW">
         <Scale value="0.800000"/>
     </CActorSplat>
+    <CActorSound id="LurkerSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="LurkerSCBW">
+        <On Terms="UnitDeath.LurkerSCBW@Burrowed; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+    </CActorSound>
     <CActorSound id="LurkerSCBW@BurrowDown" parent="SoundOneShot"/>
     <CActorSound id="LurkerSCBW@Land" parent="SoundOneShot"/>
     <CActorUnit id="InfestedCommandCenterSCBW" parent="TerranBuildingSCBW@Flyer" unitName="InfestedCommandCenterSCBW">
@@ -1196,7 +1221,7 @@
         <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
         <HostSiteOps Ops="SOpMoveUpByDot2"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="BroodlingSCBW@Death" SoundLink="BroodlingSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="BroodlingSCBW@Death" SoundLink="BroodlingSCBW@Explode"/>
         <DeathArray index="Disintegrate" ModelLink="BroodlingSCBW@DeathAcid" SoundLink="BroodlingSCBW@DeathFXAcid"/>
         <DeathArray index="Fire" ModelLink="BroodlingSCBW@DeathFire" SoundLink="BroodlingSCBW@DeathFXFire"/>
         <DeathCustomData Name="RagdollBasic" SyncPassChance="65"/>
@@ -1295,7 +1320,7 @@
         <ModelFlags index="OutlineEmitter" value="1"/>
     </CActorUnit>
     <CActorSplat id="InfestedTerranSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="InfestedTerranSCBW"/>
-    <CActorUnit id="InfestedTerranSCBW" parent="GenericBurrowerStandard" unitName="InfestedTerranSCBW">
+    <CActorUnit id="InfestedTerranSCBW" parent="GenericBurrowerStandardSCBW" unitName="InfestedTerranSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="UnloadDropAnim"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
@@ -1303,8 +1328,6 @@
         <Macros value="PhysicsDeathsVoidGround"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
-        <On index="69" Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="Create"/>
-        <On index="70" Terms="UnitBirth.InfestedTerranSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom InfestedTerranSCBW; MorphTo InfestedTerranSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW; MorphFrom InfestedTerranSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW; MorphFrom InfestedTerranSCBW@Burrowed" Send="AnimClear Burrow"/>
@@ -1686,7 +1709,6 @@
             <Image value="Assets\Textures\wireframe-zerg-guardian@scbw.dds"/>
         </GroupIcon>
     </CActorUnit>
-    <CActorModel id="LurkerSCBWEgg@DeathRagdoll" parent="UnitDeathRagdoll"/>
     <CActorUnit id="LurkerSCBWEgg" parent="GenericUnitMorph" unitName="LurkerSCBWEgg">
         <Aliases value="_UnitMedium"/>
         <On Terms="AbilMorph.*.Finish; MorphTo LurkerSCBWEgg; MorphFrom HydraliskSCBW" Send="AnimBaselineStop"/>
@@ -1719,7 +1741,7 @@
     </CActorUnit>
     <CActorSplat id="DefilerSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="DefilerSCBW"/>
     <CActorSplat id="UltraliskSCBW@BurrowedSplat" parent="BurrowedSplatSCBW" unitName="UltraliskSCBW"/>
-    <CActorUnit id="DefilerSCBW" parent="GenericBurrowerStandard" unitName="DefilerSCBW">
+    <CActorUnit id="DefilerSCBW" parent="GenericBurrowerStandardSCBW" unitName="DefilerSCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="SCBW_ZergMediumBurrowEffects"/>
         <Macros value="ZergBurrowStandardAnimMacro"/>
@@ -1727,8 +1749,6 @@
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
-        <On index="69" Terms="UnitBirth.DefilerSCBW@Burrowed" Send="Create"/>
-        <On index="70" Terms="UnitBirth.DefilerSCBW@Burrowed" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant,DontResetOnUnhide"/>
         <On Terms="AbilMorph.*.Start; AbilKey BurrowDown" Send="Create ZergUnitSCBW@Burrow"/>
         <On Terms="AbilMorph.*.Cancel; MorphFrom DefilerSCBW; MorphTo DefilerSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Finish; MorphTo DefilerSCBW; MorphFrom DefilerSCBW@Burrowed" Send="AnimBracketStop Burrow"/>
@@ -1780,13 +1800,7 @@
         <Macros value="PhysicsDeathsVoidAir"/>
         <On Terms="AbilMorph.*.Finish; MorphTo MutaliskSCBW" Send="Create"/>
         <On Terms="AbilMorph.*.Start; MorphFrom MutaliskSCBW" Send="Destroy"/>
-        <On Terms="Effect.SpawnMutaliskCreateMutalisk.Create" Send="$Birth"/>
-        <On Terms="Effect.InfestedVentSpawnMutaliskCreateMutalisk.Create" Send="$Birth"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Mutalisk_Land"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Mutalisk; MorphFrom HybridMutaliskEgg" Send="Create"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Mutalisk; MorphFrom HybridMutaliskEgg" Send="Create EggsplosionPurpleGeneric0"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Mutalisk; MorphFrom HybridMutaliskEgg" Target="EggsplosionPurpleGeneric0" Send="SetScale 1.660000"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo Mutalisk; MorphFrom HybridMutaliskEgg" Send="AnimBracketStart BSD Birth,01 Stand Death"/>
         <!--DeathCustoms>
             <ActorModel value="MutaliskDeathRagdoll"/>
             <ModelLink value="MutaliskSCBW@DeathRagdoll"/>
@@ -1815,7 +1829,7 @@
         </DeathCustoms>
         <HostSiteOps Ops="SOpBankerMutalisk"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="MutaliskSCBW@Death" SoundLink="MutaliskSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="MutaliskSCBW@Death" SoundLink="MutaliskSCBW@Explode"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
         <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
         <PortraitModel value="MutaliskSCBW@Portrait"/>
@@ -1844,11 +1858,7 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorSound id="MutaliskSCBW@Death" parent="SoundOneShot">
-        <On Terms="UnitDeath.MutaliskSCBW; PassChance 25.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
-        <Sound value="Mutalisk_Death"/>
-        <Aliases value="_DeathVoice"/>
-    </CActorSound>
+    <CActorSound id="MutaliskSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="MutaliskSCBW"/>
     <CActorUnit id="ScourgeSCBW" parent="GenericUnitStandard" unitName="ScourgeSCBW">
         <Aliases value="_UnitSmall"/>
         <On Terms="WeaponStart.ScourgeSCBWWeapon.AttackStart" Send="StatusSet DeathSuicide 1"/>
@@ -2081,10 +2091,7 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorSound id="OverlordSCBW@Death" parent="SoundOneShot">
-        <On Terms="UnitDeath.OverlordSCBW; PassChance 25.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
-        <Aliases value="_DeathVoice"/>
-    </CActorSound>
+    <CActorSound id="OverlordSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="OverlordSCBW"/>
     <CActorSound id="OverlordSCBW@Land" parent="SoundOneShot"/>
     <CActorSiteOpBanker id="ValkyrieSCBW@SOpBanker" parent="SOpBanker">
         <RollAngleMax value="75.000000"/>
@@ -2156,11 +2163,7 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorSound id="EggSCBW@DeathSound" parent="SoundOneShot">
-        <On Terms="UnitDeath.EggSCBW; PassChance 25.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
-        <Sound value="EggSCBW@Death"/>
-        <Aliases value="_DeathVoice"/>
-    </CActorSound>
+    <CActorSound id="EggSCBW@DeathSound" parent="SCBW_DeathVoiceBase" unitName="EggSCBW"/>
     <CActorSound id="EggSCBW@Ready" parent="SoundOneShot">
         <On Terms="AbilTrain.LarvaSCBW@Train.Finish" Send="Create"/>
     </CActorSound>
@@ -2170,7 +2173,7 @@
     <CActorUnit id="LarvaSCBW" parent="GenericUnitMorph" unitName="LarvaSCBW">
         <Aliases value="_UnitSmall"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="LarvaSCBW@Death" SoundLink="LarvaSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="LarvaSCBW@Death" SoundLink="LarvaSCBW@Explode"/>
         <DeathArray index="TrainingComplete" SoundLink="Uni_DeathFXSilentKill"/>
         <PortraitModel value="LarvaSCBW@Portrait"/>
         <WalkAnimMoveSpeed value="0.3984"/>
@@ -2200,9 +2203,11 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorSound id="LarvaSCBW@Death" parent="SoundOneShot">
-        <On Terms="UnitDeath.LarvaSCBW; PassChance 25.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
-        <Aliases value="_DeathVoice"/>
+    <CActorSound id="LarvaSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="LarvaSCBW">
+        <On index="1" Terms="UnitDeath.LarvaSCBW; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not; !Death TrainingComplete" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="BroodlingSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="BroodlingSCBW">
+        <On Terms="UnitDeath.BroodlingSCBW@Burrowed; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
     </CActorSound>
     <CActorSound id="ZergBuildingSCBW@ConstructionSoundLevel2" parent="ProgressSound">
         <On Terms="ProgressLevel.ZergBuildingSCBW@ConstructionAttached.Start; Level 2" Send="Create"/>
@@ -2359,10 +2364,23 @@
         <AcquisitionPitchHalfArc value="20.000000"/>
         <AccuracyHalfArc value="25.000000"/>
     </CActorAction>
-    <CActorSound id="ZerglingSCBW@Death" parent="SoundOneShot">
-        <On Terms="UnitDeath.ZerglingSCBW; PassChance 25.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
-        <On Terms="UnitDeath.ZerglingSCBW@Burrowed; PassChance 25.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
-        <Aliases value="_DeathVoice"/>
+    <CActorAction id="HydraliskSCBWWeaponAlt@Action" parent="GenericAttackWhiff" effectAttack="HydraliskSCBWWeaponAlt@Impact">
+        <LaunchAttachQuery Methods="AMFilterWeaponSetA0"/>
+        <LaunchAssets Model="HydraliskSCBWWeapon@Launch" Sound="HydraliskSCBWWeapon@Launch"/>
+        <ImpactMap index="None" Model="HydraliskSCBWWeapon@Impact" Sound="HydraliskSCBWWeapon@Impact"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactPhysics Name="HydraliskSCBWWeapon@Impact" MatchKeys="Basic" Physics="HydraliskSCBWWeaponAlt@PhysicsImpact"/>
+        <AcquisitionYawHalfArc value="20.000000"/>
+        <AcquisitionPitchHalfArc value="20.000000"/>
+        <AccuracyHalfArc value="25.000000"/>
+    </CActorAction>
+    <CActorForceSphere id="HydraliskSCBWWeaponAlt@PhysicsImpact" parent="RangedAttackDeathForce">
+        <HostSiteOps Ops="SOpIncomingDirect SOpPointUp1ByDot25 MarineForceDirectionRandomizer"/>
+        <Magnitude value="12.000000,7.000000"/>
+        <Radius value="1.000000,0.150000"/>
+    </CActorForceSphere>
+    <CActorSound id="ZerglingSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="ZerglingSCBW">
+        <On Terms="UnitDeath.ZerglingSCBW@Burrowed; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
     </CActorSound>
     <CActorMissile id="HydraliskSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="HydraliskSCBWWeapon@Missile"/>
     <CActorModel id="AssimilatorSCBW@Death" parent="UnitDeathModel">
@@ -3151,6 +3169,7 @@
         <On Terms="UnitBirth.SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="AnimClear Unburrow"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SpiderMineSCBW@Burrowed" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimPlay Unburrow Unburrow"/>
         <On Terms="AbilMorph.SpiderMineSCBW@Burrow.Start" Send="Create SpiderMineSCBW@BurrowSound"/>
@@ -3241,19 +3260,21 @@
         <HostEndSiteOps Ops="SOpForwardCasterPointInverted SOpMoveBy1" HoldPosition="1" HoldRotation="1"/>
         <Radius value="0.750000,0.150000"/>
     </CActorForceCylinder>
-    <CActorEventMacro id="PhysicsDeathsSwarmBase">
+    <CActorEventMacro id="PhysicsDeathsSwarmGround">
+        <On index="13" Send="DeathCustomize RagdollFire"/>
         <On Terms="UnitDeathCustomize; KilledByEffect DamagePhysics" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {GhostSCBWNuclearStrike@Damage GhostSCBWNuclearStrike@DamageAccum}" Send="DeathCustomize RagdollNuke"/>
         <On Terms="UnitDeathCustomize; KilledByEffect MutaliskSCBWWeapon@Damage" Send="DeathCustomize RagdollAcid"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {BattlecruiserSCBWWeaponGround@Damage BattlecruiserSCBWWeaponAir@Damage}" Send="DeathCustomize RagdollFire"/>
-    </CActorEventMacro>
-    <CActorEventMacro id="PhysicsDeathsSwarmGround" parent="PhysicsDeathsSwarmBase">
         <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSCBWSiegedWeapon@DamageAccum SpiderMineSCBWWeapon@DamageAccum ReaverSCBWWeapon@Damage ScarabSCBWWeapon@Damage}" Send="DeathCustomize RagdollSiegeTank"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {LurkerSCBWWeapon@Damage SunkenColonySCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {InfestedTerranSCBWWeapon@DamageAccum InfestedTerranSCBWWeapon@DamageSearch GuardianSCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
-        <On Terms="UnitDeathCustomize; KilledByEffect TwinIbiksCannon" Send="DeathCustomize RagdollFire"/>
     </CActorEventMacro>
-    <CActorEventMacro id="PhysicsDeathsSwarmAir" parent="PhysicsDeathsSwarmBase">
+    <CActorEventMacro id="PhysicsDeathsSwarmAir">
+        <On Terms="UnitDeathCustomize; KilledByEffect DamagePhysics" Send="DeathCustomize RagdollBasic"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {GhostSCBWNuclearStrike@Damage GhostSCBWNuclearStrike@DamageAccum}" Send="DeathCustomize RagdollNuke"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect MutaliskSCBWWeapon@Damage" Send="DeathCustomize RagdollAcid"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {BattlecruiserSCBWWeaponGround@Damage BattlecruiserSCBWWeaponAir@Damage}" Send="DeathCustomize RagdollFire"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {ValkyrieSCBWWeapon@DamageAccum CorsairSCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {ScourgeSCBWWeapon@Damage DevourerSCBWWeapon@DamageAccum SporeColonySCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
     </CActorEventMacro>
@@ -3482,6 +3503,7 @@
         <Sound value="Sentry_HallucinationDeathSmall"/>
     </CActorSound>
     <CActorSimple id="SCBW_HallucinationController">
+        <On Terms="ActorOrphan" Send="Destroy"/>
         <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit RequiresTerran" Send="Create"/>
         <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit RequiresZerg" Send="Create"/>
         <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit RequiresNeut" Send="Create"/>
@@ -3494,7 +3516,7 @@
         <On Terms="Signal.*.Death; IsStatus Size 2" Send="Create SCBW_HallucinationDeathLarge"/>
         <On Terms="Signal.*.Death; IsStatus Size 1" Send="Create SCBW_HallucinationDeathMedium"/>
         <On Terms="Signal.*.Death; IsStatus Size 0" Send="Create SCBW_HallucinationDeathSmall"/>
-        <On Terms="Signal.*.Death" Send="TimerSet 0.000000 Delay"/>
+        <On Terms="Signal.*.Death" Send="TimerSet 0.001000 Delay"/>
         <On Terms="TimerExpired; TimerName Delay" Target="_DeathModel" Send="Destroy Immediate"/>
         <On Terms="TimerExpired; TimerName Delay" Target="_DeathVoice" Send="SoundSetMuted 1 0"/>
         <On Terms="TimerExpired; TimerName Delay" Target="_DeathVoice" Send="Destroy Immediate"/>
