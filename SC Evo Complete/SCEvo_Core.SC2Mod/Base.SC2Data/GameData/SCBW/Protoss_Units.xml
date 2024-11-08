@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectCancelOrder id="ReaverSCBWWeapon@CancelAttackOrders">
+        <EditorCategories value="Race:Protoss"/>
+        <AbilCmd value="attack,Execute"/>
+        <Count value="150"/>
+        <Flags index="Queued" value="1"/>
+    </CEffectCancelOrder>
+    <CEffectCreatePersistent id="ReaverSCBWWeapon@EnumScarabsStopOrders">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <InitialEffect value="ReaverSCBWWeapon@CancelAttackOrders"/>
+        <PeriodCount value="2"/>
+        <PeriodicEffectArray value="ReaverSCBWWeapon@CancelAttackOrders"/>
+        <PeriodicPeriodArray value="0.0625"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="ReaverSCBWWeapon@EnumScarabsStopSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@QueueOrdersDP"/>
+        <EffectArray value="ReaverSCBWWeapon@TrackTargetLastPositionRB"/>
+        <EffectArray value="ReaverSCBWWeapon@EnumScarabsStopOrders"/>
+    </CEffectSet>
+    <CEffectDestroyPersistent id="ReaverSCBWWeapon@QueueOrdersDP">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <Effect value="ReaverSCBWWeapon@QueueOrders"/>
+        <Count value="1"/>
+    </CEffectDestroyPersistent>
+    <CEffectRemoveBehavior id="ReaverSCBWWeapon@TrackTargetLastPositionRB">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorLink value="ReaverSCBWWeapon@TrackTargetLastPosition"/>
+    </CEffectRemoveBehavior>
     <CEffectModifyUnit id="ReaverSCBWWeapon@DelayAttack">
         <EditorCategories value="Race:Protoss"/>
         <ImpactUnit Value="Caster"/>
@@ -248,6 +278,7 @@
     <CEffectSet id="ArbiterSCBWStasisField@Set">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="ArbiterSCBWStasisField@HaltIssueOrder"/>
+        <EffectArray value="SCBW_CarrierRecallSetSource"/>
         <EffectArray value="ArbiterSCBWStasisField@AB"/>
         <EffectArray value="ArbiterSCBWStasisField@ABTimedLife"/>
         <EffectArray value="ArbiterSCBWStasisField@PhasedUnit"/>
@@ -611,6 +642,11 @@
     <CEffectApplyBehavior id="ReaverSCBWWeapon@TrackTargetLastPosition">
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
+    <CEffectEnumTrackedUnits id="ReaverSCBWWeapon@EnumScarabsStop">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
+        <Effect value="ReaverSCBWWeapon@EnumScarabsStopSet"/>
+    </CEffectEnumTrackedUnits>
     <CEffectApplyBehavior id="ReaverSCBWWeapon@TrackTargetPosition">
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
@@ -620,11 +656,6 @@
         <Weapon Weapon="ReaverSCBWWeapon" CooldownOperation="Set" CooldownFraction="1"/>
         <Weapon Weapon="ReaverSCBWWeapon@NoScan" CooldownOperation="Set" CooldownFraction="1"/>
     </CEffectModifyUnit>
-    <CEffectEnumTrackedUnits id="ReaverSCBWWeapon@EnumScarabsStop">
-        <EditorCategories value="Race:Protoss"/>
-        <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
-        <Effect value="CancelAttackOrders"/>
-    </CEffectEnumTrackedUnits>
     <CEffectApplyBehavior id="ReaverSCBWWeapon@KillsToCaster">
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="KillsToCaster"/>
@@ -990,6 +1021,12 @@
         <Alert value="TrainComplete"/>
         <MaxCount value="5"/>
     </CAbilArmMagazine>
+    <CValidatorUnitCompareBehaviorCount id="ReaverSCBWWeapon@TrackTargetPosition">
+        <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
+        <Compare value="GT"/>
+        <Behavior value="ReaverSCBWWeapon@TrackTargetPosition"/>
+        <RequireCasterUnit Value="Caster"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorUnitPathable id="ReaverSCBWWeapon@Pathable">
         <MaxDistance value="13"/>
     </CValidatorUnitPathable>
@@ -1004,6 +1041,7 @@
         <Type value="And"/>
         <CombineArray value="TargetNotDead"/>
         <CombineArray value="ReaverSCBWWeapon@QueueOrdersTargetFilter"/>
+        <CombineArray value="ReaverSCBWWeapon@TrackTargetPosition"/>
     </CValidatorCombine>
     <CValidatorUnitFilters id="ReaverSCBWWeapon@QueueOrdersTargetFilter">
         <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
@@ -2402,7 +2440,7 @@
         <UnitIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactUpgraded" Name="Upgrade"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathSmall" Name="Hallucination"/>
-        <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactDud" Name="Detached"/>
+        <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactDud" SoundLink="ReaverSCBWWeapon@ExplodeDud" Name="Detached"/>
         <Preload value="ReaverSCBWWeapon@Impact"/>
     </CActorUnit>
     <CActorSound id="ZealotSCBW@Death" parent="SoundOneShot">
@@ -4299,6 +4337,17 @@
         <MotionOverlays Type="Wave" Axis="1,0,0" Wavelength="6,0.1"/>
     </CMoverMissile>
     <CMoverMissile id="HighTemplarSCBWWeapon@Mover" parent="MissileDefault"/>
+    <CSound id="ReaverSCBWWeapon@ExplodeDud" parent="Death">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact00.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact04.wav" FacialGroup=""/>
+        <Category value="Combat"/>
+        <Pitch value="2.000000,3.000000"/>
+        <Volume value="-3.000000,-2.000000"/>
+    </CSound>
     <CSound id="ReaverSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Reaver_AttackLaunch00.wav" FacialGroup=""/>
@@ -6239,7 +6288,7 @@
         <DeathRevealRadius value="1"/>
         <PushPriority value="0"/>
         <Deceleration value="0.0625"/>
-        <LateralAcceleration value="46.0625"/>
+        <LateralAcceleration value="64"/>
         <BehaviorArray Link="ReaverSCBWWeapon@ScarabTimedLife"/>
         <BehaviorArray Link="ReaverSCBWWeapon@NoOrders"/>
         <InnerRadius value="0.1875"/>
@@ -7352,6 +7401,7 @@
         <InfoFlags index="Hidden" value="1"/>
         <RemoveValidatorArray value="NotInsideTransport"/>
         <FinalEffect value="ReaverSCBWWeapon@InsideTransport"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@WarningSign">
         <BehaviorFlags index="Permanent" value="1"/>
@@ -7365,6 +7415,7 @@
         <InfoFlags index="Hidden" value="1"/>
         <RemoveValidatorArray value="InsideTransport"/>
         <FinalEffect value="ReaverSCBWWeapon@InsideTransportSet"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@DelayAttackWhenUnloaded">
         <Alignment value="Negative"/>
@@ -7376,7 +7427,8 @@
         <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@TrackTargetLastPosition">
-        <EditorCategories value="AbilityorEffectType:Units"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <RemoveValidatorArray value="ReaverSCBWWeapon@ScarabIsAttacking"/>
         <RemoveValidatorArray value="TargetIsVisible"/>
         <Period value="0.25"/>
@@ -7446,6 +7498,7 @@
         <Alignment value="Negative"/>
         <InfoIcon value="Assets\Textures\btn-ability-protoss-forcefield-color.dds"/>
         <BehaviorCategories index="Magic" value="1"/>
+        <BehaviorCategories index="User4" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <DisplayDuration index="Self" value="1"/>
         <DisplayDuration index="Ally" value="1"/>

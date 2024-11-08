@@ -66,6 +66,7 @@
     <CEffectSet id="GhostSCBWLockdown@Set">
         <EditorCategories value="Race:Terran"/>
         <EffectArray value="GhostSCBWLockdown@HaltIssueOrder"/>
+        <EffectArray value="SCBW_CarrierRecallSetSource"/>
         <EffectArray value="GhostSCBWLockdown@AB"/>
     </CEffectSet>
     <CEffectModifyUnit id="VultureSCBWWeapon@SetCooldown">
@@ -1969,6 +1970,15 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
+    <CActorSound id="GhostSCBWLockdown@Birth" parent="SoundOneShot">
+        <On Terms="UnitBirth.GhostSCBWLockdown@Missile.Normal" Send="Create"/>
+        <Host Subject="_Missile"/>
+    </CActorSound>
+    <CActorForceSphere id="BattlecruiserSCBW@DeathRagdollDetonationForce" parent="DeathRagdollDetonationForce">
+        <Magnitude value="12.000000,3.000000"/>
+        <ForceFlags index="FallOff" value="0"/>
+        <Radius value="2.000000,1.000000"/>
+    </CActorForceSphere>
     <CActorModel id="SiegeTankSCBWSieged@DeathRagdoll" parent="UnitDeathRagdoll">
         <On Terms="ActorCreation" Send="Create SiegeTankSCBW@DeathRagdollDetonationForce"/>
     </CActorModel>
@@ -2477,54 +2487,9 @@
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
-    <CActorModel id="BattlecruiserSCBW@DeathRagdoll">
-        <Aliases value="_Main"/>
-        <Aliases value="_Unit"/>
-        <Aliases value="_DeathModel"/>
-        <Macros value="DeadAnimationMacro"/>
-        <Macros value="DeadAnimationRemoveMacro"/>
-        <Macros value="UnitDeathRagdollTerminateExtrasMacro"/>
-        <Flags index="SuppressSaveLoad" value="1"/>
-        <Inherits index="BaseModelScale" value="1"/>
-        <Inherits index="CastShadows" value="1"/>
-        <Inherits index="Scale" value="1"/>
-        <Inherits index="TeamColor" value="1"/>
-        <Inherits index="TintColor" value="1"/>
-        <Inherits index="Visibility" value="1"/>
-        <AcceptedHostedPropTransfers index="TimeScale" value="0"/>
-        <On Terms="ActorCreation" Send="RefClear ::Host"/>
-        <On Terms="ActorCreation" Send="SetTintColor 255,255,255 0.600000"/>
-        <On Terms="ActorCreation" Send="SetTeamColor {0,0,0 0.000000} {0,0,0 0.000000}"/>
-        <On Terms="ActorCreation" Target="ModelPretargetGround" Send="Destroy"/>
-        <On Terms="ActorCreation" Target="GroundPreSelection" Send="Destroy"/>
-        <On Terms="Signal.*.ClearDeathModel" Send="Destroy"/>
-        <On Terms="TimerExpired; TimerName TerminateExtras" Send="Signal TerminateExtras"/>
-        <On Terms="Signal.*.TerminateExtras" Send="PhysicsImpactsEnable"/>
-        <On Terms="Signal.*.TerminateExtras" Target="_BodySquib" Send="Signal Terminate"/>
-        <On Terms="AnimDone; AnimName Death" Send="PhysicsTerminate"/>
-        <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
+    <CActorModel id="BattlecruiserSCBW@DeathRagdoll" parent="UnitDeathRagdoll">
         <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@DeathRagdollDetonationForce"/>
-        <Host Subject="::Creator"/>
         <HostSiteOps Ops="SOpDeathMotionFlier"/>
-        <Model value="UnitDeathModelNoTeamColor"/>
-        <ModelFlags index="UpdateVisibility" value="0"/>
-        <ModelFlags index="UseSyncSeed" value="1"/>
-        <EventDataSound Name="NydusCanalThud" Actor="UnitSound" Sound="NydusWorm_DeathThud"/>
-        <EventDataSound Name="ZergExplosionSlime" Actor="UnitSound" Sound="Zerg_ExplosionSlime"/>
-        <EventDataSound Name="ZergPreExplosionSmall" Actor="UnitSound" Sound="Zerg_PreExplosionSmall"/>
-        <EventDataSound Name="ZergExplosionTiny" Actor="UnitSound" Sound="Zerg_ExplosionTiny"/>
-        <EventDataSound Name="ZergExplosionSmall" Actor="UnitSound" Sound="Zerg_ExplosionSmall"/>
-        <EventDataSound Name="ZergExplosionMedium" Actor="UnitSound" Sound="Zerg_ExplosionMedium"/>
-        <EventDataSound Name="ZergExplosionLarge" Actor="UnitSound" Sound="Zerg_ExplosionLarge"/>
-        <EventDataSound Name="ProtossPreExplosionSmall" Actor="UnitSound" Sound="Protoss_PreExplosionSmall"/>
-        <EventDataSound Name="ProtossExplosionSmall" Actor="UnitSound" Sound="Protoss_ExplosionSmall"/>
-        <EventDataSound Name="ProtossExplosionMedium" Actor="UnitSound" Sound="Protoss_ExplosionMedium"/>
-        <EventDataSound Name="ProtossExplosionLarge" Actor="UnitSound" Sound="Protoss_ExplosionLarge"/>
-        <EventDataSound Name="TerranPreExplosionSmall" Actor="UnitSound" Sound="Terran_PreExplosionSmall"/>
-        <EventDataSound Name="TerranExplosionSmall" Actor="UnitSound" Sound="Terran_ExplosionSmall"/>
-        <EventDataSound Name="TerranExplosionMedium" Actor="UnitSound" Sound="Terran_ExplosionMedium"/>
-        <EventDataSound Name="TerranExplosionLarge" Actor="UnitSound" Sound="Terran_ExplosionLarge"/>
-        <PhysicsImpactDefault ActorModel="PhysicsImpactHarness" ActorSound="PhysicsImpactSound" OccuranceThrottlingDistance="0.500000,0.500000"/>
     </CActorModel>
     <CActorSiteOpBankerUnit id="BattlecruiserSCBW@SOpBanker">
         <RollMax value="30.000000,10.000000"/>
@@ -4912,6 +4877,11 @@
         </MotionPhases>
         <MotionPhases YawPitchRoll="MAX"/>
     </CMoverMissile>
+    <CSound id="GhostSCBWLockdown@Birth" parent="Spell">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\GoliathSCBW\GoliathSCBWWeaponAir@Launch00.ogg"/>
+        <Category value="Combat"/>
+    </CSound>
     <CSound id="MedicSCBW@DeathFXBloodSpray" parent="Combat">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
@@ -7206,7 +7176,7 @@
         <GlossaryWeakArray value="DragoonSCBW"/>
         <TacticalAIThink value="AIThinkValkyrieSCBW"/>
         <ScoreResult value="BuildOrder"/>
-        <Deceleration value="100"/>
+        <Deceleration value="1.5"/>
         <StationaryTurningRate value="1999.6875"/>
         <TurningRate value="1999.6875"/>
     </CUnit>
@@ -8029,6 +7999,7 @@
         <InfoIcon value="Assets\Textures\btn-abilty-terran-lockdown@scbw.dds"/>
         <BehaviorCategories index="Restorable" value="1"/>
         <BehaviorCategories index="Stun" value="1"/>
+        <BehaviorCategories index="User4" value="1"/>
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
         <Duration value="65.5"/>
         <Modification>

@@ -377,6 +377,14 @@
         <On Terms="UnitDeath.##unitName##; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
         <Sound value="##unitName##@Death"/>
     </CActorSound>
+    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+    <!--                                                                                         -->
+    <!-- Terran Multiplayer                                                                      -->
+    <!--                                                                                         -->
+    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+    <CActorStateMonitor id="TerranFlamesMediumBuilding">
+        <On Terms="UnitCreation.RefineryRich" Send="Create"/>
+    </CActorStateMonitor>
     <CActorUnit id="SCBW_InvulnerableDummy" parent="GenericUnitMinimal" unitName="SCBW_InvulnerableDummy">
         <Model value="Invisible"/>
         <EditorModel value="Sphere"/>
@@ -2021,10 +2029,7 @@
     <CActorModel id="OverlordSCBW@DeathRagdoll" parent="UnitDeathRagdollFlier">
         <On Terms="ActorCreation" Send="Create OverlordSCBW@DeathRagdollDetonationForce"/>
     </CActorModel>
-    <CActorForceSphere id="OverlordSCBW@DeathRagdollDetonationForce">
-        <Host Subject="::Main"/>
-        <HostSiteOps Ops="SOpAttachInternalDetonation SOpForwardCasterCenter SOpRotVariancerForward60 SOpMoveByDot15ToDot5 SOpMoveDownByDot15ToDot25 SOpPointSouthWorld" HoldPosition="1"/>
-        <Duration value="0.150000"/>
+    <CActorForceSphere id="OverlordSCBW@DeathRagdollDetonationForce" parent="DeathRagdollDetonationForce">
         <Magnitude value="12.500000,5.000000"/>
         <Radius value="1.250000,0.750000"/>
     </CActorForceSphere>
@@ -2492,6 +2497,7 @@
     <CActorStateMonitor id="TerranBuildingSCBW@FlamesMedium" parent="TerranBuildingSCBW@Flames">
         <On Terms="UnitCreation.SupplyDepotSCBW" Send="Create"/>
         <On Terms="UnitCreation.RefinerySCBW" Send="Create"/>
+        <On Terms="UnitCreation.RefinerySCBW@Rich" Send="Create"/>
         <On Terms="UnitCreation.BarracksSCBW" Send="Create"/>
         <On Terms="UnitCreation.BarracksSCBW@Flying" Send="Create"/>
         <On Terms="UnitCreation.EngineeringBaySCBW" Send="Create"/>
@@ -2579,7 +2585,9 @@
         <ImpactMap index="None" Model="GoliathSCBWWeaponAir@Impact" Sound="GoliathSCBWWeaponAir@Impact"/>
         <ImpactPhysics Name="GoliathSCBWWeaponAir@Impact" MatchKeys="Basic" Physics="GoliathSCBWWeaponAir@Force"/>
     </CActorAction>
-    <CActorMissile id="GoliathSCBWWeaponAir@Missile" parent="GenericAttackMissile" unitName="GoliathSCBWWeaponAir@Missile"/>
+    <CActorMissile id="GoliathSCBWWeaponAir@Missile" parent="GenericAttackMissile" unitName="GoliathSCBWWeaponAir@Missile">
+        <On Terms="ActorCreation; ValidateUnit GoliathSCBWRangeUpgrade" Send="ModelSwap GoliathSCBWWeaponAir@MissileUpgraded"/>
+    </CActorMissile>
     <CActorAction id="GoliathSCBWWeaponGround@Action" parent="GenericAttackBulletWhiff" effectAttack="GoliathSCBWWeaponGround@Damage">
         <LaunchAttachQuery Methods="AMFilterWeaponSetA0"/>
         <LaunchAssets Model="GoliathSCBWWeaponGround@Launch" Sound="GoliathSCBWWeaponGround@Launch"/>
@@ -2886,7 +2894,7 @@
         <ShieldFlashType value="Header"/>
     </CActorAction>
     <CActorSound id="DarkTemplarSCBWWeapon@LaunchSound" parent="SoundOneShot">
-        <On Terms="WeaponStart.DarkTemplarSCBWWeapon.AttackStart" Send="Create"/>
+        <On Terms="Effect.DarkTemplarSCBWWeapon@Damage.Start; At Caster" Send="Create"/>
         <Sound value="DarkTemplarSCBWWeapon@Launch"/>
     </CActorSound>
     <CActorSound id="CarrierSCBWWeapon@Launch" parent="SoundOneShot">
