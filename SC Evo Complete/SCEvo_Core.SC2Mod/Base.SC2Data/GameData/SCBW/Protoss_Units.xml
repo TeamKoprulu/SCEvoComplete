@@ -340,6 +340,7 @@
         <EffectArray value="ArbiterSCBWRecall@Teleport"/>
         <EffectArray value="ArbiterSCBWRecall@TeleportAir"/>
         <EffectArray value="ArbiterSCBWRecall@ABRecalled"/>
+        <EffectArray value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
     </CEffectSet>
     <CEffectApplyBehavior id="CorsairSCBWDisruptionWeb@AB">
         <EditorCategories value="Race:Protoss"/>
@@ -1376,16 +1377,16 @@
         <DefaultButtonLayout Row="2" Column="3"/>
     </CButton>
     <CButton id="DarkArchonSCBWMerge@Target">
-        <Icon value="Assets\Textures\btn-unit-protoss-darkarchon.dds"/>
-        <AlertIcon value="Assets\Textures\btn-unit-protoss-darkarchon.dds"/>
+        <Icon value="Assets\Textures\btn-unit-protoss-darkarchon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-darkarchon@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
         <HotkeyAlias value="AWrp"/>
         <Universal value="1"/>
         <DefaultButtonLayout Row="2" Column="3"/>
     </CButton>
     <CButton id="DarkArchonSCBWMerge@Selection">
-        <Icon value="Assets\Textures\btn-unit-protoss-darkarchon.dds"/>
-        <AlertIcon value="Assets\Textures\btn-unit-protoss-darkarchon.dds"/>
+        <Icon value="Assets\Textures\btn-unit-protoss-darkarchon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-darkarchon@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
         <Universal value="1"/>
         <DefaultButtonLayout Row="2" Column="3"/>
@@ -1555,6 +1556,9 @@
         <DefaultButtonLayout Row="1" Column="1"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
+    <CRequirementCountBehavior id="HighTemplarSCBWHallucination@BuffCount" parent="SCBW_BehaviorCountAtUnit" x="HighTemplarSCBWHallucination">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountBehavior>
     <CRequirementGT id="ScarabSCBW@CountAtUnitGT0">
         <OperandArray index="0" value="ScarabSCBW@CountAtUnit"/>
         <OperandArray index="1" value="0"/>
@@ -1611,9 +1615,10 @@
     <CRequirementAnd id="ReaverSCBWHangar@Arm">
         <OperandArray value="ScarabSCBW@QoBAtUnitLT5"/>
     </CRequirementAnd>
-    <CRequirementAnd id="ReaverSCBWHangar@Armed">
+    <CRequirementOr id="ReaverSCBWHangar@Armed">
         <OperandArray value="ScarabSCBW@CountAtUnitGT0"/>
-    </CRequirementAnd>
+        <OperandArray value="SCBW_IsHallucination"/>
+    </CRequirementOr>
     <CRequirementAnd id="ReaverSCBWHangar@NotArmed">
         <OperandArray value="ScarabSCBW@NotCountAtUnit"/>
     </CRequirementAnd>
@@ -2072,6 +2077,29 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
     </CLight>
+    <CActorModel id="CorsairSCBWDisruptionWeb@Disrupted" parent="ModelAnimationStyleContinuousUNIT">
+        <Inherits index="CloakEffect" value="1"/>
+        <Inherits index="Decal" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <HostSiteOps Ops="CorsairSCBWDisruptionWeb@DisruptedAttach"/>
+        <On Terms="Behavior.CorsairSCBWDisruptionWeb.Off" Send="Destroy"/>
+        <MaxScale value="0.450000"/>
+        <AutoScaleFactor value="0.900000"/>
+    </CActorModel>
+    <CActorBatch id="CorsairSCBWDisruptionWeb@DisruptedBatch">
+        <On Terms="Behavior.CorsairSCBWDisruptionWeb.On" Send="Create"/>
+        <On Terms="Behavior.CorsairSCBWDisruptionWeb.Off" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <HarnessActor value="CorsairSCBWDisruptionWeb@Disrupted"/>
+        <Count value="0">
+            <AccumulatorArray value="CorsairSCBWDisruptionWeb@DisruptedBatch"/>
+        </Count>
+        <Terms value="ValidateUnit TargetHasWeapon"/>
+    </CActorBatch>
+    <CActorSiteOpAttach id="CorsairSCBWDisruptionWeb@DisruptedAttach">
+        <AttachQuery Methods="AMFilterWeapon AMNodeOccupancyNoSpam AMRandom" Fallback="Weapon"/>
+        <ReattachQuery Methods="AMFilterHead" Fallback="Center"/>
+    </CActorSiteOpAttach>
     <CActorModel id="DragoonSCBW@DeathRagdoll" parent="UnitDeathRagdollBloodPrevent">
         <On Terms="ActorCreation" Send="Create DragoonSCBW@DeathRagdollDetonationForce"/>
     </CActorModel>
@@ -2142,6 +2170,8 @@
         <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Stop" Send="AnimBracketStop BSD"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
         <Scale value="0.750000"/>
+        <VisibilityShape Shape="CorsairSCBWDisruptionWeb@Visibility"/>
+        <HostSiteOps Ops="SOpShadowSyncGround SOpMoveUpByDot75"/>
     </CActorModel>
     <CActorSound id="CorsairSCBWDisruptionWeb@LaunchSound" parent="SoundOneShot">
         <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Start" Send="Create"/>
@@ -2281,6 +2311,7 @@
         <HostSiteOps Ops="SOpShadow"/>
         <Model value="ArbiterSCBWRecall@SearchStart"/>
         <AutoScaleFactor value="0.350000"/>
+        <VisibilityShape Shape="ArbiterSCBWRecall@Visibility"/>
     </CActorModel>
     <CActorModel id="ArbiterSCBWRecall@SearchStart" parent="ModelAnimationStyleOneShot">
         <Terms value="Cap 1"/>
@@ -2289,6 +2320,7 @@
         <On Terms="ActorCreation" Send="AnimSetTimeScaleGlobal 3.000000"/>
         <HostSiteOps Ops="SOpShadow"/>
         <AutoScaleFactor value="0.350000"/>
+        <VisibilityShape Shape="ArbiterSCBWRecall@Visibility"/>
     </CActorModel>
     <CActorSplat id="ArbiterSCBWRecall@CursorSplat" parent="ProtossCursorSplat" abil="ArbiterSCBWRecall"/>
     <CActorSimple id="ArbiterSCBWRecall@Opacity">
@@ -2462,7 +2494,7 @@
         <On Terms="Behavior.Hallucination.On" Send="Create HallucinationBirthSoundMedium"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucination" Send="DeathCustomize Hallucination"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create WarpPrism_Land"/>
-        <On Terms="Behavior.WarpInEffect15.On" Send="ModelSwap ShuttleSCBWWarpIn"/>
+        <On Terms="Behavior.WarpInEffect15.On" Send="ModelSwap ShuttleSCBW@WarpIn"/>
         <On Terms="Behavior.WarpInEffect15.On" Send="$Birth"/>
         <On Terms="Behavior.WarpInEffect15.Off" Send="ModelSwap ShuttleSCBW"/>
         <On Terms="Behavior.WarpInEffect15.Off" Send="AnimBaselineStart"/>
@@ -2518,6 +2550,7 @@
             <Image value="Assets\Textures\wireframe-protoss-shuttle-shield02@scbw.dds"/>
             <Image value="Assets\Textures\wireframe-protoss-shuttle-shield03@scbw.dds"/>
         </WireframeShield>
+        <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
     </CActorUnit>
     <CActorUnit id="InterceptorSCBW" parent="GenericUnitStandard" unitName="InterceptorSCBW">
         <Aliases value="_UnitSmall"/>
@@ -2707,6 +2740,7 @@
         <On Terms="AnimDone; AnimName Spell" Send="AnimClear Spell"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create CorsairSCBW@Land"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="Abil.CorsairSCBWDisruptionWeb.SourceCastStart" Send="AnimPlay Attack Attack NonLooping"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <BuildModel value="CorsairSCBW@WarpIn"/>
@@ -2748,6 +2782,7 @@
     </CActorModel>
     <CActorUnit id="DarkArchonSCBW" parent="GenericUnitBase" unitName="DarkArchonSCBW">
         <Aliases value="_UnitLarge"/>
+        <Aliases value="_ShieldRed"/>
         <On Terms="Behavior.Hallucination.On" Send="Create HallucinationBirthSoundLarge"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucination" Send="DeathCustomize Hallucination"/>
         <On Terms="Abil.DarkArchonSCBWMerge.Start" Send="AnimBracketStart Merging Stand,Work,Start Stand,Work"/>
@@ -2781,9 +2816,9 @@
         <BarOffset value="120"/>
         <BarWidth value="66"/>
         <GroupIcon>
-            <Image value="Assets\Textures\wireframe-protoss-darkarchon.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-darkarchon@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-protoss-darkarchon.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-protoss-darkarchon@scbw.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
         <SoundArray index="Birth" value=""/>
         <SoundArray index="Ready" value="DarkArchonSCBW@Ready"/>
@@ -2792,14 +2827,14 @@
         <SoundArray index="Yes" value="DarkArchonSCBW@Yes"/>
         <SoundArray index="Attack" value="DarkArchonSCBW@Attack"/>
         <SoundArray index="Pissed" value="DarkArchonSCBW@Pissed"/>
-        <UnitIcon value="Assets\Textures\btn-unit-protoss-darkarchon.dds"/>
+        <UnitIcon value="Assets\Textures\btn-unit-protoss-darkarchon@scbw.dds"/>
         <Wireframe>
-            <Image value="Assets\Textures\wireframe-protoss-darkarchon.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-darkarchon@scbw.dds"/>
         </Wireframe>
         <WireframeShield>
-            <Image value="Assets\Textures\wireframe-protoss-darkarchon-shield01.dds"/>
-            <Image value="Assets\Textures\wireframe-protoss-darkarchon-shield02.dds"/>
-            <Image value="Assets\Textures\wireframe-protoss-darkarchon-shield03.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-darkarchon-shield01@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-darkarchon-shield02@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-darkarchon-shield03@scbw.dds"/>
         </WireframeShield>
     </CActorUnit>
     <CActorUnit id="HighTemplarSCBW" parent="GenericUnitStandard" unitName="HighTemplarSCBW">
@@ -3064,7 +3099,6 @@
         <On Terms="Upgrade.ZealotSCBWSpeedUpgrade.Remove" Send="AnimGroupRemove Cover"/>
         <On Terms="ActorCreation; !ValidatePlayer ZealotSCBWSpeedUpgrade" Send="AnimGroupApply Cover"/>
         <DeathCustoms index="1" ActorModel="UnitDeathModel" ModelLink="ZealotSCBW@Death" Name="AntiGravProtoss"/>
-        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathSmall" Name="Hallucination"/>
         <!--DeathCustoms ActorModel="ZealotSCBW@DeathRagdoll" ModelLink="ZealotSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="None"/>
@@ -3609,6 +3643,8 @@
     <CModel id="CorsairSCBWDisruptionWeb@Cast" parent="LaunchFX">
         <Model value="Assets\Effects\Protoss\Corsair_DisruptionWeb_Cast\Corsair_DisruptionWeb_Cast.m3"/>
         <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="1.250000,1.250000,1.250000"/>
+        <ScaleMin value="1.250000,1.250000,1.250000"/>
     </CModel>
     <CModel id="DarkArchonSCBWMindControl@Impact" parent="PersistentSpellFX">
         <Model value="Assets\Effects\Protoss\Zealot_Nerazim_PhaseChargeStun_Impact\Zealot_Nerazim_PhaseChargeStun_Impact.m3"/>
@@ -3694,6 +3730,7 @@
     </CModel>
     <CModel id="ShuttleSCBW@Death" parent="WarpPrismDeathBase">
         <Model value="Assets\Units\Protoss\ShuttleSCBW\ShuttleSCBW@Death.m3"/>
+        <VariationCount value="2"/>
     </CModel>
     <CModel id="ShuttleSCBW@DeathRagdoll" parent="WarpPrismDeathRagdollBase">
         <Model value="Assets\Units\Protoss\ShuttleSCBW\ShuttleSCBW@Death.m3"/>
@@ -3707,12 +3744,18 @@
         <TechPurchaseCamera value="Star2CameraMid05"/>
         <UnitGlossaryCamera value="Star2CameraMid05"/>
         <Tipability value="0.500000"/>
+        <ScaleMax value="1.000000,1.000000,1.000000"/>
+        <ScaleMin value="1.000000,1.000000,1.000000"/>
+        <SelectionRadius value="0.900000"/>
     </CModel>
     <CModel id="ShuttleSCBW@Portrait" parent="WarpPrismPortraitBase">
         <Model value="Assets\Portraits\Protoss\WarpPrismPortrait\WarpPrismPortrait.m3"/>
     </CModel>
     <CModel id="ShuttleSCBW@WarpIn" parent="WarpPrismWarpInBase">
-        <Model value="Assets\Units\Protoss\ShuttleSCBW\ShuttleSCBW.m3"/>
+        <Model value="Assets\Units\Protoss\ShuttleSCBW\ShuttleSCBW@WarpIn.m3"/>
+        <ScaleMax value="1.000000,1.000000,1.000000"/>
+        <ScaleMin value="1.000000,1.000000,1.000000"/>
+        <SelectionRadius value="0.900000"/>
     </CModel>
     <CModel id="DarkTemplarSCBW" parent="Unit" Race="Protoss">
         <Model value="Assets\Units\Protoss\DarkTemplar\DarkTemplar_01.m3"/>
@@ -3876,16 +3919,13 @@
         <Model value="Assets\Units\Protoss\CorsairSCBW\CorsairSCBW@WarpInStargate.m3"/>
     </CModel>
     <CModel id="DarkArchonSCBW" parent="ArchonBase">
-        <Model value="Assets\Units\Protoss\Void_DarkArchon\Void_DarkArchon.m3"/>
         <LowQualityModel value=""/>
-        <TextureDeclares Prefix="archon_">
-            <Adaptions TriggerOnSubstring="_Diffuse" Slot="main"/>
-        </TextureDeclares>
         <PlanetPanelCamera value="Star2CameraHigher08"/>
         <TechPurchaseCamera value="Star2CameraHigher08"/>
         <UnitGlossaryCamera value="Star2CameraHigher08"/>
         <ScaleMax value="0.780000,0.780000,0.780000"/>
         <ScaleMin value="0.780000,0.780000,0.780000"/>
+        <RequiredAnims index="0" removed="1"/>
     </CModel>
     <CModel id="HighTemplarSCBW@Death" parent="HighTemplarDeathBase">
         <Model value="Assets\Units\Protoss\HighTemplarSCBW\HighTemplarSCBW@Death.m3"/>
@@ -3902,7 +3942,7 @@
         <Radius value="0.400000"/>
     </CModel>
     <CModel id="DarkArchonSCBW@Death" parent="UnitDeath" Race="Protoss">
-        <Model value="Assets\Units\Protoss\Void_DarkArchon_Death\Void_DarkArchon_Death.m3"/>
+        <Model value="Assets\Units\Protoss\ProtossLarge_Taldarim_UnitDeath\ProtossLarge_Taldarim_UnitDeath_Low.m3"/>
         <LowQualityModel value="DarkArchonSCBW@DeathLow"/>
         <Flags index="TeenSafe" value="1"/>
     </CModel>
@@ -4152,6 +4192,12 @@
             <Time value="0.062500"/>
             <Payload value="ZealotSCBWWeapon@Launch"/>
         </Events>
+        <AttachProps Id="Ref_Weapon Right">
+            <Keys index="SetA" value="0"/>
+        </AttachProps>
+        <AttachProps Id="Ref_Weapon Left">
+            <Keys index="SetA" value="1"/>
+        </AttachProps>
     </CModel>
     <CModel id="ZealotSCBW@Death" parent="UnitDeath" Race="Protoss">
         <Model value="Assets\Units\Protoss\ZealotSCBW\ZealotSCBW@Death.m3"/>

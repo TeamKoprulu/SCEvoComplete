@@ -344,6 +344,7 @@
     </CEffectApplyBehavior>
     <CEffectRemoveBehavior id="GhostSCBWWeaponsFree">
         <EditorCategories value="Race:Terran"/>
+        <BehaviorLink value="GhostSCBWHoldFire"/>
     </CEffectRemoveBehavior>
     <CEffectSet id="MedicSCBWRestoration@Set">
         <EffectArray value="MedicSCBWRestoration@RB"/>
@@ -1970,6 +1971,25 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
+    <CActorModel id="VultureSCBW@DeathLight" parent="UnitDeathModel">
+        <CopySource value="::Creator"/>
+        <Aliases index="0" value="_DeathModel"/>
+        <Aliases index="1" removed="1"/>
+        <Aliases index="2" removed="1"/>
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <Supporter Subject="::Creator"/>
+        <On index="0" Terms="ActorCreation" Send="AnimCopy ::Host"/>
+        <On Terms="SupporterDestruction" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="TimerSet 0.150000 A"/>
+        <On Terms="TimerExpired; TimerName A" Send="HostSiteOpsSet ::Host SOpBasicActorPositionFollow 1 1"/>
+        <Host Actor="Find"/>
+        <Model value="VultureSCBW@DeathLight"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+    </CActorModel>
+    <CActorModel id="VultureSCBW@DeathModel" parent="UnitDeathModelWithDeathMotionGround">
+        <On Terms="DeathModelInitializeDone" Send="Create VultureSCBW@DeathLight"/>
+        <Model value="VultureSCBW@Death"/>
+    </CActorModel>
     <CActorSound id="GhostSCBWLockdown@Birth" parent="SoundOneShot">
         <On Terms="UnitBirth.GhostSCBWLockdown@Missile.Normal" Send="Create"/>
         <Host Subject="_Missile"/>
@@ -2208,15 +2228,14 @@
         <Radius value="8.000000"/>
     </CActorRegionCircle>
     <CActorSound id="ScienceVesselSCBWDefensiveMatrix@Birth" parent="SoundOneShot">
-        <On Terms="Behavior.ScienceVesselSCBWDefensiveMatrix.On" Send="Create"/>
+        <On Terms="Effect.ScienceVesselSCBWDefensiveMatrix@Init.Start; At Target" Send="Create"/>
         <On Terms="Behavior.ScienceVesselSCBWDefensiveMatrix.Off" Send="Destroy"/>
-        <On Terms="Behavior.SJHyperionShield.On" Send="Create"/>
-        <On Terms="Behavior.SJHyperionShield.Off" Send="Destroy"/>
+        <Terms value="Cap 2"/>
+        <Host Subject="_Selectable"/>
     </CActorSound>
     <CActorRange id="ScienceVesselSCBWDefensiveMatrix@Range" parent="RangeAbil" abil="ScienceVesselSCBWDefensiveMatrix"/>
     <CActorSound id="ScienceVesselSCBWDefensiveMatrix@Death" parent="SoundOneShot">
         <On Terms="Behavior.ScienceVesselSCBWDefensiveMatrix.Off" Send="Create"/>
-        <On Terms="Behavior.SJHyperionShield.Off" Send="Create"/>
     </CActorSound>
     <!--CActorModel id="ScienceVesselSCBWIrradiate@EffectOld" parent="ModelAnimationStyleContinuous">-->
     <!--        <Inherits index="CloakEffect" value="1"/>-->
@@ -2354,10 +2373,10 @@
     <CActorModel id="GhostSCBWLockdown@ImpactReaction" parent="GenericAttackImpactModelReaction">
         <Terms value="ValidateUnit IsMechanical"/>
     </CActorModel>
-    <CActorModel id="GhostSCBWLockdown@Model" parent="ModelAnimationStyleContinuous">
+    <CActorModel id="GhostSCBWLockdown@Model" parent="ModelAnimationStyleContinuousUNIT">
+        <Inherits index="Visibility" value="1"/>
         <On Terms="Behavior.GhostSCBWLockdown.On" Send="Create"/>
         <On Terms="Behavior.GhostSCBWLockdown.Off" Send="Destroy"/>
-        <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
     </CActorModel>
     <CActorAction id="GhostSCBWLockdown@Attack" parent="GenericAttack" effectImpact="GhostSCBWLockdown@AB" effectLaunch="GhostSCBWLockdown@LM">
@@ -2840,6 +2859,7 @@
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <Macros value="TerrainSquibAnimations"/>
+        <On index="65" Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack {} {} 0 0.700000 AsTimeScale"/>
         <On Terms="Abil.*.WorkerCancel" Send="AnimClear Build"/>
         <On Terms="Abil.*.WorkerCancel" Send="TimerKill Build"/>
         <On Terms="Abil.*.WorkerStart" Send="TimerSet 0.000000,0.300000 Build"/>
@@ -2859,8 +2879,8 @@
         <On Terms="Abil.SCVSCBW@HarvestNoQue.Start" Send="TimerSet 0.000000,0.300000 Gather"/>
         <On Terms="Abil.SCVSCBW@HarvestNoQue.Stop" Send="AnimClear Gather"/>
         <On Terms="Abil.SCVSCBW@HarvestNoQue.Stop" Send="TimerKill Gather"/>
-        <On Terms="AnimDone; AnimName Work,A; ValidateUnit HaveSCVFakeRepair" Send="AnimPlay Work,B Work,B"/>
-        <On Terms="AnimDone; AnimName Work,B; ValidateUnit HaveSCVFakeRepair" Send="AnimPlay Work,A Work,A"/>
+        <!-- <On Terms="AnimDone; AnimName Work,A; ValidateUnit HaveSCVFakeRepair" Send="AnimPlay Work,B Work,B"/> -->
+        <!-- <On Terms="AnimDone; AnimName Work,B; ValidateUnit HaveSCVFakeRepair" Send="AnimPlay Work,A Work,A"/> -->
         <On Terms="AnimDone.*.Complete; AnimName Build" Send="TimerSet 0.000000,0.300000 Build"/>
         <On Terms="AnimDone.*.Complete; AnimName Gather" Send="TimerSet 0.000000,0.300000 Gather"/>
         <On Terms="AnimDone.*.Complete; AnimName Gather" Send="TimerSet 0.000000,0.300000 Gather"/>
@@ -2872,10 +2892,10 @@
         <On Terms="Behavior.CloakFieldEffect.Destroy; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOff"/>
         <On Terms="Behavior.OracleCloakFieldEffect.Create; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOn"/>
         <On Terms="Behavior.OracleCloakFieldEffect.Destroy; IsStatus CloakSound 0" Send="Create Worker_CloakFieldOff"/>
-        <On Terms="Behavior.SCVFakeRepair.Off" Send="AnimClear Work,A"/>
-        <On Terms="Behavior.SCVFakeRepair.Off" Send="AnimClear Work,B"/>
-        <On Terms="Behavior.SCVFakeRepair.On" Send="AnimPlay Work,A Work,A"/>
-        <On Terms="Confirmation.SCV.Start" Send="StatusSet CloakSound 0"/>
+        <!-- <On Terms="Behavior.SCVFakeRepair.Off" Send="AnimClear Work,A"/> -->
+        <!-- <On Terms="Behavior.SCVFakeRepair.Off" Send="AnimClear Work,B"/> -->
+        <!-- <On Terms="Behavior.SCVFakeRepair.On" Send="AnimPlay Work,A Work,A"/> -->
+        <On Terms="Confirmation.SCVSCBW.Start" Send="StatusSet CloakSound 0"/>
         <On Terms="TimerExpired; TimerName Build" Send="AnimPlay Build Work NonLooping"/>
         <On Terms="TimerExpired; TimerName Build" Send="Create SCVSCBW@BuildSound"/>
         <On Terms="TimerExpired; TimerName Gather" Send="AnimPlay Gather Work NonLooping"/>
@@ -2883,6 +2903,7 @@
         <On Terms="TimerExpired; TimerName Repair" Send="AnimPlay Repair Work NonLooping"/>
         <On Terms="TimerExpired; TimerName Repair" Send="Create SCVSCBW@RepairSound"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create SCVSCBW@Land"/>
+        <On Terms="WeaponStop.*.AttackStop" Target="SCVSCBWWeapon@ActionLaunchModel" Send="Destroy"/>
         <DeathCustoms ModelLink="SCVSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
         </DeathCustoms>
@@ -3056,7 +3077,7 @@
         <Macros value="UnloadDropAnim"/>
         <Macros value="TerrainSquibAnimations"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="VultureSCBW@Death" SoundLink="VultureSCBW@Explode"/>
+        <DeathArray index="Normal" ActorModel="VultureSCBW@DeathModel" ModelLink="VultureSCBW@Death" SoundLink="VultureSCBW@Explode"/>
         <PortraitModel value="VultureSCBW@Portrait"/>
         <AbilSoundArray AbilCmd="VultureSpiderMines,Execute" Sound="Vulture_SpiderMinePlace"/>
         <On Terms="Upgrade.VultureSCBWSpeedUpgrade.Add" Send="AnimPlay Upgraded Custom PlayForever 0.000000 0.000000"/>
@@ -3691,6 +3712,7 @@
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsVoidGround"/>
+        <Macros value="SCBW_ReadyStatusMacro"/>
         <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
         <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
         <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
@@ -3705,8 +3727,11 @@
         <On Terms="UnitHeightUpdate.*.Land" Send="Create MarineSCBW@Land"/>
         <On Terms="UnitDeathCustomize; PassChance 100.000000; ValidateUnit IsNotNeuralParasited" Send="Create MarineSCBW@Death"/>
         <On Terms="UnitDeathCustomize; PassChance 100.000000; !ValidateUnit IsNotNeuralParasited" Send="Create MarineSCBW@DeathNP"/>
-        <On Terms="ActorCreation" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
-        <On Terms="UnitDeath.MarineSCBW; AnimPlaying Cover" Target="_DeathModel" Send="AnimPlay Cover Cover PlayForever 0.000000"/>
+        <On Terms="ActorCreation; ValidatePlayer MarineSCBWRangeUpgrade" Send="AnimPlay Upgrade Cover PlayForever 0.000000"/>
+        <On Terms="Upgrade.MarineSCBWRangeUpgrade.Add" Send="AnimPlay Upgrade Cover PlayForever 0.000000"/>
+        <On Terms="Upgrade.MarineSCBWRangeUpgrade.Remove" Send="AnimClear Upgrade 0.000000"/>
+        <On Terms="UnitDeath.MarineSCBW; AnimPlaying Upgrade" Target="_DeathModel" Send="AnimPlay Upgrade Cover PlayForever 0.000000"/>
+        <On Terms="UnitDeath.MarineSCBW; HasStatus _Ready" Target="_DeathModel" Send="AnimGroupApply Ready {} {} Instant"/>
         <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
         <DeathCustoms ModelLink="MarineSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="None"/>
@@ -3795,6 +3820,9 @@
         <HostSiteOps Ops="SOpAttachWeapon"/>
     </CActorSound>
     <CActorSound id="MarineSCBW@Land" parent="SoundOneShot"/>
+    <CModel id="VultureSCBW@DeathLight" parent="UnitDeath" Race="Terran">
+        <Model value="Assets\Units\Terran\VultureSCBW\VultureSCBW@DeathLight.m3"/>
+    </CModel>
     <CModel id="WraithSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Terran">
         <Model value="Assets\Units\Terran\WraithSCBW\WraithSCBW@DeathRagdoll.m3"/>
         <Occlusion value="None"/>
@@ -4746,41 +4774,41 @@
         <Radius value="0.375000"/>
     </CModel>
     <CModel id="MarineSCBW@DeathEviscerate" parent="MarineDeathEviscerateBase">
-        <Model value="Assets\Units\Terran\Marine_Remastered_DeathEviscerate\Marine_Remastered_DeathEviscerate.m3"/>
+        <Model value="Assets\Units\Terran\MarineSCBW\MarineSCBW@Death.m3"/>
         <Radius value="0.375000"/>
+        <VariationCount value="1"/>
     </CModel>
     <CModel id="MarineSCBW@CheerSquibLaunch" parent="LaunchFX">
         <Model value="Assets\Effects\Terran\MarineWeaponLaunch\MarineWeaponLaunch.m3"/>
         <EditorCategories value="Race:Terran"/>
     </CModel>
     <CModel id="MarineSCBW" parent="MarineBase">
-        <Model value="Assets\Units\Terran\Marine_Remastered\Marine_Remastered.m3"/>
         <AttachProps Id="Ref_Center" SquibType="Miss">
             <Keys index="Xil" value="1"/>
         </AttachProps>
     </CModel>
     <CModel id="MarineSCBW@Death" parent="MarineDeathBase">
-        <Model value="Assets\Units\Terran\Marine_Remastered_Death\Marine_Remastered_Death.m3"/>
+        <Model value="Assets\Units\Terran\MarineSCBW\MarineSCBW@Death.m3"/>
         <Radius value="0.375000"/>
     </CModel>
     <CModel id="MarineSCBW@DeathAcid" parent="MarineDeathAcidBase">
-        <Model value="Assets\Units\Terran\Marine_Remastered_DeathAcid\Marine_Remastered_DeathAcid.m3"/>
+        <Model value="Assets\Units\Terran\MarineSCBW\MarineSCBW@DeathAcid.m3"/>
         <Radius value="0.375000"/>
     </CModel>
     <CModel id="MarineSCBW@DeathBlast" parent="MarineDeathBlastBase">
-        <Model value="Assets\Units\Terran\Marine\MarineSCBW@DeathBlast.m3"/>
+        <Model value="Assets\Units\Terran\MarineSCBW\MarineSCBW@DeathBlast.m3"/>
         <Radius value="0.375000"/>
     </CModel>
     <CModel id="MarineSCBW@DeathFire" parent="MarineDeathFireBase">
-        <Model value="Assets\Units\Terran\Marine_Remastered_DeathFire\Marine_Remastered_DeathFire.m3"/>
+        <Model value="Assets\Units\Terran\MarineSCBW\MarineSCBW@DeathFire.m3"/>
         <Radius value="0.375000"/>
     </CModel>
     <CModel id="MarineSCBW@DeathRagdoll" parent="MarineDeathRagdollBase">
-        <Model value="Assets\Units\Terran\Marine_Remastered_DeathRagdoll\Marine_Remastered_DeathRagdoll.m3"/>
+        <Model value="Assets\Units\Terran\MarineSCBW\MarineSCBW@DeathRagdoll.m3"/>
         <Radius value="0.375000"/>
     </CModel>
     <CModel id="MarineSCBW@Portrait" parent="MarinePortraitBase">
-        <Model value="Assets\Portraits\Terran\MarinePortrait\MarinePortrait.m3"/>
+        <Model value="Assets\Portraits\Terran\MarineSCBW@Portrait\MarinePortraitSCBW.m3"/>
         <FacialController value="LocalizedData\Facial\MarineSCBW@Portrait.fxa"/>
     </CModel>
     <CWeaponStrafe id="VultureSCBWWeapon@StrafingWeapon">

@@ -377,6 +377,17 @@
         <On Terms="UnitDeath.##unitName##; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
         <Sound value="##unitName##@Death"/>
     </CActorSound>
+    <CActorSimple id="CombatVisibilityClearer">
+        <On Terms="Effect.ArbiterSCBWRecall@Teleport.Start; At Target" Send="Create"/>
+        <On Terms="Effect.ArbiterSCBWRecall@TeleportAir.Start; At Target" Send="Create"/>
+    </CActorSimple>
+    <CActorEventMacro id="SCBW_ReadyStatusMacro">
+        <On Terms="Abil.attack.ReadyStart" Send="StatusSet _Ready 1"/>
+        <On Terms="Abil.attack.ReadyStart" Send="TimerKill ReadyStatusDelay"/>
+        <On Terms="Abil.attack.ReadyStop" Send="TimerSet 0.020000 ReadyStatusDelay"/>
+        <On Terms="TimerExpired; TimerName ReadyStatusDelay" Send="StatusSet _Ready 0"/>
+    </CActorEventMacro>
+    <CActorModel id="SCVSCBWWeapon@ActionLaunchModel" parent="GenericAttackLaunchModel"/>
     <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
     <!--                                                                                         -->
     <!-- Terran Multiplayer                                                                      -->
@@ -1168,8 +1179,8 @@
         <On Terms="AbilMorph.*.Start; MorphFrom CommandCenter; MorphTo CommandCenterFlying" Send="Destroy"/>
     </CActorSplat>
     <CActorForceSphere id="InfestedTerranSCBWWeapon@Force">
-        <On Terms="ActorCreation" Send="Create BanelingAttackForceUp"/>
         <On Terms="Effect.InfestedTerranSCBWWeapon@DamageAccum.Stop; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+        <On Terms="ActorCreation" Send="Create BanelingAttackForceUp"/>
         <HostSiteOps Ops="SOpShadow SOpRandomPointInCircleDot25"/>
         <Duration value="0.300000"/>
         <Magnitude value="16.000000,8.000000"/>
@@ -1343,8 +1354,10 @@
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW; MorphFrom InfestedTerranSCBW@Burrowed" Send="TerrainSquibActivateGroup RippleStandard"/>
         <On Terms="AbilMorph.*.Finish; MorphTo InfestedTerranSCBW@Burrowed; MorphFrom InfestedTerranSCBW" Send="TerrainSquibDeactivate"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create InfestedTerran_Land"/>
+        <On Terms="Effect.InfestedTerranSCBWWeapon@Set.Start; At Caster" Send="StatusSet DeathSuicide 1"/>
+        <On Terms="UnitDeathCustomize; IsStatus DeathSuicide 1" Send="DeathCustomize Variation0"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="InfestedTerranSCBW@Death" SoundLink="InfestedTerranSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="InfestedTerranSCBW@Death" SoundLink="InfestedTerran_Explode"/>
         <DeathArray index="Disintegrate" ModelLink="InfestedTerranSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
         <DeathArray index="Fire" ModelLink="InfestedTerranSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
         <DeathArray index="Timeout" ModelLink="InfestedTerranSCBW@DeathTimeout" SoundLink="InfestedTerranSCBW@Death"/>
@@ -1367,7 +1380,15 @@
         <SoundArray index="Yes" value="InfestedTerranSCBW@Yes"/>
         <SoundArray index="Attack" value="InfestedTerranSCBW@Attack"/>
         <SoundArray index="Pissed" value="InfestedTerranSCBW@Pissed"/>
+        <DeathCustoms ModelLink="Invisible" SoundLink="SCBW_Silent" Name="Variation0"/>
     </CActorUnit>
+    <CActorAction id="InfestedTerranSCBWWeapon@Action" parent="GenericAttack" effectAttack="InfestedTerranSCBWWeapon@Set">
+        <ImpactMap index="None" Model="InfestedTerranSCBWWeapon@Impact" Sound="InfestedTerranSCBW@Death"/>
+        <AcquisitionYawHalfArc value="1.000000"/>
+        <AcquisitionPitchHalfArc value="1.000000"/>
+        <AccuracyHalfArc value="1.000000"/>
+        <On index="5" Terms="Effect.InfestedTerranSCBWWeapon@Set.Start; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+    </CActorAction>
     <CActorModel id="LurkerSCBWWeapon@DamageModelReaction" parent="ModelAnimationStyleOneShotNoOrphan">
         <Terms value="!Option Model Low"/>
         <Flags index="SuppressCreationErrors" value="1"/>
@@ -2597,6 +2618,7 @@
     <CActorAction id="SCVSCBWWeapon@Action" parent="GenericAttack" effectAttack="SCVSCBWWeapon@Damage">
         <LaunchAssets Model="SCVSCBWWeapon@Launch"/>
         <ShieldFlashType value="Header"/>
+        <LaunchModel value="SCVSCBWWeapon@ActionLaunchModel"/>
     </CActorAction>
     <CActorSound id="SCVSCBWWeapon@Launch" parent="SoundOneShot">
         <On Terms="WeaponStart.SCVSCBWWeapon.AttackStart" Send="Create"/>
@@ -2848,7 +2870,10 @@
         <On Terms="ActorCreation" Send="Create ArbiterSCBWWeapon@Launch"/>
     </CActorMissile>
     <CActorAction id="DarkTemplarSCBWWeapon@Action" parent="GenericAttack" effectAttack="DarkTemplarSCBWWeapon@Damage">
-        <ImpactMap index="None" Model="None" Sound="DarkTemplarSCBWWeapon@Impact"/>
+        <ImpactMap index="None" Sound="DarkTemplarSCBWWeapon@Impact"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactMap index="LightArmor" ModelReaction="SparkTargetImpact"/>
+        <ImpactMap index="Metal" ModelReaction="SparkTargetImpact"/>
         <ImpactPhysics>
             <Name value="AttackPolearm00"/>
             <MatchKeys value="Basic"/>
@@ -2892,6 +2917,8 @@
             <Physics value="DarkTemplarAttackDeathForceOverhead"/>
         </ImpactPhysics>
         <ShieldFlashType value="Header"/>
+        <AcquisitionYawHalfArc value="5.000000"/>
+        <AcquisitionPitchHalfArc value="12.000000"/>
     </CActorAction>
     <CActorSound id="DarkTemplarSCBWWeapon@LaunchSound" parent="SoundOneShot">
         <On Terms="Effect.DarkTemplarSCBWWeapon@Damage.Start; At Caster" Send="Create"/>
@@ -3214,9 +3241,12 @@
     </CActorAction>
     <CActorMissile id="VultureSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="VultureSCBWWeapon@Missile"/>
     <CActorAction id="ZealotSCBWWeapon@Action" parent="GenericAttack" effectAttack="ZealotSCBWWeapon@Damage">
-        <LaunchAttachQuery Methods="AMFilterWeaponLeft"/>
+        <LaunchAttachQuery Methods="ZealotSCBWWeapon@AMPattern"/>
         <LaunchAssets Sound=""/>
         <ImpactMap index="None" Sound=""/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactMap index="LightArmor" ModelReaction="SparkTargetImpact"/>
+        <ImpactMap index="Metal" ModelReaction="SparkTargetImpact"/>
         <ImpactPhysics>
             <Name value="Attack00"/>
             <MatchKeys value="Basic"/>
@@ -3235,8 +3265,8 @@
             <AttackAnimProps value="02"/>
             <Physics value="ZealotSCBWWeapon@DeathForce02"/>
         </ImpactPhysics>
-        <AcquisitionYawHalfArc value="25.000000"/>
-        <AcquisitionPitchHalfArc value="25.000000"/>
+        <AcquisitionYawHalfArc value="5.000000"/>
+        <AcquisitionPitchHalfArc value="12.000000"/>
         <ShieldFlashType value="Header"/>
     </CActorAction>
     <CActorForceSphere id="ZealotSCBWWeapon@DeathForce00">
@@ -3437,8 +3467,8 @@
         <AcceptedHostedPropTransfers index="Scale" value="0"/>
         <On Terms="ActorCreation" Send="SetLocalTintColor 255,128,255"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create ChangelingZerglingSCBW_Land"/>
-        <UnitIcon value="Assets\Textures\btn-unit-zerg-ZerglingSCBW.dds"/>
-        <HeroIcon value="Assets\Textures\btn-unit-zerg-ZerglingSCBW.dds"/>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-zergling@scbw.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-zergling@scbw.dds"/>
         <GroupIcon>
             <Image value="Assets\Textures\wireframe-zerg-zergling@scbw.dds"/>
         </GroupIcon>
