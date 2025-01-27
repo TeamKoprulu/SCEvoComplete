@@ -26,6 +26,7 @@ void libSCEV_InitVariables () {
     libSCEV_gv_mineralWallsGlobalMineralWalls = UnitGroupEmpty();
     libSCEV_gv_mineralWallsTimer = TimerCreate();
     libSCEV_gv_missChanceRevealTimer = TimerCreate();
+    libSCEV_gv_reaverPathingRange = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogValidator, "ReaverSCBWWeapon@Pathable", "MaxDistance", c_playerAny);
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
             libSCEV_gv_minimapAllyViewPings[init_i][init_j] = c_invalidPingId;
@@ -95,6 +96,602 @@ string libSCEV_ge_LegacyCheat_Ident (int lp_val) {
 }
 
 // Functions
+void libSCEV_gf_MultiExtensionInit () {
+    // Variable Declarations
+    int lv_playerIndex;
+
+    // Automatic Variable Declarations
+    playergroup autoB6A2D03D_g;
+    string auto147D69FB_val;
+
+    // Variable Initialization
+
+    // Implementation
+    TriggerSendEvent("EventsInit");
+    autoB6A2D03D_g = PlayerGroupActive();
+    lv_playerIndex = -1;
+    while (true) {
+        lv_playerIndex = PlayerGroupNextPlayer(autoB6A2D03D_g, lv_playerIndex);
+        if (lv_playerIndex < 0) { break; }
+        auto147D69FB_val = GameAttributePlayerValue(libSCEV_gv_multiGameRaceAttribute, lv_playerIndex);
+        if (auto147D69FB_val == libSCEV_gv_multiGameRaceValueBW) {
+            libSCEV_gf_SetPlayerRaceToBW(lv_playerIndex);
+        }
+        else if (auto147D69FB_val == libSCEV_gv_multiGameRaceValueSC2) {
+            libSCEV_gf_SetPlayerRaceToSC2(lv_playerIndex);
+        }
+        else if (auto147D69FB_val == libSCEV_gv_multiGameRaceValueRandom) {
+            if ((RandomInt(0, 1) == 1)) {
+                libSCEV_gf_SetPlayerRaceToBW(lv_playerIndex);
+            }
+            else {
+                libSCEV_gf_SetPlayerRaceToSC2(lv_playerIndex);
+            }
+        }
+        else {
+            if ((RandomInt(0, 1) == 1)) {
+                libSCEV_gf_SetPlayerRaceToBW(lv_playerIndex);
+            }
+            else {
+                libSCEV_gf_SetPlayerRaceToSC2(lv_playerIndex);
+            }
+        }
+        if ((PlayerType(lv_playerIndex) == c_playerTypeUser)) {
+            libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
+            libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
+        }
+
+    }
+    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_FractionalArmor, true);
+    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_MissChance, true);
+}
+
+void libSCEV_gf_LegacyExtensionInit () {
+    // Variable Declarations
+    int lv_playerIndex;
+    string lv_unitType;
+
+    // Automatic Variable Declarations
+    playergroup auto832AD1A3_g;
+    playergroup auto89A9A6E2_g;
+    int autoB0CAAF79_catalog;
+    int autoB0CAAF79_i;
+
+    // Variable Initialization
+
+    // Implementation
+    TriggerSendEvent("EventsInit");
+    auto832AD1A3_g = PlayerGroupAll();
+    lv_playerIndex = -1;
+    while (true) {
+        lv_playerIndex = PlayerGroupNextPlayer(auto832AD1A3_g, lv_playerIndex);
+        if (lv_playerIndex < 0) { break; }
+        libSCEV_gf_SetPlayerRaceToBW(lv_playerIndex);
+        if ((PlayerType(lv_playerIndex) == c_playerTypeUser)) {
+            libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
+            libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
+        }
+
+    }
+    HelpPanelShowTechTreeRace(PlayerGroupAll(), "Prot", false);
+    HelpPanelShowTechTreeRace(PlayerGroupAll(), "Terr", false);
+    HelpPanelShowTechTreeRace(PlayerGroupAll(), "Zerg", false);
+    auto89A9A6E2_g = PlayerGroupActive();
+    lv_playerIndex = -1;
+    while (true) {
+        lv_playerIndex = PlayerGroupNextPlayer(auto89A9A6E2_g, lv_playerIndex);
+        if (lv_playerIndex < 0) { break; }
+        autoB0CAAF79_catalog = c_gameCatalogUnit;
+        autoB0CAAF79_i = 1;
+        for ( ; autoB0CAAF79_i <= CatalogEntryCount(c_gameCatalogUnit) ; autoB0CAAF79_i += 1 ) {
+            lv_unitType = CatalogEntryGet(autoB0CAAF79_catalog, autoB0CAAF79_i);
+            if ((CatalogFieldValueGet(c_gameCatalogUnit, lv_unitType, "Race", c_playerAny) != "BWTe") && (CatalogFieldValueGet(c_gameCatalogUnit, lv_unitType, "Race", c_playerAny) != "BWZe") && (CatalogFieldValueGet(c_gameCatalogUnit, lv_unitType, "Race", c_playerAny) != "BWPr")) {
+                TechTreeUnitHelp(lv_playerIndex, lv_unitType, false);
+            }
+
+        }
+    }
+    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_LegacyRefund, true);
+    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_FractionalArmor, true);
+    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_MissChance, true);
+    libSCEV_gf_LegacySetFoWState();
+    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_LegacyUnitSwap, true);
+    if ((libSCEV_gf_IsBWMap() == false)) {
+        libSCEV_gf_LegacyRemoveExtraGeysers();
+    }
+    else {
+        libSCEV_gf_LegacyUpdateResources();
+    }
+    Wait(0.0625, c_timeGame);
+    if ((libSCEV_gf_IsBWMap() == false)) {
+        libSCEV_gf_LegacyIncreaseResources();
+    }
+    else {
+        libSCEV_gf_LegacyUpdateResources();
+    }
+}
+
+void libSCEV_gf_LegacySetFoWState () {
+    // Variable Declarations
+    int lv_index;
+
+    // Automatic Variable Declarations
+    playergroup auto2C453286_g;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((GameAttributeGameValue(libSCEV_gv_legacyBlackFogAttribute) == libSCEV_gv_legacyBlackFogValueEnabled)) {
+        auto2C453286_g = PlayerGroupActive();
+        lv_index = -1;
+        while (true) {
+            lv_index = PlayerGroupNextPlayer(auto2C453286_g, lv_index);
+            if (lv_index < 0) { break; }
+            VisFillArea(lv_index, RegionEntireMap(), c_fillTypeHidden, false);
+        }
+    }
+
+}
+
+void libSCEV_gf_LegacyIncreaseResources () {
+    // Variable Declarations
+    unitgroup lv_mineralGroup;
+    unitgroup lv_geyserGroup;
+    int lv_r;
+    const int lv_resourceCapMax = 2000;
+    const int lv_resourceCapMin = 400;
+    fixed lv_currResource;
+
+    // Automatic Variable Declarations
+    unitgroup autoBB83ED95_g;
+    int autoBB83ED95_u;
+    unit autoBB83ED95_var;
+    unitgroup auto9ECB5E82_g;
+    int auto9ECB5E82_u;
+    unit auto9ECB5E82_var;
+    unitgroup auto1CE544CD_g;
+    int auto1CE544CD_u;
+    unit auto1CE544CD_var;
+    unitgroup autoF769B97E_g;
+    int autoF769B97E_u;
+    unit autoF769B97E_var;
+    unitgroup autoB5087207_g;
+    int autoB5087207_u;
+    unit autoB5087207_var;
+    unitgroup autoB573E4B5_g;
+    int autoB573E4B5_u;
+    unit autoB573E4B5_var;
+    unitgroup autoE6B51809_g;
+    int autoE6B51809_u;
+    unit autoE6B51809_var;
+    unitgroup auto4724A46D_g;
+    int auto4724A46D_u;
+    unit auto4724A46D_var;
+
+    // Variable Initialization
+    lv_mineralGroup = UnitGroupEmpty();
+    lv_geyserGroup = UnitGroupEmpty();
+
+    // Implementation
+    autoBB83ED95_g = UnitGroup("BattleStationMineralField750", 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoBB83ED95_u = UnitGroupCount(autoBB83ED95_g, c_unitCountAll);
+    for (;; autoBB83ED95_u -= 1) {
+        autoBB83ED95_var = UnitGroupUnitFromEnd(autoBB83ED95_g, autoBB83ED95_u);
+        if (autoBB83ED95_var == null) { break; }
+        lv_currResource = libNtve_gf_UnitGetPropertyResources(autoBB83ED95_var, c_unitPropCurrent);
+        if ((lv_currResource < lv_resourceCapMax) && (lv_currResource > lv_resourceCapMin)) {
+            libNtve_gf_ReplaceUnit(autoBB83ED95_var, "BattleStationMineralField", libNtve_ge_ReplaceUnitOptions_NewUnitsDefault);
+        }
+
+    }
+    auto9ECB5E82_g = UnitGroup("LabMineralField750", 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    auto9ECB5E82_u = UnitGroupCount(auto9ECB5E82_g, c_unitCountAll);
+    for (;; auto9ECB5E82_u -= 1) {
+        auto9ECB5E82_var = UnitGroupUnitFromEnd(auto9ECB5E82_g, auto9ECB5E82_u);
+        if (auto9ECB5E82_var == null) { break; }
+        lv_currResource = libNtve_gf_UnitGetPropertyResources(auto9ECB5E82_var, c_unitPropCurrent);
+        if ((lv_currResource < lv_resourceCapMax) && (lv_currResource > lv_resourceCapMin)) {
+            libNtve_gf_ReplaceUnit(auto9ECB5E82_var, "LabMineralField", libNtve_ge_ReplaceUnitOptions_NewUnitsDefault);
+        }
+
+    }
+    auto1CE544CD_g = UnitGroup("MineralField750", 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    auto1CE544CD_u = UnitGroupCount(auto1CE544CD_g, c_unitCountAll);
+    for (;; auto1CE544CD_u -= 1) {
+        auto1CE544CD_var = UnitGroupUnitFromEnd(auto1CE544CD_g, auto1CE544CD_u);
+        if (auto1CE544CD_var == null) { break; }
+        lv_currResource = libNtve_gf_UnitGetPropertyResources(auto1CE544CD_var, c_unitPropCurrent);
+        if ((lv_currResource < lv_resourceCapMax) && (lv_currResource > lv_resourceCapMin)) {
+            libNtve_gf_ReplaceUnit(auto1CE544CD_var, "MineralField", libNtve_ge_ReplaceUnitOptions_NewUnitsDefault);
+        }
+
+    }
+    autoF769B97E_g = UnitGroup("MineralFieldOpaque900", 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoF769B97E_u = UnitGroupCount(autoF769B97E_g, c_unitCountAll);
+    for (;; autoF769B97E_u -= 1) {
+        autoF769B97E_var = UnitGroupUnitFromEnd(autoF769B97E_g, autoF769B97E_u);
+        if (autoF769B97E_var == null) { break; }
+        lv_currResource = libNtve_gf_UnitGetPropertyResources(autoF769B97E_var, c_unitPropCurrent);
+        if ((lv_currResource < lv_resourceCapMax) && (lv_currResource > lv_resourceCapMin)) {
+            libNtve_gf_ReplaceUnit(autoF769B97E_var, "MineralFieldOpaque", libNtve_ge_ReplaceUnitOptions_NewUnitsDefault);
+        }
+
+    }
+    autoB5087207_g = UnitGroup("PurifierRichMineralField750", 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoB5087207_u = UnitGroupCount(autoB5087207_g, c_unitCountAll);
+    for (;; autoB5087207_u -= 1) {
+        autoB5087207_var = UnitGroupUnitFromEnd(autoB5087207_g, autoB5087207_u);
+        if (autoB5087207_var == null) { break; }
+        lv_currResource = libNtve_gf_UnitGetPropertyResources(autoB5087207_var, c_unitPropCurrent);
+        if ((lv_currResource < lv_resourceCapMax) && (lv_currResource > lv_resourceCapMin)) {
+            libNtve_gf_ReplaceUnit(autoB5087207_var, "PurifierRichMineralField", libNtve_ge_ReplaceUnitOptions_NewUnitsDefault);
+        }
+
+    }
+    autoB573E4B5_g = UnitGroup("RichMineralField750", 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoB573E4B5_u = UnitGroupCount(autoB573E4B5_g, c_unitCountAll);
+    for (;; autoB573E4B5_u -= 1) {
+        autoB573E4B5_var = UnitGroupUnitFromEnd(autoB573E4B5_g, autoB573E4B5_u);
+        if (autoB573E4B5_var == null) { break; }
+        lv_currResource = libNtve_gf_UnitGetPropertyResources(autoB573E4B5_var, c_unitPropCurrent);
+        if ((lv_currResource < lv_resourceCapMax) && (lv_currResource > lv_resourceCapMin)) {
+            libNtve_gf_ReplaceUnit(autoB573E4B5_var, "RichMineralField", libNtve_ge_ReplaceUnitOptions_NewUnitsDefault);
+        }
+
+    }
+    autoE6B51809_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoE6B51809_u = UnitGroupCount(autoE6B51809_g, c_unitCountAll);
+    for (;; autoE6B51809_u -= 1) {
+        autoE6B51809_var = UnitGroupUnitFromEnd(autoE6B51809_g, autoE6B51809_u);
+        if (autoE6B51809_var == null) { break; }
+        lv_currResource = libNtve_gf_UnitGetPropertyResources(autoE6B51809_var, c_unitPropCurrent);
+        if ((lv_currResource < lv_resourceCapMax) && (lv_currResource > lv_resourceCapMin)) {
+            UnitSetPropertyFixed(autoE6B51809_var, c_unitPropResources, 1700.0);
+        }
+
+    }
+    Wait(0.0625, c_timeReal);
+    auto4724A46D_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    auto4724A46D_u = UnitGroupCount(auto4724A46D_g, c_unitCountAll);
+    for (;; auto4724A46D_u -= 1) {
+        auto4724A46D_var = UnitGroupUnitFromEnd(auto4724A46D_g, auto4724A46D_u);
+        if (auto4724A46D_var == null) { break; }
+        if ((libNtve_gf_UnitGetPropertyResources(auto4724A46D_var, c_unitPropCurrent) < 5000)) {
+            UnitSetPropertyFixed(auto4724A46D_var, c_unitPropResources, 5000.0);
+        }
+
+    }
+}
+
+void libSCEV_gf_LegacyUpdateResources () {
+    // Variable Declarations
+    string lv_indexInstance;
+    int lv_amount;
+    region lv_region;
+    int lv_index;
+    int lv_richMinValueTemp;
+
+    // Automatic Variable Declarations
+    string auto28BC1F2E_userType;
+    int auto28BC1F2E_i;
+    unitgroup auto42EBD5E6_g;
+    int auto42EBD5E6_u;
+    unit auto42EBD5E6_var;
+    unitgroup auto36E6A9AE_g;
+    int auto36E6A9AE_u;
+    unit auto36E6A9AE_var;
+    unitgroup auto5FC2BA69_g;
+    int auto5FC2BA69_u;
+    unit auto5FC2BA69_var;
+    string autoC6DA8D21_userType;
+    int autoC6DA8D21_i;
+    unitgroup auto451AA38A_g;
+    int auto451AA38A_u;
+    unit auto451AA38A_var;
+    unitgroup autoE38DAE4E_g;
+    int autoE38DAE4E_u;
+    unit autoE38DAE4E_var;
+    unitgroup autoA7F10B08_g;
+    int autoA7F10B08_u;
+    unit autoA7F10B08_var;
+    unitgroup autoA2A38493_g;
+    int autoA2A38493_u;
+    unit autoA2A38493_var;
+
+    // Variable Initialization
+
+    // Implementation
+    auto28BC1F2E_userType = "MinResourceTable";
+    auto28BC1F2E_i = 1;
+    for ( ; auto28BC1F2E_i <= UserDataInstanceCount(auto28BC1F2E_userType) ; auto28BC1F2E_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto28BC1F2E_userType, auto28BC1F2E_i);
+        lv_amount = UserDataGetInt("MinResourceTable", lv_indexInstance, "Amount", 1);
+        lv_region = RegionFromName(("Min" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+            auto42EBD5E6_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            auto42EBD5E6_u = UnitGroupCount(auto42EBD5E6_g, c_unitCountAll);
+            for (;; auto42EBD5E6_u -= 1) {
+                auto42EBD5E6_var = UnitGroupUnitFromEnd(auto42EBD5E6_g, auto42EBD5E6_u);
+                if (auto42EBD5E6_var == null) { break; }
+                if ((libSCEV_gf_UnitIsMineral(auto42EBD5E6_var) == true)) {
+                    UnitSetPropertyFixed(auto42EBD5E6_var, c_unitPropResources, lv_amount);
+                }
+
+            }
+        }
+
+        lv_region = RegionFromName(("RichMinReplace" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+            auto36E6A9AE_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            auto36E6A9AE_u = UnitGroupCount(auto36E6A9AE_g, c_unitCountAll);
+            for (;; auto36E6A9AE_u -= 1) {
+                auto36E6A9AE_var = UnitGroupUnitFromEnd(auto36E6A9AE_g, auto36E6A9AE_u);
+                if (auto36E6A9AE_var == null) { break; }
+                if ((libSCEV_gf_UnitIsMineralRich(auto36E6A9AE_var) == true)) {
+                    libNtve_gf_CreateUnitsWithDefaultFacing(1, "MineralField", c_unitCreateIgnorePlacement, 0, UnitGetPosition(auto36E6A9AE_var));
+                    UnitSetPropertyFixed(UnitLastCreated(), c_unitPropResources, lv_amount);
+                    UnitRemove(auto36E6A9AE_var);
+                }
+
+            }
+        }
+
+        lv_region = RegionFromName("RichMinReplace");
+        if ((lv_region != null)) {
+            auto5FC2BA69_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            auto5FC2BA69_u = UnitGroupCount(auto5FC2BA69_g, c_unitCountAll);
+            for (;; auto5FC2BA69_u -= 1) {
+                auto5FC2BA69_var = UnitGroupUnitFromEnd(auto5FC2BA69_g, auto5FC2BA69_u);
+                if (auto5FC2BA69_var == null) { break; }
+                if ((libSCEV_gf_UnitIsMineralRich(auto5FC2BA69_var) == true)) {
+                    lv_richMinValueTemp = libNtve_gf_UnitGetPropertyResources(auto5FC2BA69_var, c_unitPropCurrent);
+                    libNtve_gf_CreateUnitsWithDefaultFacing(1, "MineralField", c_unitCreateIgnorePlacement, 0, UnitGetPosition(auto5FC2BA69_var));
+                    UnitSetPropertyFixed(UnitLastCreated(), c_unitPropResources, lv_richMinValueTemp);
+                    UnitRemove(auto5FC2BA69_var);
+                }
+
+            }
+        }
+
+    }
+    autoC6DA8D21_userType = "GasResourceTable";
+    autoC6DA8D21_i = 1;
+    for ( ; autoC6DA8D21_i <= UserDataInstanceCount(autoC6DA8D21_userType) ; autoC6DA8D21_i += 1 ) {
+        lv_indexInstance = UserDataInstance(autoC6DA8D21_userType, autoC6DA8D21_i);
+        lv_amount = UserDataGetInt("GasResourceTable", lv_indexInstance, "Amount", 1);
+        lv_region = RegionFromName(("Gas" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+            auto451AA38A_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            auto451AA38A_u = UnitGroupCount(auto451AA38A_g, c_unitCountAll);
+            for (;; auto451AA38A_u -= 1) {
+                auto451AA38A_var = UnitGroupUnitFromEnd(auto451AA38A_g, auto451AA38A_u);
+                if (auto451AA38A_var == null) { break; }
+                if ((libSCEV_gf_UnitIsVespene(auto451AA38A_var) == true)) {
+                    UnitSetPropertyFixed(auto451AA38A_var, c_unitPropResources, lv_amount);
+                }
+
+            }
+        }
+
+        lv_region = RegionFromName(("RichGasReplace" + IntToString(lv_amount)));
+        if ((lv_region != null)) {
+            autoE38DAE4E_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+            autoE38DAE4E_u = UnitGroupCount(autoE38DAE4E_g, c_unitCountAll);
+            for (;; autoE38DAE4E_u -= 1) {
+                autoE38DAE4E_var = UnitGroupUnitFromEnd(autoE38DAE4E_g, autoE38DAE4E_u);
+                if (autoE38DAE4E_var == null) { break; }
+                if ((libSCEV_gf_UnitIsVespeneRich(autoE38DAE4E_var) == true)) {
+                    libNtve_gf_CreateUnitsWithDefaultFacing(1, "VespeneGeyser", c_unitCreateIgnorePlacement, 0, UnitGetPosition(autoE38DAE4E_var));
+                    UnitSetPropertyFixed(UnitLastCreated(), c_unitPropResources, lv_amount);
+                    UnitRemove(autoE38DAE4E_var);
+                }
+
+            }
+        }
+
+    }
+    lv_region = RegionFromName("GasDelete");
+    if ((lv_region != null)) {
+        autoA7F10B08_g = UnitGroup(null, 0, lv_region, UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        autoA7F10B08_u = UnitGroupCount(autoA7F10B08_g, c_unitCountAll);
+        for (;; autoA7F10B08_u -= 1) {
+            autoA7F10B08_var = UnitGroupUnitFromEnd(autoA7F10B08_g, autoA7F10B08_u);
+            if (autoA7F10B08_var == null) { break; }
+            if ((libSCEV_gf_UnitIsVespene(autoA7F10B08_var) == true)) {
+                UnitRemove(autoA7F10B08_var);
+            }
+
+        }
+    }
+
+    lv_region = RegionFromName("TowerDelete");
+    if ((lv_region != null)) {
+        autoA2A38493_g = UnitGroup("XelNagaTower", 0, lv_region, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+        autoA2A38493_u = UnitGroupCount(autoA2A38493_g, c_unitCountAll);
+        for (;; autoA2A38493_u -= 1) {
+            autoA2A38493_var = UnitGroupUnitFromEnd(autoA2A38493_g, autoA2A38493_u);
+            if (autoA2A38493_var == null) { break; }
+            UnitRemove(autoA2A38493_var);
+        }
+    }
+
+}
+
+void libSCEV_gf_LegacyRemoveExtraGeysers () {
+    // Variable Declarations
+    unitgroup lv_geyserGroup;
+    unit lv_searchGeyser;
+    unit lv_targetGeyser;
+    fixed lv_distanceToClosestMineral;
+    unit lv_closestMineralToSearchGeyser;
+    unit lv_closestMineralToTargetGeyser;
+    unitgroup lv_mineralGroup;
+    int lv_r;
+
+    // Automatic Variable Declarations
+    unitgroup auto4A308512_g;
+    int auto4A308512_u;
+    unit auto4A308512_var;
+    unitgroup autoAB7440ED_g;
+    int autoAB7440ED_u;
+    unit autoAB7440ED_var;
+    unitgroup auto3707AA36_g;
+    int auto3707AA36_u;
+    unit auto3707AA36_var;
+
+    // Variable Initialization
+    lv_geyserGroup = UnitGroupEmpty();
+    lv_mineralGroup = UnitGroupEmpty();
+
+    // Implementation
+    auto4A308512_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    auto4A308512_u = UnitGroupCount(auto4A308512_g, c_unitCountAll);
+    for (;; auto4A308512_u -= 1) {
+        auto4A308512_var = UnitGroupUnitFromEnd(auto4A308512_g, auto4A308512_u);
+        if (auto4A308512_var == null) { break; }
+        UnitGroupAdd(lv_mineralGroup, auto4A308512_var);
+    }
+    autoAB7440ED_g = UnitGroup(null, 0, RegionEntireMap(), UnitFilter((1 << c_targetFilterRawResource), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    autoAB7440ED_u = UnitGroupCount(autoAB7440ED_g, c_unitCountAll);
+    for (;; autoAB7440ED_u -= 1) {
+        autoAB7440ED_var = UnitGroupUnitFromEnd(autoAB7440ED_g, autoAB7440ED_u);
+        if (autoAB7440ED_var == null) { break; }
+        if ((libSCEV_gf_UnitIsVespene(autoAB7440ED_var) == true) && (libSCEV_gf_UnitIsVespeneRich(autoAB7440ED_var) == false)) {
+            UnitGroupAdd(lv_geyserGroup, autoAB7440ED_var);
+        }
+
+    }
+    while ((UnitGroupCount(lv_geyserGroup, c_unitCountAll) > 1)) {
+        lv_searchGeyser = UnitGroupUnit(lv_geyserGroup, 1);
+        lv_targetGeyser = null;
+        lv_closestMineralToTargetGeyser = null;
+        lv_closestMineralToSearchGeyser = null;
+        auto3707AA36_g = UnitGroupFilterRegion(lv_geyserGroup, RegionCircle(UnitGetPosition(lv_searchGeyser), 16.0), 0);
+        auto3707AA36_u = UnitGroupCount(auto3707AA36_g, c_unitCountAll);
+        for (;; auto3707AA36_u -= 1) {
+            auto3707AA36_var = UnitGroupUnitFromEnd(auto3707AA36_g, auto3707AA36_u);
+            if (auto3707AA36_var == null) { break; }
+            if ((auto3707AA36_var != lv_searchGeyser) && ((DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(auto3707AA36_var)) > 12.0) || (DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(auto3707AA36_var)) < 6.0)) && (UnitGetHeight(auto3707AA36_var) == UnitGetHeight(lv_searchGeyser))) {
+                lv_targetGeyser = auto3707AA36_var;
+                break;
+            }
+
+        }
+        if ((lv_targetGeyser != null) && (lv_targetGeyser != lv_searchGeyser)) {
+            lv_closestMineralToSearchGeyser = UnitGroupClosestToPoint(lv_mineralGroup, UnitGetPosition(lv_searchGeyser));
+            lv_closestMineralToTargetGeyser = UnitGroupClosestToPoint(lv_mineralGroup, UnitGetPosition(lv_targetGeyser));
+            if ((DistanceBetweenPoints(UnitGetPosition(lv_targetGeyser), UnitGetPosition(lv_closestMineralToTargetGeyser)) == DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(lv_closestMineralToSearchGeyser)))) {
+                lv_r = RandomInt(1, 2);
+                if ((lv_r == 1)) {
+                    UnitRemove(lv_targetGeyser);
+                }
+                else {
+                    UnitRemove(lv_searchGeyser);
+                }
+            }
+            else if ((DistanceBetweenPoints(UnitGetPosition(lv_targetGeyser), UnitGetPosition(lv_closestMineralToTargetGeyser)) > DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(lv_closestMineralToSearchGeyser)))) {
+                UnitRemove(lv_targetGeyser);
+            }
+            else if ((DistanceBetweenPoints(UnitGetPosition(lv_searchGeyser), UnitGetPosition(lv_closestMineralToSearchGeyser)) > DistanceBetweenPoints(UnitGetPosition(lv_targetGeyser), UnitGetPosition(lv_closestMineralToTargetGeyser)))) {
+                UnitRemove(lv_searchGeyser);
+            }
+            UnitGroupRemove(lv_geyserGroup, lv_targetGeyser);
+            UnitGroupRemove(lv_geyserGroup, lv_searchGeyser);
+        }
+        else {
+            UnitGroupRemove(lv_geyserGroup, lv_searchGeyser);
+        }
+    }
+}
+
+bool libSCEV_gf_UnitIsMineral (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "BattleStationMineralField") || (UnitGetType(lp_unit) == "BattleStationMineralField750") || (UnitGetType(lp_unit) == "LabMineralField750") || (UnitGetType(lp_unit) == "LabMineralField") || (UnitGetType(lp_unit) == "MineralField") || (UnitGetType(lp_unit) == "MineralField450") || (UnitGetType(lp_unit) == "MineralField750") || (UnitGetType(lp_unit) == "MineralFieldOpaque900") || (UnitGetType(lp_unit) == "MineralFieldOpaque") || (UnitGetType(lp_unit) == "PurifierMineralField") || (UnitGetType(lp_unit) == "PurifierMineralField750") || (UnitGetType(lp_unit) == "PurifierRichMineralField") || (UnitGetType(lp_unit) == "PurifierRichMineralField750") || (UnitGetType(lp_unit) == "RichMineralField") || (UnitGetType(lp_unit) == "RichMineralField750"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libSCEV_gf_UnitIsMineralRich (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "PurifierRichMineralField") || (UnitGetType(lp_unit) == "PurifierRichMineralField750") || (UnitGetType(lp_unit) == "RichMineralField") || (UnitGetType(lp_unit) == "RichMineralField750"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libSCEV_gf_UnitIsVespene (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "VespeneGeyser") || (UnitGetType(lp_unit) == "ProtossVespeneGeyser") || (UnitGetType(lp_unit) == "PurifierVespeneGeyser") || (UnitGetType(lp_unit) == "ShakurasVespeneGeyser") || (UnitGetType(lp_unit) == "SpacePlatformGeyser") || (UnitGetType(lp_unit) == "RichVespeneGeyser") || (UnitGetType(lp_unit) == "TempleVespeneGeyserSCBW"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libSCEV_gf_UnitIsVespeneRich (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((UnitGetType(lp_unit) == "RichVespeneGeyser"))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libSCEV_gf_IsBWMap () {
+    // Automatic Variable Declarations
+    // Implementation
+    return (PointFromName("BWMap") != null);
+}
+
+void libSCEV_gf_SetPlayerRaceToBW (int lp_player) {
+    // Automatic Variable Declarations
+    string autoBA67DF13_val;
+
+    // Implementation
+    autoBA67DF13_val = PlayerRace(lp_player);
+    if (autoBA67DF13_val == ("Terr")) {
+        PlayerSetRace(lp_player, "BWTe");
+    }
+    else if (autoBA67DF13_val == ("Prot")) {
+        PlayerSetRace(lp_player, "BWPr");
+    }
+    else if (autoBA67DF13_val == ("Zerg")) {
+        PlayerSetRace(lp_player, "BWZe");
+    }
+    else {
+    }
+}
+
+void libSCEV_gf_SetPlayerRaceToSC2 (int lp_player) {
+    // Automatic Variable Declarations
+    string auto3C423A13_val;
+
+    // Implementation
+    auto3C423A13_val = PlayerRace(lp_player);
+    if (auto3C423A13_val == ("BWTe")) {
+        PlayerSetRace(lp_player, "Terr");
+    }
+    else if (auto3C423A13_val == ("BWPr")) {
+        PlayerSetRace(lp_player, "Prot");
+    }
+    else if (auto3C423A13_val == ("BWZe")) {
+        PlayerSetRace(lp_player, "Zerg");
+    }
+    else {
+    }
+}
+
 void libSCEV_gf_SCEvoEnableAIOption (bool lp_activateDeactivate, int lp_option) {
     // Variable Declarations
     bool lv_onOff;
@@ -220,7 +817,10 @@ void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
 void libSCEV_gf_FractionalArmorUpdate (unit lp_target) {
     // Automatic Variable Declarations
     // Implementation
-    UnitBehaviorAdd(lp_target, "SCBW_FractionalArmor", lp_target, 1);
+    if ((UnitHasBehavior2(lp_target, "SCBW_FractionalArmor") == false)) {
+        UnitBehaviorAdd(lp_target, "SCBW_FractionalArmor", lp_target, 1);
+    }
+
     UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_FractionalArmor", "LifeArmor", UnitGetPropertyFixed(lp_target, c_unitPropLifeArmor, c_unitPropCurrent));
     UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_FractionalArmor", "ShieldArmor", UnitGetPropertyFixed(lp_target, c_unitPropShieldArmor, c_unitPropCurrent));
 }
@@ -258,7 +858,7 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
             autoCF381F81_var = UnitGroupUnitFromEnd(autoCF381F81_g, autoCF381F81_u);
             if (autoCF381F81_var == null) { break; }
             UnitBehaviorAdd(autoCF381F81_var, "SCBW_MissChance", autoCF381F81_var, 1);
-            if ((UnitFilterMatch(autoCF381F81_var, UnitGetOwner(autoCF381F81_var), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true)) {
+            if ((UnitFilterMatch(autoCF381F81_var, UnitGetOwner(autoCF381F81_var), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(autoCF381F81_var), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
                 UnitBehaviorAdd(autoCF381F81_var, "SCBW_ShrubCheck", autoCF381F81_var, 1);
             }
 
@@ -794,9 +1394,13 @@ void libSCEV_gf_MinimapAllyViewRescale () {
 void libSCEV_gf_MinimapAllyViewEnableDisable (bool lp_enableDisable) {
     // Automatic Variable Declarations
     // Implementation
-    TriggerExecute(libSCEV_gt_MinimapAllyViewInit, true, true);
-    libSCEV_gf_MinimapAllyViewRescale();
     if ((lp_enableDisable == true)) {
+        if ((PlayerGroupCount(PlayerGroupActive()) <= 2) && (PlayerGroupCount(PlayerGroupActive()) > 8)) {
+            return ;
+        }
+
+        TriggerExecute(libSCEV_gt_MinimapAllyViewInit, true, true);
+        libSCEV_gf_MinimapAllyViewRescale();
         TriggerEnable(libSCEV_gt_MinimapAllyViewCameraUpdate, true);
         TriggerEnable(libSCEV_gt_MinimapAllyViewCameraSnap, true);
         TriggerEnable(libSCEV_gt_MinimapAllyViewAllianceUpdate, true);
@@ -809,6 +1413,12 @@ void libSCEV_gf_MinimapAllyViewEnableDisable (bool lp_enableDisable) {
         TriggerEnable(libSCEV_gt_MinimapAllyViewAllianceUpdate, false);
         TriggerEnable(libSCEV_gt_MinimapAllyViewCameraSnap, false);
     }
+}
+
+void libSCEV_gf_RegisterCameraMoveEvent (trigger lp_trigger, int lp_playerId, int lp_cameraMoveReason) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventCameraMove(lp_trigger, lp_playerId, lp_cameraMoveReason);
 }
 
 // Triggers
@@ -993,7 +1603,7 @@ bool libSCEV_gt_FractionalArmorUpdateTrigger_Func (bool testConds, bool runActio
 
     // Conditions
     if (testConds) {
-        if (!(((lv_effect == "SCBW_FractionalArmorUpdate") || (StringContains((lv_effect), "DamageApply", c_stringAnywhere, c_stringNoCase) == true)))) {
+        if (!(((StringContains((lv_effect), "DamageApply", c_stringAnywhere, c_stringNoCase) == true) || (lv_effect == "SCBW_FractionalArmorUpdate")))) {
             return false;
         }
 
@@ -1130,7 +1740,7 @@ bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
     }
 
     UnitBehaviorAdd(EventUnit(), "SCBW_MissChance", EventUnit(), 1);
-    if ((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true)) {
+    if ((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(EventUnit()), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
         UnitBehaviorAdd(EventUnit(), "SCBW_ShrubCheck", EventUnit(), 1);
     }
 
@@ -1155,18 +1765,31 @@ bool libSCEV_gt_MissChanceShrubCheck_Func (bool testConds, bool runActions) {
     // Variable Initialization
     lv_target = EventPlayerEffectUsedUnitImpact();
 
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_target) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_target, UnitGetOwner(lv_target), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
+            return false;
+        }
+
+        if (!((UnitHasBehavior2(lv_target, "SCBW_InShrub") == false))) {
+            return false;
+        }
+
+        if (!((HasCustomCellAttribute(UnitGetPosition(lv_target), 1) == false))) {
+            return false;
+        }
+    }
+
     // Actions
     if (!runActions) {
         return true;
     }
 
-    if ((UnitIsValid(lv_target) == true) && (UnitFilterMatch(lv_target, UnitGetOwner(lv_target), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true)) {
-        if ((HasCustomCellAttribute(UnitGetPosition(lv_target), 1) != true)) {
-            UnitBehaviorAdd(lv_target, "SCBW_InShrub", lv_target, 1);
-        }
-
-    }
-
+    UnitBehaviorAdd(lv_target, "SCBW_InShrub", lv_target, 1);
     return true;
 }
 
@@ -1799,23 +2422,50 @@ void libSCEV_gt_MimicCheckSpiderMine_Init () {
 bool libSCEV_gt_ReaverPathingCheck_Func (bool testConds, bool runActions) {
     // Variable Declarations
     fixed lv_path;
+    fixed lv_pathToAttacker;
+    unit lv_target;
+    unit lv_attacker;
+    const fixed lv_pathingLeeway = 2.0;
 
     // Automatic Variable Declarations
     // Variable Initialization
-    lv_path = AIPathingCostMap(EventPlayerEffectUsedPoint(c_effectLocationCasterUnit), EventPlayerEffectUsedPoint(c_effectLocationTargetUnit));
+    lv_target = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+    lv_attacker = EventPlayerEffectUsedUnit(c_effectUnitCaster);
+
+    // Conditions
+    if (testConds) {
+        if (!(((UnitIsValid(lv_attacker) && UnitIsValid(lv_target)) == true))) {
+            return false;
+        }
+    }
 
     // Actions
     if (!runActions) {
         return true;
     }
 
-    if ((lv_path >= 13.0)) {
-        UnitCreateEffectUnit(EventPlayerEffectUsedUnit(c_effectUnitCaster), "ReaverSCBWWeapon@ChaseSwitch", EventPlayerEffectUsedUnit(c_effectUnitTarget));
+    lv_path = AIPathingCostMap(UnitGetPosition(lv_attacker), UnitGetPosition(lv_target));
+    if ((lv_path > libSCEV_gv_reaverPathingRange)) {
+        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@ChaseSwitch", lv_target);
+        return true;
     }
     else if ((lv_path > -1.0)) {
-        UnitCreateEffectUnit(EventPlayerEffectUsedUnit(c_effectUnitCaster), "ReaverSCBWWeapon@SetInitial", EventPlayerEffectUsedUnit(c_effectUnitTarget));
+        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@SetInitial", lv_target);
+        return true;
     }
-    else if (true) {
+    lv_path = PointPathingCost(UnitGetPosition(lv_attacker), UnitGetPosition(lv_target));
+    lv_pathToAttacker = PointPathingCost(UnitGetPosition(lv_target), UnitGetPosition(lv_attacker));
+    if ((lv_path == 65536.0) && (lv_pathToAttacker == 65536.0)) {
+        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@ChaseCancel", lv_attacker);
+        return true;
+    }
+    else if ((lv_pathToAttacker > (libSCEV_gv_reaverPathingRange + lv_pathingLeeway))) {
+        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@ChaseSwitch", lv_target);
+        return true;
+    }
+    else if ((lv_pathToAttacker <= (libSCEV_gv_reaverPathingRange + lv_pathingLeeway)) && (lv_pathToAttacker > -1.0)) {
+        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@SetInitial", lv_target);
+        return true;
     }
     return true;
 }
@@ -2121,8 +2771,6 @@ bool libSCEV_gt_MinimapAllyViewCameraUpdate_Func (bool testConds, bool runAction
 void libSCEV_gt_MinimapAllyViewCameraUpdate_Init () {
     libSCEV_gt_MinimapAllyViewCameraUpdate = TriggerCreate("libSCEV_gt_MinimapAllyViewCameraUpdate_Func");
     TriggerEnable(libSCEV_gt_MinimapAllyViewCameraUpdate, false);
-    TriggerAddEventChatMessage(libSCEV_gt_MinimapAllyViewCameraUpdate, c_playerAny, null, true);
-    TriggerAddEventCameraMove(libSCEV_gt_MinimapAllyViewCameraUpdate, c_playerAny, c_cameraMoveReasonAny);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2182,6 +2830,7 @@ void libSCEV_gt_MinimapAllyViewAllianceUpdate_Init () {
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_MinimapAllyViewInit_Func (bool testConds, bool runActions) {
     // Variable Declarations
+    playergroup lv_players;
     int lv_indexPlayer;
     int lv_jindexPlayer;
 
@@ -2190,6 +2839,7 @@ bool libSCEV_gt_MinimapAllyViewInit_Func (bool testConds, bool runActions) {
     playergroup autoF0D67B2A_g;
 
     // Variable Initialization
+    lv_players = PlayerGroupEmpty();
 
     // Conditions
     if (testConds) {
@@ -2204,12 +2854,14 @@ bool libSCEV_gt_MinimapAllyViewInit_Func (bool testConds, bool runActions) {
     }
 
     TriggerEnable(TriggerGetCurrent(), false);
-    auto3820D084_g = libSCEV_gf_HumanPlayers();
+    lv_players = libSCEV_gf_HumanPlayers();
+    auto3820D084_g = lv_players;
     lv_indexPlayer = -1;
     while (true) {
         lv_indexPlayer = PlayerGroupNextPlayer(auto3820D084_g, lv_indexPlayer);
         if (lv_indexPlayer < 0) { break; }
-        autoF0D67B2A_g = libSCEV_gf_HumanPlayers();
+        libSCEV_gf_RegisterCameraMoveEvent(libSCEV_gt_MinimapAllyViewCameraUpdate, lv_indexPlayer, c_cameraMoveReasonAny);
+        autoF0D67B2A_g = lv_players;
         lv_jindexPlayer = -1;
         while (true) {
             lv_jindexPlayer = PlayerGroupNextPlayer(autoF0D67B2A_g, lv_jindexPlayer);
@@ -2224,6 +2876,93 @@ bool libSCEV_gt_MinimapAllyViewInit_Func (bool testConds, bool runActions) {
 //--------------------------------------------------------------------------------------------------
 void libSCEV_gt_MinimapAllyViewInit_Init () {
     libSCEV_gt_MinimapAllyViewInit = TriggerCreate("libSCEV_gt_MinimapAllyViewInit_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: SCEvo: Events
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SCEvoEvents_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_itInstance;
+    datetime lv_itStart;
+    datetime lv_itEnd;
+    string lv_itDisabler;
+    string lv_itSkin;
+    string lv_itUpgrade;
+    string lv_itMessage;
+    unitfilter lv_itMessageFilter;
+    datetime lv_curDateTime;
+    int lv_itPlayer;
+    unit lv_itUnit;
+
+    // Automatic Variable Declarations
+    string autoB2BB2365_userType;
+    int autoB2BB2365_i;
+    playergroup autoD326C855_g;
+    playergroup auto32D8B1A8_g;
+    unitgroup autoB1BFB680_g;
+    int autoB1BFB680_u;
+
+    // Variable Initialization
+    lv_itMessageFilter = UnitFilter(0, 0, 0, 0);
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_curDateTime = CurrentDateTimeGet();
+    autoB2BB2365_userType = libSCEV_gv_sCEvoEventsEventTable;
+    autoB2BB2365_i = 1;
+    for ( ; autoB2BB2365_i <= UserDataInstanceCount(autoB2BB2365_userType) ; autoB2BB2365_i += 1 ) {
+        lv_itInstance = UserDataInstance(autoB2BB2365_userType, autoB2BB2365_i);
+        lv_itStart = StringToDateTime(UserDataGetString(libSCEV_gv_sCEvoEventsEventTable, lv_itInstance, "Start", 1));
+        lv_itEnd = StringToDateTime(UserDataGetString(libSCEV_gv_sCEvoEventsEventTable, lv_itInstance, "End", 1));
+        lv_itDisabler = UserDataGetGameLink("SCEV_Events", lv_itInstance, "Disabler", 1);
+        lv_itSkin = UserDataGetGameLink("SCEV_Events", lv_itInstance, "Skin", 1);
+        lv_itUpgrade = UserDataGetGameLink(libSCEV_gv_sCEvoEventsEventTable, lv_itInstance, "Upgrade", 1);
+        lv_itMessage = (UserDataGetString(libSCEV_gv_sCEvoEventsEventTable, lv_itInstance, "Message", 1));
+        lv_itMessageFilter = libNtve_gf_ConvertTargetFilterStringToUnitFilter(UserDataGetString(libSCEV_gv_sCEvoEventsEventTable, lv_itInstance, "MessageFilter", 1));
+        if (((CatalogEntryIsValid(c_gameCatalogUpgrade, lv_itDisabler) == true) || (libNtve_gf_DateTimeisBetween(lv_curDateTime, lv_itStart, lv_itEnd) == false))) {
+            continue;
+        }
+
+        if ((CatalogEntryIsValid(c_gameCatalogSkin, lv_itSkin) == true)) {
+            autoD326C855_g = PlayerGroupActive();
+            lv_itPlayer = -1;
+            while (true) {
+                lv_itPlayer = PlayerGroupNextPlayer(autoD326C855_g, lv_itPlayer);
+                if (lv_itPlayer < 0) { break; }
+                PlayerApplySkin(lv_itPlayer, lv_itSkin, true);
+            }
+        }
+
+        if ((CatalogEntryIsValid(c_gameCatalogUpgrade, lv_itUpgrade) == true)) {
+            auto32D8B1A8_g = PlayerGroupActive();
+            lv_itPlayer = -1;
+            while (true) {
+                lv_itPlayer = PlayerGroupNextPlayer(auto32D8B1A8_g, lv_itPlayer);
+                if (lv_itPlayer < 0) { break; }
+                TechTreeUpgradeAddLevel(lv_itPlayer, lv_itUpgrade, 1);
+            }
+        }
+
+        autoB1BFB680_g = UnitGroup(null, c_playerAny, RegionEntireMap(), lv_itMessageFilter, 0);
+        autoB1BFB680_u = UnitGroupCount(autoB1BFB680_g, c_unitCountAll);
+        for (;; autoB1BFB680_u -= 1) {
+            lv_itUnit = UnitGroupUnitFromEnd(autoB1BFB680_g, autoB1BFB680_u);
+            if (lv_itUnit == null) { break; }
+            ActorSend(libNtve_gf_MainActorofUnit(lv_itUnit), lv_itMessage);
+        }
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SCEvoEvents_Init () {
+    libSCEV_gt_SCEvoEvents = TriggerCreate("libSCEV_gt_SCEvoEvents_Func");
+    TriggerAddEventGeneric(libSCEV_gt_SCEvoEvents, "EventsInit");
+    TriggerAddEventCheatUsed(libSCEV_gt_SCEvoEvents, c_playerAny, c_gameCheatDateTime);
 }
 
 void libSCEV_InitTriggers () {
@@ -2253,6 +2992,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MinimapAllyViewCameraUpdate_Init();
     libSCEV_gt_MinimapAllyViewAllianceUpdate_Init();
     libSCEV_gt_MinimapAllyViewInit_Init();
+    libSCEV_gt_SCEvoEvents_Init();
 }
 
 //--------------------------------------------------------------------------------------------------
