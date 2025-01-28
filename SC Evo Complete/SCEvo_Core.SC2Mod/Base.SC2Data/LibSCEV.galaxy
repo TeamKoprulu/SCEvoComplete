@@ -25,6 +25,7 @@ void libSCEV_InitVariables () {
 
     libSCEV_gv_mineralWallsGlobalMineralWalls = UnitGroupEmpty();
     libSCEV_gv_mineralWallsTimer = TimerCreate();
+    libSCEV_gv_sCEvoFeatures = BitMaskMakeDefaultMask();
     libSCEV_gv_missChanceRevealTimer = TimerCreate();
     libSCEV_gv_reaverPathingRange = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogValidator, "ReaverSCBWWeapon@Pathable", "MaxDistance", c_playerAny);
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
@@ -96,57 +97,17 @@ string libSCEV_ge_LegacyCheat_Ident (int lp_val) {
 }
 
 // Functions
-void libSCEV_gf_MultiExtensionInit () {
-    // Variable Declarations
-    int lv_playerIndex;
-
-    // Automatic Variable Declarations
-    playergroup autoB6A2D03D_g;
-    string auto147D69FB_val;
-
-    // Variable Initialization
-
-    // Implementation
-    TriggerSendEvent("EventsInit");
-    autoB6A2D03D_g = PlayerGroupActive();
-    lv_playerIndex = -1;
-    while (true) {
-        lv_playerIndex = PlayerGroupNextPlayer(autoB6A2D03D_g, lv_playerIndex);
-        if (lv_playerIndex < 0) { break; }
-        auto147D69FB_val = GameAttributePlayerValue(libSCEV_gv_multiGameRaceAttribute, lv_playerIndex);
-        if (auto147D69FB_val == libSCEV_gv_multiGameRaceValueBW) {
-            libSCEV_gf_SetPlayerRaceToBW(lv_playerIndex);
-        }
-        else if (auto147D69FB_val == libSCEV_gv_multiGameRaceValueSC2) {
-            libSCEV_gf_SetPlayerRaceToSC2(lv_playerIndex);
-        }
-        else if (auto147D69FB_val == libSCEV_gv_multiGameRaceValueRandom) {
-            if ((RandomInt(0, 1) == 1)) {
-                libSCEV_gf_SetPlayerRaceToBW(lv_playerIndex);
-            }
-            else {
-                libSCEV_gf_SetPlayerRaceToSC2(lv_playerIndex);
-            }
-        }
-        else {
-            if ((RandomInt(0, 1) == 1)) {
-                libSCEV_gf_SetPlayerRaceToBW(lv_playerIndex);
-            }
-            else {
-                libSCEV_gf_SetPlayerRaceToSC2(lv_playerIndex);
-            }
-        }
-        if ((PlayerType(lv_playerIndex) == c_playerTypeUser)) {
-            libNtve_gf_HideGameUI(false, PlayerGroupSingle(lv_playerIndex));
-            libNtve_gf_HideGameUI(true, PlayerGroupSingle(lv_playerIndex));
-        }
-
-    }
-    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_FractionalArmor, true);
-    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_MissChance, true);
-}
+trigger auto_libSCEV_gf_LegacyExtensionInit_Trigger = null;
 
 void libSCEV_gf_LegacyExtensionInit () {
+    if (auto_libSCEV_gf_LegacyExtensionInit_Trigger == null) {
+        auto_libSCEV_gf_LegacyExtensionInit_Trigger = TriggerCreate("auto_libSCEV_gf_LegacyExtensionInit_TriggerFunc");
+    }
+
+    TriggerExecute(auto_libSCEV_gf_LegacyExtensionInit_Trigger, false, false);
+}
+
+bool auto_libSCEV_gf_LegacyExtensionInit_TriggerFunc (bool testConds, bool runActions) {
     // Variable Declarations
     int lv_playerIndex;
     string lv_unitType;
@@ -191,10 +152,6 @@ void libSCEV_gf_LegacyExtensionInit () {
 
         }
     }
-    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_LegacyRefund, true);
-    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_FractionalArmor, true);
-    libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_MissChance, true);
-    libSCEV_gf_LegacySetFoWState();
     libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_LegacyUnitSwap, true);
     if ((libSCEV_gf_IsBWMap() == false)) {
         libSCEV_gf_LegacyRemoveExtraGeysers();
@@ -209,9 +166,10 @@ void libSCEV_gf_LegacyExtensionInit () {
     else {
         libSCEV_gf_LegacyUpdateResources();
     }
+    return true;
 }
 
-void libSCEV_gf_LegacySetFoWState () {
+void libSCEV_gf_LegacySetFoWState (int lp_hidden, playergroup lp_players) {
     // Variable Declarations
     int lv_index;
 
@@ -221,16 +179,13 @@ void libSCEV_gf_LegacySetFoWState () {
     // Variable Initialization
 
     // Implementation
-    if ((GameAttributeGameValue(libSCEV_gv_legacyBlackFogAttribute) == libSCEV_gv_legacyBlackFogValueEnabled)) {
-        auto2C453286_g = PlayerGroupActive();
-        lv_index = -1;
-        while (true) {
-            lv_index = PlayerGroupNextPlayer(auto2C453286_g, lv_index);
-            if (lv_index < 0) { break; }
-            VisFillArea(lv_index, RegionEntireMap(), c_fillTypeHidden, false);
-        }
+    auto2C453286_g = PlayerGroupActive();
+    lv_index = -1;
+    while (true) {
+        lv_index = PlayerGroupNextPlayer(auto2C453286_g, lv_index);
+        if (lv_index < 0) { break; }
+        VisFillArea(lv_index, RegionEntireMap(), c_fillTypeHidden, false);
     }
-
 }
 
 void libSCEV_gf_LegacyIncreaseResources () {
@@ -737,6 +692,12 @@ void libSCEV_gf_MineralWallsActivate (bool lp_onOff) {
     }
 }
 
+bool libSCEV_gf_SCEvoFeatureActive (int lp_feature) {
+    // Automatic Variable Declarations
+    // Implementation
+    return BitMaskTrueIndex(libSCEV_gv_sCEvoFeatures, (lp_feature));
+}
+
 void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate) {
     // Variable Declarations
     bool lv_onOff;
@@ -762,6 +723,10 @@ void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate
         TriggerEnable(libSCEV_gt_LegacyUnitSwap, lv_onOff);
     }
     else if ((lp_feature == libSCEV_ge_SCEvoFeatures_LegacyUnitSwapErrorLog)) {
+        if ((libSCEV_gf_SCEvoFeatureActive(libSCEV_ge_SCEvoFeatures_LegacyUnitSwap) == false)) {
+            libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_LegacyUnitSwap, true);
+        }
+
         libSCEV_gv_legacyUnitSwapErrorLogOnly = lv_onOff;
     }
     else if ((lp_feature == libSCEV_ge_SCEvoFeatures_LegacyCheats)) {
@@ -779,6 +744,7 @@ void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate
     }
     else if (true) {
     }
+    BitMaskSetIndex(libSCEV_gv_sCEvoFeatures, (lp_feature), lv_onOff);
 }
 
 void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
@@ -1497,6 +1463,10 @@ bool libSCEV_gt_SCEvoFeatureInit_Func (bool testConds, bool runActions) {
     // Actions
     if (!runActions) {
         return true;
+    }
+
+    if ((libSCEV_gf_SCEvoFeatureActive(libSCEV_ge_SCEvoFeatures_FractionalArmor) == false)) {
+        libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_FractionalArmor, true);
     }
 
     libSCEV_gf_InfiniteMoneyMapCheck();
