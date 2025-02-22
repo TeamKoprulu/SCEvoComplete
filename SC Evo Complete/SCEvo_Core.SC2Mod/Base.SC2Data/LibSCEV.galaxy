@@ -26,6 +26,7 @@ void libSCEV_InitVariables () {
     libSCEV_gv_mineralWallsGlobalMineralWalls = UnitGroupEmpty();
     libSCEV_gv_mineralWallsTimer = TimerCreate();
     libSCEV_gv_missChanceRevealTimer = TimerCreate();
+    libSCEV_gv_missChanceTrigger = libSCEV_gt_MissChanceHighGroundRegionEnter;
     libSCEV_gv_reaverPathingRange = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogValidator, "ReaverSCBWWeapon@Pathable", "MaxDistance", c_playerAny);
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
@@ -660,7 +661,7 @@ void libSCEV_gf_SCEvoEnableAIOption (bool lp_activateDeactivate, int lp_option) 
         lv_enabledisable = true;
     }
 
-    if ((lp_option == lp_option)) {
+    if ((lp_option == libSCEV_ge_SCEvoAIOption_MineralWallClearing)) {
         libSCEV_gf_MineralWallsActivate(lv_onOff);
     }
 }
@@ -800,8 +801,20 @@ void libSCEV_gf_MissChanceRevealTimerStart () {
 
 }
 
-void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
+void libSCEV_gf_MissChanceRegisterRegion (trigger lp_trigger, region lp_region, bool lp_enterExit) {
     // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventUnitRegion(lp_trigger, null, lp_region, lp_enterExit);
+}
+
+void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
+    // Variable Declarations
+    region lv_region;
+    int lv_i;
+
+    // Automatic Variable Declarations
+    const int auto4A2BE103_ae = libSCEV_gv_missChanceRegionCount;
+    const int auto4A2BE103_ai = 1;
     unitgroup auto17A0307A_g;
     int auto17A0307A_u;
     unit auto17A0307A_var;
@@ -809,10 +822,24 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
     int autoCF381F81_u;
     unit autoCF381F81_var;
 
+    // Variable Initialization
+
     // Implementation
     if ((lp_activateDeactivate == true)) {
         TriggerEnable(libSCEV_gt_MissChanceAdd, true);
         TriggerEnable(libSCEV_gt_MissChanceShrubCheck, true);
+        lv_i = 1;
+        for ( ; ( (auto4A2BE103_ai >= 0 && lv_i <= auto4A2BE103_ae) || (auto4A2BE103_ai < 0 && lv_i >= auto4A2BE103_ae) ) ; lv_i += auto4A2BE103_ai ) {
+            lv_region = RegionFromName(("HighGround_" + IntToString(lv_i)));
+            if ((lv_region != null) && (libSCEV_gv_missChanceRegion[lv_i] == null)) {
+                libSCEV_gv_missChanceRegion[lv_i] = lv_region;
+                libSCEV_gf_MissChanceRegisterRegion(libSCEV_gt_MissChanceHighGroundRegionEnter, lv_region, true);
+                libSCEV_gf_MissChanceRegisterRegion(libSCEV_gt_MissChanceHighGroundRegionExit, lv_region, false);
+                TriggerEnable(libSCEV_gt_MissChanceHighGroundRegionEnter, true);
+                TriggerEnable(libSCEV_gt_MissChanceHighGroundRegionExit, true);
+            }
+
+        }
         if ((CatalogFieldValueGet(c_gameCatalogGame, "Dflt", "AttackRevealBehavior", c_playerAny) == "")) {
             TriggerEnable(libSCEV_gt_MissChanceRevealAttacker, true);
         }
@@ -824,7 +851,7 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
             if (autoCF381F81_var == null) { break; }
             UnitBehaviorAdd(autoCF381F81_var, "SCBW_MissChance", autoCF381F81_var, 1);
             if ((UnitFilterMatch(autoCF381F81_var, UnitGetOwner(autoCF381F81_var), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(autoCF381F81_var), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
-                UnitBehaviorAdd(autoCF381F81_var, "SCBW_ShrubCheck", autoCF381F81_var, 1);
+                UnitBehaviorAdd(autoCF381F81_var, "SCBW_MissChance@ShrubCheck", autoCF381F81_var, 1);
             }
 
         }
@@ -833,15 +860,19 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
         TriggerEnable(libSCEV_gt_MissChanceAdd, false);
         TriggerEnable(libSCEV_gt_MissChanceShrubCheck, false);
         TriggerEnable(libSCEV_gt_MissChanceRevealAttacker, false);
+        TriggerEnable(libSCEV_gt_MissChanceHighGroundRegionEnter, false);
+        TriggerEnable(libSCEV_gt_MissChanceHighGroundRegionExit, false);
         auto17A0307A_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
         auto17A0307A_u = UnitGroupCount(auto17A0307A_g, c_unitCountAll);
         for (;; auto17A0307A_u -= 1) {
             auto17A0307A_var = UnitGroupUnitFromEnd(auto17A0307A_g, auto17A0307A_u);
             if (auto17A0307A_var == null) { break; }
             UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance", 1);
-            UnitBehaviorRemove(auto17A0307A_var, "SCBW_InShrub", 1);
-            UnitBehaviorRemove(auto17A0307A_var, "SCBW_NotInShrub", 1);
-            UnitBehaviorRemove(auto17A0307A_var, "SCBW_ShrubCheck", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@Shrub", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@HighGroundShrub", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@HighGroundFake", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@NotInShrub", 1);
+            UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@ShrubCheck", 1);
         }
     }
 }
@@ -1612,7 +1643,7 @@ bool libSCEV_gt_MissChanceRevealTimerExpire_Func (bool testConds, bool runAction
     }
 
     TriggerEnable(TriggerGetCurrent(), false);
-    GameDestroyEffects(RegionGetCenter(RegionEntireMap()), 512.0, 0, "SCBW_AttackRevealArea");
+    GameDestroyEffects(RegionGetCenter(RegionEntireMap()), 512.0, 0, "SCBW_MissChance@AttackRevealArea");
     return true;
 }
 
@@ -1659,20 +1690,20 @@ bool libSCEV_gt_MissChanceRevealAttacker_Func (bool testConds, bool runActions) 
     }
 
     if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter(0, 0, (1 << c_targetFilterBuried) | (1 << c_targetFilterCloaked), 0)) == true)) {
-        if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter(0, 0, (1 << c_targetFilterAir), 0)) == true) && (ValidatorExecute("SCBW_MissCheck", lv_source, lv_victim) == 2)) {
-            PlayerCreateEffectPoint(lv_victimPlayer, "SCBW_AttackRevealArea", UnitGetPosition(lv_source));
+        if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter(0, 0, (1 << c_targetFilterAir), 0)) == true) && (ValidatorExecute("SCBW_MissChance@Check", lv_source, lv_victim) == 2)) {
+            PlayerCreateEffectPoint(lv_victimPlayer, "SCBW_MissChance@AttackRevealArea", UnitGetPosition(lv_source));
             libSCEV_gf_MissChanceRevealTimerStart();
         }
         else {
             if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter((1 << c_targetFilterAir), 0, 0, 0)) == true)) {
-                UnitBehaviorAddPlayer(lv_source, "SCBW_AttackReveal", lv_victimPlayer, 1);
+                UnitBehaviorAddPlayer(lv_source, "SCBW_MissChance@AttackReveal", lv_victimPlayer, 1);
             }
 
         }
     }
     else {
         if ((UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter((1 << c_targetFilterGround) | (1 << c_targetFilterVisible), 0, 0, 0)) == true) && (UnitFilterMatch(lv_source, lv_victimPlayer, UnitFilter(0, 0, (1 << c_targetFilterBuried) | (1 << c_targetFilterCloaked), 0)) == false)) {
-            PlayerCreateEffectPoint(lv_victimPlayer, "SCBW_AttackRevealArea", UnitGetPosition(lv_source));
+            PlayerCreateEffectPoint(lv_victimPlayer, "SCBW_MissChance@AttackRevealArea", UnitGetPosition(lv_source));
             libSCEV_gf_MissChanceRevealTimerStart();
         }
 
@@ -1710,7 +1741,7 @@ bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
 
     UnitBehaviorAdd(EventUnit(), "SCBW_MissChance", EventUnit(), 1);
     if ((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(EventUnit()), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
-        UnitBehaviorAdd(EventUnit(), "SCBW_ShrubCheck", EventUnit(), 1);
+        UnitBehaviorAdd(EventUnit(), "SCBW_MissChance@ShrubCheck", EventUnit(), 1);
     }
 
     return true;
@@ -1744,11 +1775,7 @@ bool libSCEV_gt_MissChanceShrubCheck_Func (bool testConds, bool runActions) {
             return false;
         }
 
-        if (!((UnitHasBehavior2(lv_target, "SCBW_InShrub") == false))) {
-            return false;
-        }
-
-        if (!((HasCustomCellAttribute(UnitGetPosition(lv_target), 1) == false))) {
+        if (!((!(((UnitHasBehavior2(lv_target, "SCBW_MissChance@Shrub") == true) || (UnitHasBehavior2(lv_target, "SCBW_MissChance@HighGroundShrub") == true)))))) {
             return false;
         }
     }
@@ -1758,7 +1785,12 @@ bool libSCEV_gt_MissChanceShrubCheck_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    UnitBehaviorAdd(lv_target, "SCBW_InShrub", lv_target, 1);
+    if ((HasCustomCellAttribute(UnitGetPosition(lv_target), 1) == true)) {
+        UnitBehaviorAdd(lv_target, "SCBW_MissChance@HighGroundShrub", lv_target, 1);
+    }
+    else {
+        UnitBehaviorAdd(lv_target, "SCBW_MissChance@Shrub", lv_target, 1);
+    }
     return true;
 }
 
@@ -1766,7 +1798,77 @@ bool libSCEV_gt_MissChanceShrubCheck_Func (bool testConds, bool runActions) {
 void libSCEV_gt_MissChanceShrubCheck_Init () {
     libSCEV_gt_MissChanceShrubCheck = TriggerCreate("libSCEV_gt_MissChanceShrubCheck_Func");
     TriggerEnable(libSCEV_gt_MissChanceShrubCheck, false);
-    TriggerAddEventPlayerEffectUsed(libSCEV_gt_MissChanceShrubCheck, c_playerAny, "SCBW_ShrubCheck");
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_MissChanceShrubCheck, c_playerAny, "SCBW_MissChance@ShrubCheck");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MissChance:HighGroundRegionEnter
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MissChanceHighGroundRegionEnter_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((UnitHasBehavior2(EventUnit(), "SCBW_MissChance@HighGroundFake") == false))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitBehaviorAdd(EventUnit(), "SCBW_MissChance@HighGroundFake", EventUnit(), 1);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MissChanceHighGroundRegionEnter_Init () {
+    libSCEV_gt_MissChanceHighGroundRegionEnter = TriggerCreate("libSCEV_gt_MissChanceHighGroundRegionEnter_Func");
+    TriggerEnable(libSCEV_gt_MissChanceHighGroundRegionEnter, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: MissChance:HighGroundRegionExit
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MissChanceHighGroundRegionExit_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((UnitHasBehavior2(EventUnit(), "SCBW_MissChance@HighGroundFake") == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitBehaviorRemove(EventUnit(), "SCBW_MissChance@HighGroundFake", 1);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MissChanceHighGroundRegionExit_Init () {
+    libSCEV_gt_MissChanceHighGroundRegionExit = TriggerCreate("libSCEV_gt_MissChanceHighGroundRegionExit_Func");
+    TriggerEnable(libSCEV_gt_MissChanceHighGroundRegionExit, false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2944,6 +3046,8 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MissChanceRevealAttacker_Init();
     libSCEV_gt_MissChanceAdd_Init();
     libSCEV_gt_MissChanceShrubCheck_Init();
+    libSCEV_gt_MissChanceHighGroundRegionEnter_Init();
+    libSCEV_gt_MissChanceHighGroundRegionExit_Init();
     libSCEV_gt_LegacyUnitSwap_Init();
     libSCEV_gt_LegacyRefund_Init();
     libSCEV_gt_LegacyCheatCheatTracker_Init();

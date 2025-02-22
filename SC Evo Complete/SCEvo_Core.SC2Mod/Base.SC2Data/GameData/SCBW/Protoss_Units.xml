@@ -309,7 +309,7 @@
     <CValidatorCombine id="CasterMindControlledOrNeuraled">
         <ResultFailed value="Error,Error/DarkArchonMindControlPrevention"/>
         <CombineArray value="DarkArchonSCBWMindControl@Caster"/>
-        <CombineArray value="CasterIsNeuralParasited"/>
+        <CombineArray value="SCBW_CasterIsNeuralParasited"/>
     </CValidatorCombine>
     <CValidatorUnitCompareSpeed id="InterceptorSCBW@IsMovingThreshold">
         <WhichUnit Value="Caster"/>
@@ -452,6 +452,7 @@
         <Icon value="Assets\Textures\BTN-Ability-Protoss-ScarabShot.dds"/>
         <AlertIcon value="Assets\Textures\BTN-Ability-Protoss-ScarabShot.dds"/>
         <EditorCategories value="Race:Protoss"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="ProbeSCBW@Harvest">
         <Icon value="Assets\Textures\btn-ability-protoss-gather.dds"/>
@@ -1196,8 +1197,6 @@
     <CActorUnit id="ScarabSCBW" parent="GenericUnitStandard" unitName="ScarabSCBW">
         <On Terms="UnitDeathCustomize; ValidateUnit ScarabSCBWWeaponDamageUpgrade" Send="DeathCustomize Upgrade"/>
         <On Terms="ActorCreation; ValidateUnit ScarabSCBWWeaponDamageUpgrade" Send="ModelSwap ScarabSCBW@Upgraded"/>
-        <On Terms="UnitDeathCustomize; ValidatePlayer ReaverSCBWWeapon@NeuralUseDamageUpgrade" Send="DeathCustomize Upgrade"/>
-        <On Terms="ActorCreation; ValidatePlayer ReaverSCBWWeapon@NeuralUseDamageUpgrade" Send="ModelSwap ScarabSCBW@Upgraded"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="UnitDeathCustomize; KilledByEffect ReaverSCBWWeapon@SuicideDud" Send="DeathCustomize Detached"/>
         <DeathArray index="Normal" ModelLink="ReaverSCBWWeapon@Impact" SoundLink="ReaverSCBWWeapon@Explode"/>
@@ -1859,7 +1858,7 @@
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="Upgrade.ZealotSCBWSpeedUpgrade.Add" Send="AnimGroupApply Cover"/>
         <On Terms="Upgrade.ZealotSCBWSpeedUpgrade.Remove" Send="AnimGroupRemove Cover"/>
-        <On Terms="ActorCreation; !ValidatePlayer ZealotSCBWSpeedUpgrade" Send="AnimGroupApply Cover"/>
+        <On Terms="ActorCreation; !ValidatePlayer ZealotSCBWSpeedUpgrade@Not" Send="AnimGroupApply Cover"/>
         <DeathCustoms index="1" ActorModel="UnitDeathModel" ModelLink="ZealotSCBW@Death" Name="AntiGravProtoss"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathSmall" Name="Hallucination"/>
         <!--DeathCustoms ActorModel="ZealotSCBW@DeathRagdoll" ModelLink="ZealotSCBW@DeathRagdoll" Name="RagdollBasic">
@@ -2271,16 +2270,6 @@
         <Macros value="UnitDeathRagdollTerminateExtrasRemovalMacro"/>
         <On Terms="ActorCreation" Send="TimerSet 0.700000 TerminateExtras"/>
     </CActorModel>
-    <CActorModel id="ReaverSCBW@UnloadWeaponStun" parent="ModelAnimationStyleContinuous">
-        <Aliases value="_Snapshot"/>
-        <Inherits index="Visibility" value="1"/>
-        <On index="0" Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death Instant"/>
-        <On Terms="Behavior.ReaverSCBWWeapon@DelayAttackWhenUnloaded.Create" Send="Create"/>
-        <On Terms="Behavior.ReaverSCBWWeapon@DelayAttackWhenUnloaded.Destroy" Send="Destroy"/>
-        <Host Subject="_Unit"/>
-        <HostSiteOps Ops="SOpAttachOverhead"/>
-        <ModelFlags index="AutomateGlobalLoops" value="1"/>
-    </CActorModel>
     <CTargetFindSet id="HighTemplarSCBW@PsiStorm">
         <Type value="Successful"/>
         <Array value="HighTemplarSCBW@PsiStormNormal"/>
@@ -2329,12 +2318,6 @@
     <CModel id="DragoonSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Protoss">
         <Model value="Assets\Units\Protoss\DragoonSCBW\DragoonSCBW@DeathRagdoll_00.m3"/>
         <Radius value="0.750000"/>
-    </CModel>
-    <CModel id="ReaverSCBW@UnloadWeaponStun" parent="PersistentSpellFX">
-        <Model value="Assets\Effects\Neutral\Stun_Void\Stun_Void.m3"/>
-        <EditorCategories value="Race:Protoss"/>
-        <ScaleMax value="1.500000,1.500000,1.500000"/>
-        <ScaleMin value="1.500000,1.500000,1.500000"/>
     </CModel>
     <CModel id="ScarabSCBW@Upgraded" parent="Unit" Race="Protoss">
         <Model value="Assets\Effects\Protoss\ReaverSCBWWeapon@Missile\ReaverSCBWWeapon@Missile.m3"/>
@@ -2389,6 +2372,7 @@
         <ScaleMax value="1.000000,1.000000,1.000000"/>
         <ScaleMin value="1.000000,1.000000,1.000000"/>
         <SelectionRadius value="0.900000"/>
+        <ShadowRadius value="1.000000"/>
     </CModel>
     <CModel id="ShuttleSCBW@Portrait" parent="WarpPrismPortraitBase">
         <Model value="Assets\Portraits\Protoss\WarpPrismPortrait\WarpPrismPortrait.m3"/>
@@ -3980,6 +3964,8 @@
         <DataRecord Entry="Sound,InterceptorSCBW@Land"/>
         <DataRecord Entry="Sound,InterceptorSCBW@Death"/>
         <DataRecord Entry="Tactical,InterceptorSCBW"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@CarrierNotPatrolling"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@NotAttacking"/>
         <DataRecord Entry="Validator,InterceptorSCBW@VitalityCondition"/>
         <DataRecord Entry="Validator,InterceptorSCBW@VitalityCheckOne"/>
         <DataRecord Entry="Validator,InterceptorSCBW@VitalityCheckTwo"/>
@@ -4148,13 +4134,11 @@
         <TechInfoUpgradeUsed value="ScarabSCBWWeaponDamageUpgrade"/>
         <TechInfoUpgradeUsed value="ReaverSCBWHangarIncreaseUpgrade"/>
         <DataRecord Entry="Actor,ReaverSCBW@Land"/>
-        <DataRecord Entry="Actor,ReaverSCBW@UnloadWeaponStun"/>
         <DataRecord Entry="Button,ReaverSCBW@OpticsRecalibration"/>
         <DataRecord Entry="Button,ReaverSCBW@Passive"/>
         <DataRecord Entry="Model,ReaverSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,ReaverSCBW@WarpIn"/>
         <DataRecord Entry="Model,ReaverSCBW@Placement"/>
-        <DataRecord Entry="Model,ReaverSCBW@UnloadWeaponStun"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@AllowUnit"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@Count"/>
@@ -4245,6 +4229,7 @@
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
         <LeaderAlias value="ScarabSCBW"/>
         <AIEvaluateAlias value="ScarabSCBW"/>
+        <SubgroupPriority value="73"/>
     </CUnit>
     <CUnit id="ObserverSCBWSieged" parent="ProtossUnitSCBW">
         <Name value="Unit/Name/ObserverSCBW"/>
@@ -4280,6 +4265,8 @@
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
         <AbilArray Link="ObserverSCBWSieged@Morph"/>
+        <AbilArray Link="Warpable"/>
+        <AbilArray Link="ProgressRally"/>
         <BehaviorArray Link="ObserverSCBWSieged@Detector"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
@@ -4399,6 +4386,7 @@
             <ChanceArray index="Idle" value="0"/>
         </Fidget>
         <Response value="Nothing"/>
+        <RankDisplay value="Never"/>
     </CUnit>
     <CUnit id="ShuttleSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -4432,6 +4420,7 @@
         <AbilArray Link="move"/>
         <AbilArray Link="ShuttleSCBW@Transport"/>
         <AbilArray Link="Warpable"/>
+        <AbilArray Link="ProgressRally"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -4441,13 +4430,14 @@
             <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
             <LayoutButtons Face="ShuttleSCBW@Transport" Type="AbilCmd" AbilCmd="ShuttleSCBW@Transport,Load" Row="2" Column="2"/>
             <LayoutButtons Face="WarpPrismUnloadAll" Type="AbilCmd" AbilCmd="ShuttleSCBW@Transport,UnloadAt" Row="2" Column="3"/>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
             <LayoutButtons>
                 <Face value="ShuttleSCBWSpeedUpgrade@Passive"/>
                 <Type value="Passive"/>
                 <Requirements value="ShuttleSCBWSpeedUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="0"/>
+                <Row value="2"/>
+                <Column value="1"/>
             </LayoutButtons>
         </CardLayouts>
         <Radius value="0.5625"/>
@@ -4514,6 +4504,7 @@
         <GlossaryPriority value="180"/>
         <CostResource index="Minerals" value="25"/>
         <BuildTime value="18.75"/>
+        <SubgroupPriority value="52"/>
     </CUnit>
     <CUnit id="CarrierSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -4562,16 +4553,17 @@
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
             <LayoutButtons Face="InterceptorSCBW" Type="AbilCmd" AbilCmd="CarrierSCBWHangar,Ammo1" Row="2" Column="0"/>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="HangarQueue5,CancelLast" Row="2" Column="4"/>
+            <LayoutButtons Face="CarrierSCBW@InterceptorEscort" Type="Passive" Row="2" Column="1"/>
+            <LayoutButtons Face="CarrierSCBW@InterceptorRecall" Type="Passive" Row="2" Column="2"/>
             <LayoutButtons>
                 <Face value="CarrierSCBWHangarIncreaseUpgrade@Passive"/>
                 <Type value="Passive"/>
                 <Requirements value="CarrierSCBWHangarIncreaseUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="0"/>
+                <Row value="2"/>
+                <Column value="3"/>
             </LayoutButtons>
-            <LayoutButtons Face="CarrierSCBW@InterceptorEscort" Type="Passive" Row="2" Column="1"/>
-            <LayoutButtons Face="CarrierSCBW@InterceptorRecall" Type="Passive" Row="2" Column="2"/>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
         <Radius value="1"/>
         <SeparationRadius value="1.25"/>
@@ -4702,9 +4694,10 @@
                 <Type value="Passive"/>
                 <Requirements value="CorsairSCBWEnergyUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="0"/>
+                <Row value="2"/>
+                <Column value="1"/>
             </LayoutButtons>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
         <SeparationRadius value="0.75"/>
         <SubgroupPriority value="81"/>
@@ -4759,10 +4752,10 @@
         <AbilArray Link="move"/>
         <AbilArray Link="DarkArchonSCBW@Mergeable"/>
         <AbilArray Link="ProgressRally"/>
+        <AbilArray Link="Warpable"/>
         <AbilArray Link="DarkArchonSCBWMindControl"/>
         <AbilArray Link="DarkArchonSCBWMaelstrom"/>
         <AbilArray Link="DarkArchonSCBWFeedback"/>
-        <AbilArray Link="Warpable"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -4779,8 +4772,8 @@
                 <Type value="Passive"/>
                 <Requirements value="DarkArchonSCBWEnergyUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="0"/>
+                <Row value="2"/>
+                <Column value="3"/>
             </LayoutButtons>
         </CardLayouts>
         <Radius value="0.75"/>
@@ -4861,9 +4854,10 @@
                 <Type value="Passive"/>
                 <Requirements value="HighTemplarSCBWEnergyUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="0"/>
+                <Row value="2"/>
+                <Column value="2"/>
             </LayoutButtons>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
         <Radius value="0.375"/>
         <SeparationRadius value="0.375"/>
@@ -4919,6 +4913,8 @@
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
+        <AbilArray Link="Warpable"/>
+        <AbilArray Link="ProgressRally"/>
         <BehaviorArray Link="ObserverSCBW@Detector"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
@@ -4929,12 +4925,13 @@
             <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
             <LayoutButtons Face="DetectorSCBW@Detector" Type="Passive" Requirements="SCBW_NotDetectionSuppressed" Row="2" Column="3"/>
             <LayoutButtons Face="PermanentlyCloakedObserver" Type="Passive" Row="2" Column="2"/>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
             <LayoutButtons>
                 <Face value="ObserverSCBWSpeedUpgrade@Passive"/>
                 <Type value="Passive"/>
                 <Requirements value="ObserverSCBWSpeedUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
+                <Row value="2"/>
                 <Column value="0"/>
             </LayoutButtons>
             <LayoutButtons>
@@ -4942,7 +4939,7 @@
                 <Type value="Passive"/>
                 <Requirements value="ObserverSCBWSightUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
+                <Row value="2"/>
                 <Column value="1"/>
             </LayoutButtons>
         </CardLayouts>
@@ -5000,6 +4997,7 @@
         <AbilArray Link="HangarQueue5"/>
         <AbilArray Link="ReaverSCBWWeapon@Chase"/>
         <AbilArray Link="ReaverSCBWWeapon@Stop"/>
+        <AbilArray Link="ReaverSCBWWeapon@UnloadStunAbil"/>
         <WeaponArray Link="ReaverSCBWWeapon"/>
         <WeaponArray Link="ReaverSCBWWeapon@NoScan"/>
         <WeaponArray Link="ReaverSCBWWeapon@Dummy"/>
@@ -5018,22 +5016,23 @@
             <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="HangarQueue5,CancelLast" Row="2" Column="4"/>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
             <LayoutButtons Face="ScarabSCBW" Type="AbilCmd" AbilCmd="ReaverSCBWHangar,Ammo1" Row="2" Column="0"/>
             <LayoutButtons>
                 <Face value="ScarabSCBWWeaponDamageUpgrade@Passive"/>
                 <Type value="Passive"/>
                 <Requirements value="ScarabSCBWWeaponDamageUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="0"/>
+                <Row value="2"/>
+                <Column value="1"/>
             </LayoutButtons>
             <LayoutButtons>
                 <Face value="ReaverSCBWHangarIncreaseUpgrade@Passive"/>
                 <Type value="Passive"/>
                 <Requirements value="ReaverSCBWHangarIncreaseUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="1"/>
+                <Row value="2"/>
+                <Column value="2"/>
             </LayoutButtons>
         </CardLayouts>
         <Radius value="0.75"/>
@@ -5055,7 +5054,6 @@
         <GlossaryWeakArray value="MutaliskSCBW"/>
         <GlossaryWeakArray value="ScoutSCBW"/>
         <BehaviorArray Link="ReaverSCBWWeapon@NotInsideTransport"/>
-        <BehaviorArray Link="ReaverSCBWWeapon@Disabled"/>
         <BehaviorArray Link="ReaverSCBWWeapon@ScarabTracker"/>
         <AcquireMovementLimit value="12"/>
         <AcquireLeashRadius value="5"/>
@@ -5093,6 +5091,7 @@
         <AbilArray Link="attack"/>
         <AbilArray Link="move"/>
         <AbilArray Link="Warpable"/>
+        <AbilArray Link="ProgressRally"/>
         <WeaponArray Link="ScoutSCBWWeaponAir"/>
         <WeaponArray Link="ScoutSCBWWeaponGround"/>
         <CardLayouts>
@@ -5106,7 +5105,7 @@
                 <Type value="Passive"/>
                 <Requirements value="ScoutSCBWSightUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
+                <Row value="2"/>
                 <Column value="0"/>
             </LayoutButtons>
             <LayoutButtons>
@@ -5114,9 +5113,10 @@
                 <Type value="Passive"/>
                 <Requirements value="ScoutSCBWSpeedUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
+                <Row value="2"/>
                 <Column value="1"/>
             </LayoutButtons>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
         <SeparationRadius value="0.75"/>
         <SubgroupPriority value="78"/>
@@ -5176,7 +5176,7 @@
                 <Type value="Passive"/>
                 <Requirements value="ZealotSCBWSpeedUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
+                <Row value="2"/>
                 <Column value="0"/>
             </LayoutButtons>
         </CardLayouts>
@@ -5314,7 +5314,7 @@
                 <Type value="Passive"/>
                 <Requirements value="DragoonSCBWRangeUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
+                <Row value="2"/>
                 <Column value="0"/>
             </LayoutButtons>
         </CardLayouts>
@@ -5396,9 +5396,10 @@
                 <Type value="Passive"/>
                 <Requirements value="ArbiterSCBWEnergyUpgrade@Passive"/>
                 <ShowInGlossary value="0"/>
-                <Row value="1"/>
-                <Column value="0"/>
+                <Row value="2"/>
+                <Column value="3"/>
             </LayoutButtons>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
         <Radius value="0.6875"/>
         <SeparationRadius value="1"/>
@@ -5580,7 +5581,8 @@
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <DisableValidatorArray value="InterceptorSCBW@IsMovingThreshold"/>
         <DisableValidatorArray value="InterceptorSCBW@CloseToCarrier"/>
-        <DisableValidatorArray value="InterceptorNotPatrolling"/>
+        <DisableValidatorArray value="InterceptorSCBW@CarrierNotPatrolling"/>
+        <DisableValidatorArray value="InterceptorSCBW@NotAttacking"/>
         <Modification MoveSpeedMaximum="1.875" DecelerationMultiplier="0.0625"/>
         <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
@@ -5589,7 +5591,8 @@
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <DisableValidatorArray value="InterceptorSCBW@IsMovingThreshold"/>
         <DisableValidatorArray value="InterceptorSCBW@RightNextToCarrier"/>
-        <DisableValidatorArray value="InterceptorNotPatrolling"/>
+        <DisableValidatorArray value="InterceptorSCBW@CarrierNotPatrolling"/>
+        <DisableValidatorArray value="InterceptorSCBW@NotAttacking"/>
         <Modification>
             <AbilClassDisableArray index="CAbilMove" value="1"/>
         </Modification>

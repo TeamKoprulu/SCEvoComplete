@@ -17,6 +17,16 @@
     <CValidatorUnitFilters default="1" id="SCBW_HallucinationTargetFilter">
         <Filters value="Hallucination;-"/>
     </CValidatorUnitFilters>
+    <CValidatorPlayerRequirement default="1" id="SCBW_PlayerRequirement_Target">
+        <WhichPlayer Value="Target"/>
+        <Find value="1"/>
+        <Value value="##x##"/>
+        <WhichUnit Value="Target"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorPlayerRequirement default="1" id="SCBW_PlayerRequirement">
+        <Find value="1"/>
+        <Value value="##x##"/>
+    </CValidatorPlayerRequirement>
     <CValidatorUnitCompareBehaviorCount default="1" id="TerranBuildingSCBW@AddonAttachedBase">
         <Behavior value="##id##"/>
     </CValidatorUnitCompareBehaviorCount>
@@ -44,6 +54,24 @@
         <Value value="##unitName##"/>
         <WhichUnit Value="Source"/>
     </CValidatorUnitType>
+    <CValidatorCombine id="IsDarkArchonUnit">
+        <CombineArray value="IsDarkArchon"/>
+        <CombineArray value="IsDarkArchonSCBW"/>
+    </CValidatorCombine>
+    <CValidatorUnitFilters id="NotStasis">
+        <ResultNoUnit value="CantTargetUnitsInAStasisField"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitOrderQueue id="InterceptorSCBW@CarrierNotPatrolling">
+        <WhichUnit Value="Source"/>
+        <AbilLink value="move"/>
+        <AbilCmdIndex value="1"/>
+        <Find value="0"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="InterceptorSCBW@NotAttacking">
+        <WhichUnit Value="Target"/>
+        <AbilLink value="attack"/>
+        <Find value="0"/>
+    </CValidatorUnitOrderQueue>
     <CValidatorUnitCompareBehaviorCount id="SCBW_HasDetector7">
         <Compare value="GT"/>
         <Behavior value="Detector7"/>
@@ -95,28 +123,6 @@
     <CValidatorEffectTreeUserData id="SCBW_SplashFactor_Mid">
         <Key value="SplashFactor"/>
         <Value value="1"/>
-    </CValidatorEffectTreeUserData>
-    <CValidatorLocationShrub id="SCBW_TargetNoShrub">
-        <WhichLocation Value="TargetUnitOrPoint"/>
-        <Find value="0"/>
-    </CValidatorLocationShrub>
-    <CValidatorUnitCompareBehaviorCount id="SCBW_TargetHasNotInShrubBuff">
-        <Behavior value="SCBW_NotInShrub"/>
-        <Compare value="GT"/>
-    </CValidatorUnitCompareBehaviorCount>
-    <CValidatorEffectTreeUserData id="SCBWWeapon@NotMissed">
-        <CheckExistence value="0"/>
-        <Key value="Missed"/>
-    </CValidatorEffectTreeUserData>
-    <CValidatorEffectTreeUserData id="SCBWWeapon@NotMissedTarget">
-        <CheckExistence value="0"/>
-        <Key value="Missed"/>
-        <BehaviorScope Value="Target"/>
-    </CValidatorEffectTreeUserData>
-    <CValidatorEffectTreeUserData id="SCBWWeapon@MissedTarget">
-        <Key value="Missed"/>
-        <Value value="1"/>
-        <BehaviorScope Value="Target"/>
     </CValidatorEffectTreeUserData>
     <CValidatorLocationCompareRange id="SCBW_DistanceLessThanDot5">
         <WhichLocation Value="TargetUnit"/>
@@ -265,9 +271,6 @@
         <Categories index="User15" value="1"/>
         <BehaviorAlignment value="Negative"/>
     </CValidatorUnitCompareBehaviorCount>
-    <CValidatorUnitCompareBehaviorCount id="SCBW_TargetNoShrubBuff">
-        <Behavior value="SCBW_InShrub"/>
-    </CValidatorUnitCompareBehaviorCount>
     <CValidatorUnitCompareField id="SCBW_TargetRadiusGTE0Dot875">
         <Compare value="GE"/>
         <Field value="Radius"/>
@@ -323,15 +326,6 @@
         <CombineArray value="NotLurkerSCBWEgg"/>
         <CombineArray value="NotEggSCBW"/>
     </CValidatorCombine>
-    <CValidatorCombine id="SCBW_MissCheckPrimary">
-        <Type value="And"/>
-        <CombineArray value="SCBW_HasMissChance"/>
-        <CombineArray value="SCBW_MissCheck"/>
-    </CValidatorCombine>
-    <CValidatorUnitCompareBehaviorCount id="SCBW_HasMissChance">
-        <Compare value="GT"/>
-        <Behavior value="SCBW_MissChance"/>
-    </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="SCBW_TargetNotStasisNotStunnedNotDead">
         <Type value="And"/>
         <CombineArray value="SCBW_NotStasisNotStunned"/>
@@ -350,20 +344,6 @@
     <CValidatorCombine id="TargetIsEnemyORNeutralSCBW">
         <CombineArray value="TargetIsEnemy"/>
         <CombineArray value="TargetIsNeutral"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="DefendedToAttackerDistanceCheck">
-        <CombineArray value="SCBW_SourceOrTargetInAir"/>
-        <CombineArray value="DefendedToAttackerDistance"/>
-    </CValidatorCombine>
-    <CValidatorLocationCompareRange id="DefendedToAttackerDistance">
-        <WhichLocation Value="SourceUnitOrPoint"/>
-        <Compare value="GT"/>
-        <Range value="2"/>
-        <Value Value="TargetUnitOrPoint"/>
-    </CValidatorLocationCompareRange>
-    <CValidatorCombine id="DefenderInShrubOrHasShrubBuff">
-        <CombineArray value="SCBW_TargetHasShrub"/>
-        <CombineArray value="SCBW_TargetHasShrubBuff"/>
     </CValidatorCombine>
     <CValidatorUnitCompareResourceContents id="GeyserExhausted"/>
     <CValidatorEffectTreeUserData id="GeyserExhaustedUser">
@@ -466,10 +446,6 @@
         <Value value="Changeling"/>
         <Type value="SelectAlias"/>
     </CValidatorUnitType>
-    <CValidatorCombine id="UnderDarkSwarmMissCheck">
-        <Type value="And"/>
-        <CombineArray value="UnderDarkSwarmCombine"/>
-    </CValidatorCombine>
     <CValidatorPlayerCompareRace id="PlayerIsBWPr">
         <Value value="BWPr"/>
     </CValidatorPlayerCompareRace>
@@ -479,63 +455,21 @@
     <CValidatorPlayerCompareRace id="PlayerIsBWTe">
         <Value value="BWTe"/>
     </CValidatorPlayerCompareRace>
-    <CValidatorCombine id="SCBW_MissCheck">
-        <CombineArray value="SCBW_MissCheckShrubGround"/>
-        <CombineArray value="SCBW_MissCheckHighGround"/>
-        <CombineArray value="SCBW_MissCheckShrubAir"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="SCBW_MissCheckAttacker">
-        <CombineArray value="UnderDarkSwarmCombine"/>
-        <CombineArray value="SCBW_MissCheckShrubGround"/>
-        <CombineArray value="SCBW_MissCheckHighGround"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="SCBW_MissCheckShrubAir">
-        <Type value="And"/>
-        <CombineArray value="SCBW_SourceIsAirFilter"/>
-        <CombineArray value="SCBW_TargetHasShrubBuff"/>
-    </CValidatorCombine>
-    <CValidatorEffectTreeUserData id="SCBWWeapon@Missed">
-        <Key value="Missed"/>
-        <Value value="1"/>
-    </CValidatorEffectTreeUserData>
     <CValidatorCombine id="SCBW_SourceOrTargetInAir">
         <CombineArray value="SCBW_SourceNotAir"/>
         <CombineArray value="SCBW_TargetNotAir"/>
         <Negate value="1"/>
     </CValidatorCombine>
-    <CValidatorLocationShrub id="SCBW_TargetHasShrub">
-        <WhichLocation Value="TargetUnitOrPoint"/>
-    </CValidatorLocationShrub>
     <CValidatorCombine id="SCBW_HasShieldsOrMatrix">
         <ResultFailed value="NotEnoughShields"/>
         <CombineArray value="SCBW_ShieldsGT0"/>
         <CombineArray value="ScienceVesselSCBWDefensiveMatrix@HasShield"/>
-    </CValidatorCombine>
-    <CValidatorLocationCompareCliffLevel id="DefenderCliffLevelHigher">
-        <WhichLocation Value="TargetUnitOrPoint"/>
-        <OtherLocation Value="SourceUnitOrPoint"/>
-        <Compare value="GT"/>
-    </CValidatorLocationCompareCliffLevel>
-    <CValidatorCombine id="SCBW_MissCheckHighGround">
-        <Type value="And"/>
-        <CombineArray value="SCBW_SourceAndTargetNotAir"/>
-        <CombineArray value="DefenderCliffLevelHigher"/>
-        <CombineArray value="DefenderHeightCheck"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="SCBW_MissCheckShrubGround">
-        <Type value="And"/>
-        <CombineArray value="SCBW_SourceAndTargetNotAir"/>
-        <CombineArray value="SCBW_TargetHasShrubBuff"/>
     </CValidatorCombine>
     <CValidatorCombine id="SCBW_SourceAndTargetNotAir">
         <Type value="And"/>
         <CombineArray value="SCBW_SourceNotAir"/>
         <CombineArray value="SCBW_TargetNotAir"/>
     </CValidatorCombine>
-    <CValidatorUnitCompareBehaviorCount id="SCBW_TargetHasShrubBuff">
-        <Compare value="GT"/>
-        <Behavior value="SCBW_InShrub"/>
-    </CValidatorUnitCompareBehaviorCount>
     <CValidatorUnitFilters id="SCBW_SourceNotAir">
         <WhichUnit Value="Source"/>
         <Filters value="-;Air"/>
@@ -559,6 +493,11 @@
         <Field value="Radius"/>
         <Value value="1.0"/>
     </CValidatorUnitCompareField>
+    <CValidatorUnitCompareBehaviorCount id="SCBW_CasterIsNeuralParasited">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+        <Behavior value="NeuralParasite"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorUnitCompareField id="TargetRadius_Massive">
         <Compare value="GT"/>
         <Field value="Radius"/>
@@ -584,12 +523,12 @@
         <Negate value="1"/>
     </CValidatorCombine>
     <CValidatorUnitCompareField id="IsBWTe">
-        <ResultFailed value="MustTargetRace"/>
+        <ResultFailed value="CantTargetThatUnit,e_cmdMustTargetTerran"/>
         <Field value="Race"/>
         <Value value="BWTe"/>
     </CValidatorUnitCompareField>
     <CValidatorUnitCompareField id="IsBWPr">
-        <ResultFailed value="MustTargetRace"/>
+        <ResultFailed value="CantTargetThatUnit,e_cmdMustTargetProtoss"/>
         <Field value="Race"/>
         <Value value="BWPr"/>
     </CValidatorUnitCompareField>
@@ -606,6 +545,7 @@
     <CValidatorCombine id="IsTerranSCBW">
         <CombineArray value="IsTerran"/>
         <CombineArray value="IsBWTe"/>
+        <ResultFailed value="CantTargetThatUnit,e_cmdMustTargetTerran"/>
     </CValidatorCombine>
     <CValidatorCombine id="IsProtossSCBW">
         <CombineArray value="IsProtoss"/>
@@ -631,13 +571,6 @@
         <Key value="ShieldsParam"/>
         <BehaviorScope Value="Target" Behavior="SCBW_FractionalArmor"/>
     </CValidatorEffectTreeUserData>
-    <CValidatorUnitCompareHeight id="DefenderHeightCheck">
-        <OtherUnit Value="Source"/>
-        <Compare value="GT"/>
-        <TargetAdd value="1.6"/>
-        <CasterGroundHeight value="1"/>
-        <TargetGroundHeight value="1"/>
-    </CValidatorUnitCompareHeight>
     <CValidatorLocationCompareCliffLevel id="SCBW_CliffLevelNotEqual">
         <WhichLocation Value="TargetUnit"/>
         <OtherLocation Value="OriginUnit"/>
@@ -690,7 +623,7 @@
         <CombineArray value="TargetIsEnemy"/>
     </CValidatorCombine>
     <CValidatorUnitCompareField id="IsBWZe">
-        <ResultFailed value="CantTargetThatUnit,Error/CantTargetNonZerg"/>
+        <ResultFailed value="CantTargetThatUnit,e_cmdMustTargetZerg"/>
         <Field value="Race"/>
         <Value value="BWZe"/>
     </CValidatorUnitCompareField>

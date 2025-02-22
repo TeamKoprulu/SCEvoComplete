@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectUserData id="SiegeTankSCBWSiegedWeapon@MissChance" parent="MissChanceBase">
+        <EditorCategories value="Race:Terran"/>
+    </CEffectUserData>
+    <CEffectUserData id="VultureSCBWWeapon@Cooldown" parent="SCBW_WeaponCooldown">
+        <EditorCategories value="Race:Neutral"/>
+        <Amount value="1.75"/>
+    </CEffectUserData>
     <CEffectSwitch id="ScienceVesselSCBWDefensiveMatrix@BreakDamageSwitch">
         <EditorCategories value="Race:Terran"/>
         <CaseArray Validator="ScienceVesselSCBWDefensiveMatrix@IgnoreArmor" Effect="ScienceVesselSCBWDefensiveMatrix@BreakDamageIgnoreArmor"/>
@@ -373,18 +380,10 @@
         <EffectArray value="SiegeTankSCBWSiegedWeapon@MissChance"/>
         <EffectArray value="SiegeTankSCBWSiegedWeapon@MissSwitch"/>
     </CEffectSet>
-    <CEffectUserData id="SiegeTankSCBWSiegedWeapon@MissChance">
-        <ValidatorArray value="SCBW_MissCheckPrimary"/>
-        <EditorCategories value="Race:Terran"/>
-        <Chance value="0.4687"/>
-        <Key value="Missed"/>
-        <SourceKey value="Missed"/>
-        <Operation value="Set"/>
-    </CEffectUserData>
     <CEffectSwitch id="SiegeTankSCBWSiegedWeapon@MissSwitch">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="SiegeTankSCBWSiegedWeapon@MissOffsetSwitch"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="SiegeTankSCBWSiegedWeapon@MissOffsetSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="SiegeTankSCBWSiegedWeapon@MissOffsetSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="SiegeTankSCBWSiegedWeapon@MissOffsetSwitch"/>
         <CaseDefault value="SiegeTankSCBWSiegedWeapon@Switch"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
@@ -959,8 +958,8 @@
     <CEffectSet id="VultureSCBWWeapon@Set">
         <EditorCategories value="Race:Terran"/>
         <EffectArray value="VultureSCBWWeapon@LM"/>
+        <EffectArray value="VultureSCBWWeapon@Cooldown"/>
         <EffectArray value="VultureSCBWWeapon@StrafingApplyDisableWeapon"/>
-        <EffectArray value="VultureSCBWWeapon@SetCooldown"/>
     </CEffectSet>
     <CEffectEnumTransport id="ScienceVesselSCBWIrradiate@IterateTransportPeriodic">
         <SearchFilters value="Biological;Structure,RawResource,HarvestableResource,Buried,Stasis,Dead,Invulnerable,Outer"/>
@@ -1324,6 +1323,8 @@
         <PeriodicValidator value="NotDead"/>
     </CEffectCreatePersistent>
     <CEffectCreateHealer id="MedicSCBWHeal@Healer">
+        <ValidatorArray value="noMarkers"/>
+        <ValidatorArray value="NotWarpingIn"/>
         <ValidatorArray value="MedicSCBWHeal@Healer"/>
         <DrainVital value="Energy"/>
         <DrainVitalCostFactor value="0.5"/>
@@ -1370,8 +1371,8 @@
     <CEffectSet id="VultureSCBWWeapon@StrafingSet">
         <EditorCategories value="Race:Terran"/>
         <EffectArray value="VultureSCBWWeapon@LM"/>
+        <EffectArray value="VultureSCBWWeapon@Cooldown"/>
         <EffectArray value="VultureSCBWWeapon@StrafingDelay"/>
-        <EffectArray value="VultureSCBWWeapon@SetCooldown"/>
     </CEffectSet>
     <CAbilResearch id="GhostSCBWSightUpgrade" parent="SCBW_Research" race="Terran">
         <InfoArray index="Research1" Time="156.25">
@@ -1863,7 +1864,7 @@
         <Cost>
             <Vital index="Energy" value="50"/>
         </Cost>
-        <TargetFilters value="Visible;Self,Structure,Missile,UnderConstruction,Dead,Hidden,Invulnerable"/>
+        <TargetFilters value="Visible;Self,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="6"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="MedicSCBWRestoration" Requirements="MedicSCBWRestoration">
             <Flags index="AllowMinimap" value="0"/>
@@ -1963,7 +1964,7 @@
         <Flags index="ReExecutable" value="1"/>
         <Flags index="Smart" value="1"/>
         <Flags index="PassengerAcquirePassengers" value="1"/>
-        <TargetFilters value="Ground,Biological,Visible;Self,Enemy,Air,Structure,Missile,UnderConstruction,Dead,Hidden,Invulnerable"/>
+        <TargetFilters value="Ground,Biological,Visible;Self,Enemy,Structure,Missile,Uncommandable,Stasis,Dead,Hidden,Invulnerable"/>
         <TargetSorts RequestCount="1">
             <SortArray value="TSAlliancePassive"/>
             <SortArray value="TSDistance"/>
@@ -2062,6 +2063,9 @@
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
     </CAbilEffectTarget>
+    <CValidatorPlayerRequirement id="VultureSCBWSpeedUpgrade@Not">
+        <Value value="VultureSCBWSpeedUpgrade@Count"/>
+    </CValidatorPlayerRequirement>
     <CValidatorEffectTreeUserData id="ScienceVesselSCBWDefensiveMatrix@IgnoreArmor">
         <Key value="IgnoreArmor"/>
         <Value value="1"/>
@@ -2228,6 +2232,7 @@
         <CombineArray value="SCBW_NotWidowMineBurrowed"/>
         <Type value="And"/>
     </CValidatorCombine>
+    <CValidatorPlayerRequirement id="VultureSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="VultureSCBWSpeedUpgrade@Count"/>
     <CValidatorCombine id="ValkyrieSCBWWeapon@PersistentValidator">
         <Type value="And"/>
         <CombineArray value="ValkyrieSCBWWeapon@Range"/>
@@ -2247,9 +2252,6 @@
         <Pathing value="1"/>
         <Value Value="TargetPoint"/>
     </CValidatorLocationCompareRange>
-    <CValidatorPlayerRequirement id="VultureSCBWSpeedUpgrade">
-        <Value value="VultureSCBWSpeedUpgrade@Count"/>
-    </CValidatorPlayerRequirement>
     <CValidatorCombine id="FirebatSCBWStimpack@Tactical">
         <Type value="And"/>
         <CombineArray value="ExpertOrNotCampaign"/>
@@ -3020,6 +3022,7 @@
         <AlertIcon value="Assets\Textures\BTN-Upgrade-Terran-MedivacEmergencyThrusters.dds"/>
         <DefaultButtonLayout Row="2"/>
         <EditorCategories value="Race:Terran"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="GhostSCBWNuclearStrike">
         <Icon value="Assets\Textures\btn-progression-hornerhan-14-nukefortelefrag.dds"/>
@@ -3051,18 +3054,21 @@
         <AlertIcon value="Assets\Textures\btn-upgrade-swann-defensivematrix.dds"/>
         <DefaultButtonLayout Row="2"/>
         <EditorCategories value="Race:Terran"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="ScienceVesselSCBWIrradiate">
         <Icon value="Assets\Textures\btn-upgrade-swann-irradiate.dds"/>
         <AlertIcon value="Assets\Textures\btn-upgrade-swann-irradiate.dds"/>
         <EditorCategories value="Race:Terran"/>
         <DefaultButtonLayout Row="2" Column="2"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="ScienceVesselSCBWEMPShockwave">
         <Icon value="Assets\Textures\btn-ability-mengsk-ghost-staticempblast.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-mengsk-ghost-staticempblast.dds"/>
         <EditorCategories value="Race:Terran"/>
         <DefaultButtonLayout Row="2" Column="1"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="VulturePlaceSpiderMineSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
@@ -5121,6 +5127,7 @@
         <Backswing value="0"/>
         <Effect value="VultureSCBWWeapon@Set"/>
         <DamagePoint value="0"/>
+        <Options index="DisplayCooldown" value="1"/>
         <Options index="NeverMiss" value="0"/>
         <Tip value="Weapon/Tip/ConcussiveWeapon"/>
         <LegacyOptions index="NoDeceleration" value="1"/>
@@ -5152,6 +5159,7 @@
         <AllowedMovement value="Moving"/>
         <RandomDelayMin value="0"/>
         <RandomDelayMax value="0.15"/>
+        <Tip value="Weapon/Tip/ExplosiveWeapon"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="WraithSCBWWeaponAir">
         <EditorCategories value="Race:Terran"/>
@@ -6515,11 +6523,11 @@
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageAccum"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageAccum2"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageAccum3"/>
+        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissChance"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@ImpactSearch"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@ImpactSearchSet"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageApply"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@InitialSet"/>
-        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissChance"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissSwitch"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissOffsetSwitch"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@Switch"/>
@@ -6644,6 +6652,7 @@
         <DataRecord Entry="RequirementNode,VultureSCBWSpeedUpgrade@QoB"/>
         <DataRecord Entry="RequirementNode,VultureSCBWSpeedUpgrade@NotQoB"/>
         <DataRecord Entry="Upgrade,VultureSCBWSpeedUpgrade"/>
+        <DataRecord Entry="Validator,VultureSCBWSpeedUpgrade@Not"/>
         <DataRecord Entry="Validator,VultureSCBWSpeedUpgrade"/>
     </CDataCollectionUpgrade>
     <CDataCollectionAbil id="VultureSCBWWeapon" parent="TerranVehicleWeaponSCBW">
@@ -6653,6 +6662,7 @@
         <DataRecord Entry="AttachMethod,VultureSCBWWeapon@AMPattern"/>
         <DataRecord Entry="Behavior,VultureSCBWWeapon@StrafingDisableWeapon"/>
         <DataRecord Entry="Behavior,VultureSCBWWeapon@StrafingDisableIfNoMove"/>
+        <DataRecord Entry="Effect,VultureSCBWWeapon@Cooldown"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@Impact"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@DamageApply"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@DamageAccum"/>
@@ -7594,6 +7604,8 @@
             <ModifyFlags index="SuppressTurning" value="1"/>
             <StateFlags index="Stun" value="1"/>
             <StateFlags index="SuppressDetection" value="1"/>
+            <StateFlags index="SuppressPassenger" value="1"/>
+            <StateFlags index="SuppressRadar" value="1"/>
             <AbilClassEnableArray index="CAbilHarvest" value="1"/>
             <AbilClassDisableArray index="CAbilAttack" value="1"/>
             <AbilLinkEnableArray value="move"/>
@@ -7629,7 +7641,9 @@
     </CBehaviorBuff>
     <CBehaviorBuff id="VultureSCBWWeapon@StrafingDisableWeapon">
         <EditorCategories value="AbilityorEffectType:Units"/>
-        <Duration value="1.875"/>
+        <Duration value="0">
+            <AccumulatorArray value="SCBW_WeaponCooldown@Accum"/>
+        </Duration>
         <Modification DecelerationMultiplier="0.5">
             <WeaponDisableArray value="VultureSCBWWeapon@StrafingWeapon"/>
         </Modification>

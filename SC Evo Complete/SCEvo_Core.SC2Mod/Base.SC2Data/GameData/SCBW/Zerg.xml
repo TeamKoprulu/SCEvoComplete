@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectApplyBehavior default="1" id="DevourerSCBWWeapon@SporeBase">
+        <ValidatorArray index="0" value="##id##"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CEffectApplyBehavior>
+    <CEffectUserData id="MutaliskSCBWWeapon@MissChance" parent="MissChanceBase">
+        <EditorCategories value="Race:Zerg"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore1" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore2" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore3" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore4" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore5" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore6" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore7" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore8" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore9" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectCreatePersistent id="DevourerSCBWWeapon@SporesCP">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichLocation Value="SourceUnit"/>
+        <PeriodCount value="9"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore1"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore2"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore3"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore4"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore5"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore6"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore7"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore8"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@Spore9"/>
+        <PeriodicPeriodArray value="0"/>
+    </CEffectCreatePersistent>
     <CEffectCreatePersistent id="InfestedTerranSCBWWeapon@DamageFallbackRedirect">
         <EditorCategories value="Race:Zerg"/>
         <WhichLocation Effect="InfestedTerranSCBWWeapon@Impact" Value="TargetUnit"/>
@@ -326,7 +357,7 @@
     <CEffectSet id="MutaliskSCBWWeapon@BounceSet">
         <EffectArray value="MutaliskSCBWWeapon@BounceHitCount"/>
         <SetSource value="1"/>
-        <ValidatorArray value="SCBWWeapon@NotMissed"/>
+        <ValidatorArray value="SCBW_MissChance@WeaponNotMissed"/>
         <EditorCategories value="Race:Zerg"/>
     </CEffectSet>
     <CEffectLaunchMissile id="MutaliskSCBWWeapon@LM">
@@ -354,18 +385,10 @@
         <ImpactLocation Value="TargetPoint"/>
         <ImpactEffect value="MutaliskSCBWWeapon@MissDummy"/>
     </CEffectLaunchMissile>
-    <CEffectUserData id="MutaliskSCBWWeapon@MissChance">
-        <ValidatorArray value="SCBW_MissCheckPrimary"/>
-        <EditorCategories value="Race:Zerg"/>
-        <Chance value="0.4687"/>
-        <Key value="Missed"/>
-        <SourceKey value="Missed"/>
-        <Operation value="Set"/>
-    </CEffectUserData>
     <CEffectSwitch id="MutaliskSCBWWeapon@MissSwitch">
         <EditorCategories value="Race:Zerg"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="MutaliskSCBWWeapon@Miss"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="MutaliskSCBWWeapon@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="MutaliskSCBWWeapon@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="MutaliskSCBWWeapon@Miss"/>
         <CaseDefault value="MutaliskSCBWWeapon@LM"/>
     </CEffectSwitch>
     <CEffectCreatePersistent id="MutaliskSCBWWeapon@Miss">
@@ -1171,6 +1194,7 @@
         <Flags index="AllowMovement" value="1"/>
         <Flags index="AutoCast" value="1"/>
         <Flags index="AutoCastOn" value="1"/>
+        <Flags index="CancelResetAutoCast" value="0"/>
         <Flags index="ChannelingMinimum" value="0"/>
         <Flags index="DeferCooldown" value="1"/>
         <Flags index="RangeUseCasterRadius" value="0"/>
@@ -1193,6 +1217,56 @@
         <TrackingArc value="0.9997"/>
         <CancelableArray index="Channel" value="1"/>
     </CAbilEffectTarget>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@MovementNot">
+        <Behavior value="QueenSCBWEnsnare@Movement"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_Stimpack">
+        <CombineArray value="QueenSCBWEnsnare@AttackStimpackBW"/>
+        <CombineArray value="IsMarineStimmed"/>
+        <CombineArray value="IsMarauderStimmed"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon">
+        <Compare value="GT"/>
+        <Behavior value="DevourerSCBWWeapon"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Caster">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+        <Behavior value="DevourerSCBWWeapon"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore1">
+        <Value value="1"/>
+        <Behavior value="DevourerSCBWWeapon"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore2" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="2"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore3" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="3"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore4" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="4"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore5" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="5"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore6" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="6"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore7" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="7"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore8" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="8"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="DevourerSCBWWeapon@Spore9" parent="DevourerSCBWWeapon@Spore1">
+        <Value value="9"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@Caster">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+        <Behavior value="QueenSCBWEnsnare"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorPlayerRequirement id="OverlordSCBWSightUpgrade@SourcePlayer">
         <WhichPlayer Value="Source"/>
         <Find value="1"/>
@@ -1231,16 +1305,11 @@
         <CombineArray value="SCBW_IsAdept"/>
         <CombineArray value="SCBW_HaveAdeptPiercingAttack"/>
     </CValidatorCombine>
-    <CValidatorPlayerRequirement id="ZerglingSCBWSpeedUpgrade">
-        <Find value="1"/>
-        <Value value="ZerglingSCBWSpeedUpgrade@Use"/>
-    </CValidatorPlayerRequirement>
-    <CValidatorPlayerRequirement id="ZerglingSCBWAttackSpeedUpgrade">
-        <Find value="1"/>
-        <Value value="ZerglingSCBWAttackSpeedUpgrade@Use"/>
-        <WhichUnit Value="Target"/>
-        <WhichPlayer Value="Target"/>
-    </CValidatorPlayerRequirement>
+    <CValidatorPlayerRequirement id="ZerglingSCBWAttackSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="ZerglingSCBWAttackSpeedUpgrade@Use"/>
+    <CValidatorPlayerRequirement id="HydraliskSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="HydraliskSCBWSpeedUpgrade@Count"/>
+    <CValidatorPlayerRequirement id="ZerglingSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="ZerglingSCBWSpeedUpgrade@Count"/>
+    <CValidatorPlayerRequirement id="OverlordSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="OverlordSCBWSpeedUpgrade@Count"/>
+    <CValidatorPlayerRequirement id="UltraliskSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="UltraliskSCBWSpeedUpgrade@Count"/>
     <CValidatorCombine id="QueenSCBWEnsnare@AttackAdrenalBWValidate">
         <Type value="And"/>
         <CombineArray value="IsZerglingSCBW"/>
@@ -1267,11 +1336,6 @@
         <Key value="HitCount"/>
         <Value value="3"/>
     </CValidatorEffectTreeUserData>
-    <CValidatorPlayerRequirement id="UltraliskSCBWSpeedUpgrade">
-        <Find value="1"/>
-        <Value value="UltraliskSCBWSpeedUpgrade@Use"/>
-        <WhichUnit Value="Target"/>
-    </CValidatorPlayerRequirement>
     <CValidatorCombine id="LurkerSCBWWeapon@Search" parent="SCBW_Effect">
         <!--<CombineArray value="CasterAttackingTargetORIsEnemySCBW"/>-->
     </CValidatorCombine>
@@ -1330,6 +1394,57 @@
         <CombineArray value="IsPlanetaryFortress"/>
         <ResultFailed value="MustTargetStructures,Validator/Error/QueenSCBWInfestCommandCenter@IsCommandCenter"/>
     </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW">
+        <CombineArray value="IsHydraliskSCBW"/>
+        <CombineArray value="HydraliskSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ObserverSCBW">
+        <CombineArray value="IsObserverSCBW"/>
+        <CombineArray value="ObserverSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_OverlordSCBW">
+        <CombineArray value="IsOverlordSCBW"/>
+        <CombineArray value="OverlordSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ScoutSCBW">
+        <CombineArray value="IsScoutSCBW"/>
+        <CombineArray value="ScoutSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW">
+        <CombineArray value="IsShuttleSCBW"/>
+        <CombineArray value="ShuttleSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW">
+        <CombineArray value="IsUltraliskSCBW"/>
+        <CombineArray value="UltraliskSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_VultureSCBW">
+        <CombineArray value="IsVultureSCBW"/>
+        <CombineArray value="VultureSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ZealotSCBW">
+        <CombineArray value="IsZealotSCBW"/>
+        <CombineArray value="ZealotSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW">
+        <CombineArray value="IsZerglingSCBW"/>
+        <CombineArray value="ZerglingSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CRequirement id="OverlordSCBWSpeedUpgrade@Count" parent="SCBW_AbilReq">
+        <NodeArray index="Show" Link=""/>
+    </CRequirement>
+    <CRequirement id="UltraliskSCBWSpeedUpgrade@Count" parent="SCBW_AbilReq">
+        <NodeArray index="Show" Link=""/>
+    </CRequirement>
     <CRequirement id="DefilerSCBWConsumeResearch" parent="SCBW_AbilReq"/>
     <CRequirement id="DefilerSCBWDarkSwarmResearch" parent="SCBW_AbilReq"/>
     <CRequirement id="DefilerSCBWEnergyUpgrade" parent="SCBW_AbilReq">
@@ -1460,6 +1575,9 @@
         <NodeArray index="Use" Link="ZergMissileAttacksSCBW@Lvl3"/>
         <NodeArray index="Show" Link="ZergMissileAttacksSCBW@Lvl3Show"/>
     </CRequirement>
+    <CRequirement id="ZerglingSCBWSpeedUpgrade@Count" parent="SCBW_AbilReq">
+        <NodeArray index="Show" Link=""/>
+    </CRequirement>
     <CRequirement id="ZergSCBWBurrowResearch" parent="SCBW_AbilReq"/>
     <CRequirement id="ZerglingSCBWAttackSpeedUpgrade" parent="SCBW_AbilReq"/>
     <CRequirement id="ZerglingSCBWAttackSpeedUpgrade@Count" parent="SCBW_AbilReq">
@@ -1469,11 +1587,11 @@
         <EditorCategories value=""/>
         <NodeArray index="Show" Link=""/>
     </CRequirement>
-    <CRequirement id="ZerglingSCBWSpeedUpgrade" parent="SCBW_AbilReq"/>
-    <CRequirement id="ZerglingSCBWSpeedUpgrade@Use" parent="SCBW_AbilReq">
-        <NodeArray index="Use" Link="ZerglingSCBWSpeedUpgrade@Count"/>
+    <CRequirement id="HydraliskSCBWSpeedUpgrade@Count" parent="SCBW_UpgradeReq">
+        <EditorCategories value=""/>
         <NodeArray index="Show" Link=""/>
     </CRequirement>
+    <CRequirement id="ZerglingSCBWSpeedUpgrade" parent="SCBW_AbilReq"/>
     <CRequirement id="DefilerSCBWConsume" parent="SCBW_AbilReq">
         <NodeArray index="Show" Link=""/>
     </CRequirement>
@@ -1497,6 +1615,13 @@
     <CRequirement id="HydraliskSCBWSpeedUpgrade@Passive" parent="SCBW_PassiveReq" x="HydraliskSCBWSpeedUpgrade"/>
     <CRequirement id="OverlordSCBWSpeedUpgrade@Passive" parent="SCBW_PassiveReq" x="OverlordSCBWSpeedUpgrade"/>
     <CRequirement id="OverlordSCBWTransportResearch@Passive" parent="SCBW_PassiveReq" x="OverlordSCBWTransportResearch"/>
+    <CButton id="DevourerSCBWWeapon@Info" parent="SCBW_PassiveInfo">
+        <Name value="Weapon/Name/DevourerSCBWWeapon@Info"/>
+        <Icon value="Assets\Textures\btn-ability-zerg-acidspores.dds"/>
+        <AlertName value="Weapon/Name/DevourerSCBWWeapon@Info"/>
+        <AlertIcon value="Assets\Textures\btn-ability-zerg-acidspores.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
     <CButton id="OverlordSCBWSightUpgrade@Passive" parent="SCBW_ResearchPassive" x="OverlordSCBWSightUpgrade">
         <Icon value="Assets\Textures\btn-ability-zerg-overlord-oversight-off.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-zerg-overlord-oversight-off.dds"/>
@@ -1796,41 +1921,48 @@
         <AlertIcon value="Assets\Textures\btn-ability-zerg-consume.dds"/>
         <EditorCategories value="Race:Zerg"/>
         <DefaultButtonLayout Row="2" Column="2"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="DefilerSCBWDarkSwarm">
         <Icon value="Assets\Textures\btn-ability-zerg-darkswarm.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-zerg-darkswarm.dds"/>
         <EditorCategories value="Race:Zerg"/>
         <DefaultButtonLayout Row="2"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="DefilerSCBWPlague">
         <Icon value="Assets\Textures\btn-ability-zerg-defilerplague.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-zerg-defilerplague.dds"/>
         <EditorCategories value="Race:Zerg"/>
         <DefaultButtonLayout Row="2" Column="1"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="QueenSCBWParasite">
         <Icon value="Assets\Textures\btn-ability-zerg-viper-ocularparasite.dds"/>
         <EditorCategories value="Race:Zerg"/>
         <DefaultButtonLayout Row="2"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="QueenSCBWEnsnare">
         <Icon value="Assets\Textures\btn-ability-zerg-fungalgrowth-color.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-zerg-fungalgrowth-color.dds"/>
         <DefaultButtonLayout Row="2" Column="2"/>
         <EditorCategories value="Race:Zerg"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="QueenSCBWSpawnBroodlings">
         <Icon value="Assets\Textures\btn-ability-zerg-swarmseeds-color.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-zerg-swarmseeds-color.dds"/>
         <DefaultButtonLayout Row="2" Column="1"/>
         <EditorCategories value="Race:Zerg"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CButton id="QueenSCBWInfestCommandCenter">
         <Icon value="Assets\Textures\btn-building-zerg-infestedcommandcenter@scbw.dds"/>
         <AlertIcon value="Assets\Textures\btn-building-zerg-infestedcommandcenter@scbw.dds"/>
         <DefaultButtonLayout Row="2" Column="3"/>
         <EditorCategories value="Race:Zerg"/>
+        <HidesForSimpleText value="0"/>
     </CButton>
     <CRequirementAllowUpgrade id="ZerglingSCBWAttackSpeedUpgrade@Allow" parent="SCBW_AllowUpgrade" x="ZerglingSCBWAttackSpeedUpgrade"/>
     <CRequirementAllowUpgrade id="UltraliskSCBWSpeedUpgrade@Allow" parent="SCBW_AllowUpgrade" x="UltraliskSCBWSpeedUpgrade"/>
@@ -2549,7 +2681,7 @@
         <Inherits index="Visibility" value="0"/>
         <On Terms="ActorCreation; ScopeContains Missed" Send="HostSiteOpsSet ::Host {SOpShadow SOpAttachOrigin WhiffOffsetDirectHost} 1 1"/>
         <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
-        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="SCBW_MissChance" Send="Destroy"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
         <On Terms="ActorCreation" Send="AnimPlay Birth Stand 0 0.000000 0.000000 12.000000 AsDuration"/>
         <On Terms="AnimDone; AnimName Birth" Send="Destroy"/>
@@ -3483,6 +3615,114 @@
             <YawPitchRoll value="MAX"/>
         </MotionPhases>
     </CMoverMissile>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveSpeedFactor">
+        <Amount value="0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_Stimpack">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveDefault">
+        <Amount value="-0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="QueenSCBWEnsnare@Move">
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_Stimpack" Accumulator="QueenSCBWEnsnare@MoveFactor_Stimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_VultureSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_VultureSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_OverlordSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_OverlordSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ZealotSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ZealotSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ObserverSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ScoutSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ScoutSCBW"/>
+        <CaseDefault value="QueenSCBWEnsnare@MoveDefault"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ObserverSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_OverlordSCBW">
+        <Amount value="-0.8"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ScoutSCBW">
+        <Amount value="-0.25"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_VultureSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ZealotSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorArithmetic id="DevourerSCBWWeapon@AttackSpeedAdd">
+        <Parameters value="0">
+            <AccumulatorArray value="1"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="DevourerSCBWWeapon@AttackSpeedFactor"/>
+        </Parameters>
+        <Operation value="Subtract"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="DevourerSCBWWeapon@AttackSpeedAddInv">
+        <Parameters value="0">
+            <AccumulatorArray value="Minus1"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="DevourerSCBWWeapon@AttackSpeedAdd"/>
+        </Parameters>
+        <Operation value="Multiply"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="DevourerSCBWWeapon@Param1">
+        <Parameters value="0">
+            <AccumulatorArray value="1"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="DevourerSCBWWeapon@Param2"/>
+        </Parameters>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="DevourerSCBWWeapon@Param2">
+        <Parameters value="0">
+            <AccumulatorArray value="DevourerSCBWWeapon@AcidSporesSource"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="8"/>
+        </Parameters>
+        <Operation value="Divide"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorBehavior id="DevourerSCBWWeapon@AcidSporesSource">
+        <Behavior value="DevourerSCBWWeapon"/>
+        <UnitSource Value="Source"/>
+    </CAccumulatorBehavior>
+    <!--Formula: 1 / (1 + (SporeCount / 8))-->
+    <CAccumulatorArithmetic id="DevourerSCBWWeapon@AttackSpeedFactor">
+        <Parameters value="0">
+            <AccumulatorArray value="1"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="DevourerSCBWWeapon@Param1"/>
+        </Parameters>
+        <Operation value="Divide"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackSpeedFactor">
+        <Amount value="0.8"/>
+    </CAccumulatorConstant>
+    <CAccumulatorBehavior id="DevourerSCBWWeapon@AcidSporesCaster">
+        <Behavior value="DevourerSCBWWeapon"/>
+    </CAccumulatorBehavior>
+    <CAccumulatorBehavior id="DevourerSCBWWeapon@AcidSpores">
+        <Behavior value="DevourerSCBWWeapon"/>
+        <UnitSource Value="Target"/>
+    </CAccumulatorBehavior>
     <CAccumulatorSwitch id="QueenSCBWParasite@Detector">
         <CaseArray Validator="HasDetector12" Accumulator="12"/>
         <CaseArray Validator="HasDetector11" Accumulator="11"/>
@@ -3969,15 +4209,17 @@
         <DataRecord Entry="Button,OverlordSCBWSpeedUpgrade"/>
         <DataRecord Entry="Button,OverlordSCBWSpeedUpgrade@Passive"/>
         <DataRecord Entry="Requirement,OverlordSCBWSpeedUpgrade"/>
+        <DataRecord Entry="Requirement,OverlordSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="Requirement,OverlordSCBWSpeedUpgrade@Passive"/>
+        <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade"/>
         <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade@Show"/>
-        <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade@Allow"/>
         <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade@NotCount"/>
         <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade@NotQoB"/>
         <DataRecord Entry="RequirementNode,OverlordSCBWSpeedUpgrade@QoB"/>
         <DataRecord Entry="Upgrade,OverlordSCBWSpeedUpgrade"/>
+        <DataRecord Entry="Validator,OverlordSCBWSpeedUpgrade"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="OverlordSCBWTransportResearch" parent="ZergUpgradeSCBW">
         <DataRecord Entry="Abil,OverlordSCBWTransportResearch"/>
@@ -4063,6 +4305,7 @@
         <DataRecord Entry="Button,HydraliskSCBWSpeedUpgrade"/>
         <DataRecord Entry="Button,HydraliskSCBWSpeedUpgrade@Passive"/>
         <DataRecord Entry="Requirement,HydraliskSCBWSpeedUpgrade"/>
+        <DataRecord Entry="Requirement,HydraliskSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="Requirement,HydraliskSCBWSpeedUpgrade@Passive"/>
         <DataRecord Entry="RequirementNode,HydraliskSCBWSpeedUpgrade"/>
         <DataRecord Entry="RequirementNode,HydraliskSCBWSpeedUpgrade@Show"/>
@@ -4072,6 +4315,7 @@
         <DataRecord Entry="RequirementNode,HydraliskSCBWSpeedUpgrade@NotQoB"/>
         <DataRecord Entry="RequirementNode,HydraliskSCBWSpeedUpgrade@QoB"/>
         <DataRecord Entry="Upgrade,HydraliskSCBWSpeedUpgrade"/>
+        <DataRecord Entry="Validator,HydraliskSCBWSpeedUpgrade"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="LurkerSCBWResearch" parent="ZergUpgradeSCBW">
         <DataRecord Entry="Abil,LurkerSCBWResearch"/>
@@ -4105,11 +4349,12 @@
         <DataRecord Entry="Button,UltraliskSCBWSpeedUpgrade@Passive"/>
         <DataRecord Entry="Model,UltraliskSCBWSpeedUpgrade"/>
         <DataRecord Entry="Requirement,UltraliskSCBWSpeedUpgrade"/>
+        <DataRecord Entry="Requirement,UltraliskSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="Requirement,UltraliskSCBWSpeedUpgrade@Use"/>
         <DataRecord Entry="Requirement,UltraliskSCBWSpeedUpgrade@Passive"/>
+        <DataRecord Entry="RequirementNode,UltraliskSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,UltraliskSCBWSpeedUpgrade@Show"/>
         <DataRecord Entry="RequirementNode,UltraliskSCBWSpeedUpgrade"/>
-        <DataRecord Entry="RequirementNode,UltraliskSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,UltraliskSCBWSpeedUpgrade@Allow"/>
         <DataRecord Entry="RequirementNode,UltraliskSCBWSpeedUpgrade@NotQoB"/>
         <DataRecord Entry="RequirementNode,UltraliskSCBWSpeedUpgrade@QoB"/>
@@ -4312,11 +4557,11 @@
         <DataRecord Entry="Button,ZerglingSCBWSpeedUpgrade"/>
         <DataRecord Entry="Button,ZerglingSCBWSpeedUpgrade@Passive"/>
         <DataRecord Entry="Requirement,ZerglingSCBWSpeedUpgrade"/>
-        <DataRecord Entry="Requirement,ZerglingSCBWSpeedUpgrade@Use"/>
+        <DataRecord Entry="Requirement,ZerglingSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="Requirement,ZerglingSCBWSpeedUpgrade@Passive"/>
+        <DataRecord Entry="RequirementNode,ZerglingSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBWSpeedUpgrade"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBWSpeedUpgrade@Show"/>
-        <DataRecord Entry="RequirementNode,ZerglingSCBWSpeedUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBWSpeedUpgrade@Allow"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBWSpeedUpgrade@NotCount"/>
         <DataRecord Entry="RequirementNode,ZerglingSCBWSpeedUpgrade@NotQoB"/>
@@ -4360,11 +4605,33 @@
         <DataRecord Entry="Sound,QueenSCBWEnsnare@Impact"/>
         <DataRecord Entry="Unit,QueenSCBWEnsnare@CreepDummy"/>
         <DataRecord Entry="Unit,QueenSCBWEnsnare@Missile"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@Caster"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackAdrenalValidate"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackAdeptGlaives"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackAdrenalBWValidate"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackStimpackBW"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_HydraliskSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_OverlordSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ScoutSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ShuttleSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_UltraliskSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_VultureSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ZealotSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ZerglingSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackSpeedFactor"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@Move"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_HydraliskSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_OverlordSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ScoutSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ShuttleSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_UltraliskSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_VultureSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ZealotSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ZerglingSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveDefault"/>
         <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackAccum"/>
         <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackStimpackBW"/>
         <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackAdrenalBW"/>
@@ -4639,8 +4906,28 @@
         <DataRecord Entry="Actor,DevourerSCBWWeapon@SporesModel"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@Action"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@Missile"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore1"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore2"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore3"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore4"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore5"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore6"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore7"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore8"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore9"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon"/>
+        <DataRecord Entry="Button,DevourerSCBWWeapon@Info"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageAccum"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore1"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore2"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore3"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore4"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore5"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore6"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore7"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore8"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore9"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@SporesCP"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageApply"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@AB"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@LM"/>
@@ -4656,8 +4943,27 @@
         <DataRecord Entry="Sound,DevourerSCBWWeapon@Launch"/>
         <DataRecord Entry="Sound,DevourerSCBWWeapon@Impact"/>
         <DataRecord Entry="Unit,DevourerSCBWWeapon@Missile"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Caster"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore1"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore2"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore3"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore4"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore5"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore6"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore7"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore8"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore9"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon"/>
         <DataRecord Entry="Weapon,DevourerSCBWWeapon"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@AcidSpores"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@AttackSpeedFactor"/>
         <DataRecord Entry="Accumulator,DevourerSCBWWeapon@Damage"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@AttackSpeedAdd"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@AttackSpeedAddInv"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@Param1"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@Param2"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@AcidSporesSource"/>
+        <DataRecord Entry="Accumulator,DevourerSCBWWeapon@AcidSporesCaster"/>
         <Pattern value="SCBW_Weapon_Accumulator"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="MutaliskSCBWWeapon" parent="ZergWeaponSCBW">
@@ -4667,6 +4973,7 @@
         <DataRecord Entry="Actor,MutaliskSCBWWeapon@ActionBounce"/>
         <DataRecord Entry="Actor,MutaliskSCBWWeapon@Missile"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,MutaliskSCBWWeapon@MissChance"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@MissDummy"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@Impact"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@BounceSet"/>
@@ -4676,7 +4983,6 @@
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@BounceHitCount"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@LM"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@InitialSet"/>
-        <DataRecord Entry="Effect,MutaliskSCBWWeapon@MissChance"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@MissSwitch"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@LMMiss"/>
         <DataRecord Entry="Effect,MutaliskSCBWWeapon@Miss"/>
@@ -4872,6 +5178,41 @@
         <Mover value="MissileDefault"/>
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
     </CUnit>
+    <CBehaviorBuff default="1" id="DevourerSCBWWeapon@Base">
+        <Alignment value="Negative"/>
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-acidspores.dds"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Zerg"/>
+        <RemoveValidatorArray value="DevourerSCBWWeapon"/>
+        <RemoveValidatorArray value="##id##"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore1" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.889"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore2" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.8"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore3" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.7272"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore4" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.6665"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore5" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.6154"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore6" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.5715"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore7" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.5334"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore8" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.5"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@Spore9" parent="DevourerSCBWWeapon@Base">
+        <Modification AttackSpeedMultiplier="0.4704"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="QueenSCBWInfestCommandCenter@InfestingCaster">
         <InfoFlags index="Hidden" value="1"/>
         <InfoFlags index="AlwaysUseGameText" value="1"/>
@@ -4921,21 +5262,26 @@
         <ExpireEffect value="SuicideRemove"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="DevourerSCBWWeapon">
-        <EditorCategories value="AbilityorEffectType:Units"/>
+        <Alignment value="Negative"/>
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-acidspores.dds"/>
+        <BehaviorCategories index="Restorable" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Zerg"/>
+        <TechAliasArray value="_Transfer"/>
         <BuffFlags index="RefreshStack" value="1"/>
         <MaxStackCount value="9"/>
         <Duration value="30"/>
-        <Modification AttackSpeedMultiplier="0.875">
+        <InitialEffect value="DevourerSCBWWeapon@SporesCP"/>
+        <RefreshEffect value="DevourerSCBWWeapon@SporesCP"/>
+        <FinalEffect value="DevourerSCBWWeapon@SporesCP"/>
+        <Modification>
             <ModifyFlags index="Detected" value="1"/>
         </Modification>
         <DamageResponse>
             <ModifyAmount value="1"/>
             <Chance value="1"/>
+            <DamageType index="Enhanced" value="0"/>
+            <DamageType index="Demolition" value="0"/>
         </DamageResponse>
-        <InfoIcon value="Assets\Textures\btn-ability-zerg-acidspores.dds"/>
-        <Alignment value="Negative"/>
-        <BehaviorCategories index="Restorable" value="1"/>
-        <TechAliasArray value="_Transfer"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="DefilerSCBWDarkSwarm@Spell">
         <Alignment value="Positive"/>
@@ -4986,7 +5332,10 @@
         <Name value="Behavior/Name/QueenSCBWEnsnare@Movement"/>
         <Tooltip value="Behavior/Tooltip/QueenSCBWEnsnare@Movement"/>
         <InfoFlags index="Hidden" value="1"/>
-        <Modification MoveSpeedMultiplier="0.5" AccelerationMultiplier="0.75">
+        <Modification AccelerationMultiplier="0.75">
+            <AdditiveMoveSpeedFactor value="0">
+                <AccumulatorArray value="QueenSCBWEnsnare@Move"/>
+            </AdditiveMoveSpeedFactor>
             <AdditiveAttackSpeedFactor value="0">
                 <AccumulatorArray index="0" removed="1"/>
             </AdditiveAttackSpeedFactor>

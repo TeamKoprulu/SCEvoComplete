@@ -1,5 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectApplyBehavior id="DisruptionBeamABTarget">
+        <Flags index="UseDuration" value="0"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="DisruptionBeamABTargetTimeWarped">
+        <Flags index="UseDuration" value="0"/>
+    </CEffectApplyBehavior>
+    <CEffectSwitch id="DisruptionBeamTimeWarpSwitch">
+        <CaseArray index="0" Validator="" Effect="BeamTargetCD@Sentry" FallThrough="1"/>
+    </CEffectSwitch>
+    <CEffectApplyBehavior id="OracleWeaponABTarget">
+        <Flags index="UseDuration" value="0"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="OracleWeaponABTargetTimeWarped">
+        <Flags index="UseDuration" value="0"/>
+    </CEffectApplyBehavior>
+    <CEffectUserData id="BeamTargetCD@Oracle" parent="SCBW_WeaponCooldown">
+        <EditorCategories value="Race:Neutral"/>
+        <Amount value="0.86"/>
+    </CEffectUserData>
+    <CEffectSwitch id="OracleWeaponTimeWarpSwitch">
+        <CaseArray index="0" Validator="" Effect="BeamTargetCD@Oracle" FallThrough="1"/>
+    </CEffectSwitch>
+    <CEffectApplyBehavior id="InstantMorphUnburrowAB">
+        <ValidatorArray value="NotSiegeTankSCBW"/>
+    </CEffectApplyBehavior>
+    <CEffectTeleport id="MothershipStrategicRecallTeleport">
+        <TeleportEffect value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+    </CEffectTeleport>
+    <CEffectTeleport id="NexusMassRecallTeleport">
+        <TeleportEffect value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+    </CEffectTeleport>
+    <CEffectApplyBehavior id="VoidRayWeaponABTarget">
+        <Flags index="UseDuration" value="0"/>
+    </CEffectApplyBehavior>
+    <CEffectUserData id="BeamTargetCD@VoidRay" parent="SCBW_WeaponCooldown">
+        <EditorCategories value="Race:Neutral"/>
+        <Amount value="0.5"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="VoidRayWeaponABTargetTimeWarped">
+        <Flags index="UseDuration" value="0"/>
+    </CEffectApplyBehavior>
+    <CEffectUserData id="BeamTargetCD@Sentry" parent="SCBW_WeaponCooldown">
+        <EditorCategories value="Race:Neutral"/>
+    </CEffectUserData>
+    <CEffectSwitch id="VoidRayWeaponTimeWarpSwitch">
+        <CaseArray index="0" Validator="" Effect="BeamTargetCD@VoidRay" FallThrough="1"/>
+    </CEffectSwitch>
     <CEffectCreatePersistent id="WorkerChannelStopIdle">
         <PeriodicValidator value="WorkerChannelStopIdlePeriodicValidator"/>
     </CEffectCreatePersistent>
@@ -44,9 +91,9 @@
     </CEffectLaunchMissile>
     <CEffectSet id="MarauderWeapon@MissCheck">
         <EditorCategories value="Race:Terran"/>
-        <EffectArray value="SCBW_MissChance"/>
+        <EffectArray value="SCBW_MissChance@Check"/>
         <EffectArray value="MarauderWeapon@MissSwitch"/>
-        <EffectArray value="SCBW_MissChanceReset"/>
+        <EffectArray value="SCBW_MissChance@Reset"/>
     </CEffectSet>
     <CEffectCreatePersistent id="MarauderWeapon@Miss">
         <EditorCategories value="Race:Terran"/>
@@ -59,8 +106,8 @@
     </CEffectCreatePersistent>
     <CEffectSwitch id="MarauderWeapon@MissSwitch">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="MarauderWeapon@Miss"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="MarauderWeapon@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="MarauderWeapon@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="MarauderWeapon@Miss"/>
         <CaseDefault value="PunisherGrenadesLM"/>
     </CEffectSwitch>
     <CEffectCreateUnit id="LurkerMPCU">
@@ -78,18 +125,13 @@
         <EffectArray value="SiegeTankSiegedWeapon@MissChance"/>
         <EffectArray value="SiegeTankSiegedWeapon@MissSwitch"/>
     </CEffectSet>
-    <CEffectUserData id="SiegeTankSiegedWeapon@MissChance">
-        <ValidatorArray value="SCBW_MissCheckPrimary"/>
+    <CEffectUserData id="SiegeTankSiegedWeapon@MissChance" parent="MissChanceBase">
         <EditorCategories value="Race:Terran"/>
-        <Chance value="0.4687"/>
-        <Key value="Missed"/>
-        <SourceKey value="Missed"/>
-        <Operation value="Set"/>
     </CEffectUserData>
     <CEffectSwitch id="SiegeTankSiegedWeapon@MissSwitch">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="SiegeTankSiegedWeapon@MissOffsetSwitch"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="SiegeTankSiegedWeapon@MissOffsetSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="SiegeTankSiegedWeapon@MissOffsetSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="SiegeTankSiegedWeapon@MissOffsetSwitch"/>
         <CaseDefault value="CrucioShockCannonSwitch"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
@@ -143,18 +185,13 @@
         <ImpactLocation Value="TargetPoint"/>
         <ImpactEffect value="GlaiveWurm@MissDummy"/>
     </CEffectLaunchMissile>
-    <CEffectUserData id="GlaiveWurm@MissChance">
-        <ValidatorArray value="SCBW_MissCheckPrimary"/>
+    <CEffectUserData id="GlaiveWurm@MissChance" parent="MissChanceBase">
         <EditorCategories value="Race:Zerg"/>
-        <Chance value="0.4687"/>
-        <Key value="Missed"/>
-        <SourceKey value="Missed"/>
-        <Operation value="Set"/>
     </CEffectUserData>
     <CEffectSwitch id="GlaiveWurm@MissSwitch">
         <EditorCategories value="Race:Zerg"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="GlaiveWurm@Miss"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="GlaiveWurm@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="GlaiveWurm@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="GlaiveWurm@Miss"/>
         <CaseDefault value="GlaiveWurm"/>
     </CEffectSwitch>
     <CEffectCreatePersistent id="GlaiveWurm@Miss">
@@ -264,10 +301,8 @@
     <CEffectDamage id="BroodlingEscortDamageUnit">
         <ImpactUnitValidator value="SCBWWeapon@NotMissedTarget"/>
     </CEffectDamage>
-    <CEffectUserData id="BroodlordEscort@MissChance" parent="SCBW_MissChance">
-        <Name value="Effect/Name/BroodlordEscort@MissChance"/>
+    <CEffectUserData id="BroodlordEscort@MissChance" parent="MissChanceBase">
         <ValidatorArray index="0" value="BroodlordEscort@MissCheck"/>
-        <Marker Link="Effect/BroodlordEscort@MissChance"/>
     </CEffectUserData>
     <CEffectSet id="BroodlordEscort@MissCheck">
         <EditorCategories value="Race:Terran"/>
@@ -276,7 +311,7 @@
     </CEffectSet>
     <CEffectSet id="ArchonWeapon@InitialSet">
         <EditorCategories value="Race:Terran"/>
-        <EffectArray value="SCBW_MissChance"/>
+        <EffectArray value="SCBW_MissChance@Check"/>
         <EffectArray value="ArchonWeapon@MissSwitch"/>
     </CEffectSet>
     <CEffectCreatePersistent id="ArchonWeapon@Miss">
@@ -297,16 +332,16 @@
     </CEffectDamage>
     <CEffectSwitch id="ArchonWeapon@MissSwitch">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="ArchonWeapon@Miss"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="ArchonWeapon@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="ArchonWeapon@Miss"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="ArchonWeapon@Miss"/>
         <CaseDefault value="PsionicShockwaveDamage"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
     <CEffectSet id="CycloneWeapon@MissCheckLeft">
         <EditorCategories value="Race:Terran"/>
-        <EffectArray value="SCBW_MissChance"/>
+        <EffectArray value="SCBW_MissChance@Check"/>
         <EffectArray value="CycloneWeapon@MissSwitchLeft"/>
-        <EffectArray value="SCBW_MissChanceReset"/>
+        <EffectArray value="SCBW_MissChance@Reset"/>
     </CEffectSet>
     <CEffectCreatePersistent id="CycloneWeapon@MissLeft">
         <EditorCategories value="Race:Terran"/>
@@ -320,15 +355,15 @@
     </CEffectCreatePersistent>
     <CEffectSwitch id="CycloneWeapon@MissSwitchLeft">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="CycloneWeapon@MissLeft"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="CycloneWeapon@MissLeft"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="CycloneWeapon@MissLeft"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="CycloneWeapon@MissLeft"/>
         <CaseDefault value="CycloneWeaponLaunchMissileLeft"/>
     </CEffectSwitch>
     <CEffectSet id="CycloneWeapon@MissCheckRight">
         <EditorCategories value="Race:Terran"/>
-        <EffectArray value="SCBW_MissChance"/>
+        <EffectArray value="SCBW_MissChance@Check"/>
         <EffectArray value="CycloneWeapon@MissSwitchRight"/>
-        <EffectArray value="SCBW_MissChanceReset"/>
+        <EffectArray value="SCBW_MissChance@Reset"/>
     </CEffectSet>
     <CEffectCreatePersistent id="CycloneWeapon@MissRight">
         <EditorCategories value="Race:Terran"/>
@@ -342,8 +377,8 @@
     </CEffectCreatePersistent>
     <CEffectSwitch id="CycloneWeapon@MissSwitchRight">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="CycloneWeapon@MissRight"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="CycloneWeapon@MissRight"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="CycloneWeapon@MissRight"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="CycloneWeapon@MissRight"/>
         <CaseDefault value="CycloneWeaponLaunchMissileRight"/>
     </CEffectSwitch>
     <CEffectDamage id="CycloneWeapon@MissDummy">
@@ -354,7 +389,7 @@
     </CEffectDamage>
     <CEffectSet id="PlanetaryFortressWeapon@MissCheck">
         <EditorCategories value="Race:Terran"/>
-        <EffectArray value="SCBW_MissChance"/>
+        <EffectArray value="SCBW_MissChance@Check"/>
         <EffectArray value="PlanetaryFortressWeapon@MissSwitch"/>
     </CEffectSet>
     <CEffectCreatePersistent id="PlanetaryFortressWeapon@Miss">
@@ -380,8 +415,8 @@
     </CEffectDamage>
     <CEffectSwitch id="PlanetaryFortressWeapon@MissSwitch">
         <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="UnderDarkSwarmMissCheck" Effect="PlanetaryFortressWeapon@MissDirectionSwitch"/>
-        <CaseArray Validator="SCBWWeapon@Missed" Effect="PlanetaryFortressWeapon@MissDirectionSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="PlanetaryFortressWeapon@MissDirectionSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="PlanetaryFortressWeapon@MissDirectionSwitch"/>
         <CaseDefault value="TwinIbiksCannon"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
@@ -451,8 +486,8 @@
     </CValidatorCombine>
     <CValidatorCombine id="BroodlordEscort@MissCheck">
         <Type value="And"/>
-        <CombineArray value="SCBW_HasMissChance"/>
-        <CombineArray value="SCBW_TargetHasShrubBuff"/>
+        <CombineArray value="SCBW_MissChance"/>
+        <CombineArray value="SCBW_MissChance@Shrub"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="SCBW_CasterDoesNotHaveScramblerMissileBehaviorCarrier">
         <WhichUnit Value="Caster"/>
@@ -601,7 +636,7 @@
         <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide SOpShadow} 1 1"/>
         <On Terms="ActorCreation; ScopeContains Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide} 1 1"/>
         <On Terms="ActorCreation; ScopeContains Missed" Send="StatusSet Missed 1"/>
-        <On Terms="ActorCreation; ScopeContains Missed" Target="Missed" Send="Destroy"/>
+        <On Terms="ActorCreation; ScopeContains Missed" Target="SCBW_MissChance" Send="Destroy"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Send="TimerSet 1.000000 A"/>
         <On Terms="TimerExpired; TimerName A" Send="Destroy"/>
@@ -1250,6 +1285,11 @@
     <CUnit id="WidowMineBurrowed">
         <Attributes index="Robotic" value="1"/>
     </CUnit>
+    <CBehaviorBuff id="BeamTargetCD">
+        <Duration value="0">
+            <AccumulatorArray value="SCBW_WeaponCooldown@Accum"/>
+        </Duration>
+    </CBehaviorBuff>
     <CBehaviorBuff id="ReaperKD8Knockback">
         <Period value="0.125"/>
         <PeriodicEffect value="ReaperKD8KnockbackClear"/>
