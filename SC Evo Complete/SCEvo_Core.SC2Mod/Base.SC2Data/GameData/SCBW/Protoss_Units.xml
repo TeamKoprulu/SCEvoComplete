@@ -432,8 +432,8 @@
         <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="ReaverSCBW@Passive" parent="SCBW_UnitPassive" x="ReaverSCBW">
-        <Icon value="Assets\Textures\btn-unit-protoss-reaver.dds"/>
-        <AlertIcon value="Assets\Textures\btn-unit-protoss-reaver.dds"/>
+        <Icon value="Assets\Textures\btn-unit-protoss-reaver@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-reaver@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="ObserverSCBWSieged@Morph">
@@ -1199,6 +1199,8 @@
         <On Terms="ActorCreation; ValidateUnit ScarabSCBWWeaponDamageUpgrade" Send="ModelSwap ScarabSCBW@Upgraded"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="UnitDeathCustomize; KilledByEffect ReaverSCBWWeapon@SuicideDud" Send="DeathCustomize Detached"/>
+        <On Terms="Effect.ReaverSCBWWeapon@CUSet.Start; At Target" Send="SetScale 0.010000"/>
+        <On Terms="Effect.ReaverSCBWWeapon@CUSet.Start; At Target" Send="SetScale 1.000000 0.350000"/>
         <DeathArray index="Normal" ModelLink="ReaverSCBWWeapon@Impact" SoundLink="ReaverSCBWWeapon@Explode"/>
         <BarOffset value="25"/>
         <BarWidth value="36"/>
@@ -1216,6 +1218,13 @@
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathSmall" Name="Hallucination"/>
         <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactDud" SoundLink="ReaverSCBWWeapon@ExplodeDud" Name="Detached"/>
         <Preload value="ReaverSCBWWeapon@Impact"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit NotStructure; IsStatus InAir 1" Send="DeathCustomize AntiGravGeneric"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit IsProtossUnit; IsStatus InAir 1" Send="DeathCustomize AntiGravProtoss"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit IsTerranUnit; IsStatus InAir 1" Send="DeathCustomize AntiGravTerran"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit IsZergUnit; IsStatus InAir 1" Send="DeathCustomize AntiGravZerg"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit HasForceLowDeathProtoss" Send="DeathCustomize AntiGravProtoss"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit HasForceLowDeathZerg" Send="DeathCustomize AntiGravZerg"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit HasForceLowDeathTerran" Send="DeathCustomize AntiGravTerran"/>
     </CActorUnit>
     <CActorSound id="ZealotSCBW@Death" parent="SoundOneShot">
         <On Terms="UnitDeathCustomize.ZealotSCBW; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
@@ -2707,17 +2716,9 @@
         <UnitGlossaryCamera value="Star2CameraMid04"/>
     </CModel>
     <CModel id="ReaverSCBW" parent="Unit" Race="Protoss">
-        <AttachProps>
-            <Id value="Ref_Center"/>
-            <SquibType value="Metal"/>
-            <RadiusTarget value="0.750000"/>
-            <RadiusShield value="1.000000"/>
-        </AttachProps>
         <Occlusion value="Show"/>
         <PlanetPanelCamera value="Star2CameraMid05"/>
         <Radius value="0.800000"/>
-        <ScaleMax value="0.850000,0.850000,0.850000"/>
-        <ScaleMin value="0.850000,0.850000,0.850000"/>
         <SelectionRadius value="1.029000"/>
         <ShadowRadius value="0.800000"/>
         <SquibTypeDefault value="Metal"/>
@@ -3975,6 +3976,7 @@
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ScarabSCBW" parent="ProtossUnitSCBW">
         <DataRecord Entry="Actor,ScarabSCBW@Dummy"/>
+        <DataRecord Entry="Behavior,ScarabSCBW@Height"/>
         <DataRecord Entry="Model,ScarabSCBW@Upgraded"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitLT5"/>
@@ -4347,7 +4349,6 @@
         <ShieldsMax value="10"/>
         <Speed value="9"/>
         <Acceleration value="1000"/>
-        <Height value="0.5"/>
         <CostCategory value="Army"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
@@ -4378,6 +4379,7 @@
         <LateralAcceleration value="46.0625"/>
         <BehaviorArray Link="ReaverSCBWWeapon@ScarabTimedLife"/>
         <BehaviorArray Link="ReaverSCBWWeapon@NoOrders"/>
+        <BehaviorArray Link="ScarabSCBW@Height"/>
         <InnerRadius value="0.1875"/>
         <Fidget>
             <ChanceArray index="Idle" value="0"/>
@@ -5516,6 +5518,13 @@
         <GlossaryWeakArray index="2" removed="1"/>
         <HotkeyCategory value=""/>
     </CUnit>
+    <CBehaviorBuff id="ScarabSCBW@Height">
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <Modification Height="0.5">
+            <HeightTime index="Start" value="0.35"/>
+        </Modification>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="DragoonSCBW@CoverAnim">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
