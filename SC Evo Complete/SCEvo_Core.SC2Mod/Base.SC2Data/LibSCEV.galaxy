@@ -25,6 +25,7 @@ void libSCEV_InitVariables () {
 
     libSCEV_gv_mineralWallsGlobalMineralWalls = UnitGroupEmpty();
     libSCEV_gv_mineralWallsTimer = TimerCreate();
+    libSCEV_gv_fractionalArmorFilter = UnitFilter(0, 0, 0, (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)));
     libSCEV_gv_missChanceRevealTimer = TimerCreate();
     libSCEV_gv_missChanceTrigger = libSCEV_gt_MissChanceHighGroundRegionEnter;
     libSCEV_gv_reaverPathingRange = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogValidator, "ReaverSCBWWeapon@Pathable", "MaxDistance", c_playerAny);
@@ -747,7 +748,7 @@ void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
     TriggerEnable(libSCEV_gt_FractionalArmorUpdateTrigger, lp_onOff);
     TriggerEnable(libSCEV_gt_FractionalArmorUpgrade, lp_onOff);
     if ((lp_onOff == true)) {
-        auto41E7D108_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+        auto41E7D108_g = UnitGroup(null, c_playerAny, RegionEntireMap(), libSCEV_gv_fractionalArmorFilter, 0);
         auto41E7D108_u = UnitGroupCount(auto41E7D108_g, c_unitCountAll);
         for (;; auto41E7D108_u -= 1) {
             auto41E7D108_var = UnitGroupUnitFromEnd(auto41E7D108_g, auto41E7D108_u);
@@ -1513,7 +1514,7 @@ bool libSCEV_gt_FractionalArmorAdd_Func (bool testConds, bool runActions) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_fractionalArmorFilter) == true))) {
             return false;
         }
     }
@@ -1557,7 +1558,7 @@ bool libSCEV_gt_FractionalArmorUpgrade_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    autoBBF6BE40_g = UnitGroup(null, EventPlayer(), RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0);
+    autoBBF6BE40_g = UnitGroup(null, EventPlayer(), RegionEntireMap(), libSCEV_gv_fractionalArmorFilter, 0);
     autoBBF6BE40_u = UnitGroupCount(autoBBF6BE40_g, c_unitCountAll);
     for (;; autoBBF6BE40_u -= 1) {
         autoBBF6BE40_var = UnitGroupUnitFromEnd(autoBBF6BE40_g, autoBBF6BE40_u);
@@ -1597,7 +1598,7 @@ bool libSCEV_gt_FractionalArmorUpdateTrigger_Func (bool testConds, bool runActio
             return false;
         }
 
-        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)))) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_fractionalArmorFilter) == true))) {
             return false;
         }
     }

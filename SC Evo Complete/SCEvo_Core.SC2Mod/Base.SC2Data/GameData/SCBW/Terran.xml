@@ -1,5 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectModifyUnit id="ComsatStationSCBWScannerSweep@CopyEnergy">
+        <ImpactUnit Value="Source"/>
+        <VitalArray index="Energy">
+            <ChangeFraction value="0">
+                <AccumulatorArray value="ComsatStationSCBWScannerSweep@ComsatVitalsSwitch"/>
+            </ChangeFraction>
+        </VitalArray>
+        <ModifyFlags index="SetVitals" value="1"/>
+    </CEffectModifyUnit>
+    <CEffectSet id="ComsatStationSCBWScannerSweep@AddonDetach">
+        <EditorCategories value="Race:Terran"/>
+        <Chance value="0"/>
+        <EffectArray value="ComsatStationSCBWScannerSweep@AttachedTrackerRB"/>
+    </CEffectSet>
+    <CEffectSet id="ComsatStationSCBWScannerSweep@AddonAttach">
+        <EditorCategories value="Race:Terran"/>
+        <Chance value="0"/>
+        <EffectArray value="ComsatStationSCBWScannerSweep@AttachedTracker"/>
+        <EffectArray value="ComsatStationSCBWScannerSweep@SearchAddonDelay"/>
+    </CEffectSet>
+    <CEffectEnumTrackedUnits id="ComsatStationSCBWScannerSweep@CopyEnergyTracked">
+        <BehaviorLink value="ComsatStationSCBWScannerSweep@AttachedTracker"/>
+        <Effect value="ComsatStationSCBWScannerSweep@CopyEnergy"/>
+    </CEffectEnumTrackedUnits>
+    <CEffectApplyBehavior id="ComsatStationSCBWScannerSweep@AttachedTracker">
+        <ValidatorArray value="IsCommandCenterSCBW"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="ComsatStationSCBWScannerSweep@RedirectSet">
+        <EffectArray value="ComsatStationSCBWScannerSweep@EnumTracked"/>
+        <TargetLocationType value="Point"/>
+    </CEffectSet>
+    <CEffectIssueOrder id="ComsatStationSCBWScannerSweep@IssueOrder">
+        <EditorCategories value="Race:Terran"/>
+        <Abil value="ComsatStationSCBWScannerSweep"/>
+        <CmdFlags index="User" value="1"/>
+        <Target Effect="ComsatStationSCBWScannerSweep@RedirectSet" Value="TargetPoint"/>
+    </CEffectIssueOrder>
+    <CEffectAddTrackedUnit id="ComsatStationSCBWScannerSweep@AttachedTrackUnit">
+        <ValidatorArray value="IsComsatStationSCBW"/>
+        <BehaviorLink value="ComsatStationSCBWScannerSweep@AttachedTracker"/>
+        <TrackedUnit Value="Target"/>
+    </CEffectAddTrackedUnit>
+    <CEffectEnumTrackedUnits id="ComsatStationSCBWScannerSweep@EnumTracked">
+        <BehaviorLink value="ComsatStationSCBWScannerSweep@AttachedTracker"/>
+        <Effect value="ComsatStationSCBWScannerSweep@IssueOrder"/>
+    </CEffectEnumTrackedUnits>
+    <CEffectRemoveBehavior id="ComsatStationSCBWScannerSweep@AttachedTrackerRB">
+        <BehaviorLink value="ComsatStationSCBWScannerSweep@AttachedTracker"/>
+    </CEffectRemoveBehavior>
+    <CEffectEnumArea id="ComsatStationSCBWScannerSweep@SearchAddon">
+        <EditorCategories value="Race:Terran"/>
+        <LaunchLocation Value="TargetPoint"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="Ground,Structure;Dead,Hidden"/>
+        <AreaArray MaxCount="1" Radius="0.25" Effect="ComsatStationSCBWScannerSweep@SearchAddonSet"/>
+        <AreaRelativeOffset value="3.5,-1.5"/>
+    </CEffectEnumArea>
+    <CEffectSet id="ComsatStationSCBWScannerSweep@SearchAddonSet">
+        <ValidatorArray value="IsComsatStationSCBW"/>
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="ComsatStationSCBWScannerSweep@AttachedTrackUnit"/>
+        <EffectArray value="ComsatStationSCBWScannerSweep@CopyEnergyTracked"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="ComsatStationSCBWScannerSweep@SearchAddonDelay">
+        <ValidatorArray value="IsCommandCenterSCBW"/>
+        <EditorCategories value="Race:Terran"/>
+        <OffsetVectorStartLocation Value="TargetPoint"/>
+        <InitialDelay value="0.1"/>
+        <InitialEffect value="ComsatStationSCBWScannerSweep@SearchAddon"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="FirebatSCBWWeapon@FacingOffset">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="CasterUnit"/>
+        <InitialEffect value="FirebatSCBWWeapon@SuppressMovement"/>
+    </CEffectCreatePersistent>
+    <CEffectModifyUnit id="FirebatSCBWWeapon@Facing">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactUnit Value="Caster"/>
+        <FacingLocation Effect="FirebatSCBWWeapon@FacingOffset" Value="TargetPoint"/>
+        <FacingType value="LookAt"/>
+    </CEffectModifyUnit>
+    <CEffectApplyBehavior id="FirebatSCBWWeapon@SuppressMovement">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Source"/>
+    </CEffectApplyBehavior>
     <CEffectUserData id="SiegeTankSCBWSiegedWeapon@MissChance" parent="MissChanceBase">
         <EditorCategories value="Race:Terran"/>
     </CEffectUserData>
@@ -357,6 +442,7 @@
         <PeriodicPeriodArray value="0.0625"/>
         <PeriodicPeriodArray value="0.0625"/>
         <PeriodicPeriodArray value="0.0625"/>
+        <TimeScaleSource Value="Caster"/>
     </CEffectCreatePersistent>
     <CEffectSwitch id="FirebatSCBWWeapon@BunkerCliffCheck">
         <EditorCategories value="Race:Terran"/>
@@ -597,6 +683,24 @@
         <AreaArray index="0" Radius="3.125" Fraction="1" Validator="noMarkers"/>
         <ImpactUnitValidator value="noMarkers"/>
     </CEffectDamage>
+    <CEffectCreatePersistent id="FirebatSCBWWeapon@CP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="SourceUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <InitialEffect value="FirebatSCBWWeapon@FacingOffset"/>
+        <InitialOffset value="0,-1.625,0"/>
+        <ExpireDelay value="0.4687"/>
+        <PeriodCount value="3"/>
+        <PeriodicEffectArray value="FirebatSCBWWeapon@Impact"/>
+        <PeriodicOffsetArray value="0,-0.75,0"/>
+        <PeriodicOffsetArray value="0,-1.625,0"/>
+        <PeriodicOffsetArray value="0,-2.5,0"/>
+        <PeriodicPeriodArray value="0.0625"/>
+        <PeriodicPeriodArray value="0.0625"/>
+        <PeriodicPeriodArray value="0.0625"/>
+        <ValidatorArray value="FirebatSCBWWeapon@CPValidator"/>
+        <PeriodicValidator value="FirebatSCBWWeapon@CPValidator"/>
+    </CEffectCreatePersistent>
     <CEffectLaunchMissile id="ValkyrieSCBWWeapon@LM">
         <EditorCategories value="Race:Terran"/>
         <ImpactEffect value="ValkyrieSCBWWeapon@Impact"/>
@@ -607,18 +711,6 @@
         <Amount value="5"/>
         <Visibility value="Visible"/>
     </CEffectDamage>
-    <CEffectCreatePersistent id="FirebatSCBWWeapon@CP">
-        <EditorCategories value="Race:Terran"/>
-        <WhichLocation Value="SourceUnit"/>
-        <PeriodCount value="3"/>
-        <PeriodicEffectArray value="FirebatSCBWWeapon@Impact"/>
-        <PeriodicOffsetArray value="0,-0.75,0"/>
-        <PeriodicOffsetArray value="0,-1.625,0"/>
-        <PeriodicOffsetArray value="0,-2.5,0"/>
-        <PeriodicPeriodArray value="0.0625"/>
-        <PeriodicPeriodArray value="0.0625"/>
-        <PeriodicPeriodArray value="0.0625"/>
-    </CEffectCreatePersistent>
     <CEffectDamage id="FirebatSCBWWeapon@DamageAccum" parent="ConcussiveBaseDamageSCBW">
         <EditorCategories value="Race:Terran"/>
         <Marker>
@@ -1437,6 +1529,28 @@
         <CursorEffect value="ComsatStationSCBWScannerSweep@Revealer"/>
         <AINotifyEffect value="ComsatStationSCBWScannerSweep@Revealer"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="ComsatStationSCBWScannerSweep">
+            <Flags index="ToSelection" value="1"/>
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
+        <AbilSetId value="ScanSweep"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="ComsatStationSCBWScannerSweep@Redirect">
+        <AbilSetId value="ScanSweep"/>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
+        <DataCollection value="ComsatStationSCBWScannerSweep"/>
+        <Effect index="0" value="ComsatStationSCBWScannerSweep@RedirectSet"/>
+        <Flags index="RequireTargetVision" value="0"/>
+        <Flags index="Transient" value="1"/>
+        <Cost>
+            <Vital index="Energy" value="50"/>
+        </Cost>
+        <Range value="500"/>
+        <Arc value="360"/>
+        <CursorEffect value="ComsatStationSCBWScannerSweep@Revealer"/>
+        <AINotifyEffect value="ComsatStationSCBWScannerSweep@Revealer"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="ComsatStationSCBWScannerSweep" Requirements="ComsatStationSCBWScannerSweep@Redirect">
+            <Flags index="ToSelection" value="1"/>
             <Flags index="UseDefaultButton" value="1"/>
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
@@ -1965,7 +2079,6 @@
         <Flags index="NoDeceleration" value="1"/>
         <Flags index="ReExecutable" value="1"/>
         <Flags index="Smart" value="1"/>
-        <Flags index="PassengerAcquirePassengers" value="1"/>
         <TargetFilters value="Ground,Biological,Visible;Self,Enemy,Structure,Missile,Uncommandable,Stasis,Dead,Hidden,Invulnerable"/>
         <TargetSorts RequestCount="1">
             <SortArray value="TSAlliancePassive"/>
@@ -2065,6 +2178,11 @@
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
     </CAbilEffectTarget>
+    <CValidatorCombine id="FirebatSCBWWeapon@CPValidator">
+        <Type value="And"/>
+        <CombineArray value="SCBW_CasterNotStasisNotStunnedNotDead"/>
+        <CombineArray value="CasterIsNotHidden"/>
+    </CValidatorCombine>
     <CValidatorUnitInWeaponRange id="VultureSCBWWeapon@StrafingInRange"/>
     <CValidatorPlayerRequirement id="VultureSCBWSpeedUpgrade@Not">
         <Value value="VultureSCBWSpeedUpgrade@Count"/>
@@ -2382,6 +2500,9 @@
         <Compare value="LE"/>
         <Value value="1"/>
     </CValidatorUnitCompareSpeed>
+    <CRequirement id="ComsatStationSCBWScannerSweep@Redirect" parent="SCBW_AbilReq">
+        <NodeArray index="Show" Link="ComsatStationSCBWScannerSweep@Redirect"/>
+    </CRequirement>
     <CRequirement id="MarineSCBWRangeUpgrade@Passive" parent="SCBW_PassiveReq" x="MarineSCBWRangeUpgrade"/>
     <CRequirement id="MedicSCBWEnergyUpgrade@Passive" parent="SCBW_PassiveReq" x="MedicSCBWEnergyUpgrade"/>
     <CRequirement id="ScienceVesselSCBWEnergyUpgrade@Passive" parent="SCBW_PassiveReq" x="ScienceVesselSCBWEnergyUpgrade"/>
@@ -2693,6 +2814,7 @@
         <Icon value="Assets\Textures\btn-ability-terran-scannersweep-color.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-terran-scannersweep-color.dds"/>
         <EditorCategories value="Race:Terran"/>
+        <Universal value="1"/>
     </CButton>
     <CButton id="ScienceVesselSCBWDefensiveMatrixResearch">
         <Icon value="Assets\Textures\btn-upgrade-swann-defensivematrix.dds"/>
@@ -3113,6 +3235,9 @@
         <HotkeyAlias value="MechPlating@Lvl1"/>
         <DefaultButtonLayout Column="1"/>
     </CButton>
+    <CRequirementAnd id="ComsatStationSCBWScannerSweep@Redirect">
+        <OperandArray value="ComsatStationSCBW@Attached"/>
+    </CRequirementAnd>
     <CRequirementAllowUpgrade id="MarineSCBWRangeUpgrade@Allow" parent="SCBW_AllowUpgrade" x="MarineSCBWRangeUpgrade"/>
     <CRequirementAllowUpgrade id="MedicSCBWEnergyUpgrade@Allow" parent="SCBW_AllowUpgrade" x="MedicSCBWEnergyUpgrade"/>
     <CRequirementAllowUpgrade id="ScienceVesselSCBWEnergyUpgrade@Allow" parent="SCBW_AllowUpgrade" x="ScienceVesselSCBWEnergyUpgrade"/>
@@ -3649,6 +3774,24 @@
     </CRequirementEq>
     <CRequirementCountBehavior id="GhostSCBWLockdown@CountAtUnit" parent="SCBW_BehaviorCountAtUnitNoTech" x="GhostSCBWLockdown"/>
     <CRequirementCountBehavior id="MedicSCBWOpticFlare@CountAtUnit" parent="SCBW_BehaviorCountAtUnitNoTech" x="MedicSCBWOpticFlare"/>
+    <CActorEventMacro id="FirebatSCBWWeapon@Anims">
+        <Remove Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="Effect.FirebatSCBWWeapon@CP.Start; At Caster" Send="AnimPlay Attack Attack"/>
+        <On Terms="Effect.FirebatSCBWWeapon@CP.Start; At Caster; !ValidateUnit FirebatSCBWStimpack@TestBuff" Send="AnimSetTimeScale Attack 1.500000"/>
+        <On Terms="UnitMovementUpdate.*.Walk" Send="AnimClear Attack 0.250000"/>
+        <On Terms="Abil.attack.ReadyStop" Send="AnimClear Attack 0.250000"/>
+        <On Terms="Behavior.FirebatSCBWWeapon@SuppressMovement.On" Send="MessageUpdateActivate 0"/>
+        <On Terms="Behavior.FirebatSCBWWeapon@SuppressMovement.On" Send="AnimPlay Ready Stand,Ready NonLooping -1.000000 -1.000000 -1.000000 AsAutomatic 0.000000 6"/>
+        <On Terms="Behavior.FirebatSCBWWeapon@SuppressMovement.Off; ValidateUnit CasterIsAnimatingWeapon" Send="TimerSet 0.180000 DelayAnim"/>
+        <On Terms="Behavior.FirebatSCBWWeapon@SuppressMovement.Off; !ValidateUnit CasterIsAnimatingWeapon" Send="AnimClear Ready"/>
+        <On Terms="TimerExpired; TimerName DelayAnim" Send="AnimClear Ready"/>
+        <On Terms="Behavior.FirebatSCBWWeapon@SuppressMovement.Off; ValidateUnit CasterIsAnimatingWeapon" Send="MessageUpdateActivate"/>
+        <On Terms="ActorUpdate; !ValidateUnit CasterIsAnimatingWeapon" Send="AnimClear Ready"/>
+        <On Terms="ActorUpdate; !ValidateUnit CasterIsAnimatingWeapon" Send="MessageUpdateActivate 0"/>
+        <On Terms="Behavior.FirebatSCBWWeapon@SuppressMovement.Off; ValidateUnit IsHidden" Target="FirebatSCBWWeapon@Model" Send="DestroyParticles"/>
+        <On Terms="Behavior.FirebatSCBWWeapon@SuppressMovement.Off; ValidateUnit IsHidden" Target="FirebatSCBWWeapon@Model" Send="Destroy Immediate"/>
+        <On Terms="UnitDeath" Target="FirebatSCBWWeapon@Model" Send="Signal Destroy"/>
+    </CActorEventMacro>
     <CActorModel id="SCVSCBWWeapon@ActionLaunchModel" parent="GenericAttackLaunchModel"/>
     <CActorForceSphere id="SiegeTankSCBWSiegedWeapon@MissAttackUpForce" parent="SiegeTankSiegedUpForce">
         <Host Subject=""/>
@@ -3743,7 +3886,9 @@
         <On Terms="ActorCreation" Send="AnimPlay Phase1 Stand PlayForever"/>
         <On Terms="MotionPhaseStart; MotionPhase 1" Send="AnimPlay Phase2 Turbo PlayForever"/>
     </CActorMissile>
-    <CActorSplat id="ComsatStationSCBWScannerSweep@CursorSplat" parent="CursorSplat" abil="ComsatStationSCBWScannerSweep"/>
+    <CActorSplat id="ComsatStationSCBWScannerSweep@CursorSplat" parent="CursorSplat" abil="ComsatStationSCBWScannerSweep">
+        <On Terms="Abil.ComsatStationSCBWScannerSweep@Redirect.Cursor" Send="Create"/>
+    </CActorSplat>
     <CActorModel id="ComsatStationSCBWScannerSweep@Model" parent="ModelAnimationStyleContinuous">
         <On Terms="Effect.ComsatStationSCBWScannerSweep@Revealer.Start" Send="Create"/>
         <On Terms="Effect.ComsatStationSCBWScannerSweep@Revealer.Stop" Send="AnimBracketStop BSD"/>
@@ -3905,8 +4050,6 @@
         <On Terms="Effect.FirebatSCBWWeapon@CPBunker.Start; At Caster" Send="Create"/>
         <On Terms="Effect.SplashDamage.Start; FromEffectTreeDescendant" Send="ActionDamage"/>
         <On Terms="Effect.SplashDamage.Stop; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
-        <On Terms="Effect.FirebatSCBWWeapon@CP.Stop; At Caster" Send="Destroy"/>
-        <On Terms="Effect.FirebatSCBWWeapon@CPBunker.Stop; At Caster" Send="Destroy"/>
         <LaunchAssets Model="FirebatSCBWWeapon@Launch" Sound="FirebatSCBWWeapon@Launch"/>
         <LaunchModel value="FirebatSCBWWeapon@Model"/>
         <ContainerAssets Model="FirebatSCBWWeapon@BunkerLaunch" Sound="FirebatSCBWWeapon@BunkerLaunch"/>
@@ -3923,6 +4066,8 @@
         <On Terms="Signal.*.Destroy" Send="AnimSetTimeScale BSD 3.000000"/>
         <On Terms="Signal.*.Destroy" Send="TimerSet 0.050000 A"/>
         <On Terms="TimerExpired; TimerName A" Send="AnimBracketStop BSD"/>
+        <On Terms="ActorCreation" Send="TimerSet 0.500000 AnimStop"/>
+        <On Terms="TimerExpired; TimerName AnimStop" Send="Signal Destroy"/>
     </CActorModel>
     <CActorFoliageFXSpawner id="FirebatSCBWWeapon@FoliageFXSpawner" parent="FoliageFXSpawnerFire">
         <On Terms="Effect.FirebatSCBWWeapon@DamageAccum.Start" Send="Create"/>
@@ -4960,10 +5105,7 @@
         </Marker>
         <Period value="1.3125"/>
         <DamagePoint value="0.01"/>
-        <Backswing value="1"/>
         <Effect value="FirebatSCBWWeapon@CP"/>
-        <LegacyOptions index="Uninterruptible" value="1"/>
-        <UninterruptibleDuration value="0.125"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="FirebatSCBWWeapon@Bunker" parent="FirebatSCBWWeapon">
         <Options index="Disabled" value="1"/>
@@ -4973,6 +5115,8 @@
         <MinScanRange value="5"/>
         <AttackType value="Chaos"/>
         <Effect value="FirebatSCBWWeapon@BunkerCliffCheck"/>
+        <UninterruptibleDuration value="0.6562"/>
+        <LegacyOptions index="Uninterruptible" value="1"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="MarineSCBWWeapon">
         <EditorCategories value="Race:Terran"/>
@@ -5277,6 +5421,31 @@
         </MotionPhases>
         <MotionPhases YawPitchRoll="MAX"/>
     </CMoverMissile>
+    <CAccumulatorSwitch id="ComsatStationSCBWScannerSweep@ComsatVitalsSwitch">
+        <CaseArray Validator="SCBW_CanHaveEnergy" Accumulator="ComsatStationSCBWScannerSweep@ComsatVitalsAccum"/>
+        <CaseDefault value="Zero"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorVitals id="ComsatStationSCBWScannerSweep@ComsatVitalsMax">
+        <Ratio value="1"/>
+        <VitalType value="Energy"/>
+        <UnitSource Value="Target"/>
+        <ModificationType value="PerUnitMaxVital"/>
+    </CAccumulatorVitals>
+    <CAccumulatorArithmetic id="ComsatStationSCBWScannerSweep@ComsatVitalsAccum">
+        <Parameters value="0">
+            <AccumulatorArray value="ComsatStationSCBWScannerSweep@ComsatVitalsCurr"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="ComsatStationSCBWScannerSweep@ComsatVitalsMax"/>
+        </Parameters>
+        <Operation value="Divide"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorVitals id="ComsatStationSCBWScannerSweep@ComsatVitalsCurr">
+        <Ratio value="1"/>
+        <VitalType value="Energy"/>
+        <UnitSource Value="Target"/>
+        <ModificationType value="PerUnit"/>
+    </CAccumulatorVitals>
     <CAccumulatorArithmetic id="GhostSCBWNuclearStrike@DamageParam2">
         <Parameters value="0">
             <AccumulatorArray value="UnitVital_LifeShieldsCombine_Target"/>
@@ -5867,19 +6036,41 @@
     </CDataCollectionUpgrade>
     <CDataCollectionAbil id="ComsatStationSCBWScannerSweep" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,ComsatStationSCBWScannerSweep"/>
+        <DataRecord Entry="Abil,ComsatStationSCBWScannerSweep@Redirect"/>
         <DataRecord Entry="Actor,ComsatStationSCBWScannerSweep@Visual"/>
         <DataRecord Entry="Actor,ComsatStationSCBWScannerSweep@CursorSplat"/>
         <DataRecord Entry="Actor,ComsatStationSCBWScannerSweep@Model"/>
         <DataRecord Entry="Actor,ComsatStationSCBWScannerSweep@LaunchSound"/>
         <DataRecord Entry="Actor,ComsatStationSCBWScannerSweep@LaunchSoundOthers"/>
+        <DataRecord Entry="Behavior,ComsatStationSCBWScannerSweep@AttachedTracker"/>
+        <DataRecord Entry="Behavior,ComsatStationSCBWScannerSweep@Energy"/>
         <DataRecord Entry="Button,ComsatStationSCBWScannerSweep"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@AttachedTracker"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@RedirectSet"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@EnumTracked"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@IssueOrder"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@AttachedTrackUnit"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@AttachedTrackerRB"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@SearchAddon"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@SearchAddonSet"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@SearchAddonDelay"/>
         <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@Revealer"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@AddonDetach"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@AddonAttach"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@CopyEnergy"/>
+        <DataRecord Entry="Effect,ComsatStationSCBWScannerSweep@CopyEnergyTracked"/>
         <DataRecord Entry="Model,ComsatStationSCBWScannerSweep@CursorSplat"/>
         <DataRecord Entry="Model,ComsatStationSCBWScannerSweep@Model"/>
         <DataRecord Entry="Requirement,ComsatStationSCBWScannerSweep"/>
+        <DataRecord Entry="Requirement,ComsatStationSCBWScannerSweep@Redirect"/>
         <DataRecord Entry="RequirementNode,ComsatStationSCBWScannerSweep"/>
+        <DataRecord Entry="RequirementNode,ComsatStationSCBWScannerSweep@Redirect"/>
         <DataRecord Entry="Sound,ComsatStationSCBWScannerSweep@Launch"/>
         <DataRecord Entry="Sound,ComsatStationSCBWScannerSweep@LaunchOthers"/>
+        <DataRecord Entry="Accumulator,ComsatStationSCBWScannerSweep@ComsatVitalsMax"/>
+        <DataRecord Entry="Accumulator,ComsatStationSCBWScannerSweep@ComsatVitalsAccum"/>
+        <DataRecord Entry="Accumulator,ComsatStationSCBWScannerSweep@ComsatVitalsCurr"/>
+        <DataRecord Entry="Accumulator,ComsatStationSCBWScannerSweep@ComsatVitalsSwitch"/>
     </CDataCollectionAbil>
     <CDataCollectionUpgrade id="GhostSCBWCloakResearch" parent="TerranUpgradeSCBW">
         <DataRecord Entry="Abil,GhostSCBWCloakResearch"/>
@@ -6327,6 +6518,7 @@
         <DataRecord Entry="Upgrade,VulturePlaceSpiderMineSCBWResearch"/>
     </CDataCollectionUpgrade>
     <CDataCollectionAbil id="FirebatSCBWWeapon" parent="TerranInfantryWeaponSCBW">
+        <DataRecord Entry="Actor,FirebatSCBWWeapon@Anims"/>
         <DataRecord Entry="Actor,FirebatSCBWWeapon@ImpactStructure"/>
         <DataRecord Entry="Actor,FirebatSCBWWeapon@DamageSound"/>
         <DataRecord Entry="Actor,FirebatSCBWWeapon@DamageModel"/>
@@ -6335,7 +6527,12 @@
         <DataRecord Entry="Actor,FirebatSCBWWeapon@FoliageFXSpawner"/>
         <DataRecord Entry="Actor,FirebatSCBWWeapon@TreeKiller"/>
         <DataRecord Entry="Actor,FirebatSCBWWeapon@Impact"/>
+        <DataRecord Entry="Behavior,FirebatSCBWWeapon@SuppressMovement"/>
         <DataRecord Entry="Behavior,FirebatSCBWWeapon@Bunker"/>
+        <DataRecord Entry="Effect,FirebatSCBWWeapon@FacingOffset"/>
+        <DataRecord Entry="Effect,FirebatSCBWWeapon@CP"/>
+        <DataRecord Entry="Effect,FirebatSCBWWeapon@SuppressMovement"/>
+        <DataRecord Entry="Effect,FirebatSCBWWeapon@Facing"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@ImpactSearch"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@ImpactSearchSet"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageApply"/>
@@ -6346,7 +6543,6 @@
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageAccum"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageAccum2"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageAccum3"/>
-        <DataRecord Entry="Effect,FirebatSCBWWeapon@CP"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageConc"/>
         <DataRecord Entry="Model,FirebatSCBWWeapon@Impact"/>
         <DataRecord Entry="Model,FirebatSCBWWeapon@Launch"/>
@@ -6357,6 +6553,7 @@
         <DataRecord Entry="Sound,FirebatSCBWWeapon@Impact"/>
         <DataRecord Entry="Validator,FirebatSCBWWeapon@Damage"/>
         <DataRecord Entry="Validator,FirebatSCBWWeapon@Splash"/>
+        <DataRecord Entry="Validator,FirebatSCBWWeapon@CPValidator"/>
         <DataRecord Entry="Weapon,FirebatSCBWWeapon"/>
         <DataRecord Entry="Weapon,FirebatSCBWWeapon@Bunker"/>
         <DataRecord Entry="Accumulator,FirebatSCBWWeapon@Damage"/>
@@ -6561,6 +6758,7 @@
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@InvisRangeCheck"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@InvisTargetMarker"/>
         <DataRecord Entry="Weapon,SpiderMineSCBWWeapon"/>
+        <DataRecord Entry="Weapon,SpiderMineSCBWWeapon@Fake"/>
         <DataRecord Entry="Accumulator,SpiderMineSCBWWeapon@Damage"/>
     </CDataCollectionAbil>
     <CDataCollectionUpgrade id="VultureSCBWSpeedUpgrade" parent="TerranUpgradeSCBW">
@@ -6603,6 +6801,7 @@
         <DataRecord Entry="Sound,VultureSCBWWeapon@Launch"/>
         <DataRecord Entry="Sound,VultureSCBWWeapon@Impact"/>
         <DataRecord Entry="Unit,VultureSCBWWeapon@Missile"/>
+        <DataRecord Entry="Validator,VultureSCBWWeapon@StrafingInRange"/>
         <DataRecord Entry="Validator,VultureSCBWWeapon@StrafingDisable"/>
         <DataRecord Entry="Validator,VultureSCBWWeapon@StrafingSpeed"/>
         <DataRecord Entry="Weapon,VultureSCBWWeapon"/>
@@ -7225,6 +7424,17 @@
         <Mover value="BattlecruiserSCBWYamato@Mover"/>
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
     </CUnit>
+    <CBehaviorBuff id="FirebatSCBWWeapon@SuppressMovement">
+        <EditorCategories value="AbilityorEffectType:Units,Race:Terran"/>
+        <Duration value="0.6562"/>
+        <PeriodicEffect value="FirebatSCBWWeapon@Facing"/>
+        <Modification MoveSpeedMaximum="0.004" AccelerationMultiplier="0.01">
+            <ModifyFlags index="OrdersUninterruptible" value="1"/>
+        </Modification>
+        <Period value="0.0625"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <RemoveValidatorArray value="FirebatSCBWWeapon@CPValidator"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="ScienceVesselSCBWIrradiate@DamageBuff">
         <Alignment value="Negative"/>
         <InfoFlags index="Hidden" value="1"/>
@@ -7244,7 +7454,7 @@
         </Modification>
     </CBehaviorBuff>
     <CBehaviorBuff id="FirebatSCBWWeapon@Bunker">
-        <EditorCategories value="AbilityorEffectType:Units"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Terran"/>
         <DisableValidatorArray value="InsideTransport"/>
         <Modification>
             <WeaponEnableArray value="FirebatSCBWWeapon@Bunker"/>
@@ -7581,6 +7791,24 @@
         </Modification>
         <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
+    <CBehaviorBuff id="ComsatStationSCBWScannerSweep@Energy">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <DisableValidatorArray value="ComsatStationSCBW@Attached"/>
+        <Period value="0.125"/>
+        <PeriodicEffect value="ComsatStationSCBWScannerSweep@CopyEnergyTracked"/>
+        <Modification>
+            <VitalMaxArray index="Energy" value="200"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorUnitTracker id="ComsatStationSCBWScannerSweep@AttachedTracker">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <TrackingValidatorArray value="NotDeadOrConstruction"/>
+        <TrackingValidatorArray value="IsCommandCenterSCBWAddon"/>
+        <MaxTrackedUnits value="1"/>
+        <UnitAddedAtMaxRule value="ReplaceOldest"/>
+    </CBehaviorUnitTracker>
     <CUpgrade id="BattlecruiserSCBWEnergyUpgrade" parent="SCBW_EnergyUpgrade">
         <Icon value="Assets\Textures\btn-upgrade-terran-behemothreactor.dds"/>
         <Race value="BWTe"/>
