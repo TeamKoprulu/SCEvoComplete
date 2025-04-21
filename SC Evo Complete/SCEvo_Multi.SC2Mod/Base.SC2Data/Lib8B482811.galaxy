@@ -1,0 +1,161 @@
+include "TriggerLibs/NativeLib"
+
+include "Lib8B482811_h"
+
+//--------------------------------------------------------------------------------------------------
+// Library: Ping Spawns
+//--------------------------------------------------------------------------------------------------
+// External Library Initialization
+void lib8B482811_InitLibraries () {
+    libNtve_InitVariables();
+}
+
+// Variable Initialization
+bool lib8B482811_InitVariables_completed = false;
+
+void lib8B482811_InitVariables () {
+    if (lib8B482811_InitVariables_completed) {
+        return;
+    }
+
+    lib8B482811_InitVariables_completed = true;
+
+}
+
+// Functions
+void lib8B482811_gf_createPing (point lp_point, playergroup lp_visibleGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    libNtve_gf_CreatePingFacingAngle(lp_visibleGroup, lib8B482811_gv_pingModel, lp_point, ColorWithAlpha(0.00, 100.00, 0.00, 0.00), lib8B482811_gv_pingDuration, 270.0);
+}
+
+point lib8B482811_gf_getFarthestSpawn (int lp_player) {
+    // Variable Declarations
+    int lv_x;
+    point lv_farthestPoint;
+
+    // Automatic Variable Declarations
+    const int autoA33A80D4_ae = 4;
+    const int autoA33A80D4_ai = 1;
+
+    // Variable Initialization
+
+    // Implementation
+    lv_x = 1;
+    for ( ; ( (autoA33A80D4_ai >= 0 && lv_x <= autoA33A80D4_ae) || (autoA33A80D4_ai < 0 && lv_x >= autoA33A80D4_ae) ) ; lv_x += autoA33A80D4_ai ) {
+        if ((lib8B482811_gv_startingLocations[lv_x] != PlayerStartLocation(lp_player)) && ((lv_farthestPoint == null) || (DistanceBetweenPoints(PlayerStartLocation(lp_player), lib8B482811_gv_startingLocations[lv_x]) > DistanceBetweenPoints(PlayerStartLocation(lp_player), lv_farthestPoint)))) {
+            lv_farthestPoint = lib8B482811_gv_startingLocations[lv_x];
+        }
+    }
+    return lv_farthestPoint;
+}
+
+// Triggers
+//--------------------------------------------------------------------------------------------------
+// Trigger: Ping Spawns
+//--------------------------------------------------------------------------------------------------
+bool lib8B482811_gt_PingSpawns_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_x;
+    int lv_otherPlayer;
+    point lv_randomPoint;
+    bool lv_invalidStartLocations;
+    int lv_playerCount;
+
+    // Automatic Variable Declarations
+    const int auto82AF30DE_ae = 4;
+    const int auto82AF30DE_ai = 1;
+    playergroup autoF03F5AAB_g;
+    int autoF03F5AAB_var;
+
+    // Variable Initialization
+    lv_otherPlayer = 2;
+    lv_playerCount = PlayerGroupCount(PlayerGroupActive());
+
+    // Conditions
+    if (testConds) {
+        if (!((UserDataGetInt("SCEV_Options", "PingEnemySpawns", "Bool", 1) == 1))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((lv_playerCount == 2)) {
+        if (((PointFromName("Start Location 005") != null) || (PointFromName(("시작 장소 005")) != null))) {
+            lv_invalidStartLocations = true;
+        }
+        lv_x = 1;
+        for ( ; ( (auto82AF30DE_ai >= 0 && lv_x <= auto82AF30DE_ae) || (auto82AF30DE_ai < 0 && lv_x >= auto82AF30DE_ae) ) ; lv_x += auto82AF30DE_ai ) {
+            if ((PointFromName(("Start Location 00" + IntToString(lv_x))) == null) && (PointFromName(("시작 장소 00" + IntToString(lv_x))) == null)) {
+                lv_invalidStartLocations = true;
+                break;
+            }
+            if ((PointFromName(("Start Location 00" + IntToString(lv_x))) != null)) {
+                lib8B482811_gv_startingLocations[lv_x] = PointFromName(("Start Location 00" + IntToString(lv_x)));
+            }
+            else if ((PointFromName(("시작 장소 00" + IntToString(lv_x))) != null)) {
+                lib8B482811_gv_startingLocations[lv_x] = PointFromName(("시작 장소 00" + IntToString(lv_x)));
+            }
+        }
+        if ((lv_invalidStartLocations == false)) {
+            autoF03F5AAB_g = PlayerGroupActive();
+            autoF03F5AAB_var = -1;
+            while (true) {
+                autoF03F5AAB_var = PlayerGroupNextPlayer(autoF03F5AAB_g, autoF03F5AAB_var);
+                if (autoF03F5AAB_var < 0) { break; }
+                lv_otherPlayer = PlayerGroupPlayer(PlayerGroupAlliance(c_playerGroupEnemy, autoF03F5AAB_var), 1);
+                lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var] = lib8B482811_gf_getFarthestSpawn(autoF03F5AAB_var);
+                lib8B482811_gf_createPing(lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var], PlayerGroupSingle(autoF03F5AAB_var));
+                if ((lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var] == PlayerStartLocation(lv_otherPlayer))) {
+                    lv_randomPoint = lib8B482811_gv_startingLocations[RandomInt(1, 4)];
+                    while (((lv_randomPoint == lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var]) || (lv_randomPoint == PlayerStartLocation(autoF03F5AAB_var)))) {
+                        lv_randomPoint = lib8B482811_gv_startingLocations[RandomInt(1, 4)];
+                    }
+                    lib8B482811_gf_createPing(lv_randomPoint, PlayerGroupSingle(autoF03F5AAB_var));
+                }
+                else {
+                    lib8B482811_gf_createPing(PlayerStartLocation(lv_otherPlayer), PlayerGroupSingle(autoF03F5AAB_var));
+                }
+            }
+        }
+        else if ((lv_invalidStartLocations == true)) {
+            MinimapPingPossibleEnemyStartLocations(lib8B482811_gv_pingDuration, lib8B482811_gv_pingModel, Color(100.00, 0.00, 0.00));
+        }
+    }
+    else if ((lv_playerCount > 2)) {
+        MinimapPingPossibleEnemyStartLocations(lib8B482811_gv_pingDuration, lib8B482811_gv_pingModel, Color(100.00, 0.00, 0.00));
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void lib8B482811_gt_PingSpawns_Init () {
+    lib8B482811_gt_PingSpawns = TriggerCreate("lib8B482811_gt_PingSpawns_Func");
+    TriggerAddEventMapInit(lib8B482811_gt_PingSpawns);
+}
+
+void lib8B482811_InitTriggers () {
+    lib8B482811_gt_PingSpawns_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+bool lib8B482811_InitLib_completed = false;
+
+void lib8B482811_InitLib () {
+    if (lib8B482811_InitLib_completed) {
+        return;
+    }
+
+    lib8B482811_InitLib_completed = true;
+
+    lib8B482811_InitLibraries();
+    lib8B482811_InitVariables();
+    lib8B482811_InitTriggers();
+}
+
