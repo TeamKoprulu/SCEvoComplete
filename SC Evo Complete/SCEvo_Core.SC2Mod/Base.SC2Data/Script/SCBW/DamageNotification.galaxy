@@ -1,0 +1,32 @@
+string SCBW_DamageNotification_Effect = "SCBW_DamageNotification";
+trigger SCBW_DamageNotification_Trigger;
+//--------------------------------------------------------------------------------------------------
+// Trigger: DamageNotification
+//--------------------------------------------------------------------------------------------------
+bool SCBW_DamageNotification_Trigger_Func(bool a, bool b) {
+    int lv_attackerPlayer = UnitGetOwner(EventUnitDamageSourceUnit());
+    if(UnitIsValid(EventUnit()) == false) { return false; }
+    if(PlayerGetAlliance(lv_attackerPlayer, c_allianceIdPassive, UnitGetOwner(EventUnit())) == true) { return false; }
+    PlayerCreateEffectUnit(lv_attackerPlayer, SCBW_DamageNotification_Effect, EventUnit());
+    return true;
+}
+//--------------------------------------------------------------------------------------------------
+void SCBW_DamageNotification_Init () {
+    int i;
+    string DamageEntry;
+    SCBW_DamageNotification_Trigger = TriggerCreate("SCBW_DamageNotification_Trigger_Func");
+    for (i = 1; i <= CatalogEntryCount(c_gameCatalogEffect); i += 1) {
+        DamageEntry = CatalogEntryGet(c_gameCatalogEffect, i);
+        if (CatalogEntryScope(c_gameCatalogEffect, DamageEntry) != "CEffectDamage"){ continue; }
+        if (CatalogFieldValueCount(c_gameCatalogEffect, DamageEntry, "AreaArray", c_playerAny) == 0){ continue; }
+        if (CatalogFieldValueGet(c_gameCatalogEffect, DamageEntry, "DamageInheritEffect", c_playerAny) == SCBW_DamageNotification_Effect) {
+            // TriggerDebugOutput(1, StringToText(DamageEntry), true);
+            if(CatalogFieldValueGet(c_gameCatalogEffect, DamageEntry, "KindSplash", c_playerAny) == "Splash"){
+                TriggerAddEventUnitDamaged(SCBW_DamageNotification_Trigger, null, c_unitDamageTypeSplash, c_unitDamageNonFatal, DamageEntry);
+            }
+            else if(CatalogFieldValueGet(c_gameCatalogEffect, DamageEntry, "KindSplash", c_playerAny) == "Spell"){
+                TriggerAddEventUnitDamaged(SCBW_DamageNotification_Trigger, null, c_unitDamageTypeSpell, c_unitDamageNonFatal, DamageEntry);
+            }
+        }
+    }
+}

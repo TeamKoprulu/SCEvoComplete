@@ -1,9 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectTransferBehavior default="1" id="SCBW_CopyBuffsBase">
+        <?token id="x"?>
+        <LaunchUnit Value="Caster"/>
+        <ImpactUnit Value="Target"/>
+        <Copy value="1"/>
+        <Behavior value="##x##"/>
+    </CEffectTransferBehavior>
+    <CEffectSet id="SCBW_CopyBuffs@Buffs1">
+        <EffectArray value="SCBW_CopyBuffs@MatrixSet"/>
+        <EffectArray value="SCBW_CopyBuffs@Ensnare"/>
+        <EffectArray value="SCBW_CopyBuffs@EnsnareMovement"/>
+        <EffectArray value="SCBW_CopyBuffs@Plague"/>
+        <EffectArray value="SCBW_CopyBuffs@Irradiate"/>
+        <EffectArray value="SCBW_CopyBuffs@Parasite"/>
+        <EffectArray value="SCBW_CopyBuffs@Blinded"/>
+        <EffectArray value="SCBW_CopyBuffs@AcidSpore"/>
+    </CEffectSet>
+    <CEffectSet id="SCBW_CopyBuffs@Buffs2"/>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@AcidSpore" parent="SCBW_CopyBuffsBase" x="DevourerSCBWWeapon"/>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@Blinded" parent="SCBW_CopyBuffsBase" x="MedicSCBWOpticFlare">
+        <ValidatorArray value="NotStructureTarget"/>
+    </CEffectTransferBehavior>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@Ensnare" parent="SCBW_CopyBuffsBase" x="QueenSCBWEnsnare"/>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@EnsnareMovement" parent="SCBW_CopyBuffsBase" x="QueenSCBWEnsnare@Movement"/>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@Irradiate" parent="SCBW_CopyBuffsBase" x="ScienceVesselSCBWIrradiate@Irradiated"/>
+    <CEffectUserData id="SCBW_CopyBuffs@MatrixDuration">
+        <Key value="DefensiveMatrixDuration"/>
+        <Amount value="0">
+            <AccumulatorArray value="ScienceVesselSCBWDefensiveMatrix@RemainingDuration"/>
+        </Amount>
+        <SourceKey value="DefensiveMatrixDuration"/>
+        <Operation value="Set"/>
+        <TargetLocationType value="Unit"/>
+        <BehaviorScope Value="Target"/>
+    </CEffectUserData>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@Parasite" parent="SCBW_CopyBuffsBase" x="QueenSCBWParasite">
+        <ValidatorArray value="NotStructureTarget"/>
+    </CEffectTransferBehavior>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@Plague" parent="SCBW_CopyBuffsBase" x="DefilerSCBWPlague"/>
+    <CEffectTransferBehavior id="SCBW_CopyBuffs@Matrix" parent="SCBW_CopyBuffsBase" x="ScienceVesselSCBWDefensiveMatrix">
+        <Preserve value="1"/>
+    </CEffectTransferBehavior>
+    <CEffectSet id="SCBW_CopyBuffs">
+        <EffectArray value="SCBW_CopyBuffs@Buffs1"/>
+        <EffectArray value="SCBW_CopyBuffs@Buffs2"/>
+    </CEffectSet>
+    <CEffectSet id="SCBW_CopyBuffs@MatrixSet">
+        <ValidatorArray value="ScienceVesselSCBWDefensiveMatrix@HasShieldSource"/>
+        <ValidatorArray value="ScienceVesselSCBWDefensiveMatrix@NoShield"/>
+        <ValidatorArray value="NotStructureTarget"/>
+        <EffectArray value="SCBW_CopyBuffs@MatrixDuration"/>
+        <EffectArray value="SCBW_CopyBuffs@Matrix"/>
+        <EffectArray value="ScienceVesselSCBWDefensiveMatrix@UDTransfer"/>
+    </CEffectSet>
     <CEffectDamage id="SCBWUnitSwapDummy">
         <LaunchLocation Value="CasterUnit"/>
         <ImpactLocation Value="CasterUnit"/>
     </CEffectDamage>
+    <CValidatorUnitType id="SCBW_IsReaper" parent="IsTemplate" unitName="Reaper"/>
+    <CValidatorUnitType id="SCBW_IsLurker" parent="IsTemplate" unitName="LurkerMP">
+        <Type value="SelectAlias"/>
+    </CValidatorUnitType>
     <CValidatorUnitType id="IsBaneling" parent="IsTemplate" unitName="Baneling"/>
     <CValidatorCombine id="IsNotSpiderMineSCBW" parent="SCBW_Not" x="IsSpiderMineSCBW"/>
     <CValidatorUnitType id="IsNexus" parent="IsTemplate" unitName="Nexus"/>
@@ -66,6 +124,14 @@
     <CValidatorUnitType id="IsScienceVessel" parent="IsTemplate" unitName="ScienceVessel"/>
     <CValidatorUnitType id="IsBattlecruiser" parent="IsTemplate" unitName="Battlecruiser"/>
     <CValidatorUnitType id="IsCyclone" parent="IsTemplate" unitName="Cyclone"/>
+    <CValidatorUnitType id="IsHercules" parent="IsTemplate" unitName="Hercules"/>
+    <CValidatorUnitType id="IsHerculesLander" parent="IsTemplate" unitName="HerculesLander"/>
+    <CValidatorUnitType id="IsHerculesLanderFlying" parent="IsTemplate" unitName="HerculesLanderFlying"/>
+    <CValidatorCombine id="IsHerculesCombineSCBW">
+        <CombineArray value="IsHercules"/>
+        <CombineArray value="IsHerculesLander"/>
+        <CombineArray value="IsHerculesLanderFlying"/>
+    </CValidatorCombine>
     <!-- Zerg -->
     <CValidatorUnitType id="IsHatchery" parent="IsTemplate" unitName="Hatchery"/>
     <CValidatorUnitType id="IsLair" parent="IsTemplate" unitName="Lair"/>
@@ -611,6 +677,10 @@
         <CombineArray value="CasterIsBroodling"/>
         <CombineArray value="CasterIsInfestedTerran"/>
     </CValidatorCombine>
+    <CAccumulatorUserData id="SCBW_CopyBuffs@MatrixDuration">
+        <Key value="DefensiveMatrixDuration"/>
+        <BehaviorScope Value="Target"/>
+    </CAccumulatorUserData>
     <CPlayerResponseUnitBirth id="SCBWUnitSwap">
         <Handled value="SCBWUnitSwapDummy"/>
         <TargetFilters value="-;Missile,Dead"/>
@@ -618,4 +688,21 @@
         <CasterFilters value="-;Ally,Neutral,Enemy,Missile,Destructible,Item"/>
         <ValidatorArray value="SCBWUnitSwapValidator"/>
     </CPlayerResponseUnitBirth>
+    <CDataCollectionAbil id="SCBW_CopyBuffs">
+        <EditorCategories value="DataFamily:Melee,Race:Neutral"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Buffs1"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@MatrixSet"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Ensnare"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@EnsnareMovement"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Plague"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Irradiate"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Parasite"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Blinded"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@AcidSpore"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Buffs2"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@MatrixDuration"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs@Matrix"/>
+        <DataRecord Entry="Effect,SCBW_CopyBuffs"/>
+        <DataRecord Entry="Accumulator,SCBW_CopyBuffs@MatrixDuration"/>
+    </CDataCollectionAbil>
 </Catalog>

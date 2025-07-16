@@ -117,6 +117,36 @@
     </Frame>
 
     <!--
+        EquipmentIconTemplate 
+        Scarab Counter
+    -->
+
+    <Frame type="EquipmentIcon" name="EquipmentIconTemplate" file="EquipmentIcon">
+        <StateGroup name="ScarabCounterEnabled">
+            <DefaultState val="False"/>
+            <State name="True">
+                <When type="Property" frame="$this" Texture="Assets\textures\btn-ability-protoss-scarabshot.dds" index="0"/>
+                <When type="Property" frame="$ancestor[@name=InfoPaneUnit]/UnitFrame" UnitLink="ReaverSCBW"/>
+                <Action type="SetProperty" frame="LevelLabel" Visible="False"/>
+                <Action type="SetProperty" frame="ReaverSCBWHangar@ScarabCounter" Visible="True"/>
+            </State>
+            <State name="False">
+                <Action type="SetProperty" frame="LevelLabel" Visible="True"/>
+                <Action type="SetProperty" frame="ReaverSCBWHangar@ScarabCounter" Visible="False"/>
+            </State>
+
+        </StateGroup>
+        <Frame type="Label" name="ReaverSCBWHangar@ScarabCounter">
+            <Style val="{$parent/LevelLabel/@Style}"/>
+            <Anchor side="Bottom" relative="$parent/LevelLabel" pos="Max" offset="0"/>
+            <Anchor side="Right" relative="$parent/LevelLabel" pos="Max" offset="0"/>
+            <RenderPriority val="{$parent/LevelLabel/@RenderPriority}"/>
+            <Visible val="False"/>
+            <Text val="&lt;d ref=&quot;$RunAccumulators:ReaverSCBWHangar@ScarabCounter$&quot;/&gt;"/>
+        </Frame>
+
+    </Frame>
+    <!--
         GameUI
     -->
 
@@ -184,6 +214,290 @@
                     <Texture val="@UI/MenuBar/DiscordButton"/>
                 </Frame>
             </Frame>
+        </Frame>
+    </Frame>
+
+    <!-- Unit Panel -->
+    <Frame type="Frame" name="GameUI/UIContainer/ConsoleUIContainer/InfoPanel/UnitPanel" file="GameUI">
+
+        <Frame type="UnitStatusFrame" name="UnitStatusFrame0">
+            <Anchor side="Top" relative="$parent" pos="Max" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Max" offset="0"/>
+            <Width val="1"/>
+            <Height val="1"/>
+            <UnitTag val="{$parent/UnitWireframe/@UnitTag}"/>
+            <Frame type="UnitStatusValidatorAnimElement" name="MatrixValidator">
+                <Anchor relative="$parent"/>
+                <Validator val="ScienceVesselSCBWDefensiveMatrix@HasShield"/>
+                <StateGroup name="MatrixStatus">
+                    <DefaultState val="Disabled"/>
+                    <State name="Active">
+                        <When type="Property" Visible="True"/>
+                        <Action type="SetProperty" frame="$parent/$parent/ShieldLabel" Alpha="0"/>
+                        <Action type="SetProperty" frame="$parent/$parent/LifeLabel" Alpha="0"/>
+                        <Action type="SetProperty" frame="$parent/$parent/EnergyLabel" Alpha="0"/>
+                        <Action type="SetProperty" frame="$parent/$parent/MatrixShieldLabel" Visible="True"/>
+                        <Action type="SetProperty" frame="$parent/$parent/MatrixLifeLabel" Alpha="255"/>
+                        <Action type="SetProperty" frame="$parent/$parent/MatrixEnergyLabel" Alpha="255"/>
+                    </State>
+                    <State name="Disabled">
+                        <Action type="SetProperty" frame="$parent/$parent/ShieldLabel" Alpha="255"/>
+                        <Action type="SetProperty" frame="$parent/$parent/LifeLabel" Alpha="255"/>
+                        <Action type="SetProperty" frame="$parent/$parent/EnergyLabel" Alpha="255"/>
+                        <Action type="SetProperty" frame="$parent/$parent/MatrixShieldLabel" Visible="False"/>
+                        <Action type="SetProperty" frame="$parent/$parent/MatrixLifeLabel" Alpha="0"/>
+                        <Action type="SetProperty" frame="$parent/$parent/MatrixEnergyLabel" Alpha="0"/>
+                    </State>
+
+                </StateGroup>
+            </Frame>
+        </Frame>
+
+        <Frame type="Label" name="MatrixShieldLabel">
+            <Style val="UnitWireframeVital"/>
+            <Anchor side="Top" relative="$parent/UnitWireframe" pos="Max" offset="0"/>
+            <Anchor side="Left" relative="$parent/UnitWireframe" pos="Min" offset="0"/>
+            <Anchor side="Right" relative="$parent/UnitWireframe" pos="Max" offset="0"/>
+            <Visible val="False"/>
+            <Text val="&lt;d ref=&quot;$RunAccumulators:ScienceVesselSCBWDefensiveMatrix@RemainingSource$+0.5&quot;/&gt; / &lt;d ref=&quot;Accumulator,ScienceVesselSCBWDefensiveMatrix,Amount&quot;/&gt;"/>
+        </Frame>
+        <Frame type="Label" name="MatrixLifeLabel">
+            <Style val="UnitWireframeVital"/>
+            <Anchor side="Top" relative="$parent/MatrixShieldLabel" pos="Max" offset="0"/>
+            <Anchor side="Left" relative="$parent/UnitWireframe" pos="Min" offset="0"/>
+            <Anchor side="Right" relative="$parent/UnitWireframe" pos="Max" offset="0"/>
+            <Visible val="{$parent/LifeLabel/@Visible}"/>
+            <Text val="{$parent/LifeLabel/@Text}"/>
+        </Frame>
+        <Frame type="Label" name="MatrixEnergyLabel">
+            <Style val="UnitWireframeVital"/>
+            <Anchor side="Top" relative="$parent/MatrixLifeLabel" pos="Max" offset="0"/>
+            <Anchor side="Left" relative="$parent/UnitWireframe" pos="Min" offset="0"/>
+            <Anchor side="Right" relative="$parent/UnitWireframe" pos="Max" offset="0"/>
+            <Visible val="{$parent/EnergyLabel/@Visible}"/>
+            <Text val="{$parent/EnergyLabel/@Text}"/>
+        </Frame>
+        
+    </Frame>
+
+    <!--
+        InfoPaneUnit UnitFrame
+    -->
+    <Frame type="InfoPaneUnit" name="GameUI/UIContainer/ConsoleUIContainer/InfoPanel/InfoPaneUnit" file="GameUI">
+        <Frame type="UnitFrame" name="UnitFrame">
+            <Anchor relative="$parent"/>
+            <UseSelectionLeader val="False"/>
+            <UnitTag val="{$ancestor[@name=InfoPanel]/UnitPanel/UnitWireframe/@UnitTag}"/>
+
+            <Frame type="Label" name="UnitRace">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@UnitLink[Race]}"/>
+                <Visible val="False"/>
+            </Frame>
+
+            <Frame type="Label" name="UnitName">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@UnitLink[Name]}"/>
+                <Visible val="False"/>
+            </Frame>
+
+            <Frame type="Label" name="LifeArmor">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@ActorUnitLink[LifeArmorIcon]}"/>
+                <Visible val="False"/>
+            </Frame>
+
+            <Frame type="Label" name="ShieldArmor">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@ActorUnitLink[ShieldArmorIcon]}"/>
+                <Visible val="False"/>
+            </Frame>
+        </Frame>
+    </Frame>
+
+    <!--
+        AlliancePanel
+    -->
+    <StateGroup name="AlliancePanelRaceStateTemplate">
+        <DefaultState val="Default"/>
+        <State name="BWPr">
+            <When type="StateGroup" frame="$parent" RaceState="BWPr"/>
+        </State>
+        <State name="BWTe">
+            <When type="StateGroup" frame="$parent" RaceState="BWTe"/>
+        </State>
+        <State name="BWZe">
+            <When type="StateGroup" frame="$parent" RaceState="BWZe"/>
+        </State>
+        <State name="Default"/>
+    </StateGroup>
+    <Frame type="AlliancePanel" name="GameUI/UIContainer/FullscreenUpperContainer/AlliancePanel" file="GameUI">
+        <!-- 
+            Reason we can't use @UI/ paths declared for the SmallPanel assets for BW Races is because the same assets are used in ExitDialog,  
+            and we can't add the "<RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>" to the ExitDialog due to it being locked.
+        -->
+        <StateGroup name="RaceState">
+            <DefaultState val="Default"/>
+            <State name="BWPr">
+                <When type="Property" Visible="True" />
+                <When type="Property" frame="$parent/$parent/ConsoleUIContainer/IdleButton/Icon" Texture="Assets\Textures\ui_console_helperbutton_icon_worker_BWPr.dds"/>
+            </State>
+            <State name="BWTe">
+                <When type="Property" Visible="True" />
+                <When type="Property" frame="$parent/$parent/ConsoleUIContainer/IdleButton/Icon" Texture="Assets\Textures\ui_console_helperbutton_icon_worker_BWTe.dds"/>
+            </State>
+            <State name="BWZe">
+                <When type="Property" Visible="True" />
+                <When type="Property" frame="$parent/$parent/ConsoleUIContainer/IdleButton/Icon" Texture="Assets\Textures\ui_console_helperbutton_icon_worker_BWZe.dds"/>
+            </State>
+            <State name="Default"/>
+        </StateGroup>
+        <Frame type="Image" name="BlackMaskImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+        </Frame>
+        <Frame type="Image" name="BorderImage">
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBorder_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBorder_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBorder_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelBorder"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="GradientImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelGradient_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelGradient_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelGradient_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelGradient"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="InnerLineImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelInnerLine_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelInnerLine_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelInnerLine_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelInnerLine"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="TopLeftCornerImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopLeftCorner_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopLeftCorner_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopLeftCorner_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelTopLeftCorner"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="TopRightCornerImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopRightCorner_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopRightCorner_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopRightCorner_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelTopRightCorner"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="BottomLeftCornerImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBottomLeftCorner_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBottomLeftCorner_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBottomLeftCorner_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelBottomLeftCorner"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="BottomRightCornerImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBottomRightCorner_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBottomRightCorner_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelBottomRightCorner_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelBottomRightCorner"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="TopMiddleImage">
+            <RequiredDefines val="Terr|Prot|Zerg|BWTe|BWPr|BWZe"/>
+            <StateGroup name="RaceState" template="SCBW_UIOverrides/AlliancePanelRaceStateTemplate">
+                <State name="BWPr">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopMiddle_Prot"/>
+                </State>
+                <State name="BWTe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopMiddle_Terr"/>
+                </State>
+                <State name="BWZe">
+                    <Action type="SetProperty" Texture="@UI/SmallPanelTopMiddle_Zerg"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" Texture="@@UI/SmallPanelTopMiddle"/>
+                </State>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="BottomMiddleImage">
+            <RequiredDefines val="Zerg|BWZe"/>
+        </Frame>
+        <Frame type="Image" name="SideLeftImage">
+            <RequiredDefines val="Zerg|BWZe"/>
+        </Frame>
+        <Frame type="Image" name="SideRightImage">
+            <RequiredDefines val="Zerg|BWZe"/>
         </Frame>
     </Frame>
 </Desc>

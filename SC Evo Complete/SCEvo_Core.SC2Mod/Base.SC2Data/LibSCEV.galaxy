@@ -28,7 +28,6 @@ void libSCEV_InitVariables () {
     libSCEV_gv_fractionalArmorFilter = UnitFilter(0, 0, 0, (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)));
     libSCEV_gv_missChanceRevealTimer = TimerCreate();
     libSCEV_gv_missChanceTrigger = libSCEV_gt_MissChanceHighGroundRegionEnter;
-    libSCEV_gv_reaverPathingRange = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogValidator, "ReaverSCBWWeapon@Pathable", "MaxDistance", c_playerAny);
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
             libSCEV_gv_minimapAllyViewPings[init_i][init_j] = c_invalidPingId;
@@ -43,40 +42,6 @@ void libSCEV_InitVariables () {
 static void DbgInternal(string message) {
     TriggerDebugOutput(10, StringToText(message), true);
     return;
-}
-static bool l_StringIsValid (string s) {
-    if ((s != "") && (s != null)) { return true; }
-    return false;
-}
-static int l_WordCount (string fullString) {
-    int count = 0;
-    int i;
-    if (fullString != "") {
-        while (true) {
-            i += 1;
-            if (StringWord(fullString, i) == "") { break; }
-            count += 1;
-        }
-    }
-    return count;
-}
-static bool l_WordExistsInString (string fullString, string word) {
-    int counter = 1;
-    int end = l_WordCount(fullString);
-    while (counter <= end) {
-        if (StringWord(fullString, counter) == word) { return true; }
-        counter += 1;
-    }
-    return false;
-}
-static int l_WordIndexInString (string fullString, string word) {
-    int i = 1;
-    int end = l_WordCount(fullString);
-    string s;
-    for (i = 1; i <= end; i += 1) {
-        if (StringWord(fullString, i) == word) { return i; }
-    }
-    return -1;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -736,6 +701,8 @@ void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate
 
 void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
     // Automatic Variable Declarations
+    playergroup autoD10B862A_g;
+    int autoD10B862A_var;
     unitgroup autoEC8BC7E2_g;
     int autoEC8BC7E2_u;
     unit autoEC8BC7E2_var;
@@ -744,10 +711,25 @@ void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
     unit auto41E7D108_var;
 
     // Implementation
+    if ((libSCEV_gv_fractionalArmorActivated == false)) {
+        libSCEV_gv_fractionalArmorActivated = true;
+        libSCEV_gf_FractionalArmorUpdateRegisterEvents(libSCEV_gt_FractionalArmorUpdateTrigger);
+    }
+
     TriggerEnable(libSCEV_gt_FractionalArmorAdd, lp_onOff);
     TriggerEnable(libSCEV_gt_FractionalArmorUpdateTrigger, lp_onOff);
     TriggerEnable(libSCEV_gt_FractionalArmorUpgrade, lp_onOff);
+    TriggerEnable(libSCEV_gt_FractionalArmorPlayerDamage, lp_onOff);
+    TriggerEnable(libSCEV_gt_FractionalArmorGodCheat, lp_onOff);
     if ((lp_onOff == true)) {
+        autoD10B862A_g = PlayerGroupAll();
+        autoD10B862A_var = -1;
+        while (true) {
+            autoD10B862A_var = PlayerGroupNextPlayer(autoD10B862A_g, autoD10B862A_var);
+            if (autoD10B862A_var < 0) { break; }
+            PlayerScoreValueSetFromFixed(autoD10B862A_var, "SCBW_DamageFormula@DamageMultiplierTaken", (PlayerGetPropertyFixed(autoD10B862A_var, c_playerPropDamageTakenPercent) / 100.0));
+            PlayerScoreValueSetFromFixed(autoD10B862A_var, "SCBW_DamageFormula@DamageMultiplierDealt", (PlayerGetPropertyFixed(autoD10B862A_var, c_playerPropDamageDealtPercent) / 100.0));
+        }
         auto41E7D108_g = UnitGroup(null, c_playerAny, RegionEntireMap(), libSCEV_gv_fractionalArmorFilter, 0);
         auto41E7D108_u = UnitGroupCount(auto41E7D108_g, c_unitCountAll);
         for (;; auto41E7D108_u -= 1) {
@@ -762,7 +744,7 @@ void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
         for (;; autoEC8BC7E2_u -= 1) {
             autoEC8BC7E2_var = UnitGroupUnitFromEnd(autoEC8BC7E2_g, autoEC8BC7E2_u);
             if (autoEC8BC7E2_var == null) { break; }
-            UnitBehaviorRemove(autoEC8BC7E2_var, "SCBW_FractionalArmor", 1);
+            UnitBehaviorRemove(autoEC8BC7E2_var, "SCBW_DamageFormula@FractionalArmor", 1);
         }
     }
 }
@@ -770,12 +752,42 @@ void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
 void libSCEV_gf_FractionalArmorUpdate (unit lp_target) {
     // Automatic Variable Declarations
     // Implementation
-    if ((UnitHasBehavior2(lp_target, "SCBW_FractionalArmor") == false)) {
-        UnitBehaviorAdd(lp_target, "SCBW_FractionalArmor", lp_target, 1);
+    if ((UnitHasBehavior2(lp_target, "SCBW_DamageFormula@FractionalArmor") == false)) {
+        UnitBehaviorAdd(lp_target, "SCBW_DamageFormula@FractionalArmor", lp_target, 1);
     }
 
-    UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_FractionalArmor", "LifeArmor", UnitGetPropertyFixed(lp_target, c_unitPropLifeArmor, c_unitPropCurrent));
-    UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_FractionalArmor", "ShieldArmor", UnitGetPropertyFixed(lp_target, c_unitPropShieldArmor, c_unitPropCurrent));
+    UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_DamageFormula@FractionalArmor", "LifeArmor", UnitGetPropertyFixed(lp_target, c_unitPropLifeArmor, c_unitPropCurrent));
+    UnitBehaviorEffectTreeSetUserData(lp_target, "SCBW_DamageFormula@FractionalArmor", "ShieldArmor", UnitGetPropertyFixed(lp_target, c_unitPropShieldArmor, c_unitPropCurrent));
+}
+
+void libSCEV_gf_FractionalArmorUpdatePlayerDamage (int lp_player) {
+    // Automatic Variable Declarations
+    // Implementation
+    PlayerScoreValueSetFromFixed(lp_player, "SCBW_DamageFormula@DamageMultiplierDealt", (PlayerGetPropertyFixed(lp_player, c_playerPropDamageDealtPercent) / 100.0));
+    PlayerScoreValueSetFromFixed(lp_player, "SCBW_DamageFormula@DamageMultiplierTaken", (PlayerGetPropertyFixed(lp_player, c_playerPropDamageTakenPercent) / 100.0));
+}
+
+void libSCEV_gf_FractionalArmorUpdateRegisterEvents (trigger lp_trigger) {
+    // Variable Declarations
+    string lv_effectEntry;
+    int lv_i;
+
+    // Automatic Variable Declarations
+    int auto29FC39E3_ae;
+    const int auto29FC39E3_ai = 1;
+
+    // Variable Initialization
+
+    // Implementation
+    auto29FC39E3_ae = CatalogEntryCount(c_gameCatalogEffect);
+    lv_i = 1;
+    for ( ; ( (auto29FC39E3_ai >= 0 && lv_i <= auto29FC39E3_ae) || (auto29FC39E3_ai < 0 && lv_i >= auto29FC39E3_ae) ) ; lv_i += auto29FC39E3_ai ) {
+        lv_effectEntry = CatalogEntryGet(c_gameCatalogEffect, lv_i);
+        if ((CatalogEntryScope(c_gameCatalogEffect, lv_effectEntry) == "CEffectUserData") && (CatalogFieldValueGet(c_gameCatalogEffect, lv_effectEntry, "Key", c_playerAny) == "IncomingDamage")) {
+            TriggerAddEventPlayerEffectUsed(lp_trigger, c_playerAny, lv_effectEntry);
+        }
+
+    }
 }
 
 void libSCEV_gf_MissChanceRevealTimerStart () {
@@ -974,7 +986,7 @@ void libSCEV_gf_OperationCwal (unit lp_unit, int lp_type) {
 void libSCEV_gf_InfiniteMoneyMapCheck () {
     // Automatic Variable Declarations
     // Implementation
-    if ((CatalogFieldValueGetAsInt(c_gameCatalogAbil, "SCVHarvest", "FlagArray[" + IntToString(0) + "]", c_playerAny) == 1)) {
+    if ((UserDataGetInt("SCEV_LibraryVariables", "InfiniteMoneyMapCheck", "Enabled", 1) == 1) && (CatalogFieldValueGetAsInt(c_gameCatalogAbil, "SCVHarvest", "FlagArray[" + IntToString(0) + "]", c_playerAny) == 1)) {
         TriggerEnable(libSCEV_gt_InfiniteMoneyMapTrigger, true);
         libSCEV_gf_InfiniteMoneyMapAction(UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter((1 << c_targetFilterWorker), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32))), 0));
     }
@@ -1064,62 +1076,6 @@ void libSCEV_gf_InfiniteMoneyMapNewOrder (unit lp_unit, abilcmd lp_oldAbil, abil
     }
 }
 
-void libSCEV_gf_DisableClassicSkins (int lp_player) {
-    // Automatic Variable Declarations
-    // Implementation
-    if ((PlayerType(lp_player) == c_playerTypeUser)) {
-        if (((PlayerSkin(lp_player) == "CommandCenterRemastered") || (PlayerHasReward(lp_player, "SkinCommandCenterRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "CommandCenterRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "NexusRemastered") || (PlayerHasReward(lp_player, "SkinNexusRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "NexusRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "HatcheryRemastered") || (PlayerHasReward(lp_player, "SkinHatcheryRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "HatcheryRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "HydraliskRemastered") || (PlayerHasReward(lp_player, "SkinHydraliskRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "HydraliskRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "ZealotRemastered") || (PlayerHasReward(lp_player, "SkinZealotRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "ZealotRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "MarineRemastered") || (PlayerHasReward(lp_player, "SkinMarineRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "MarineRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "UltraliskRemastered") || (PlayerHasReward(lp_player, "SkinUltraliskRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "UltraliskRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "CarrierRemastered") || (PlayerHasReward(lp_player, "SkinCarrierRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "CarrierRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "BattlecruiserRemastered") || (PlayerHasReward(lp_player, "SkinBattlecruiserRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "BattlecruiserRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "ProbeRemastered") || (PlayerHasReward(lp_player, "SkinProbeRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "ProbeRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "SCVRemastered") || (PlayerHasReward(lp_player, "SkinSCVRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "SCVRemastered", false);
-        }
-
-        if (((PlayerSkin(lp_player) == "DroneRemastered") || (PlayerHasReward(lp_player, "SkinDroneRemastered") == true))) {
-            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "DroneRemastered", false);
-        }
-
-    }
-
-}
-
 string libSCEV_gf_MergeStatusEffectsMiscDataGet (string lp_buff, unit lp_unit) {
     // Automatic Variable Declarations
     string autoCB941DF5_val;
@@ -1163,7 +1119,7 @@ void libSCEV_gf_MergeStatusEffectsMiscDataSet (string lp_buff, unit lp_unit, str
     string auto3B9EA1F5_val;
 
     // Implementation
-    if (((l_StringIsValid(lp_miscData) == false) || (lp_miscData == "?"))) {
+    if (((lp_miscData == null) || (lp_miscData == "") || (lp_miscData == "?"))) {
         return;
     }
 
@@ -1173,6 +1129,102 @@ void libSCEV_gf_MergeStatusEffectsMiscDataSet (string lp_buff, unit lp_unit, str
     }
     else {
     }
+}
+
+void libSCEV_gf_MergeStatusEffectsInitialize () {
+    // Variable Declarations
+    string lv_userType;
+    string lv_instance;
+    trigger lv_trigger;
+    string lv_abil;
+    abilcmd lv_abilCmd;
+    int lv_commandIndex;
+    int lv_abilStage;
+    bool lv_includeSharedAbils;
+
+    // Automatic Variable Declarations
+    string auto11527A24_userType;
+    int auto11527A24_i;
+
+    // Variable Initialization
+    lv_userType = "SCEV_MergeStatusEffectsEventList";
+    lv_trigger = libSCEV_gt_MergeStatusEffectsTrack;
+    lv_abilStage = -6;
+
+    // Implementation
+    auto11527A24_userType = "SCEV_MergeStatusEffectsEventList";
+    auto11527A24_i = 1;
+    for ( ; auto11527A24_i <= UserDataInstanceCount(auto11527A24_userType) ; auto11527A24_i += 1 ) {
+        lv_instance = UserDataInstance(auto11527A24_userType, auto11527A24_i);
+        lv_abil = UserDataGetGameLink(lv_userType, lv_instance, "Game Link", 1);
+        lv_commandIndex = UserDataGetInt(lv_userType, lv_instance, "Command Index", 1);
+        if (((((lv_commandIndex >= 0) && (lv_commandIndex <= 31)) == false) || (lv_abil == "") || (lv_abil == null))) {
+            continue;
+        }
+
+        lv_abilCmd = AbilityCommand(lv_abil, lv_commandIndex);
+        lv_abilStage = UserDataGetInt(lv_userType, lv_instance, "AbilStage", 1);
+        if ((lv_abilCmd != null)) {
+            TriggerAddEventUnitAbility(lv_trigger, null, lv_abilCmd, lv_abilStage, lv_includeSharedAbils);
+        }
+
+    }
+}
+
+void libSCEV_gf_DisableClassicSkins (int lp_player) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((PlayerType(lp_player) == c_playerTypeUser) && (UserDataGetInt("SCEV_LibraryVariables", "DisableClassicSkins", "Enabled", 1) == 1)) {
+        if ((PlayerHasReward(lp_player, "SkinCommandCenterRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "CommandCenterRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinNexusRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "NexusRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinHatcheryRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "HatcheryRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinHydraliskRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "HydraliskRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinZealotRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "ZealotRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinMarineRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "MarineRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinUltraliskRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "UltraliskRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinCarrierRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "CarrierRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinBattlecruiserRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "BattlecruiserRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinProbeRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "ProbeRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinSCVRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "SCVRemastered", false);
+        }
+
+        if ((PlayerHasReward(lp_player, "SkinDroneRemastered") == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, "DroneRemastered", false);
+        }
+
+    }
+
 }
 
 bool libSCEV_gf_PreloadSplatAssets (bool lp_a, bool lp_b) {
@@ -1254,18 +1306,6 @@ bool libSCEV_gf_PreloadSplatAssets (bool lp_a, bool lp_b) {
     }
     TriggerDestroy(TriggerGetCurrent());
     return true;
-}
-
-string libSCEV_gf_CurrentWord () {
-    // Automatic Variable Declarations
-    // Implementation
-    return libSCEV_gv_CURRENT_WORD;
-}
-
-int libSCEV_gf_CurrentWordIndex () {
-    // Automatic Variable Declarations
-    // Implementation
-    return libSCEV_gv_CURRENT_WORD_INDEX;
 }
 
 playergroup libSCEV_gf_HumanPlayers () {
@@ -1487,6 +1527,7 @@ bool libSCEV_gt_SCEvoFeatureInit_Func (bool testConds, bool runActions) {
     }
 
     libSCEV_gf_InfiniteMoneyMapCheck();
+    libSCEV_gf_MergeStatusEffectsInitialize();
     autoB31C4DE1_g = PlayerGroupActive();
     autoB31C4DE1_var = -1;
     while (true) {
@@ -1582,23 +1623,22 @@ bool libSCEV_gt_FractionalArmorUpdateTrigger_Func (bool testConds, bool runActio
     // Variable Declarations
     string lv_effect;
     unit lv_unit;
+    int lv_sourcePlayer;
+    int lv_targetPlayer;
 
     // Automatic Variable Declarations
     // Variable Initialization
     lv_effect = EventPlayerEffectUsed();
     lv_unit = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+    lv_targetPlayer = UnitGetOwner(lv_unit);
 
     // Conditions
     if (testConds) {
-        if (!(((StringContains((lv_effect), "DamageApply", c_stringAnywhere, c_stringNoCase) == true) || (lv_effect == "SCBW_FractionalArmorUpdate")))) {
-            return false;
-        }
-
         if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_fractionalArmorFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, lv_targetPlayer, libSCEV_gv_fractionalArmorFilter) == true))) {
             return false;
         }
     }
@@ -1608,6 +1648,12 @@ bool libSCEV_gt_FractionalArmorUpdateTrigger_Func (bool testConds, bool runActio
         return true;
     }
 
+    if ((UnitIsValid(EventPlayerEffectUsedUnit(c_effectUnitSource)) == true)) {
+        lv_sourcePlayer = UnitGetOwner(EventPlayerEffectUsedUnit(c_effectUnitSource));
+        PlayerScoreValueSetFromFixed(lv_sourcePlayer, "SCBW_DamageFormula@DamageMultiplierDealt", (PlayerGetPropertyFixed(lv_sourcePlayer, c_playerPropDamageDealtPercent) / 100.0));
+    }
+
+    PlayerScoreValueSetFromFixed(lv_targetPlayer, "SCBW_DamageFormula@DamageMultiplierTaken", (PlayerGetPropertyFixed(lv_targetPlayer, c_playerPropDamageTakenPercent) / 100.0));
     libSCEV_gf_FractionalArmorUpdate(lv_unit);
     return true;
 }
@@ -1616,7 +1662,58 @@ bool libSCEV_gt_FractionalArmorUpdateTrigger_Func (bool testConds, bool runActio
 void libSCEV_gt_FractionalArmorUpdateTrigger_Init () {
     libSCEV_gt_FractionalArmorUpdateTrigger = TriggerCreate("libSCEV_gt_FractionalArmorUpdateTrigger_Func");
     TriggerEnable(libSCEV_gt_FractionalArmorUpdateTrigger, false);
-    TriggerAddEventPlayerEffectUsedFromScope(libSCEV_gt_FractionalArmorUpdateTrigger, c_playerAny, "CEffectUserData");
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_FractionalArmorUpdateTrigger, c_playerAny, "SCBW_DamageFormula@FractionalArmorUpdate");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: FractionalArmor:PlayerDamage
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_FractionalArmorPlayerDamage_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    playergroup autoED29972D_g;
+    int autoED29972D_var;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    autoED29972D_g = PlayerGroupAll();
+    autoED29972D_var = -1;
+    while (true) {
+        autoED29972D_var = PlayerGroupNextPlayer(autoED29972D_g, autoED29972D_var);
+        if (autoED29972D_var < 0) { break; }
+        libSCEV_gf_FractionalArmorUpdatePlayerDamage(autoED29972D_var);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_FractionalArmorPlayerDamage_Init () {
+    libSCEV_gt_FractionalArmorPlayerDamage = TriggerCreate("libSCEV_gt_FractionalArmorPlayerDamage_Func");
+    TriggerEnable(libSCEV_gt_FractionalArmorPlayerDamage, false);
+    TriggerAddEventGeneric(libSCEV_gt_FractionalArmorPlayerDamage, "PlayerDamageUpdate");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: FractionalArmor:GodCheat
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_FractionalArmorGodCheat_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_FractionalArmorUpdatePlayerDamage(EventPlayer());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_FractionalArmorGodCheat_Init () {
+    libSCEV_gt_FractionalArmorGodCheat = TriggerCreate("libSCEV_gt_FractionalArmorGodCheat_Func");
+    TriggerEnable(libSCEV_gt_FractionalArmorGodCheat, false);
+    TriggerAddEventCheatUsed(libSCEV_gt_FractionalArmorGodCheat, c_playerAny, c_gameCheatGod);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2479,11 +2576,8 @@ void libSCEV_gt_MimicCheckSpiderMine_Init () {
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_ReaverPathingCheck_Func (bool testConds, bool runActions) {
     // Variable Declarations
-    fixed lv_path;
-    fixed lv_pathToAttacker;
     unit lv_target;
     unit lv_attacker;
-    const fixed lv_pathingLeeway = 2.0;
 
     // Automatic Variable Declarations
     // Variable Initialization
@@ -2502,29 +2596,11 @@ bool libSCEV_gt_ReaverPathingCheck_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lv_path = AIPathingCostMap(UnitGetPosition(lv_attacker), UnitGetPosition(lv_target));
-    if ((lv_path > libSCEV_gv_reaverPathingRange)) {
-        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@ChaseSwitch", lv_target);
-        return true;
+    if ((AIPathingCostMap(UnitGetPosition(lv_attacker), UnitGetPosition(lv_target)) <= -1)) {
+        UnitBehaviorAdd(lv_attacker, "ReaverSCBWWeapon@LaunchNoPath", lv_target, 1);
     }
-    else if ((lv_path > -1.0)) {
-        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@SetInitial", lv_target);
-        return true;
-    }
-    lv_path = PointPathingCost(UnitGetPosition(lv_attacker), UnitGetPosition(lv_target));
-    lv_pathToAttacker = PointPathingCost(UnitGetPosition(lv_target), UnitGetPosition(lv_attacker));
-    if ((lv_path == 65536.0) && (lv_pathToAttacker == 65536.0)) {
-        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@ChaseCancel", lv_attacker);
-        return true;
-    }
-    else if ((lv_pathToAttacker > (libSCEV_gv_reaverPathingRange + lv_pathingLeeway))) {
-        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@ChaseSwitch", lv_target);
-        return true;
-    }
-    else if ((lv_pathToAttacker <= (libSCEV_gv_reaverPathingRange + lv_pathingLeeway)) && (lv_pathToAttacker > -1.0)) {
-        UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@SetInitial", lv_target);
-        return true;
-    }
+
+    UnitCreateEffectUnit(lv_attacker, "ReaverSCBWWeapon@LaunchSwitch", lv_target);
     return true;
 }
 
@@ -2532,6 +2608,55 @@ bool libSCEV_gt_ReaverPathingCheck_Func (bool testConds, bool runActions) {
 void libSCEV_gt_ReaverPathingCheck_Init () {
     libSCEV_gt_ReaverPathingCheck = TriggerCreate("libSCEV_gt_ReaverPathingCheck_Func");
     TriggerAddEventPlayerEffectUsed(libSCEV_gt_ReaverPathingCheck, c_playerAny, "ReaverSCBWWeapon@Launch");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: ReaverPathing:Chase
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_ReaverPathingChase_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+    unit lv_target;
+    order lv_order;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_caster = EventUnit();
+    lv_target = EventUnitTargetUnit();
+    lv_order = UnitOrder(EventUnit(), 0);
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_target) == true))) {
+            return false;
+        }
+
+        if (!((OrderGetAbilityCommand(lv_order) == EventUnitAbility()))) {
+            return false;
+        }
+
+        if (!((OrderGetFlag(lv_order, c_cmdUser) == true))) {
+            return false;
+        }
+
+        if (!((OrderGetFlag(lv_order, c_cmdAutoQueued) == false))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitCreateEffectUnit(lv_caster, "ReaverSCBWWeapon@ChaseSwitchNoReset", lv_target);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_ReaverPathingChase_Init () {
+    libSCEV_gt_ReaverPathingChase = TriggerCreate("libSCEV_gt_ReaverPathingChase_Func");
+    TriggerAddEventUnitAbility(libSCEV_gt_ReaverPathingChase, null, AbilityCommand("ReaverSCBWWeapon@Attack", 0), c_unitAbilStageExecute, false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2680,15 +2805,13 @@ bool libSCEV_gt_MergeStatusEffectsTrack_Func (bool testConds, bool runActions) {
         }
     }
     DataTableSetString(true, "MergeBuffList", lv_buffList);
+    DataTableSetInt(true, "MergeBuffCount", lv_buffListCounter);
     return true;
 }
 
 //--------------------------------------------------------------------------------------------------
 void libSCEV_gt_MergeStatusEffectsTrack_Init () {
     libSCEV_gt_MergeStatusEffectsTrack = TriggerCreate("libSCEV_gt_MergeStatusEffectsTrack_Func");
-    TriggerAddEventUnitAbility(libSCEV_gt_MergeStatusEffectsTrack, null, AbilityCommand("ArchonSCBWMerge", 1), c_unitAbilStageComplete, false);
-    TriggerAddEventUnitAbility(libSCEV_gt_MergeStatusEffectsTrack, null, AbilityCommand("DarkArchonSCBWMerge", 1), c_unitAbilStageComplete, false);
-    TriggerAddEventUnitAbility(libSCEV_gt_MergeStatusEffectsTrack, null, AbilityCommand("ArchonWarp", 1), c_unitAbilStageComplete, false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2701,15 +2824,16 @@ bool libSCEV_gt_MergeStatusEffectsBegin_Func (bool testConds, bool runActions) {
     unit lv_mergeUnit;
     int lv_origin;
     string lv_buff;
+    int lv_wordIndex;
+    int lv_buffCount;
+    string lv_currWord;
 
     // Automatic Variable Declarations
-    int auto3728D662_ai;
-    int auto3728D662_ae;
-
     // Variable Initialization
     lv_buffList = "";
     lv_currBuff = "";
     lv_mergeUnit = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+    lv_currWord = "";
 
     // Actions
     if (!runActions) {
@@ -2718,20 +2842,20 @@ bool libSCEV_gt_MergeStatusEffectsBegin_Func (bool testConds, bool runActions) {
 
     lv_buffList = DataTableGetString(true, "MergeBuffList");
     DataTableValueRemove(true, "MergeBuffList");
-    if ((l_StringIsValid(lv_buffList) == false)) {
+    lv_buffCount = DataTableGetInt(true, "MergeBuffCount");
+    DataTableValueRemove(true, "MergeBuffCount");
+    if ((lv_buffList == null) && (lv_buffList == "")) {
         return true;
     }
 
-    auto3728D662_ai = 1;
-    auto3728D662_ae = l_WordCount(lv_buffList)+1;
-    while (auto3728D662_ai < auto3728D662_ae) {
-        libSCEV_gv_CURRENT_WORD = StringWord(lv_buffList, auto3728D662_ai);
-        libSCEV_gv_CURRENT_WORD_INDEX = auto3728D662_ai;
-        auto3728D662_ai = auto3728D662_ai+1;
-        lv_currBuff = StringReplaceWord(libSCEV_gv_CURRENT_WORD, "|", " ", c_stringReplaceAll, c_stringCase);
+    lv_wordIndex = 1;
+    while ((lv_wordIndex <= lv_buffCount)) {
+        lv_currWord = StringWord(lv_buffList, lv_wordIndex);
+        lv_wordIndex = (lv_wordIndex + 1);
+        lv_currBuff = StringReplaceWord(lv_currWord, "|", " ", c_stringReplaceAll, c_stringCase);
         lv_buff = (StringWord(lv_currBuff, 1));
         if (((lv_buff == null) || (lv_buff == ""))) {
-
+            continue;
         }
 
         lv_origin = StringToInt(StringWord(lv_currBuff, 3));
@@ -3115,6 +3239,8 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_FractionalArmorAdd_Init();
     libSCEV_gt_FractionalArmorUpgrade_Init();
     libSCEV_gt_FractionalArmorUpdateTrigger_Init();
+    libSCEV_gt_FractionalArmorPlayerDamage_Init();
+    libSCEV_gt_FractionalArmorGodCheat_Init();
     libSCEV_gt_MissChanceRevealTimerExpire_Init();
     libSCEV_gt_MissChanceRevealAttacker_Init();
     libSCEV_gt_MissChanceAdd_Init();
@@ -3132,6 +3258,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MimicCheckStorePlayerIndex_Init();
     libSCEV_gt_MimicCheckSpiderMine_Init();
     libSCEV_gt_ReaverPathingCheck_Init();
+    libSCEV_gt_ReaverPathingChase_Init();
     libSCEV_gt_MergeStatusEffectsTrack_Init();
     libSCEV_gt_MergeStatusEffectsBegin_Init();
     libSCEV_gt_MindControlStealTech_Init();

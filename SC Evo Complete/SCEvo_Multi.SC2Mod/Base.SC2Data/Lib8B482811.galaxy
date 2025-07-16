@@ -26,28 +26,49 @@ void lib8B482811_InitVariables () {
 void lib8B482811_gf_createPing (point lp_point, playergroup lp_visibleGroup) {
     // Automatic Variable Declarations
     // Implementation
-    libNtve_gf_CreatePingFacingAngle(lp_visibleGroup, lib8B482811_gv_pingModel, lp_point, ColorWithAlpha(0.00, 100.00, 0.00, 0.00), lib8B482811_gv_pingDuration, 270.0);
+    libNtve_gf_CreatePingFacingAngle(lp_visibleGroup, lib8B482811_gv_pingModel, lp_point, Color(0.00, 100.00, 0.00), lib8B482811_gv_pingDuration, 270.0);
 }
 
-point lib8B482811_gf_getFarthestSpawn (int lp_player) {
+point lib8B482811_gf_getCrossSpawn (int lp_player) {
     // Variable Declarations
     int lv_x;
-    point lv_farthestPoint;
+    point lv_crossSpawn;
 
     // Automatic Variable Declarations
-    const int autoA33A80D4_ae = 4;
-    const int autoA33A80D4_ai = 1;
+    const int autoAF1AB357_ae = 4;
+    const int autoAF1AB357_ai = 1;
 
     // Variable Initialization
 
     // Implementation
     lv_x = 1;
-    for ( ; ( (autoA33A80D4_ai >= 0 && lv_x <= autoA33A80D4_ae) || (autoA33A80D4_ai < 0 && lv_x >= autoA33A80D4_ae) ) ; lv_x += autoA33A80D4_ai ) {
-        if ((lib8B482811_gv_startingLocations[lv_x] != PlayerStartLocation(lp_player)) && ((lv_farthestPoint == null) || (DistanceBetweenPoints(PlayerStartLocation(lp_player), lib8B482811_gv_startingLocations[lv_x]) > DistanceBetweenPoints(PlayerStartLocation(lp_player), lv_farthestPoint)))) {
-            lv_farthestPoint = lib8B482811_gv_startingLocations[lv_x];
+    for ( ; ( (autoAF1AB357_ai >= 0 && lv_x <= autoAF1AB357_ae) || (autoAF1AB357_ai < 0 && lv_x >= autoAF1AB357_ae) ) ; lv_x += autoAF1AB357_ai ) {
+        if ((lib8B482811_gv_startingLocations[lv_x] != PlayerStartLocation(lp_player)) && ((lv_crossSpawn == null) || (DistanceBetweenPoints(PlayerStartLocation(lp_player), lib8B482811_gv_startingLocations[lv_x]) > DistanceBetweenPoints(PlayerStartLocation(lp_player), lv_crossSpawn)))) {
+            lv_crossSpawn = lib8B482811_gv_startingLocations[lv_x];
         }
     }
-    return lv_farthestPoint;
+    return lv_crossSpawn;
+}
+
+point lib8B482811_gf_getAdjacentSpawn_NoPlayer (int lp_player) {
+    // Variable Declarations
+    int lv_x;
+    point lv_adjacentSpawn;
+
+    // Automatic Variable Declarations
+    const int autoA17DEE1F_ae = 4;
+    const int autoA17DEE1F_ai = 1;
+
+    // Variable Initialization
+
+    // Implementation
+    lv_x = 1;
+    for ( ; ( (autoA17DEE1F_ai >= 0 && lv_x <= autoA17DEE1F_ae) || (autoA17DEE1F_ai < 0 && lv_x >= autoA17DEE1F_ae) ) ; lv_x += autoA17DEE1F_ai ) {
+        if ((lib8B482811_gv_startingLocations[lv_x] != PlayerStartLocation(lp_player)) && (lib8B482811_gv_startingLocations[lv_x] != PlayerStartLocation(PlayerGroupPlayer(PlayerGroupAlliance(c_playerGroupEnemy, lp_player), 1))) && ((lv_adjacentSpawn == null) || (DistanceBetweenPoints(PlayerStartLocation(lp_player), lib8B482811_gv_startingLocations[lv_x]) < DistanceBetweenPoints(PlayerStartLocation(lp_player), lv_adjacentSpawn)) || ((DistanceBetweenPoints(PlayerStartLocation(lp_player), lib8B482811_gv_startingLocations[lv_x]) <= DistanceBetweenPoints(PlayerStartLocation(lp_player), lv_adjacentSpawn)) && (RandomInt(1, 2) == 1)))) {
+            lv_adjacentSpawn = lib8B482811_gv_startingLocations[lv_x];
+        }
+    }
+    return lv_adjacentSpawn;
 }
 
 // Triggers
@@ -57,19 +78,23 @@ point lib8B482811_gf_getFarthestSpawn (int lp_player) {
 bool lib8B482811_gt_PingSpawns_Func (bool testConds, bool runActions) {
     // Variable Declarations
     int lv_x;
-    int lv_otherPlayer;
-    point lv_randomPoint;
+    int lv_player;
     bool lv_invalidStartLocations;
+    point lv_crossSpawn;
+    point[3] lv_randomSpawn;
     int lv_playerCount;
 
     // Automatic Variable Declarations
     const int auto82AF30DE_ae = 4;
     const int auto82AF30DE_ai = 1;
-    playergroup autoF03F5AAB_g;
-    int autoF03F5AAB_var;
+    const int auto276145E7_ae = 2;
+    const int auto276145E7_ai = 1;
+    const int auto5518CA2F_ae = 2;
+    const int auto5518CA2F_ai = 1;
+    const int auto1A6143AF_ae = 2;
+    const int auto1A6143AF_ai = 1;
 
     // Variable Initialization
-    lv_otherPlayer = 2;
     lv_playerCount = PlayerGroupCount(PlayerGroupActive());
 
     // Conditions
@@ -84,50 +109,54 @@ bool lib8B482811_gt_PingSpawns_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    if ((lv_playerCount == 2)) {
-        if (((PointFromName("Start Location 005") != null) || (PointFromName(("시작 장소 005")) != null))) {
+    if ((lv_playerCount > 2)) {
+        MinimapPingPossibleEnemyStartLocations(lib8B482811_gv_pingDuration, lib8B482811_gv_pingModel, Color(0.00, 100.00, 0.00));
+        return true;
+    }
+
+    if ((lv_playerCount != 2)) {
+        return true;
+    }
+
+    if (((PointFromName("Start Location 005") != null) || (PointFromName(("시작 장소 005")) != null))) {
+        lv_invalidStartLocations = true;
+    }
+    lv_x = 1;
+    for ( ; ( (auto82AF30DE_ai >= 0 && lv_x <= auto82AF30DE_ae) || (auto82AF30DE_ai < 0 && lv_x >= auto82AF30DE_ae) ) ; lv_x += auto82AF30DE_ai ) {
+        if ((PointFromName(("Start Location 00" + IntToString(lv_x))) == null) && (PointFromName(("시작 장소 00" + IntToString(lv_x))) == null)) {
             lv_invalidStartLocations = true;
+            break;
         }
-        lv_x = 1;
-        for ( ; ( (auto82AF30DE_ai >= 0 && lv_x <= auto82AF30DE_ae) || (auto82AF30DE_ai < 0 && lv_x >= auto82AF30DE_ae) ) ; lv_x += auto82AF30DE_ai ) {
-            if ((PointFromName(("Start Location 00" + IntToString(lv_x))) == null) && (PointFromName(("시작 장소 00" + IntToString(lv_x))) == null)) {
-                lv_invalidStartLocations = true;
-                break;
-            }
-            if ((PointFromName(("Start Location 00" + IntToString(lv_x))) != null)) {
-                lib8B482811_gv_startingLocations[lv_x] = PointFromName(("Start Location 00" + IntToString(lv_x)));
-            }
-            else if ((PointFromName(("시작 장소 00" + IntToString(lv_x))) != null)) {
-                lib8B482811_gv_startingLocations[lv_x] = PointFromName(("시작 장소 00" + IntToString(lv_x)));
-            }
+        if ((PointFromName(("Start Location 00" + IntToString(lv_x))) != null)) {
+            lib8B482811_gv_startingLocations[lv_x] = PointFromName(("Start Location 00" + IntToString(lv_x)));
         }
-        if ((lv_invalidStartLocations == false)) {
-            autoF03F5AAB_g = PlayerGroupActive();
-            autoF03F5AAB_var = -1;
-            while (true) {
-                autoF03F5AAB_var = PlayerGroupNextPlayer(autoF03F5AAB_g, autoF03F5AAB_var);
-                if (autoF03F5AAB_var < 0) { break; }
-                lv_otherPlayer = PlayerGroupPlayer(PlayerGroupAlliance(c_playerGroupEnemy, autoF03F5AAB_var), 1);
-                lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var] = lib8B482811_gf_getFarthestSpawn(autoF03F5AAB_var);
-                lib8B482811_gf_createPing(lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var], PlayerGroupSingle(autoF03F5AAB_var));
-                if ((lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var] == PlayerStartLocation(lv_otherPlayer))) {
-                    lv_randomPoint = lib8B482811_gv_startingLocations[RandomInt(1, 4)];
-                    while (((lv_randomPoint == lib8B482811_gv_farthestSpawnFromPlayer[autoF03F5AAB_var]) || (lv_randomPoint == PlayerStartLocation(autoF03F5AAB_var)))) {
-                        lv_randomPoint = lib8B482811_gv_startingLocations[RandomInt(1, 4)];
-                    }
-                    lib8B482811_gf_createPing(lv_randomPoint, PlayerGroupSingle(autoF03F5AAB_var));
-                }
-                else {
-                    lib8B482811_gf_createPing(PlayerStartLocation(lv_otherPlayer), PlayerGroupSingle(autoF03F5AAB_var));
-                }
-            }
-        }
-        else if ((lv_invalidStartLocations == true)) {
-            MinimapPingPossibleEnemyStartLocations(lib8B482811_gv_pingDuration, lib8B482811_gv_pingModel, Color(100.00, 0.00, 0.00));
+        else if ((PointFromName(("시작 장소 00" + IntToString(lv_x))) != null)) {
+            lib8B482811_gv_startingLocations[lv_x] = PointFromName(("시작 장소 00" + IntToString(lv_x)));
         }
     }
-    else if ((lv_playerCount > 2)) {
-        MinimapPingPossibleEnemyStartLocations(lib8B482811_gv_pingDuration, lib8B482811_gv_pingModel, Color(100.00, 0.00, 0.00));
+    if ((lv_invalidStartLocations == false)) {
+        lv_crossSpawn = lib8B482811_gf_getCrossSpawn(PlayerGroupPlayer(PlayerGroupActive(), 1));
+        if (((lv_crossSpawn == PlayerStartLocation(PlayerGroupPlayer(PlayerGroupAlliance(c_playerGroupEnemy, PlayerGroupPlayer(PlayerGroupActive(), 1)), 1))) || (RandomInt(1, 2) == 1))) {
+            lv_x = 1;
+            for ( ; ( (auto276145E7_ai >= 0 && lv_x <= auto276145E7_ae) || (auto276145E7_ai < 0 && lv_x >= auto276145E7_ae) ) ; lv_x += auto276145E7_ai ) {
+                lv_randomSpawn[lv_x] = lib8B482811_gf_getAdjacentSpawn_NoPlayer(PlayerGroupPlayer(PlayerGroupActive(), lv_x));
+            }
+        }
+        else if (true) {
+            lv_x = 1;
+            for ( ; ( (auto5518CA2F_ai >= 0 && lv_x <= auto5518CA2F_ae) || (auto5518CA2F_ai < 0 && lv_x >= auto5518CA2F_ae) ) ; lv_x += auto5518CA2F_ai ) {
+                lv_randomSpawn[lv_x] = lib8B482811_gf_getCrossSpawn(PlayerGroupPlayer(PlayerGroupActive(), lv_x));
+            }
+        }
+        lv_x = 1;
+        for ( ; ( (auto1A6143AF_ai >= 0 && lv_x <= auto1A6143AF_ae) || (auto1A6143AF_ai < 0 && lv_x >= auto1A6143AF_ae) ) ; lv_x += auto1A6143AF_ai ) {
+            lv_player = PlayerGroupPlayer(PlayerGroupActive(), lv_x);
+            lib8B482811_gf_createPing(PlayerStartLocation(PlayerGroupPlayer(PlayerGroupAlliance(c_playerGroupEnemy, lv_player), 1)), PlayerGroupSingle(lv_player));
+            lib8B482811_gf_createPing(lv_randomSpawn[lv_x], PlayerGroupSingle(lv_player));
+        }
+    }
+    else if ((lv_invalidStartLocations == true)) {
+        MinimapPingPossibleEnemyStartLocations(lib8B482811_gv_pingDuration, lib8B482811_gv_pingModel, Color(0.00, 100.00, 0.00));
     }
     return true;
 }

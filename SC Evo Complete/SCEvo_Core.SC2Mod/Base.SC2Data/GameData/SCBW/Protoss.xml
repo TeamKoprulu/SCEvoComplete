@@ -280,6 +280,65 @@
             </Upgrade>
         </Instances>
     </CUser>
+    <CEffectUserData id="ReaverSCBWHangar@ScarabCounterAdd">
+        <EditorCategories value="Race:Protoss"/>
+        <Key value="ScarabCounter"/>
+        <SourceKey value="ScarabCounter"/>
+        <ValidateMax value="10"/>
+        <BehaviorScope Behavior="ReaverSCBWWeapon@ScarabTracker"/>
+    </CEffectUserData>
+    <CEffectUserData id="ReaverSCBWHangar@ScarabCounterReduce" parent="ReaverSCBWHangar@ScarabCounterAdd">
+        <Name value="Effect/Name/ReaverSCBWHangar@ScarabCounterReduce"/>
+        <Marker Link="Effect/ReaverSCBWHangar@ScarabCounterReduce"/>
+        <Operation value="Subtract"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@TargetLockedOnReacquire">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
+        <Behavior value="ReaverSCBWWeapon@TargetLockedOn"/>
+    </CEffectApplyBehavior>
+    <CEffectSwitch id="ReaverSCBWWeapon@LaunchSwitch">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="ReaverSCBWWeapon@LaunchCheckNoPath" Effect="ReaverSCBWWeapon@LaunchPathBlocked"/>
+        <CaseDefault value="ReaverSCBWWeapon@LaunchPathValid"/>
+    </CEffectSwitch>
+    <CEffectSwitch id="ReaverSCBWWeapon@LaunchPathValid">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="ReaverSCBWWeapon@ChaseSwitchCheck" Effect="ReaverSCBWWeapon@ChaseSwitch"/>
+        <CaseDefault value="ReaverSCBWWeapon@SetInitial"/>
+    </CEffectSwitch>
+    <CEffectSwitch id="ReaverSCBWWeapon@LaunchPathBlocked">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="ReaverSCBWWeapon@ChaseCancelCheck" Effect="ReaverSCBWWeapon@ChaseCancel"/>
+        <CaseArray Validator="ReaverSCBWWeapon@LaunchCheckReachable" Effect="ReaverSCBWWeapon@LaunchPathValid"/>
+        <CaseDefault value="ReaverSCBWWeapon@ChaseSwitch"/>
+    </CEffectSwitch>
+    <CEffectCancelOrder id="ReaverSCBWWeapon@ChaseCancelOrder">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Value="Caster"/>
+        <AbilCmd value="ReaverSCBWWeapon@Chase,Execute"/>
+    </CEffectCancelOrder>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@ChaseTracker">
+        <WhichUnit Value="Caster"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@LaunchAttempt">
+        <WhichUnit Value="Caster"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@TargetLockedOn">
+        <EditorCategories value="Race:Protoss"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="ReaverSCBWWeapon@TeleportTrackRemoveWarningSign">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
+        <BehaviorLink value="ReaverSCBWWeapon@WarningSign"/>
+        <Count value="1"/>
+        <RequireCasterUnit Effect="ReaverSCBWWeapon@LaunchSwitch" Value="Caster"/>
+    </CEffectRemoveBehavior>
+    <CEffectSet id="ReaverSCBWWeapon@TeleportTrackFinal">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@TeleportTrackRemoveTracker"/>
+        <EffectArray value="ReaverSCBWWeapon@TeleportTrackRemoveWarningSign"/>
+    </CEffectSet>
     <CEffectApplyBehavior id="ReaverSCBWWeapon@Backswing">
         <EditorCategories value="Race:Protoss"/>
         <WhichUnit Value="Caster"/>
@@ -355,6 +414,7 @@
         <EditorCategories value="Race:Protoss"/>
         <ImpactUnit Value="Caster"/>
         <Weapon Weapon="ReaverSCBWWeapon@NoScan" CooldownOperation="Set"/>
+        <Weapon Weapon="ReaverSCBWWeapon" CooldownOperation="Set"/>
     </CEffectModifyUnit>
     <CEffectIssueOrder id="ArbiterSCBWStasisField@HaltIssueOrder">
         <EditorCategories value="Race:Terran"/>
@@ -366,16 +426,6 @@
         <CaseArray Validator="InterceptorSCBW@VitalityCondition" Effect="InterceptorSCBW@Return"/>
         <EditorCategories value="Race:Protoss"/>
     </CEffectSwitch>
-    <CEffectSet id="CorsairSCBWWeapon@ImpactSearchSet" parent="SCBW_SplashImpactSetBase" x="CorsairSCBWWeapon">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectSet>
-    <CEffectEnumArea id="CorsairSCBWWeapon@ImpactSearch">
-        <SearchFilters value="Air,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
-        <AreaArray Radius="3.125" Effect="CorsairSCBWWeapon@ImpactSearchSet"/>
-        <SearchFlags index="CallForHelp" value="1"/>
-        <SearchFlags index="OffsetByUnitRadius" value="1"/>
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectEnumArea>
     <CEffectApplyBehavior id="ZealotSCBWWeapon@SuppressMovement">
         <WhichUnit Value="Source"/>
         <EditorCategories value="Race:Protoss"/>
@@ -397,9 +447,8 @@
         <EffectArray value="ArchonSCBWWeapon@Damage"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSet>
-    <CEffectDamage id="DarkArchonSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="DarkArchonSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
-        <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <Amount value="6"/>
         <SearchFlags index="CallForHelp" value="0"/>
@@ -434,38 +483,19 @@
         <CaseDefault value="ArchonSCBWWeapon@Impact"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
-    <CEffectSet id="CorsairSCBWWeapon@Impact" parent="SCBW_SplashImpactBase" x="CorsairSCBWWeapon">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectSet>
-    <CEffectUserData id="CorsairSCBWWeapon@DamageApply" parent="DamageIncoming" x="CorsairSCBWWeapon">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectUserData>
-    <CEffectSet id="DragoonSCBWWeapon@Impact" parent="SCBW_WeaponImpactBase" x="DragoonSCBWWeapon">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectSet>
-    <CEffectSet id="ArbiterSCBWWeapon@Impact" parent="SCBW_WeaponImpactBase" x="ArbiterSCBWWeapon">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectSet>
-    <CEffectUserData id="DragoonSCBWWeapon@DamageApply" parent="DamageIncoming" x="DragoonSCBWWeapon">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectUserData>
-    <CEffectUserData id="ArbiterSCBWWeapon@DamageApply" parent="DamageIncoming" x="ArbiterSCBWWeapon">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectUserData>
-    <CEffectSet id="ScoutSCBWWeaponAir@Impact" parent="SCBW_WeaponImpactBase" x="ScoutSCBWWeaponAir">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectSet>
-    <CEffectUserData id="ScoutSCBWWeaponAir@DamageApply" parent="DamageIncoming" x="ScoutSCBWWeaponAir">
-        <EditorCategories value="Race:Protoss"/>
-    </CEffectUserData>
-    <CEffectDamage id="DragoonSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW">
-        <EditorCategories value="Race:Protoss"/>
+    <CEffectSet id="CorsairSCBWWeapon@ImpactSplash" parent="SCBW_SplashImpactZonesBase" Race="Protoss" x="CorsairSCBWWeapon"/>
+    <CEffectSet id="CorsairSCBWWeapon@Impact" parent="SCBW_SplashImpactExplBase" Race="Protoss" x="CorsairSCBWWeapon"/>
+    <CEffectUserData id="CorsairSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Protoss" x="CorsairSCBWWeapon"/>
+    <CEffectSet id="DragoonSCBWWeapon@Impact" parent="SCBW_WeaponImpactExplBase" Race="Protoss" x="DragoonSCBWWeapon"/>
+    <CEffectSet id="ArbiterSCBWWeapon@Impact" parent="SCBW_WeaponImpactExplBase" Race="Protoss" x="ArbiterSCBWWeapon"/>
+    <CEffectUserData id="DragoonSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Protoss" x="DragoonSCBWWeapon"/>
+    <CEffectUserData id="ArbiterSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Protoss" x="ArbiterSCBWWeapon"/>
+    <CEffectSet id="ScoutSCBWWeaponAir@Impact" parent="SCBW_WeaponImpactExplBase" Race="Protoss" x="ScoutSCBWWeaponAir"/>
+    <CEffectDamage id="DragoonSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Protoss">
         <Kind value="Ranged"/>
-        <Visibility value="Visible"/>
     </CEffectDamage>
-    <CEffectDamage id="ArbiterSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW">
-        <EditorCategories value="Race:Protoss"/>
-        <Visibility value="Visible"/>
+    <CEffectUserData id="ScoutSCBWWeaponAir@DamageApply" parent="DamageIncoming" Race="Protoss" x="ScoutSCBWWeaponAir"/>
+    <CEffectDamage id="ArbiterSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Protoss">
         <Kind value="Ranged"/>
     </CEffectDamage>
     <CEffectLaunchMissile id="ArbiterSCBWWeapon@LM">
@@ -503,9 +533,8 @@
         <PeriodicEffectArray value="CarrierSCBWWeapon@IM"/>
         <PeriodicPeriodArray value="0.625"/>
     </CEffectCreatePersistent>
-    <CEffectDamage id="InterceptorSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="InterceptorSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
-        <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <Amount value="6"/>
     </CEffectDamage>
@@ -518,20 +547,19 @@
         <PeriodicPeriodArray value="0"/>
         <PeriodicPeriodArray value="0"/>
     </CEffectCreatePersistent>
-    <CEffectDamage id="CorsairSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW">
-        <EditorCategories value="Race:Protoss"/>
+    <CEffectDamage id="CorsairSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Protoss">
         <Marker>
             <MatchFlags index="Link" value="1"/>
             <MatchFlags index="CasterUnit" value="1"/>
         </Marker>
-        <Visibility value="Visible"/>
-        <Kind value="Splash"/>
+        <Kind value="Ranged"/>
         <AreaArray Radius="0.1562" Fraction="1"/>
         <!--AreaArray Radius="1.5625" Fraction="0.5"/>
         <AreaArray Radius="3.125" Fraction="0.25"/-->
         <ExcludeArray Value="Target"/>
         <SearchFilters value="Air,Visible;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <SearchFlags index="SameCliff" value="0"/>
+        <KindSplash value="Splash"/>
     </CEffectDamage>
     <CEffectDamage id="CorsairSCBWWeapon@DamageAccum2" parent="CorsairSCBWWeapon@DamageAccum">
         <Name value="Effect/Name/CorsairSCBWWeapon@DamageAccum2"/>
@@ -543,27 +571,24 @@
         <ImpactUnitValidator value="noMarkers"/>
         <AreaArray index="0" Radius="3.125" Fraction="1" Validator="noMarkers"/>
     </CEffectDamage>
-    <CEffectDamage id="ProbeSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="ProbeSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
         <Amount value="5"/>
-        <Visibility value="Visible"/>
     </CEffectDamage>
-    <CEffectDamage id="PhotonCannonSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="PhotonCannonSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
         <Kind value="Ranged"/>
         <Amount value="20"/>
-        <Visibility value="Visible"/>
     </CEffectDamage>
     <CEffectLaunchMissile id="PhotonCannonSCBWWeapon@LM">
         <EditorCategories value="Race:Protoss"/>
         <ImpactEffect value="PhotonCannonSCBWWeapon@Damage"/>
         <AmmoUnit value="PhotonCannonSCBWWeapon@Missile"/>
     </CEffectLaunchMissile>
-    <CEffectDamage id="ZealotSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="ZealotSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
         <Amount value="8"/>
         <Death value="Eviscerate"/>
-        <Visibility value="Visible"/>
         <ValidatorArray value="ZealotSCBWWeapon@DamageValidator"/>
     </CEffectDamage>
     <CEffectCreatePersistent id="ZealotSCBWWeapon@CP">
@@ -582,10 +607,9 @@
         <EffectArray value="ZealotSCBWWeapon@SuppressMovement"/>
         <EditorCategories value="Race:Protoss"/>
     </CEffectSet>
-    <CEffectDamage id="ArchonSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="ArchonSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
         <ImpactUnitValidator value="NotUnderDarkSwarmCombine"/>
-        <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <KindSplash value="Splash"/>
         <Amount value="30"/>
@@ -598,12 +622,38 @@
         <SearchFlags index="OffsetByUnitRadius" value="0"/>
         <SearchFlags index="SameCliff" value="0"/>
     </CEffectDamage>
-    <CEffectDamage id="ScoutSCBWWeaponGround@Damage" parent="DU_WEAP">
+    <CEffectDamage id="ScoutSCBWWeaponGround@Damage" parent="SCBW_WeaponDamageRanged">
         <EditorCategories value="Race:Protoss"/>
-        <Visibility value="Visible"/>
-        <Kind value="Ranged"/>
         <Amount value="8"/>
     </CEffectDamage>
+    <CEffectCreatePersistent id="ScoutSCBWWeaponGround@FXPersistent">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="8"/>
+        <PeriodicEffectArray value="ScoutSCBWWeaponGround@FXDummy"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <PeriodicPeriodArray value="0"/>
+    </CEffectCreatePersistent>
+    <CEffectModifyUnit id="ScoutSCBWWeaponGround@FXDummy">
+        <EditorCategories value="Race:Protoss"/>
+    </CEffectModifyUnit>
+    <CEffectCreatePersistent id="ScoutSCBWWeaponGround@CP">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <PeriodCount value="1"/>
+        <PeriodicEffectArray value="ScoutSCBWWeaponGround@Damage"/>
+        <PeriodicPeriodArray value="0"/>
+        <InitialEffect value="ScoutSCBWWeaponGround@FXPersistent"/>
+    </CEffectCreatePersistent>
     <CEffectCreatePersistent id="ScoutSCBWWeaponAir@CP">
         <EditorCategories value="Race:Protoss"/>
         <WhichLocation Value="TargetUnit"/>
@@ -627,19 +677,15 @@
         <Movers Link="MissileDefault" IfRangeLTE="1"/>
         <Movers Link="ScoutSCBWWeaponAir@MoverRight" IfRangeLTE="4"/>
     </CEffectLaunchMissile>
-    <CEffectDamage id="ScoutSCBWWeaponAir@DamageAccum" parent="ExplosiveBaseDamageSCBW">
-        <EditorCategories value="Race:Protoss"/>
-        <Visibility value="Visible"/>
+    <CEffectDamage id="ScoutSCBWWeaponAir@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Protoss">
         <Kind value="Ranged"/>
     </CEffectDamage>
-    <CEffectDamage id="ArbiterSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW">
-        <EditorCategories value="Race:Protoss"/>
+    <CEffectDamage id="ArbiterSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Protoss">
         <Kind value="Ranged"/>
         <Amount value="7.5"/>
         <DisplayFlags index="DisplayRounded" value="0"/>
     </CEffectDamage>
-    <CEffectDamage id="CorsairSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW">
-        <EditorCategories value="Race:Protoss"/>
+    <CEffectDamage id="CorsairSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Protoss">
         <Kind value="Splash"/>
         <Amount value="3.75"/>
         <AreaArray Radius="0.1562" Fraction="1"/>
@@ -649,14 +695,12 @@
         <SearchFilters value="Air,Visible;Player,Ally,Neutral"/>
         <DisplayFlags index="DisplayRounded" value="0"/>
     </CEffectDamage>
-    <CEffectDamage id="DragoonSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW">
-        <EditorCategories value="Race:Protoss"/>
+    <CEffectDamage id="DragoonSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Protoss">
         <Kind value="Ranged"/>
         <Amount value="15"/>
         <DisplayFlags index="DisplayRounded" value="0"/>
     </CEffectDamage>
-    <CEffectDamage id="ScoutSCBWWeaponAir@DamageExpl" parent="ExplosiveDamageUISCBW">
-        <EditorCategories value="Race:Protoss"/>
+    <CEffectDamage id="ScoutSCBWWeaponAir@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Protoss">
         <Visibility value="Visible"/>
         <Kind value="Ranged"/>
         <Amount value="10.5"/>
@@ -699,17 +743,22 @@
     </CEffectModifyUnit>
     <CEffectSwitch id="ReaverSCBWWeapon@ChaseSwitch">
         <EditorCategories value="Race:Protoss"/>
-        <CaseArray Validator="CasterNotHoldingPosition" Effect="ReaverSCBWWeapon@ChaseSet"/>
+        <CaseArray Effect="ReaverSCBWWeapon@LaunchAttempt" FallThrough="1"/>
+        <CaseArray Validator="ReaverSCBWWeapon@LaunchChaseAttempts" Effect="ReaverSCBWWeapon@ChaseCancel"/>
+        <CaseArray Validator="ReaverSCBWWeapon@ChaseSwitch" Effect="ReaverSCBWWeapon@ChaseSet"/>
         <CaseDefault value="ReaverSCBWWeapon@ChaseCancel"/>
     </CEffectSwitch>
     <CEffectCancelOrder id="ReaverSCBWWeapon@ChaseCancelAttack">
         <EditorCategories value="Race:Protoss"/>
         <WhichUnit Value="Caster"/>
-        <AbilCmd value="attack,Execute"/>
+        <AbilCmd value="ReaverSCBWWeapon@Attack,Execute"/>
     </CEffectCancelOrder>
     <CEffectSet id="ReaverSCBWWeapon@ChaseSet">
         <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@ChaseCancelAttack"/>
+        <EffectArray value="ReaverSCBWWeapon@ChaseAttack"/>
         <EffectArray value="ReaverSCBWWeapon@ChaseOrder"/>
+        <EffectArray value="ReaverSCBWWeapon@ChaseTracker"/>
         <EffectArray value="ReaverSCBWWeapon@ResetCooldown"/>
     </CEffectSet>
     <CEffectIssueOrder id="ReaverSCBWWeapon@ChaseOrder">
@@ -727,22 +776,46 @@
         <WhichLocation Value="TargetUnitOrPoint"/>
         <OffsetVectorEndLocation Value="TargetUnitOrPoint"/>
     </CEffectCreatePersistent>
+    <CEffectSet id="ReaverSCBWWeapon@ChaseSetNoReset" parent="ReaverSCBWWeapon@ChaseSet">
+        <Name value="Effect/Name/ReaverSCBWWeapon@ChaseSetNoReset"/>
+        <EffectArray index="4" removed="1"/>
+    </CEffectSet>
+    <CEffectSwitch id="ReaverSCBWWeapon@ChaseSwitchNoReset" parent="ReaverSCBWWeapon@ChaseSwitch">
+        <Name value="Effect/Name/ReaverSCBWWeapon@ChaseSwitchNoReset"/>
+        <CaseArray index="2" Validator="ReaverSCBWWeapon@ChaseSwitch" Effect="ReaverSCBWWeapon@ChaseSetNoReset"/>
+    </CEffectSwitch>
+    <CEffectIssueOrder id="ReaverSCBWWeapon@ShiftMoveLocationOrder">
+        <EditorCategories value="Race:Protoss"/>
+        <Abil value="move"/>
+        <CmdFlags index="Queued" value="1"/>
+        <Target Effect="ReaverSCBWWeapon@LaunchSwitch" Value="TargetPoint"/>
+    </CEffectIssueOrder>
+    <CEffectCancelOrder id="ReaverSCBWWeapon@ShiftMoveLocationClearOrder">
+        <EditorCategories value="Race:Protoss"/>
+        <AbilCmd value="move,Move"/>
+        <Flags index="Active" value="0"/>
+        <Flags index="Queued" value="1"/>
+    </CEffectCancelOrder>
     <CEffectIssueOrder id="ReaverSCBWWeapon@ChaseAttack">
         <EditorCategories value="Race:Protoss"/>
-        <WhichUnit Effect="ReaverSCBWWeapon@Chase" Value="Caster"/>
-        <Abil value="attack"/>
+        <WhichUnit Value="Caster"/>
+        <Abil value="ReaverSCBWWeapon@Attack"/>
         <CmdFlags index="Preempt" value="1"/>
         <CmdFlags index="AutoQueued" value="1"/>
-        <Player Effect="ReaverSCBWWeapon@Chase" Value="Caster"/>
-        <Target Effect="ReaverSCBWWeapon@Chase" Value="TargetUnit"/>
-        <ValidatorArray value="ReaverSCBWHangar@Armed"/>
+        <Player Value="Caster"/>
+        <Target Value="TargetUnit"/>
     </CEffectIssueOrder>
+    <CEffectSet id="ReaverSCBWWeapon@ShiftMoveLocationSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@ShiftMoveLocationClearOrder"/>
+        <EffectArray value="ReaverSCBWWeapon@ShiftMoveLocationOrder"/>
+    </CEffectSet>
     <CEffectCreatePersistent id="ReaverSCBWWeapon@Launch">
+        <ValidatorArray value="ReaverSCBWHangar@Armed"/>
+        <ValidatorArray value="ReaverSCBWWeapon@ScarabNotLive"/>
         <EditorCategories value="Race:Protoss"/>
         <WhichLocation Value="TargetUnit"/>
         <OffsetVectorEndLocation Value="TargetUnit"/>
-        <ValidatorArray value="ReaverSCBWHangar@Armed"/>
-        <ValidatorArray value="ReaverSCBWWeapon@ScarabNotLive"/>
     </CEffectCreatePersistent>
     <CEffectCreatePersistent id="ReaverSCBWWeapon@LaunchCheck">
         <ValidatorArray value="ReaverSCBWWeapon@LaunchCheck"/>
@@ -766,7 +839,7 @@
         <Flags index="Kill" value="1"/>
         <Flags index="NoKillCredit" value="1"/>
     </CEffectDamage>
-    <CEffectDamage id="DarkTemplarSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="DarkTemplarSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
         <Amount value="40"/>
         <Death value="Eviscerate"/>
@@ -794,10 +867,9 @@
         <ValidatorArray index="0" value="NotDead"/>
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
-    <CEffectDamage id="ScarabSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="ScarabSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="SourcePoint"/>
-        <Visibility value="Visible"/>
         <Kind value="Splash"/>
         <KindSplash value="Splash"/>
         <Amount value="100"/>
@@ -840,11 +912,9 @@
         <EffectArray value="Suicide"/>
         <ValidatorArray value="ScarabSCBWWeapon@ImpactNormal"/>
     </CEffectSet>
-    <CEffectDamage id="HighTemplarSCBWWeapon@Damage" parent="DU_WEAP">
+    <CEffectDamage id="HighTemplarSCBWWeapon@Damage" parent="SCBW_WeaponDamageRanged">
         <EditorCategories value="Race:Protoss"/>
-        <Visibility value="Visible"/>
         <Amount value="4"/>
-        <Kind value="Ranged"/>
         <Death value="Blast"/>
     </CEffectDamage>
     <CEffectLaunchMissile id="HighTemplarSCBWWeapon@LM">
@@ -872,23 +942,6 @@
         <SpawnUnit value="ScarabSCBW"/>
         <SpawnRange value="10"/>
     </CEffectCreateUnit>
-    <CEffectIssueOrder id="ReaverSCBWWeapon@IssueQueuedMoveCommand">
-        <EditorCategories value="Race:Protoss"/>
-        <Abil value="move"/>
-        <CmdFlags index="Queued" value="1"/>
-        <Target Effect="ReaverSCBWWeapon@SetInitial" Value="TargetPoint"/>
-    </CEffectIssueOrder>
-    <CEffectCancelOrder id="ReaverSCBWWeapon@ClearLastMoveOrderTracker">
-        <EditorCategories value="Race:Protoss"/>
-        <AbilCmd value="move,Move"/>
-        <Flags index="Active" value="0"/>
-        <Flags index="Queued" value="1"/>
-    </CEffectCancelOrder>
-    <CEffectSet id="ReaverSCBWWeapon@ShiftMoveTargetTrackerSet">
-        <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@ClearLastMoveOrderTracker"/>
-        <EffectArray value="ReaverSCBWWeapon@IssueQueuedMoveCommand"/>
-    </CEffectSet>
     <CEffectSet id="ReaverSCBWWeapon@CUSet">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="ReaverSCBWWeapon@HallucinationScarab"/>
@@ -898,6 +951,7 @@
         <EffectArray value="ReaverSCBWWeapon@TrackTargetLastPosition"/>
         <EffectArray value="ReaverSCBWWeapon@ScarabTrack"/>
         <EffectArray value="ReaverSCBWWeapon@KillsToCaster"/>
+        <EffectArray value="ReaverSCBWWeapon@TeleportTrack"/>
     </CEffectSet>
     <CEffectUseMagazine id="ReaverSCBWWeapon@UM">
         <EditorCategories value="Race:Protoss"/>
@@ -910,7 +964,7 @@
         <EffectArray value="ReaverSCBWWeapon@UM"/>
         <EffectArray value="ReaverSCBWWeapon@Cancelable"/>
         <EffectArray value="ReaverSCBWWeapon@Backswing"/>
-        <TargetLocationType value="UnitOrPoint"/>
+        <EffectArray value="ReaverSCBWWeapon@TargetLockedOn"/>
         <ValidatorArray value="ReaverSCBWHangar@Armed"/>
         <ValidatorArray value="ReaverSCBWWeapon@ScarabNotLive"/>
     </CEffectSet>
@@ -920,43 +974,21 @@
         <Flags index="Kill" value="1"/>
         <Flags index="NoKillCredit" value="1"/>
         <Death value="Remove"/>
+        <DamageInheritEffect value="ReaverSCBWHangar@ScarabCounterReduce"/>
     </CEffectDamage>
     <CEffectIssueOrder id="ReaverSCBWWeapon@Attack">
         <EditorCategories value="Race:Protoss"/>
         <Abil value="attack"/>
-        <Target Effect="ReaverSCBWWeapon@SetInitial" Value="TargetUnit"/>
+        <Target Effect="ReaverSCBWWeapon@LaunchSwitch" Value="TargetUnit"/>
         <CmdFlags index="Queued" value="1"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <ValidatorArray value="ReaverSCBWWeapon@ScarabNotAttacking"/>
     </CEffectIssueOrder>
-    <CEffectRemoveBehavior id="ReaverSCBWWeapon@RemoveTeleportDetectorFromSelf">
-        <ValidatorArray index="0" removed="1"/>
+    <CEffectRemoveBehavior id="ReaverSCBWWeapon@WarningSignRB">
         <EditorCategories value="Race:Protoss"/>
-        <Marker>
-            <MatchFlags index="CasterUnit" value="1"/>
-        </Marker>
-        <WhichUnit Value="Caster"/>
-        <BehaviorLink value="ReaverSCBWWeapon@TrackTargetPosition"/>
-    </CEffectRemoveBehavior>
-    <CEffectRemoveBehavior id="ReaverSCBWWeapon@TeleportRemoveBehaviorSelf">
-        <EditorCategories value="Race:Protoss"/>
-        <Marker>
-            <MatchFlags index="CasterUnit" value="1"/>
-        </Marker>
-        <WhichUnit Value="Caster"/>
-        <BehaviorCategories index="TeleportRemove" value="1"/>
-    </CEffectRemoveBehavior>
-    <CEffectRemoveBehavior id="ReaverSCBWWeapon@RemoveTeleportDetectorFromTarget">
-        <EditorCategories value="Race:Protoss"/>
-        <Marker>
-            <MatchFlags index="CasterUnit" value="1"/>
-        </Marker>
-        <BehaviorLink value="ReaverSCBWWeapon@TrackTargetPosition"/>
-    </CEffectRemoveBehavior>
-    <CEffectRemoveBehavior id="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget">
-        <EditorCategories value="Race:Protoss"/>
-        <Marker>
-            <MatchFlags index="CasterUnit" value="1"/>
-        </Marker>
-        <BehaviorCategories index="TeleportRemove" value="1"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
+        <BehaviorLink value="ReaverSCBWWeapon@WarningSign"/>
+        <Count value="1"/>
     </CEffectRemoveBehavior>
     <CEffectApplyBehavior id="ReaverSCBWWeapon@Warning">
         <ValidatorArray value="ReaverSCBWWeapon@ScarabWarningFilter"/>
@@ -964,14 +996,8 @@
     </CEffectApplyBehavior>
     <CEffectApplyBehavior id="ReaverSCBWWeapon@WarningSign">
         <EditorCategories value="Race:Protoss"/>
-        <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
     </CEffectApplyBehavior>
-    <CEffectRemoveBehavior id="ReaverSCBWWeapon@WarningSignRB">
-        <EditorCategories value="Race:Protoss"/>
-        <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
-        <BehaviorLink value="ReaverSCBWWeapon@WarningSign"/>
-        <Count value="1"/>
-    </CEffectRemoveBehavior>
     <CEffectAddTrackedUnit id="ReaverSCBWWeapon@ScarabTrack">
         <EditorCategories value="Race:Protoss"/>
         <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
@@ -1106,7 +1132,7 @@
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="TargetPoint"/>
         <SearchFilters value="-;Self,Structure,User1,RawResource,HarvestableResource,Missile,Destructible,Item,Buried,Dead,Hidden,Powerup,PowerupOrItem"/>
-        <AreaArray Radius="1.875" Effect="ArbiterSCBWStasisField@Set"/>
+        <AreaArray Radius="1.6875" Effect="ArbiterSCBWStasisField@Set"/>
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
     </CEffectEnumArea>
@@ -1167,7 +1193,7 @@
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="TargetPoint"/>
         <SearchFilters value="-;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
-        <AreaArray Radius="2.12" Effect="ArbiterSCBWRecall@SetInitial"/>
+        <AreaArray Radius="2.25" Effect="ArbiterSCBWRecall@SetInitial"/>
         <MinCount value="1"/>
     </CEffectEnumArea>
     <CEffectSet id="ArbiterSCBWRecall@Set">
@@ -1176,7 +1202,7 @@
         <EffectArray value="ArbiterSCBWRecall@Teleport"/>
         <EffectArray value="ArbiterSCBWRecall@TeleportAir"/>
         <EffectArray value="ArbiterSCBWRecall@ABRecalled"/>
-        <EffectArray value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+        <EffectArray value="SCBW_CategoryRemoveTeleportRemove"/>
     </CEffectSet>
     <CEffectApplyBehavior id="CorsairSCBWDisruptionWeb@AB">
         <EditorCategories value="Race:Protoss"/>
@@ -1197,7 +1223,7 @@
     <CEffectEnumArea id="CorsairSCBWDisruptionWeb@Search">
         <EditorCategories value="Race:Protoss"/>
         <SearchFilters value="Ground;RawResource,HarvestableResource,Missile,Item,Dead,Hidden,Unstoppable"/>
-        <AreaArray Radius="1.95" Effect="CorsairSCBWDisruptionWeb@Set"/>
+        <AreaArray Radius="1.725" Effect="CorsairSCBWDisruptionWeb@Set"/>
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
     </CEffectEnumArea>
@@ -1226,6 +1252,12 @@
         </VitalArray>
         <EditorCategories value="Race:Protoss"/>
     </CEffectModifyUnit>
+    <CEffectDamage id="DarkArchonSCBWFeedback@Damage" parent="SCBW_SpellDamage">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="TargetUnit"/>
+        <VitalFractionCurrent index="Energy" value="1"/>
+        <Death value="Blast"/>
+    </CEffectDamage>
     <CEffectModifyUnit id="DarkArchonSCBWMindControl@DrainEnergy">
         <ValidatorArray value="IsDarkArchonUnit"/>
         <EditorCategories value="Race:Protoss"/>
@@ -1263,7 +1295,7 @@
         <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="TargetPoint"/>
         <SearchFilters value="Biological;Self,Structure,Missile,Buried,Stasis,Dead,Hidden,Invulnerable,Resistant"/>
-        <AreaArray Radius="1.875" Effect="DarkArchonSCBWMaelstrom@Set"/>
+        <AreaArray Radius="1.6875" Effect="DarkArchonSCBWMaelstrom@Set"/>
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
     </CEffectEnumArea>
@@ -1271,17 +1303,6 @@
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="DarkArchonSCBWMaelstrom"/>
     </CEffectApplyBehavior>
-    <CEffectDamage id="DarkArchonSCBWFeedback@Damage">
-        <EditorCategories value="Race:Protoss"/>
-        <ResponseFlags index="Acquire" value="1"/>
-        <ResponseFlags index="Flee" value="1"/>
-        <ImpactLocation Value="TargetUnit"/>
-        <Flags index="Notification" value="1"/>
-        <VitalFractionCurrent index="Energy" value="1"/>
-        <Death value="Blast"/>
-        <SearchFlags index="CallForHelp" value="1"/>
-        <SearchFlags index="SameCliff" value="0"/>
-    </CEffectDamage>
     <CEffectSet id="DarkArchonSCBWFeedback@Set">
         <ValidatorArray value="DarkArchonSCBWFeedback@Set"/>
         <EditorCategories value="Race:Protoss"/>
@@ -1340,6 +1361,7 @@
         <Flags index="Notification" value="1"/>
         <Amount value="14"/>
         <KillHallucination value="1"/>
+        <Visibility value="Hidden"/>
     </CEffectDamage>
     <CEffectCreatePersistent id="HighTemplarSCBWPsiStorm@CP">
         <EditorCategories value="Race:Protoss"/>
@@ -1355,7 +1377,7 @@
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
         <SearchFilters value="-;Structure,Missile,Destructible,Stasis,Dead,Hidden,Invulnerable"/>
-        <AreaArray Radius="1.875" Effect="HighTemplarSCBWPsiStorm@AB"/>
+        <AreaArray Radius="1.6875" Effect="HighTemplarSCBWPsiStorm@AB"/>
         <SearchFlags index="CallForHelp" value="1"/>
     </CEffectEnumArea>
     <CEffectSet id="HighTemplarSCBWHallucination@SetInitial">
@@ -1431,6 +1453,29 @@
         <WhichUnit Value="Source"/>
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="ReaverSCBWWeapon@TeleportTrackRemoveTracker">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
+        <BehaviorLink value="ReaverSCBWWeapon@TrackTargetPosition"/>
+        <Count value="1"/>
+        <RequireCasterUnit Effect="ReaverSCBWWeapon@LaunchSwitch" Value="Caster"/>
+    </CEffectRemoveBehavior>
+    <CEffectCreatePersistent id="ReaverSCBWWeapon@TeleportTrack">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="TargetUnit"/>
+        <OffsetVectorEndLocation Value="TargetUnit"/>
+        <Flags index="EffectFailure" value="1"/>
+        <FinalEffect value="ReaverSCBWWeapon@TeleportTrackFinal"/>
+        <PeriodCount value="42"/>
+        <PeriodicValidator value="ReaverSCBWWeapon@TeleportTrackValidator"/>
+        <PeriodicEffectArray value="ReaverSCBWWeapon@TeleportTrackSet"/>
+        <PeriodicPeriodArray value="0.125"/>
+        <InitialEffect value="ReaverSCBWWeapon@TeleportTrackSet"/>
+    </CEffectCreatePersistent>
+    <CEffectSet id="ReaverSCBWWeapon@TeleportTrackSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ReaverSCBWWeapon@TargetLockedOnReacquire"/>
+    </CEffectSet>
     <CAbilEffectInstant id="ReaverSCBWWeapon@UnloadStunAbil">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <TechAliasArray value="_IllusionEnabled"/>
@@ -1735,13 +1780,14 @@
         <Flags index="AllowMovement" value="1"/>
         <Flags index="Chase" value="1"/>
         <Flags index="RangeUsePathing" value="1"/>
+        <Flags index="ReApproachable" value="0"/>
         <Flags index="RequireTargetVision" value="0"/>
         <Flags index="UpdateTarget" value="1"/>
-        <Range value="9"/>
+        <Range value="4"/>
         <RangeSlop value="0"/>
         <Arc value="360"/>
         <TrackingArc value="360"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="Attack">
+        <CmdButtonArray index="Execute" DefaultButtonFace="ReaverSCBWWeapon@Chase">
             <Flags index="IgnoreUser" value="1"/>
         </CmdButtonArray>
         <TechAliasArray value="_IllusionEnabled"/>
@@ -1889,7 +1935,7 @@
         <Cost>
             <Vital index="Energy" value="100"/>
         </Cost>
-        <TargetFilters value="-;Self,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <TargetFilters value="-;Self,Structure,Heroic,User1,RawResource,HarvestableResource,Missile,Destructible,Item,Stasis,Dead,Hidden,Invulnerable,Powerup,PowerupOrItem"/>
         <Range value="7"/>
         <CastOutroTime value="0.0625"/>
         <UninterruptibleArray index="Cast" value="1"/>
@@ -1908,7 +1954,16 @@
         <Alert value="TrainComplete"/>
         <MaxCount value="5"/>
         <Activity value="UI/Building"/>
+        <EffectArray index="Create" value="ReaverSCBWHangar@ScarabCounterAdd"/>
+        <EffectArray index="Death" value="ReaverSCBWHangar@ScarabCounterReduce"/>
+        <EffectArray index="Release" value="ReaverSCBWHangar@ScarabCounterReduce"/>
     </CAbilArmMagazine>
+    <CAbilAttack id="ReaverSCBWWeapon@Attack" parent="attack">
+        <Name value="Abil/Name/ReaverSCBWWeapon@Attack"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="ReaverSCBWWeapon@Attack"/>
+        <CmdButtonArray index="Towards" DefaultButtonFace="ReaverSCBWWeapon@AttackTowards"/>
+        <CmdButtonArray index="Barrage" DefaultButtonFace="ReaverSCBWWeapon@AttackGround"/>
+    </CAbilAttack>
     <CAbilEffectTarget id="ShieldBatterySCBWRecharge">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="ShieldBatterySCBWRecharge@Healer"/>
@@ -1924,11 +1979,11 @@
             <SortArray value="TSShieldsFraction"/>
             <SortArray value="TSDistance"/>
         </TargetSorts>
-        <Range value="4"/>
+        <Range value="4.5"/>
         <Arc value="360"/>
         <AutoCastAcquireLevel value="Defensive"/>
         <AutoCastFilters value="Visible;Self,Neutral,Enemy,Missile,UnderConstruction,Dead,Hidden"/>
-        <AutoCastRange value="4"/>
+        <AutoCastRange value="4.5"/>
         <AutoCastValidatorArray value="ShieldBatterySCBWRecharge@Autocast"/>
         <UseMarkerArray index="Approach" value="0"/>
         <UseMarkerArray index="Prep" value="0"/>
@@ -1948,11 +2003,127 @@
             <Flags index="AllowMinimap" value="0"/>
         </CmdButtonArray>
         <TargetFilters value="CanHaveShields,Visible;Self,Enemy,Structure,RawResource,HarvestableResource,Missile,Stasis,Dead,Hidden,Decaying"/>
-        <Range value="4"/>
+        <Range value="4.5"/>
         <EnumRange value="0"/>
         <Effect value="ShieldBatterySCBWRecharge@BatterySet"/>
         <SmartPriority value="14"/>
     </CAbilBattery>
+    <CValidatorCombine id="ReaverSCBWWeapon@TeleportTrackValidateCaster">
+        <CombineArray value="CasterNotDead"/>
+        <CombineArray value="CasterIsNotHidden"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ReaverSCBWWeapon@TeleportTrackCheck">
+        <CombineArray value="ReaverSCBWWeapon@TeleportTrackDistance"/>
+        <CombineArray value="ReaverSCBWWeapon@ScarabTargetNotVisible"/>
+        <CombineArray value="ReaverSCBWWeapon@TeleportTrackDistanceFromScarab"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="ReaverSCBWWeapon@LaunchCheckNoPath">
+        <Compare value="GT"/>
+        <Behavior value="ReaverSCBWWeapon@LaunchNoPath"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="ReaverSCBWWeapon@ChaseCancelCheck">
+        <Type value="And"/>
+        <CombineArray value="ReaverSCBWWeapon@LaunchCheckReachable"/>
+        <CombineArray value="ReaverSCBWWeapon@LaunchCheckReachableReverse"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ReaverSCBWWeapon@ChaseSwitchCheck">
+        <CombineArray value="TargetNotAcrossCliff"/>
+        <CombineArray value="ReaverSCBWWeapon@LaunchCheckPathing"/>
+        <Type value="And"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorLocationCrossChasm id="ReaverSCBWWeapon@ChaseCancelChasm">
+        <WhichLocation Value="CasterPoint"/>
+        <OtherLocation Effect="ReaverSCBWWeapon@ChaseTracker" Value="TargetPoint"/>
+    </CValidatorLocationCrossChasm>
+    <CValidatorLocationCrossCliff id="ReaverSCBWWeapon@ChaseCancelCliff">
+        <WhichLocation Value="CasterPoint"/>
+        <OtherLocation Effect="ReaverSCBWWeapon@ChaseTracker" Value="TargetPoint"/>
+    </CValidatorLocationCrossCliff>
+    <CValidatorCombine id="ReaverSCBWWeapon@ChaseCancelTest">
+        <Type value="And"/>
+        <CombineArray value="ReaverSCBWWeapon@ChaseCancelCliff"/>
+        <CombineArray value="ReaverSCBWWeapon@ChaseCancelRange"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ReaverSCBWWeapon@ChaseCancelValidate">
+        <Type value="And"/>
+        <CombineArray value="ReaverSCBWWeapon@ChaseCancelCondition"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareOrderCount id="ReaverSCBWWeapon@ChaseTracker">
+        <AbilLink value="ReaverSCBWWeapon@Chase"/>
+        <Value value="1"/>
+    </CValidatorUnitCompareOrderCount>
+    <CValidatorUnitFilters id="ReaverSCBWWeapon@ScarabTargetNotVisible">
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
+        <Filters value="-;Visible"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitCompareBehaviorCount id="ReaverSCBWWeapon@LaunchChaseAttempts">
+        <Value value="5"/>
+        <Behavior value="ReaverSCBWWeapon@LaunchAttempt"/>
+        <WhichUnit Value="Caster"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@LaunchCheckPathing">
+        <Compare value="LE"/>
+        <Range value="13"/>
+        <Pathing value="1"/>
+        <Value Value="CasterPoint"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@ChaseCancelPathing" parent="ReaverSCBWWeapon@LaunchCheckPathing">
+        <WhichLocation Effect="ReaverSCBWWeapon@ChaseTracker"/>
+        <Range value="12.5"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@ChaseCancelRange">
+        <WhichLocation Effect="ReaverSCBWWeapon@ChaseTracker"/>
+        <Compare value="LE"/>
+        <Range value="8.75"/>
+        <Value Value="CasterPoint"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorCombine id="ReaverSCBWWeapon@LaunchCheckTest">
+        <Type value="And"/>
+        <CombineArray value="TargetNotAcrossCliff"/>
+        <CombineArray value="ReaverSCBWWeapon@LaunchCheckReachable"/>
+    </CValidatorCombine>
+    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@LaunchCheckReachable">
+        <Compare value="LE"/>
+        <Range value="56"/>
+        <Pathing value="1"/>
+        <Value Value="CasterPoint"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@LaunchCheckReachableReverse">
+        <WhichLocation Value="CasterPoint"/>
+        <Compare value="LE"/>
+        <Range value="56"/>
+        <Pathing value="1"/>
+        <Value Value="TargetPoint"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorCombine id="ReaverSCBWWeapon@LaunchCheckReachableNegate">
+        <CombineArray value="ReaverSCBWWeapon@LaunchCheckReachable"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorUnitFilters id="ReaverSCBWWeapon@ScarabTargetValid">
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
+        <Filters value="-;Dead,Hidden"/>
+    </CValidatorUnitFilters>
+    <CValidatorUnitCompareOrderCount id="ReaverSCBWWeapon@ScarabNotAttacking">
+        <WhichUnit Value="Target"/>
+        <Compare value="LT"/>
+        <AbilLink value="attack"/>
+        <Value value="2"/>
+    </CValidatorUnitCompareOrderCount>
+    <CValidatorUnitCompareBehaviorCount id="ReaverSCBWWeapon@TargetLockedOn">
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
+        <Compare value="GT"/>
+        <Behavior value="ReaverSCBWWeapon@TargetLockedOn"/>
+        <RequireCasterUnit Value="Caster"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCondition id="ReaverSCBWWeapon@TeleportTrackCondition">
+        <IfArray Test="ReaverSCBWWeapon@TargetLockedOn"/>
+        <IfArray Test="ReaverSCBWWeapon@TeleportTrackValidateCaster" Return="False"/>
+        <IfArray Test="ReaverSCBWWeapon@TeleportTrackCheck" Return="False"/>
+    </CValidatorCondition>
     <CValidatorUnitCompareBehaviorCount id="ReaverSCBWWeapon@BackswingNot">
         <WhichUnit Value="Caster"/>
         <Behavior value="ReaverSCBWWeapon@Backswing"/>
@@ -1993,13 +2164,12 @@
         <CombineArray value="ArbiterSCBWRecall@SharedControl"/>
     </CValidatorCombine>
     <CValidatorUnitOrderQueue id="ReaverSCBWWeapon@Cancelable">
-        <AbilLink value="attack"/>
-        <Target Effect="ReaverSCBWWeapon@SetInitial" Value="TargetUnit"/>
+        <AbilLink value="ReaverSCBWWeapon@Attack"/>
+        <Target Effect="ReaverSCBWWeapon@LaunchSwitch" Value="TargetUnit"/>
     </CValidatorUnitOrderQueue>
     <CValidatorCombine id="ReaverSCBWWeapon@ChaseSwitch">
         <Type value="And"/>
         <CombineArray value="CasterNotHoldingPosition"/>
-        <CombineArray value="ReaverSCBWHangar@Armed"/>
     </CValidatorCombine>
     <CValidatorPlayerRequirement id="ReaverSCBWHangar@QoBAtUnit">
         <WhichPlayer Value="Caster"/>
@@ -2064,17 +2234,20 @@
         <Range value="2.5"/>
     </CValidatorLocationCompareRange>
     <CValidatorUnitCompareBehaviorCount id="ReaverSCBWWeapon@TrackTargetPosition">
-        <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
         <Compare value="GT"/>
         <Behavior value="ReaverSCBWWeapon@TrackTargetPosition"/>
         <RequireCasterUnit Value="Caster"/>
     </CValidatorUnitCompareBehaviorCount>
-    <CValidatorUnitPathable id="ReaverSCBWWeapon@Pathable">
-        <MaxDistance value="13"/>
-    </CValidatorUnitPathable>
     <CValidatorCondition id="ReaverSCBWWeapon@LaunchCheck">
-        <IfArray Test="ReaverSCBWWeapon@Pathable"/>
-        <Else value="Failure"/>
+        <IfArray Test="ReaverSCBWWeapon@LaunchCheckTest"/>
+        <IfArray Test="ReaverSCBWWeapon@LaunchCheckPathing"/>
+        <Else value="False"/>
+    </CValidatorCondition>
+    <CValidatorCondition id="ReaverSCBWWeapon@ChaseCancelCondition">
+        <IfArray Test="ReaverSCBWWeapon@ChaseCancelTest"/>
+        <IfArray Test="ReaverSCBWWeapon@ChaseCancelPathing"/>
+        <Else value="False"/>
     </CValidatorCondition>
     <CValidatorCompareTrackedUnitsCount id="ReaverSCBWWeapon@ScarabNotLive">
         <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
@@ -2082,13 +2255,9 @@
     <CValidatorCombine id="ReaverSCBWWeapon@QueueOrders">
         <Type value="And"/>
         <CombineArray value="TargetNotDead"/>
-        <CombineArray value="ReaverSCBWWeapon@QueueOrdersTargetFilter"/>
+        <CombineArray value="ReaverSCBWWeapon@ScarabTargetValid"/>
         <CombineArray value="ReaverSCBWWeapon@TrackTargetPosition"/>
     </CValidatorCombine>
-    <CValidatorUnitFilters id="ReaverSCBWWeapon@QueueOrdersTargetFilter">
-        <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
-        <Filters value="-;Dead,Hidden"/>
-    </CValidatorUnitFilters>
     <CValidatorUnitFilters id="ReaverSCBWWeapon@ScarabIsAlive">
         <Filters value="-;Dead"/>
     </CValidatorUnitFilters>
@@ -2101,7 +2270,7 @@
         <BehaviorLink value="ReaverSCBWWeapon@ScarabTracker"/>
     </CValidatorCompareTrackedUnitsCount>
     <CValidatorUnitFilters id="ReaverSCBWWeapon@ScarabWarningFilter">
-        <WhichUnit Effect="ReaverSCBWWeapon@SetInitial"/>
+        <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
         <Filters value="-;Structure"/>
     </CValidatorUnitFilters>
     <CValidatorCombine id="ArbiterSCBWCloakField@Disable" parent="SCBW_Behavior">
@@ -2153,12 +2322,12 @@
     </CValidatorLocationCrossCliff>
     <CValidatorLocationEnumArea id="ArbiterSCBWRecall@Enum">
         <ResultFailed value="CantFindEnoughTargets"/>
-        <AreaArray Radius="2.12" Validator="ArbiterSCBWRecall@Set"/>
+        <AreaArray Radius="2.25" Validator="ArbiterSCBWRecall@Set"/>
         <SearchFilters value="-;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
     </CValidatorLocationEnumArea>
     <CValidatorLocationEnumArea id="ArbiterSCBWRecall@EnumAir">
         <ResultFailed value="CantFindPlacementLocation"/>
-        <AreaArray Radius="2.12" Validator="ArbiterSCBWRecall@Set"/>
+        <AreaArray Radius="2.25" Validator="ArbiterSCBWRecall@Set"/>
         <SearchFilters value="Air;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
     </CValidatorLocationEnumArea>
     <CValidatorCondition id="ArbiterSCBWRecall@ValidatorGround">
@@ -2254,6 +2423,11 @@
         <CombineArray value="TargetAttacksAir"/>
         <CombineArray value="TargetAttacksGround"/>
     </CValidatorCombine>
+    <CValidatorUnitPathable id="ReaverSCBWWeapon@TeleportTrackDistanceFromScarab">
+        <WhichUnit Value="Target"/>
+        <WhichLocation Effect="ReaverSCBWWeapon@LaunchSwitch" Value="TargetUnit"/>
+        <Find value="0"/>
+    </CValidatorUnitPathable>
     <CValidatorUnitFilters id="HighTemplarSCBWHallucination@KillHallucinationTargetFilters">
         <Filters value="Hallucination;-"/>
     </CValidatorUnitFilters>
@@ -2307,6 +2481,12 @@
         <CombineArray value="ShieldBatterySCBWRecharge@BatteryTracker"/>
         <CombineArray value="ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
     </CValidatorCombine>
+    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@TeleportTrackDistance">
+        <WhichLocation Effect="ReaverSCBWWeapon@LaunchSwitch" Value="OriginPoint"/>
+        <Compare value="GT"/>
+        <Range value="9"/>
+        <Value Effect="ReaverSCBWWeapon@LaunchSwitch" Value="TargetUnit"/>
+    </CValidatorLocationCompareRange>
     <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWRecharge@NoCooldown">
         <WhichUnit Value="Caster"/>
         <Behavior value="ShieldBatterySCBWRecharge@Cooldown"/>
@@ -2335,6 +2515,11 @@
     <CValidatorPlayerRequirement id="ObserverSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="ObserverSCBWSpeedUpgrade@Count"/>
     <CValidatorPlayerRequirement id="ScoutSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="ScoutSCBWSpeedUpgrade@Count"/>
     <CValidatorPlayerRequirement id="ShuttleSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="ShuttleSCBWSpeedUpgrade@Count"/>
+    <CValidatorCombine id="ReaverSCBWWeapon@TeleportTrackValidator">
+        <Type value="And"/>
+        <CombineArray value="NotDead"/>
+        <CombineArray value="ReaverSCBWWeapon@TeleportTrackCondition"/>
+    </CValidatorCombine>
     <CRequirement id="CorsairSCBWDisruptionWeb" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
     <CRequirement id="DarkArchonSCBWFeedback" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
     <CRequirement id="DarkArchonSCBWMerge" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
@@ -2519,6 +2704,26 @@
     <CRequirement id="ReaverSCBWHangar@Armed" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
     <CRequirement id="ReaverSCBWHangar@NotArmed" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
     <CRequirement id="ReaverSCBWHangar@ArmUpgrade" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
+    <CRequirement id="ObserverSCBWCloak" parent="SCBW_AbilReqNoUse" Race="Protoss" x="ObserverSCBWCloak"/>
+    <CRequirement id="DarkTemplarSCBWCloak" parent="SCBW_AbilReqNoUse" Race="Protoss" x="DarkTemplarSCBWCloak"/>
+    <CButton id="ReaverSCBWWeapon@AttackTowards" parent="Attack">
+        <Name value="Button/Name/ReaverSCBWWeapon@AttackTowards"/>
+        <AlertName value="Button/Name/ReaverSCBWWeapon@AttackTowards"/>
+    </CButton>
+    <CButton id="ReaverSCBWWeapon@Attack" parent="Attack">
+        <Name value="Button/Name/ReaverSCBWWeapon@Attack"/>
+        <AlertName value="Button/Name/ReaverSCBWWeapon@Attack"/>
+    </CButton>
+    <CButton id="ReaverSCBWWeapon@AttackGround" parent="Attack">
+        <Name value="Button/Name/ReaverSCBWWeapon@AttackGround"/>
+        <AlertName value="Button/Name/ReaverSCBWWeapon@AttackGround"/>
+    </CButton>
+    <CButton id="ReaverSCBWWeapon@Chase" parent="Attack">
+        <Name value="Button/Name/ReaverSCBWWeapon@Chase"/>
+        <AlertName value="Button/Name/ReaverSCBWWeapon@Chase"/>
+    </CButton>
+    <CButton id="ObserverSCBWCloak" parent="PermanentlyCloakedObserver"/>
+    <CButton id="DarkTemplarSCBWCloak" parent="PermanentlyCloaked"/>
     <CButton id="CarrierSCBWHangarIncreaseUpgrade@Passive" parent="SCBW_ResearchPassive" x="CarrierSCBWHangarIncreaseUpgrade">
         <Icon value="Assets\Textures\btn-upgrade-protoss-gravitoncatapult.dds"/>
         <AlertIcon value="Assets\Textures\btn-upgrade-protoss-gravitoncatapult.dds"/>
@@ -2561,14 +2766,14 @@
         <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="DragoonSCBWRangeUpgrade">
-        <Icon value="Assets\Textures\btn-upgrade-artanis-singularitycharge.dds"/>
-        <AlertIcon value="Assets\Textures\btn-upgrade-artanis-singularitycharge.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-singularitycharge@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-singularitycharge@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
         <DefaultButtonLayout Column="2"/>
     </CButton>
     <CButton id="DragoonSCBWRangeUpgrade@Passive" parent="SCBW_ResearchPassive" x="DragoonSCBWRangeUpgrade">
-        <Icon value="Assets\Textures\btn-upgrade-artanis-singularitycharge.dds"/>
-        <AlertIcon value="Assets\Textures\btn-upgrade-artanis-singularitycharge.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-singularitycharge@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-singularitycharge@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="CarrierSCBWHangarIncreaseUpgrade">
@@ -2820,19 +3025,19 @@
         <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="ScoutSCBWSpeedUpgrade">
-        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticbooster.dds"/>
-        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticbooster.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticthrusters@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticthrusters@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
         <DefaultButtonLayout Column="1"/>
     </CButton>
     <CButton id="ScoutSCBWSpeedUpgrade@Passive" parent="SCBW_ResearchPassive" x="ScoutSCBWSpeedUpgrade">
-        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticbooster.dds"/>
-        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticbooster.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticthrusters@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticthrusters@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="ShuttleSCBWSpeedUpgrade">
-        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticdrive.dds"/>
-        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticdrive.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticdrive@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticdrive@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
         <DefaultButtonLayout Column="2"/>
     </CButton>
@@ -2843,8 +3048,8 @@
         <DefaultButtonLayout Column="1"/>
     </CButton>
     <CButton id="ShuttleSCBWSpeedUpgrade@Passive" parent="SCBW_ResearchPassive" x="ShuttleSCBWSpeedUpgrade">
-        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticdrive.dds"/>
-        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticdrive.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticdrive@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-graviticdrive@scbw.dds"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
     <CButton id="ZealotSCBWSpeedUpgrade">
@@ -2966,6 +3171,15 @@
         <AlertIcon value="Assets\Textures\btn-ability-protoss-charge-color.dds"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
+    <CRequirementOr id="DarkTemplarSCBWCloak@Show">
+        <OperandArray value="SCBW_NotHallucination"/>
+    </CRequirementOr>
+    <CRequirementOr id="ObserverSCBWCloak@Show">
+        <OperandArray value="SCBW_NotHallucination"/>
+    </CRequirementOr>
+    <CRequirementNot id="HighTemplarSCBWHallucination@NotAtUnit" x="HighTemplarSCBWHallucination">
+        <OperandArray index="0" value="HighTemplarSCBWHallucination@CountAtUnit"/>
+    </CRequirementNot>
     <CRequirementAllowUpgrade id="ZealotSCBWSpeedUpgrade@Allow" parent="SCBW_AllowUpgrade" x="ZealotSCBWSpeedUpgrade"/>
     <CRequirementAllowUpgrade id="DragoonSCBWRangeUpgrade@Allow" parent="SCBW_AllowUpgrade" x="DragoonSCBWRangeUpgrade"/>
     <CRequirementAllowUpgrade id="HighTemplarSCBWEnergyUpgrade@Allow" parent="SCBW_AllowUpgrade" x="HighTemplarSCBWEnergyUpgrade"/>
@@ -3113,7 +3327,7 @@
     <CRequirementAnd id="ObserverSCBWSpeedUpgrade@Show">
         <OperandArray value="ObserverSCBWSpeedUpgrade@NotQoB"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Count2" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW"/>
+    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW"/>
     <CRequirementAnd id="ProtossAirArmorsSCBW@Lvl1"/>
     <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW@Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
@@ -3219,7 +3433,6 @@
         <OperandArray index="0" value="ProtossAirWeaponsSCBW@QoB"/>
         <OperandArray index="1" value="0"/>
     </CRequirementEq>
-    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Count2" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW"/>
     <CRequirementAnd id="ProtossGroundArmorsSCBW@Lvl1"/>
     <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW@Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
@@ -3325,7 +3538,7 @@
         <OperandArray index="0" value="ProtossGroundWeaponsSCBW@QoB"/>
         <OperandArray index="1" value="0"/>
     </CRequirementEq>
-    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Count2" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW"/>
+    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW"/>
     <CRequirementAnd id="ProtossShieldsSCBW@Lvl1"/>
     <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW@Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
@@ -3491,6 +3704,51 @@
     <CRequirementAnd id="CarrierSCBWHangar@Arm">
         <OperandArray value="InterceptorSCBW@QoBAtUnitLT4"/>
     </CRequirementAnd>
+    <CActorModel id="ScoutSCBWWeaponGround@ImpactModel" parent="GenericAttackImpactModel">
+        <Terms value="Cap 32"/>
+        <Macros value="WhiffSequenceModelMacro_Scout"/>
+    </CActorModel>
+    <CActorSite id="ScoutSCBWWeaponGround@LaunchSite" parent="GenericAttackLaunchSite">
+        <Terms value="Cap 2"/>
+    </CActorSite>
+    <CActorModel id="ScoutSCBWWeaponGround@ImpactModelReaction" parent="GenericAttackImpactModelReactionWhiff">
+        <Terms value="Cap 32"/>
+    </CActorModel>
+    <CActorSound id="ScoutSCBWWeaponGround@Launch" parent="SoundOneShot">
+        <On Terms="Effect.ScoutSCBWWeaponGround@CP.Start; At Caster" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="ScoutSCBWWeaponGround@Impact" parent="SoundOneShot">
+        <On Terms="Effect.ScoutSCBWWeaponGround@CP.Start; At Target" Send="Create"/>
+        <Layers Sound="ScoutSCBWWeaponGround@Impact">
+            <Chance value="100"/>
+            <Pitch value="0.000000,0.000000"/>
+            <PlayDelay value="100,110"/>
+            <Volume value="-2.000000,-2.000000"/>
+        </Layers>
+        <Layers Sound="ScoutSCBWWeaponGround@Impact">
+            <Chance value="100"/>
+            <Pitch value="0.000000,0.000000"/>
+            <PlayDelay value="200,220"/>
+            <Volume value="-4.000000,-4.000000"/>
+        </Layers>
+        <Layers Sound="ScoutSCBWWeaponGround@Impact">
+            <Chance value="100"/>
+            <Pitch value="0.000000,0.000000"/>
+            <PlayDelay value="300,340"/>
+            <Volume value="-7.000000,-7.000000"/>
+        </Layers>
+    </CActorSound>
+    <CActorModel id="ScoutSCBWWeaponGround@LaunchModel" parent="GenericAttackLaunchModel">
+        <Terms value="Cap 2"/>
+    </CActorModel>
+    <CActorForceSphere id="DragoonSCBWWeapon@DeathForceUp">
+        <Host Subject="::Creator"/>
+        <HostSiteOps Ops="SOpForwardLaunchGuide SOp2DRotation SOp180 SOpRotVariancerUp35 SOpPointDown1ByDot25 SOpRotationRandomPitch30"/>
+        <Field value="Directional"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="15.000000,5.000000"/>
+        <Radius value="1.250000,0.500000"/>
+    </CActorForceSphere>
     <CActorEventMacro id="HighTemplarSCBWPsiStorm@CastMacro">
         <On Terms="Abil.HighTemplarSCBWPsiStorm.SourceCastStart" Send="Create HighTemplarSCBWPsiStorm@CastFX"/>
         <On Terms="Abil.HighTemplarSCBWPsiStorm.SourceCastStart" Send="Create HighTemplarSCBWPsiStorm@CastSound"/>
@@ -3562,6 +3820,7 @@
     <CActorAction id="ArbiterSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="ArbiterSCBWWeapon@Impact" effectLaunch="ArbiterSCBWWeapon@LM">
         <Missile value="ArbiterSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="ArbiterSCBWWeapon@Impact" Sound="ArbiterSCBWWeapon@Impact"/>
+        <ImpactPhysics Name="DragoonSCBWWeapon" MatchKeys="Basic" Physics="DragoonSCBWWeapon@DeathForce"/>
     </CActorAction>
     <CActorMissile id="ArbiterSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="ArbiterSCBWWeapon@Missile">
         <On Terms="ActorCreation" Send="Create ArbiterSCBWWeapon@Launch"/>
@@ -3648,10 +3907,11 @@
         <HostSiteOps Ops="SOpIncomingMissileDot25 SOpRotVariancerForward15"/>
         <Receiver Subject="::Main"/>
         <Field value="Directional"/>
-        <Duration value="0.250000"/>
-        <Magnitude value="20.000000,5.000000"/>
-        <Radius value="0.750000,0.250000"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="12.500000,5.000000"/>
+        <Radius value="1.250000,0.500000"/>
         <Direction value="Forward"/>
+        <On Terms="ActorCreation" Send="Create DragoonSCBWWeapon@DeathForceUp"/>
     </CActorForceSphere>
     <CActorMissile id="DragoonSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DragoonSCBWWeapon@Missile">
         <On Terms="UnitBirth" Send="AnimSetTimeScaleAbsolute Lifetime 1.000000"/>
@@ -3713,10 +3973,21 @@
     <CActorSound id="ProbeSCBWWeapon@Launch" parent="SoundOneShot">
         <On Terms="WeaponStart.ProbeSCBWWeapon.AttackStart" Send="Create"/>
     </CActorSound>
-    <CActorAction id="ScoutSCBWWeaponGround@Action" parent="GenericAttackWhiff" effectAttack="ScoutSCBWWeaponGround@Damage">
-        <LaunchAssets Model="ScoutSCBWWeaponGround@Launch" Sound="ScoutSCBWWeaponGround@Launch"/>
-        <ImpactMap index="None" Model="ScoutSCBWWeaponGround@Impact" Sound="ScoutSCBWWeaponGround@Impact"/>
+    <CActorAction id="ScoutSCBWWeaponGround@Action" parent="GenericAttackWhiff" effectAttack="ScoutSCBWWeaponGround@FXDummy">
+        <LaunchAssets Model="ScoutSCBWWeaponGround@Launch"/>
+        <ImpactMap index="None" Model="ScoutSCBWWeaponGround@Impact"/>
         <LaunchAttachQuery Methods="AMFilterWeaponSetA0"/>
+        <LaunchModel value="ScoutSCBWWeaponGround@LaunchModel"/>
+        <AcquisitionYawHalfArc value="25.000000"/>
+        <AcquisitionPitchHalfArc value="25.000000"/>
+        <AccuracyHalfArc value="7.500000"/>
+        <Macros value="WhiffSequenceAttackMacro"/>
+        <Sharing value="Always"/>
+        <LaunchSite value="ScoutSCBWWeaponGround@LaunchSite"/>
+        <LaunchSiteFallback value=""/>
+        <ImpactModel value="ScoutSCBWWeaponGround@ImpactModel"/>
+        <ImpactModelReaction value="ScoutSCBWWeaponGround@ImpactModelReaction"/>
+        <ActionFlags index="LaunchForceSite" value="1"/>
     </CActorAction>
     <CActorAction id="ScoutSCBWWeaponAir@ActionLeft" parent="GenericAttack" effectImpact="ScoutSCBWWeaponAir@Impact" effectLaunch="ScoutSCBWWeaponAir@LMLeft">
         <LaunchAttachQuery Methods="Weapon 1"/>
@@ -3817,6 +4088,12 @@
         <Icon value="Assets\Textures\radaricon2.dds"/>
         <IconScale value="0.005000,0.005000"/>
     </CActorRange>
+    <CActorSimple id="ReaverSCBWWeapon@TargetTint">
+        <On Terms="Behavior.ReaverSCBWWeapon@WarningSign.On" Send="Create"/>
+        <On Terms="Behavior.ReaverSCBWWeapon@WarningSign.Off" Target="::Main" Send="ClearTintColor 0.100000 ScarabWarning"/>
+        <On Terms="Behavior.ReaverSCBWWeapon@WarningSign.Off" Send="Destroy"/>
+        <On Terms="ActorCreation" Target="::Main" Send="SetTintColor {144,144,192 2.500000} 0.100000 OneShot ScarabWarning"/>
+    </CActorSimple>
     <CActorModel id="ReaverSCBWWeapon@TargetWarning" parent="ModelAddition">
         <On index="0" Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death Instant"/>
         <On Terms="Behavior.ReaverSCBWWeapon@WarningSign.Create" Send="Create"/>
@@ -4108,6 +4385,7 @@
     <CActorModel id="HighTemplarSCBWPsiStorm@Impact" parent="ModelAnimationStyleContinuous">
         <Inherits index="BaseModelScale" value="1"/>
         <Inherits index="Scale" value="1"/>
+        <Inherits index="Visibility" value="1"/>
         <On Terms="Behavior.HighTemplarSCBWPsiStorm.On" Send="Create"/>
         <On Terms="Behavior.HighTemplarSCBWPsiStorm.Off" Send="AnimBracketStop BSD"/>
         <Host Subject="_Selectable"/>
@@ -4481,8 +4759,8 @@
         <Model value="Assets\Effects\Protoss\HighTemplarPsionicStormArea@SCBWEffect\HighTemplarPsionicStormArea@SCBWEffect.m3"/>
         <EditorCategories value="Race:Protoss"/>
         <RadiusLoose value="1.000000"/>
-        <ScaleMax value="0.850000,0.850000,1.000000"/>
-        <ScaleMin value="0.850000,0.850000,1.000000"/>
+        <ScaleMax value="0.765000,0.765000,1.000000"/>
+        <ScaleMin value="0.765000,0.765000,1.000000"/>
     </CModel>
     <CModel id="HighTemplarSCBWPsiStorm@CursorSplat" parent="UI">
         <Model value="Assets\UI\Cursors\ProtossCursor1\ProtossCursor1.m3"/>
@@ -4514,7 +4792,7 @@
     </CModel>
     <CWeaponLegacy id="CarrierSCBWWeapon@Dummy">
         <EditorCategories value="Race:Protoss"/>
-        <Icon value="Assets\Textures\btn-unit-protoss-interceptor.dds"/>
+        <Icon value="Assets\Textures\btn-unit-protoss-interceptor@scbw.dds"/>
         <DisplayEffect value="InterceptorSCBWWeapon@Damage"/>
         <TargetFilters value="Visible;Player,Ally,Neutral,Enemy"/>
         <Range value="8"/>
@@ -4527,7 +4805,6 @@
     </CWeaponLegacy>
     <CWeaponLegacy id="DarkArchonSCBWWeapon">
         <EditorCategories value="Race:Protoss"/>
-        <Options index="Melee" value="1"/>
         <Icon value="Assets\Textures\btn-upgrade-protoss-groundweaponslevel0.dds"/>
         <DisplayEffect value="DarkArchonSCBWWeapon@Damage"/>
         <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
@@ -4569,7 +4846,7 @@
     <CWeaponLegacy id="CarrierSCBWWeapon">
         <EditorCategories value="Race:Protoss"/>
         <Options index="Hidden" value="1"/>
-        <Icon value="Assets\Textures\btn-unit-protoss-interceptor.dds"/>
+        <Icon value="Assets\Textures\btn-unit-protoss-interceptor@scbw.dds"/>
         <DisplayEffect value="InterceptorSCBWWeapon@Damage"/>
         <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="8"/>
@@ -4650,7 +4927,6 @@
     </CWeaponLegacy>
     <CWeaponLegacy id="ArchonSCBWWeapon">
         <EditorCategories value="Race:Protoss"/>
-        <Options index="Melee" value="1"/>
         <Icon value="Assets\Textures\btn-upgrade-protoss-groundweaponslevel0.dds"/>
         <DisplayEffect value="ArchonSCBWWeapon@Damage"/>
         <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
@@ -4687,6 +4963,7 @@
         <AllowedMovement value="Moving"/>
         <RandomDelayMin value="0"/>
         <RandomDelayMax value="0"/>
+        <AcquireScanFilters value="-;Player,Ally,Neutral,Enemy"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="ScoutSCBWWeaponGround">
         <EditorCategories value="Race:Protoss"/>
@@ -4695,7 +4972,7 @@
         <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="4"/>
         <Period value="1.75"/>
-        <Effect value="ScoutSCBWWeaponGround@Damage"/>
+        <Effect value="ScoutSCBWWeaponGround@CP"/>
         <AllowedMovement value="Slowing"/>
         <Options index="NeverMiss" value="0"/>
         <LegacyOptions index="NoDeceleration" value="1"/>
@@ -4729,7 +5006,6 @@
     <CWeaponLegacy id="ReaverSCBWWeapon">
         <EditorCategories value="Race:Protoss"/>
         <Options index="Hidden" value="1"/>
-        <Options index="ContinuousScan" value="1"/>
         <Options index="LinkedCooldown" value="0"/>
         <Icon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <DisplayEffect value="ScarabSCBWWeapon@Damage"/>
@@ -4763,7 +5039,6 @@
         <Effect value="ReaverSCBWWeapon@Launch"/>
         <DamagePoint value="0.0625"/>
         <Options index="Hidden" value="0"/>
-        <Options index="ContinuousScan" value="0"/>
         <Options index="DisplayCooldown" value="1"/>
         <MinScanRange value="0"/>
         <Backswing value="0.5"/>
@@ -4771,7 +5046,6 @@
         <RandomDelayMax value="0.0625"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="ReaverSCBWWeapon@Dummy" parent="ReaverSCBWWeapon">
-        <Options index="ContinuousScan" value="0"/>
         <AcquireScanFilters value="-;Player,Ally,Neutral,Enemy"/>
         <MinScanRange value="0"/>
         <Effect value=""/>
@@ -4879,6 +5153,10 @@
         <MotionOverlays Type="Wave" Axis="1,0,0" Wavelength="6,0.1"/>
     </CMoverMissile>
     <CMoverMissile id="HighTemplarSCBWWeapon@Mover" parent="MissileDefault"/>
+    <CAccumulatorUserData id="ReaverSCBWHangar@ScarabCounter">
+        <Key value="ScarabCounter"/>
+        <BehaviorScope Behavior="ReaverSCBWWeapon@ScarabTracker"/>
+    </CAccumulatorUserData>
     <CAccumulatorConstant id="CorsairSCBWWeapon@Damage">
         <Amount value="5"/>
     </CAccumulatorConstant>
@@ -5334,6 +5612,18 @@
         <Pitch value="-1.000000,0.000000"/>
         <Volume value="-6.000000,-6.000000"/>
     </CSound>
+    <CDataCollectionAbil id="DarkTemplarSCBWCloak">
+        <EditorCategories value="DataGroup:Ability,Race:Protoss,DataFamily:Melee"/>
+        <DataRecord Entry="Button,DarkTemplarSCBWCloak"/>
+        <DataRecord Entry="Requirement,DarkTemplarSCBWCloak"/>
+        <DataRecord Entry="RequirementNode,DarkTemplarSCBWCloak@Show"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="ObserverSCBWCloak">
+        <EditorCategories value="DataGroup:Ability,Race:Protoss,DataFamily:Melee"/>
+        <DataRecord Entry="Button,ObserverSCBWCloak"/>
+        <DataRecord Entry="Requirement,ObserverSCBWCloak"/>
+        <DataRecord Entry="RequirementNode,ObserverSCBWCloak@Show"/>
+    </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWWeapon" parent="ProtossInfantryWeaponSCBW">
         <DataRecord Entry="Actor,DarkArchonSCBWWeapon@Action"/>
         <DataRecord Entry="Actor,DarkArchonSCBWWeapon@Beam"/>
@@ -5368,9 +5658,9 @@
         <DataRecord Entry="Button,ArbiterSCBWEnergyUpgrade@Passive"/>
         <DataRecord Entry="Requirement,ArbiterSCBWEnergyUpgrade"/>
         <DataRecord Entry="Requirement,ArbiterSCBWEnergyUpgrade@Passive"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@Show"/>
         <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@Allow"/>
-        <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@Show"/>
         <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@NotQoB"/>
         <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@QoB"/>
         <DataRecord Entry="Upgrade,ArbiterSCBWEnergyUpgrade"/>
@@ -5424,10 +5714,10 @@
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossAirArmorsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossAirArmorsSCBW"/>
-        <DataRecord Entry="Button,ProtossAirArmorsSCBW"/>
         <DataRecord Entry="Button,ProtossAirArmorsSCBW@Lvl1"/>
         <DataRecord Entry="Button,ProtossAirArmorsSCBW@Lvl2"/>
         <DataRecord Entry="Button,ProtossAirArmorsSCBW@Lvl3"/>
+        <DataRecord Entry="Button,ProtossAirArmorsSCBW"/>
         <DataRecord Entry="Requirement,ProtossAirArmorsSCBW@Lvl1"/>
         <DataRecord Entry="Requirement,ProtossAirArmorsSCBW@Lvl2"/>
         <DataRecord Entry="Requirement,ProtossAirArmorsSCBW@Lvl3"/>
@@ -5439,7 +5729,6 @@
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl2Show"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3Show"/>
-        <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Count2"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl1Count"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl1NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl1QoB"/>
@@ -5450,16 +5739,17 @@
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@QoB2"/>
+        <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Count"/>
         <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl1"/>
         <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl2"/>
         <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossAirWeaponsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossAirWeaponsSCBW"/>
-        <DataRecord Entry="Button,ProtossAirWeaponsSCBW"/>
         <DataRecord Entry="Button,ProtossAirWeaponsSCBW@Lvl1"/>
         <DataRecord Entry="Button,ProtossAirWeaponsSCBW@Lvl2"/>
         <DataRecord Entry="Button,ProtossAirWeaponsSCBW@Lvl3"/>
+        <DataRecord Entry="Button,ProtossAirWeaponsSCBW"/>
         <DataRecord Entry="Requirement,ProtossAirWeaponsSCBW@Lvl1"/>
         <DataRecord Entry="Requirement,ProtossAirWeaponsSCBW@Lvl2"/>
         <DataRecord Entry="Requirement,ProtossAirWeaponsSCBW@Lvl3"/>
@@ -5488,10 +5778,10 @@
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossShieldsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossShieldsSCBW"/>
-        <DataRecord Entry="Button,ProtossShieldsSCBW"/>
         <DataRecord Entry="Button,ProtossShieldsSCBW@Lvl1"/>
         <DataRecord Entry="Button,ProtossShieldsSCBW@Lvl2"/>
         <DataRecord Entry="Button,ProtossShieldsSCBW@Lvl3"/>
+        <DataRecord Entry="Button,ProtossShieldsSCBW"/>
         <DataRecord Entry="Requirement,ProtossShieldsSCBW@Lvl1"/>
         <DataRecord Entry="Requirement,ProtossShieldsSCBW@Lvl2"/>
         <DataRecord Entry="Requirement,ProtossShieldsSCBW@Lvl3"/>
@@ -5503,7 +5793,6 @@
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl2Show"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3Show"/>
-        <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Count2"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl1Count"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl1NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl1QoB"/>
@@ -5514,6 +5803,7 @@
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@QoB2"/>
+        <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Count"/>
         <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl1"/>
         <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl2"/>
         <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl3"/>
@@ -5629,9 +5919,9 @@
         <DataRecord Entry="Requirement,ObserverSCBWSightUpgrade@Show"/>
         <DataRecord Entry="RequirementNode,ObserverSCBWSightUpgrade@Count"/>
         <DataRecord Entry="RequirementNode,ObserverSCBWSightUpgrade@Allow"/>
+        <DataRecord Entry="RequirementNode,ObserverSCBWSightUpgrade@Use"/>
         <DataRecord Entry="RequirementNode,ObserverSCBWSightUpgrade"/>
         <DataRecord Entry="RequirementNode,ObserverSCBWSightUpgrade@Show"/>
-        <DataRecord Entry="RequirementNode,ObserverSCBWSightUpgrade@Use"/>
         <DataRecord Entry="RequirementNode,ObserverSCBWSightUpgrade@QoB"/>
         <DataRecord Entry="Upgrade,ObserverSCBWSightUpgrade"/>
         <DataRecord Entry="Validator,ObserverSCBWSightUpgrade@SourcePlayer"/>
@@ -5653,10 +5943,10 @@
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossGroundArmorsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossGroundArmorsSCBW"/>
-        <DataRecord Entry="Button,ProtossGroundArmorsSCBW"/>
         <DataRecord Entry="Button,ProtossGroundArmorsSCBW@Lvl1"/>
         <DataRecord Entry="Button,ProtossGroundArmorsSCBW@Lvl2"/>
         <DataRecord Entry="Button,ProtossGroundArmorsSCBW@Lvl3"/>
+        <DataRecord Entry="Button,ProtossGroundArmorsSCBW"/>
         <DataRecord Entry="Requirement,ProtossGroundArmorsSCBW@Lvl1"/>
         <DataRecord Entry="Requirement,ProtossGroundArmorsSCBW@Lvl2"/>
         <DataRecord Entry="Requirement,ProtossGroundArmorsSCBW@Lvl3"/>
@@ -5668,7 +5958,6 @@
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Lvl2Show"/>
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Lvl3"/>
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Lvl3Show"/>
-        <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Count2"/>
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Lvl1Count"/>
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Lvl1NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Lvl1QoB"/>
@@ -5687,10 +5976,10 @@
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossGroundWeaponsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossGroundWeaponsSCBW"/>
-        <DataRecord Entry="Button,ProtossGroundWeaponsSCBW"/>
         <DataRecord Entry="Button,ProtossGroundWeaponsSCBW@Lvl1"/>
         <DataRecord Entry="Button,ProtossGroundWeaponsSCBW@Lvl2"/>
         <DataRecord Entry="Button,ProtossGroundWeaponsSCBW@Lvl3"/>
+        <DataRecord Entry="Button,ProtossGroundWeaponsSCBW"/>
         <DataRecord Entry="Requirement,ProtossGroundWeaponsSCBW@Lvl1"/>
         <DataRecord Entry="Requirement,ProtossGroundWeaponsSCBW@Lvl2"/>
         <DataRecord Entry="Requirement,ProtossGroundWeaponsSCBW@Lvl3"/>
@@ -5702,14 +5991,14 @@
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl2Show"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3Show"/>
-        <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl1Count"/>
-        <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl2Count"/>
-        <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3Count"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl1Count"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl1NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl1QoB"/>
+        <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl2Count"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl2NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl2QoB"/>
+        <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3Count"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@QoB"/>
@@ -5865,10 +6154,9 @@
         <DataRecord Entry="Effect,CorsairSCBWWeapon@DamageAccum"/>
         <DataRecord Entry="Effect,CorsairSCBWWeapon@DamageAccum2"/>
         <DataRecord Entry="Effect,CorsairSCBWWeapon@DamageAccum3"/>
-        <DataRecord Entry="Effect,CorsairSCBWWeapon@ImpactSearchSet"/>
-        <DataRecord Entry="Effect,CorsairSCBWWeapon@DamageApply"/>
-        <DataRecord Entry="Effect,CorsairSCBWWeapon@ImpactSearch"/>
+        <DataRecord Entry="Effect,CorsairSCBWWeapon@ImpactSplash"/>
         <DataRecord Entry="Effect,CorsairSCBWWeapon@Impact"/>
+        <DataRecord Entry="Effect,CorsairSCBWWeapon@DamageApply"/>
         <DataRecord Entry="Effect,CorsairSCBWWeapon@DamageExpl"/>
         <DataRecord Entry="Model,CorsairSCBWWeapon@Impact"/>
         <DataRecord Entry="Model,CorsairSCBWWeapon@Launch"/>
@@ -5989,8 +6277,17 @@
         <Pattern value="SCBW_Weapon_Accumulator"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ScoutSCBWWeaponGround" parent="ProtossShipWeaponSCBW">
+        <DataRecord Entry="Actor,ScoutSCBWWeaponGround@ImpactModel"/>
+        <DataRecord Entry="Actor,ScoutSCBWWeaponGround@LaunchSite"/>
+        <DataRecord Entry="Actor,ScoutSCBWWeaponGround@ImpactModelReaction"/>
+        <DataRecord Entry="Actor,ScoutSCBWWeaponGround@Launch"/>
+        <DataRecord Entry="Actor,ScoutSCBWWeaponGround@Impact"/>
+        <DataRecord Entry="Actor,ScoutSCBWWeaponGround@LaunchModel"/>
         <DataRecord Entry="Actor,ScoutSCBWWeaponGround@Action"/>
         <DataRecord Entry="Effect,ScoutSCBWWeaponGround@Damage"/>
+        <DataRecord Entry="Effect,ScoutSCBWWeaponGround@FXPersistent"/>
+        <DataRecord Entry="Effect,ScoutSCBWWeaponGround@FXDummy"/>
+        <DataRecord Entry="Effect,ScoutSCBWWeaponGround@CP"/>
         <DataRecord Entry="Model,ScoutSCBWWeaponGround@Launch"/>
         <DataRecord Entry="Model,ScoutSCBWWeaponGround@Impact"/>
         <DataRecord Entry="Sound,ScoutSCBWWeaponGround@Launch"/>
@@ -6031,30 +6328,52 @@
         <DataRecord Entry="Weapon,CarrierSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ReaverSCBWWeapon" parent="ProtossRoboticWeaponSCBW">
-        <DataRecord Entry="Abil,ReaverSCBWWeapon@UnloadStunAbil"/>
         <DataRecord Entry="Abil,ReaverSCBWWeapon@Chase"/>
+        <DataRecord Entry="Abil,ReaverSCBWWeapon@UnloadStunAbil"/>
+        <DataRecord Entry="Abil,ReaverSCBWWeapon@Attack"/>
         <DataRecord Entry="Abil,ReaverSCBWWeapon@Stop"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@Launch"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@RangeIndicator"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@TargetWarning"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@UnloadStun"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@ScarabTracker"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@TargetLockedOn"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@ChaseTracker"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@LaunchAttempt"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@WarningSign"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@Backswing"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@ScarabTimedLife"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@Cancelable"/>
-        <DataRecord Entry="Behavior,ReaverSCBWWeapon@ScarabTracker"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@TrackTargetLastPosition"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@UnloadStun"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@NotInsideTransport"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@InsideTransport"/>
-        <DataRecord Entry="Behavior,ReaverSCBWWeapon@TrackTargetPosition"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@Warning"/>
-        <DataRecord Entry="Behavior,ReaverSCBWWeapon@WarningSign"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@TrackTargetPosition"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@LaunchNoPath"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@Disable"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@NoOrders"/>
+        <DataRecord Entry="Button,ReaverSCBWWeapon@Chase"/>
+        <DataRecord Entry="Button,ReaverSCBWWeapon@Attack"/>
+        <DataRecord Entry="Button,ReaverSCBWWeapon@AttackTowards"/>
+        <DataRecord Entry="Button,ReaverSCBWWeapon@AttackGround"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TargetLockedOnReacquire"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@LaunchSwitch"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@LaunchPathBlocked"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@LaunchPathValid"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseSwitch"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@SetInitial"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseCancel"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseCancelOrder"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseTracker"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@LaunchAttempt"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TargetLockedOn"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportTrackRemoveWarningSign"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportTrackFinal"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportTrackRemoveTracker"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@Backswing"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@UDMindControlled"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@UnloadStunOrder"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseCancel"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseCancelAttack"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@ResetCooldown"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@Cancelable"/>
@@ -6070,11 +6389,15 @@
         <DataRecord Entry="Effect,ReaverSCBWWeapon@TrackTargetLastPositionRB"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@QueueOrders"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@DelayAttack"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseSwitch"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseSet"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseAttack"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseOrder"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@Chase"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseAttack"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseSetNoReset"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ChaseSwitchNoReset"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ShiftMoveLocationOrder"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ShiftMoveLocationClearOrder"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@ShiftMoveLocationSet"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@Launch"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@LaunchCheck"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@Attack"/>
@@ -6085,25 +6408,19 @@
         <DataRecord Entry="Effect,ReaverSCBWWeapon@InsideTransport"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@CU"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@CUSet"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@IssueQueuedMoveCommand"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@SetInitial"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ClearLastMoveOrderTracker"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@ShiftMoveTargetTrackerSet"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@Warning"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@TrackTargetLastPosition"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@ScarabTrack"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@KillsToCaster"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportTrack"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@UM"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@ScarabSuicide"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@TrackTargetPosition"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@RemoveTeleportDetectorFromSelf"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportRemoveBehaviorSelf"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@RemoveTeleportDetectorFromTarget"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
-        <DataRecord Entry="Effect,ReaverSCBWWeapon@WarningSign"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@WarningSignRB"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@WarningSign"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@EnumScarabsStop"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@SetCooldown"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportTrackSet"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@TargetWarningIndicator"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@UnloadStun"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@ImpactDud"/>
@@ -6117,19 +6434,44 @@
         <DataRecord Entry="Sound,ReaverSCBWWeapon@Launch"/>
         <DataRecord Entry="Sound,ReaverSCBWWeapon@ExplodeDud"/>
         <DataRecord Entry="Sound,ReaverSCBWWeapon@Explode"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckNoPath"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseSwitchCheck"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelCheck"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckReachable"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchChaseAttempts"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseSwitch"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabNotLive"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheck"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@QueueOrders"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabNotAttacking"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabWarningFilter"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackValidator"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@UnloadStun"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackValidateCaster"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackCheck"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackDistance"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabTargetNotVisible"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackDistanceFromScarab"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckReachableReverse"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckPathing"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelChasm"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelCliff"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelTest"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelRange"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelValidate"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelCondition"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseTracker"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelPathing"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckTest"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckReachableNegate"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabTargetValid"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@TargetLockedOn"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackCondition"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@BackswingNot"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@DamageUpgraded"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@UnloadStunNot"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@Cancelable"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseSwitch"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@TrackTargetPosition"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@Pathable"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@QueueOrdersTargetFilter"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabIsAlive"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabIsAttacking"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabIsLive"/>
@@ -6203,6 +6545,8 @@
     <CDataCollectionAbil id="ReaverSCBWHangar" parent="SCBW_Abil">
         <EditorCategories value="DataGroup:Ability,Race:Protoss,DataFamily:Melee,ObjectType:Unit"/>
         <DataRecord Entry="Abil,ReaverSCBWHangar"/>
+        <DataRecord Entry="Effect,ReaverSCBWHangar@ScarabCounterAdd"/>
+        <DataRecord Entry="Effect,ReaverSCBWHangar@ScarabCounterReduce"/>
         <DataRecord Entry="Requirement,ReaverSCBWHangar@Arm"/>
         <DataRecord Entry="Requirement,ReaverSCBWHangar@QoBAtUnit"/>
         <DataRecord Entry="Requirement,ReaverSCBWHangar@Armed"/>
@@ -6218,6 +6562,7 @@
         <DataRecord Entry="Validator,ReaverSCBWHangar@Armed"/>
         <DataRecord Entry="Validator,ReaverSCBWHangar@QoBAtUnit"/>
         <DataRecord Entry="Validator,ReaverSCBWHangar@NotArmed"/>
+        <DataRecord Entry="Accumulator,ReaverSCBWHangar@ScarabCounter"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ArbiterSCBWRecall" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ArbiterSCBWRecall"/>
@@ -6541,6 +6886,33 @@
         <Race value="BWPr"/>
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
     </CUnit>
+    <CBehaviorBuff id="ReaverSCBWWeapon@LaunchNoPath">
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <Duration value="0.0625"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ReaverSCBWWeapon@ChaseTracker">
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="ReaverSCBWWeapon@ChaseTracker"/>
+        <RemoveValidatorArray value="ReaverSCBWWeapon@ChaseCancelValidate"/>
+        <FinalEffect value="ReaverSCBWWeapon@ChaseCancelOrder"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ReaverSCBWWeapon@LaunchAttempt">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <BuffFlags index="RefreshStack" value="1"/>
+        <MaxStackCount value="5"/>
+        <Duration value="0.5"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ReaverSCBWWeapon@TargetLockedOn">
+        <BehaviorCategories index="TeleportRemove" value="1"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="ReaverSCBWWeapon@TrackTargetPosition"/>
+        <MaxStackCount value="0"/>
+        <MaxStackCountPerCaster value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@Backswing">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -6578,12 +6950,11 @@
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@WarningSign">
-        <BehaviorFlags index="Permanent" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <MaxStackCount value="0"/>
         <MaxStackCountPerCaster value="1"/>
-        <BehaviorCategories index="TeleportRemove" value="1"/>
         <InfoFlags index="Hidden" value="1"/>
+        <RemoveValidatorArray value="NotHidden"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@InsideTransport">
         <InfoFlags index="Hidden" value="1"/>
@@ -6607,23 +6978,23 @@
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@TrackTargetPosition">
         <Alignment value="Negative"/>
-        <InfoFlags index="Hidden" value="1"/>
-        <BehaviorCategories index="TeleportRemove" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <BuffFlags index="RefreshStack" value="1"/>
         <MaxStackCount value="0"/>
         <MaxStackCountPerCaster value="1"/>
         <Duration value="5.25"/>
         <FinalEffect value="ReaverSCBWWeapon@EnumScarabsStop"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <RemoveValidatorArray value="NotHidden"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@TrackTargetLastPosition">
-        <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
-        <RemoveValidatorArray value="ReaverSCBWWeapon@ScarabIsAttacking"/>
-        <RemoveValidatorArray value="TargetIsVisible"/>
+        <RemoveValidatorArray value="TargetNotDead"/>
+        <RemoveValidatorArray value="ReaverSCBWWeapon@ScarabTargetValid"/>
         <Period value="0.25"/>
-        <InitialEffect value="ReaverSCBWWeapon@ShiftMoveTargetTrackerSet"/>
-        <PeriodicEffect value="ReaverSCBWWeapon@ShiftMoveTargetTrackerSet"/>
+        <InitialEffect value="ReaverSCBWWeapon@ShiftMoveLocationSet"/>
+        <PeriodicEffect value="ReaverSCBWWeapon@ShiftMoveLocationSet"/>
+        <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
     <CBehaviorUnitTracker id="ReaverSCBWWeapon@ScarabTracker">
         <InfoFlags index="Hidden" value="1"/>
@@ -6847,6 +7218,10 @@
             <AbilClassDisableArray index="CAbilMorph" value="1"/>
             <AbilClassDisableArray index="CAbilMorphPlacement" value="1"/>
             <AbilTechAliasEnableArray value="_IllusionEnabled"/>
+            <AbilTechAliasDisableArray value="_IllusionDisabled"/>
+            <AbilLinkEnableArray value="SpiderMineSCBW@Burrow"/>
+            <AbilLinkEnableArray value="SpiderMineSCBW@Unburrow"/>
+            <BehaviorLinkDisableArray value="ChangelingDisguiseEx3"/>
         </Modification>
         <DamageResponse ModifyFraction="2">
             <Chance value="1"/>
@@ -6994,7 +7369,7 @@
         <AffectedUnitArray value="DarkArchonSCBW"/>
     </CUpgrade>
     <CUpgrade id="DragoonSCBWRangeUpgrade" parent="SCBW_Research">
-        <Icon value="Assets\Textures\btn-upgrade-artanis-singularitycharge.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-singularitycharge@scbw.dds"/>
         <EffectArrayTemplate Reference="Weapon,^ParamId^Weapon,Range" Value="2"/>
         <EffectArrayTemplate Reference="Weapon,^ParamId^Weapon,MinScanRange" Value="2"/>
         <Race value="BWPr"/>
@@ -7157,7 +7532,7 @@
     </CUpgrade>
     <CUpgrade id="ScoutSCBWSpeedUpgrade" parent="SCBW_SpeedUpgrade">
         <EffectArrayTemplate index="0" Operation="Multiply" Reference="Unit,^ParamId^,Speed" Value="1.33"/>
-        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticbooster.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticthrusters@scbw.dds"/>
         <InfoTooltipPriority value="1"/>
         <Race value="BWPr"/>
         <ScoreAmount value="400"/>
@@ -7166,7 +7541,7 @@
         <AffectedUnitArray value="ScoutSCBW"/>
     </CUpgrade>
     <CUpgrade id="ShuttleSCBWSpeedUpgrade" parent="SCBW_SpeedUpgrade">
-        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticdrive.dds"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-graviticdrive@scbw.dds"/>
         <InfoTooltipPriority value="1"/>
         <Race value="BWPr"/>
         <ScoreAmount value="400"/>

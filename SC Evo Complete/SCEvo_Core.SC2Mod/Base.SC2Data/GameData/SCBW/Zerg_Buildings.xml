@@ -21,7 +21,7 @@
         <EditorCategories value="Race:Zerg"/>
         <EffectArray value="NydusCanalSCBW@TransportCargoIdent"/>
         <EffectArray value="NydusCanalSCBW@TransportCargoAB"/>
-        <EffectArray value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+        <EffectArray value="SCBW_CategoryRemoveTeleportRemove"/>
     </CEffectSet>
     <CEffectApplyBehavior id="NydusCanalSCBW@TransportCargoIdent">
         <EditorCategories value="Race:Zerg"/>
@@ -291,12 +291,12 @@
             </SectionArray>
             <SectionArray index="Stats">
                 <UseBuildTimeArray index="Delay" value="1"/>
-                <EffectArray index="Start" value="SCBW_FractionalArmorUpdate"/>
-                <EffectArray index="Finish" value="SCBW_FractionalArmorUpdate"/>
-                <EffectArray index="Cancel" value="SCBW_FractionalArmorUpdate"/>
+                <EffectArray index="Start" value="SCBW_DamageFormula@FractionalArmorUpdate"/>
+                <EffectArray index="Finish" value="SCBW_DamageFormula@FractionalArmorUpdate"/>
+                <EffectArray index="Cancel" value="SCBW_DamageFormula@FractionalArmorUpdate"/>
             </SectionArray>
         </InfoArray>
-        <Alert value="MorphComplete_Zerg"/>
+        <Alert value="MorphComplete_BWZe"/>
         <AbilityCategories index="User1" value="1"/>
         <AbilityCategories index="User4" value="1"/>
         <RefundFraction Cooldown="0"/>
@@ -343,7 +343,7 @@
                 <UseBuildTimeArray index="Delay" value="1"/>
             </SectionArray>
         </InfoArray>
-        <Alert value="MorphComplete_Zerg"/>
+        <Alert value="MorphComplete_BWZe"/>
         <Activity value="UI/Mutating"/>
         <AbilityCategories index="User1" value="1"/>
         <AbilityCategories index="User4" value="1"/>
@@ -380,7 +380,7 @@
                 <UseBuildTimeArray index="Delay" value="1"/>
             </SectionArray>
         </InfoArray>
-        <Alert value="MorphComplete_Zerg"/>
+        <Alert value="MorphComplete_BWZe"/>
         <Activity value="UI/Mutating"/>
         <AbilityCategories index="User1" value="1"/>
         <AbilityCategories index="User4" value="1"/>
@@ -413,7 +413,7 @@
                 <UseBuildTimeArray index="Delay" value="1"/>
             </SectionArray>
         </InfoArray>
-        <Alert value="MorphComplete_Zerg"/>
+        <Alert value="MorphComplete_BWZe"/>
         <Activity value="UI/Mutating"/>
         <AbilityCategories index="User1" value="1"/>
         <AbilityCategories index="User4" value="1"/>
@@ -448,12 +448,12 @@
             </SectionArray>
             <SectionArray index="Stats">
                 <UseBuildTimeArray index="Delay" value="1"/>
-                <EffectArray index="Start" value="SCBW_FractionalArmorUpdate"/>
-                <EffectArray index="Finish" value="SCBW_FractionalArmorUpdate"/>
-                <EffectArray index="Cancel" value="SCBW_FractionalArmorUpdate"/>
+                <EffectArray index="Start" value="SCBW_DamageFormula@FractionalArmorUpdate"/>
+                <EffectArray index="Finish" value="SCBW_DamageFormula@FractionalArmorUpdate"/>
+                <EffectArray index="Cancel" value="SCBW_DamageFormula@FractionalArmorUpdate"/>
             </SectionArray>
         </InfoArray>
-        <Alert value="MorphComplete_Zerg"/>
+        <Alert value="MorphComplete_BWZe"/>
         <Cost>
             <Cooldown Link="Abil/ColonySCBW@Morph" Location="Unit" TimeUse="1"/>
         </Cost>
@@ -1033,6 +1033,12 @@
     <CLight id="InfestedCommandCenterSCBW@Portrait" parent="default">
         <EditorCategories value="LightGroup:PortraitsBuildingsZerg"/>
     </CLight>
+    <CActorModel id="SpawningPoolSCBW@WaterSplash" parent="ModelAddition">
+        <On Terms="ActorCreation" Send="SetTintColor {191,254,73 1.200000}"/>
+        <On Terms="ActorCreation" Send="TimerSet 5.000000 Clear"/>
+        <On Terms="TimerExpired; TimerName Clear" Send="Destroy"/>
+        <Scale value="1.100000"/>
+    </CActorModel>
     <CActorModel id="InfestedCommandCenterSC2@DeathModel" parent="UnitDeathModel">
         <On Terms="ActorCreation" Send="SetTintColor 245,230,220"/>
     </CActorModel>
@@ -1406,7 +1412,7 @@
         <On Terms="AbilTransport.NydusCanalSCBW@Transport.TransportLoad" Send="$Spell"/>
         <On Terms="AbilTransport.NydusCanalSCBW@Transport.TransportUnload" Send="$Spell"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
-        <On Terms="ActorCreation" Send="Create NydusCanalSCBW@Ping"/>
+        <On Terms="ActorCreation; !IsInEditor" Send="Create NydusCanalSCBW@Ping"/>
         <On Terms="Effect.NydusCanalSCBW@Dummy.Start; At Caster" Send="RefSetFromRequest ::actor.PeerNydus _Unit Target Find"/>
         <On Terms="Effect.NydusCanalSCBW@Dummy.Start; At Caster; IsLocalParticipantType; HasAllianceTypeWith Self; HasStatus Selected" Target="::actor.PeerNydus" Send="Signal SelectStart"/>
         <On Terms="Effect.NydusCanalSCBW@Dummy.Start; At Caster; IsLocalParticipantType; HasAllianceTypeWith Ally; HasStatus Selected" Target="::actor.PeerNydus" Send="Signal SelectStart"/>
@@ -1629,6 +1635,7 @@
     <CActorUnit id="SpawningPoolSCBW" parent="ZergBuildingSCBW" unitName="SpawningPoolSCBW">
         <Aliases value="_UnitHuge"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
+        <On Terms="PhysicsImpact; PhysicsImpactClassifyCombo OnLand Water {Flesh LightArmor MetalHeavy MetalLight MetalProtoss Rock Bone}" Send="PhysicsImpactCustomize SpawningPoolSplash"/>
         <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
         <BarOffset value="95"/>
         <GroupIcon>
@@ -1639,6 +1646,17 @@
         <Wireframe>
             <Image value="Assets\Textures\wireframe-zerg-spawningpool@scbw.dds"/>
         </Wireframe>
+        <PhysicsImpacts>
+            <Name value="SpawningPoolSplash"/>
+            <ActorModel value="SpawningPoolSCBW@WaterSplash"/>
+            <ModelLink value="WaterSplashLight"/>
+            <ActorSound value="PhysicsImpactSound"/>
+            <SoundLink value="PhysicsImpactWaterLight"/>
+            <AutoVolumeRangeMin value="0.000000"/>
+            <AutoVolumeRangeMax value="0.000000"/>
+            <OccuranceThrottlingPeriod value="0.100000,0.250000"/>
+            <SiteOps Ops="SOpPhysicsImpactNormal"/>
+        </PhysicsImpacts>
     </CActorUnit>
     <CActorUnit id="SporeColonySCBW" parent="ZergBuildingSCBW" unitName="SporeColonySCBW">
         <Aliases value="_UnitLarge"/>
@@ -2524,8 +2542,8 @@
         <DataRecord Entry="Actor,InfestedCommandCenterSCBW@Splat"/>
         <DataRecord Entry="Behavior,InfestedCommandCenterSCBW@TransportDummy"/>
         <DataRecord Entry="Behavior,InfestedCommandCenterSCBW@Queue"/>
-        <DataRecord Entry="Button,InfestedCommandCenterSCBW@Load"/>
         <DataRecord Entry="Button,InfestedCommandCenterSCBW@UnloadAll"/>
+        <DataRecord Entry="Button,InfestedCommandCenterSCBW@Load"/>
         <DataRecord Entry="Effect,InfestedCommandCenterSCBW@Morph"/>
         <DataRecord Entry="Effect,InfestedCommandCenterSCBW@MorphFlyer"/>
         <DataRecord Entry="Light,InfestedCommandCenterSCBW@Portrait"/>
@@ -2583,10 +2601,10 @@
         <DataRecord Entry="Behavior,NydusCanalSCBW@TransportCargo"/>
         <DataRecord Entry="Behavior,NydusCanalSCBW@RallyTracker"/>
         <DataRecord Entry="Behavior,NydusCanalSCBW@Build@Used"/>
-        <DataRecord Entry="Button,NydusCanalSCBW@SetRallyPoint"/>
         <DataRecord Entry="Button,NydusCanalSCBW@Load"/>
         <DataRecord Entry="Button,NydusCanalSCBW@UnloadAll"/>
         <DataRecord Entry="Button,NydusCanalSCBW@UnloadUnit"/>
+        <DataRecord Entry="Button,NydusCanalSCBW@SetRallyPoint"/>
         <DataRecord Entry="Button,NydusCanalSCBW@Spawn"/>
         <DataRecord Entry="Effect,NydusCanalSCBW@TransportCargoBlocked"/>
         <DataRecord Entry="Effect,NydusCanalSCBW@TransportCargoBlockedSet"/>
@@ -2698,12 +2716,12 @@
         <DataRecord Entry="Actor,ExtractorSCBW@RichBuild"/>
         <DataRecord Entry="Actor,ExtractorSCBW@Build"/>
         <DataRecord Entry="Actor,ExtractorSCBW@Rich"/>
+        <DataRecord Entry="Model,ExtractorSCBW@Rich"/>
         <DataRecord Entry="Model,ExtractorSCBW@Build"/>
         <DataRecord Entry="Model,ExtractorSCBW@EmptyDeath"/>
         <DataRecord Entry="Model,ExtractorSCBW@DeathUnderConstruction"/>
         <DataRecord Entry="Model,ExtractorSCBW@Placement"/>
         <DataRecord Entry="Model,ExtractorSCBW@RichDeath"/>
-        <DataRecord Entry="Model,ExtractorSCBW@Rich"/>
         <DataRecord Entry="RequirementNode,ExtractorSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ExtractorSCBW@AllowUnit"/>
         <DataRecord Entry="RequirementNode,ExtractorSCBW@Count"/>
@@ -2912,8 +2930,8 @@
         <DataRecord Entry="Behavior,HatcherySCBW@SpawnLarvaDisable"/>
         <DataRecord Entry="Behavior,HatcherySCBW@SpawnLarva"/>
         <DataRecord Entry="Behavior,HatcherySCBW@SpawnLarvaConjoined"/>
-        <DataRecord Entry="Button,HatcherySCBW@RallyPoint"/>
         <DataRecord Entry="Button,HatcherySCBW@RallyPointWorker"/>
+        <DataRecord Entry="Button,HatcherySCBW@RallyPoint"/>
         <DataRecord Entry="Effect,HatcherySCBW@SpawnLarvaDisableDelay"/>
         <DataRecord Entry="Effect,HatcherySCBW@SpawnLarvaDisable"/>
         <DataRecord Entry="Model,HatcherySCBW@Build"/>
@@ -3131,6 +3149,7 @@
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <BehaviorArray Link="HarvestableVespeneGeyserGasZerg"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
         </CardLayouts>
@@ -3192,6 +3211,7 @@
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <BehaviorArray Link="HarvestableRichVespeneGeyserGasZerg"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
         </CardLayouts>
@@ -3257,6 +3277,7 @@
         <AbilArray Link="NydusCanalSCBW@Build"/>
         <BehaviorArray Link="OnCreep"/>
         <BehaviorArray Link="UnderConstruction"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation2x2"/>
         <CardLayouts>
             <LayoutButtons Face="NydusCanalSCBW@SetRallyPoint" Type="AbilCmd" AbilCmd="NydusCanalSCBW@Rally,Rally1" Row="1" Column="4"/>
             <LayoutButtons Face="NydusCanalSCBW@Load" Type="AbilCmd" AbilCmd="NydusCanalSCBW@Transport,Load" Row="2" Column="0"/>
@@ -3314,6 +3335,7 @@
         <AbilArray Link="QueenSCBWEnsnareResearch"/>
         <AbilArray Link="QueenSCBWSpawnBroodlingsResearch"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
@@ -3396,6 +3418,7 @@
         <AbilArray Link="ZergFlyerCarapaceSCBW"/>
         <AbilArray Link="que5CancelToSelection"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation2x2"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5CancelToSelection,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
@@ -3489,6 +3512,7 @@
         <AbilArray Link="DefilerSCBWConsumeResearch"/>
         <AbilArray Link="DefilerSCBWPlagueResearch"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
@@ -3571,6 +3595,7 @@
         <AbilArray Link="ZergMeleeAttacksSCBW"/>
         <AbilArray Link="ZergMissileAttacksSCBW"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
@@ -3629,6 +3654,7 @@
         <AbilArray Link="HydraliskSCBWRangeUpgrade"/>
         <AbilArray Link="LurkerSCBWResearch"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
@@ -3789,6 +3815,7 @@
         <AbilArray Link="ZerglingSCBWSpeedUpgrade"/>
         <AbilArray Link="ZerglingSCBWAttackSpeedUpgrade"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
@@ -3934,6 +3961,7 @@
         <AbilArray Link="ZergFlyerCarapaceSCBW"/>
         <AbilArray Link="GreaterSpireSCBW@Morph"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation2x2"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5CancelToSelection,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
@@ -4214,6 +4242,7 @@
         <AbilArray Link="UltraliskSCBWArmorUpgrade"/>
         <AbilArray Link="UltraliskSCBWSpeedUpgrade"/>
         <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation3x3"/>
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>

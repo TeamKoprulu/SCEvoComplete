@@ -397,6 +397,20 @@
         <On Terms="UnitDeath.##unitName##; PassChance 50.000000; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
         <Sound value="##unitName##@Death"/>
     </CActorSound>
+    <CActorSiteOpDeltaSum id="SOpAttachCenterDeltaSum">
+        <Deltas Subject="_Unit">
+            <AttachQuerySource Methods="Origin"/>
+            <AttachQueryTarget Methods="Center"/>
+        </Deltas>
+        <DeltaSumFlags index="ZOffsetOnly" value="1"/>
+    </CActorSiteOpDeltaSum>
+    <CActorEventMacroRunnable id="ShieldColorMacroRunnable">
+        <Do Terms="ScopeContains _ShieldRed" Send="SetTintColor {255,0,0 8.000000}"/>
+        <Do Terms="ScopeContains _ShieldGreen" Send="SetTintColor {0,255,0 3.000000}"/>
+        <Do Terms="ScopeContains _ShieldYellow" Send="SetTintColor {255,80,0 6.000000}"/>
+        <Do Terms="ScopeContains _ShieldBlue" Send="SetTintColor {0,0,255 2.000000}"/>
+        <Do Terms="ScopeContains _ShieldBlack" Send="SetTintColor {255,255,255 -1.000000}"/>
+    </CActorEventMacroRunnable>
     <CActorUnit id="LabMineralField">
         <On Terms="Abil.SCVSCBW@Harvest.Start" Send="StatusIncrement Harvest"/>
         <On Terms="Abil.SCVSCBW@Harvest.Stop" Send="StatusDecrement Harvest"/>
@@ -1098,8 +1112,8 @@
     </CActorRegionCircle>
     <CActorSimple id="DetectorRadarSetupSCBW">
         <Terms value="Cap 1"/>
-        <On Terms="Behavior.GhostSCBWCloak.On" Send="Create"/>
-        <On Terms="Behavior.GhostSCBWCloak.On" Send="StatusIncrement ActiveCount"/>
+        <On Terms="Behavior.GhostSCBWCloak.On; !PassChance 100.000000" Send="Create"/>
+        <On Terms="Behavior.GhostSCBWCloak.On; !PassChance 100.000000" Send="StatusIncrement ActiveCount"/>
         <On Terms="ActorCreation" Send="TimerSet 0.500000 Retest"/>
         <On Terms="TimerExpired; TimerName Retest" Send="Create DetectorRadarSearchSCBW"/>
         <On Terms="TimerExpired; TimerName Retest" Send="TimerSet 0.500000 Retest"/>
@@ -1240,7 +1254,7 @@
         <On index="13" Send="DeathCustomize RagdollFire"/>
         <On Terms="UnitDeathCustomize; KilledByEffect DamagePhysics" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {GhostSCBWNuclearStrike@Damage GhostSCBWNuclearStrike@DamageAccum}" Send="DeathCustomize RagdollNuke"/>
-        <On Terms="UnitDeathCustomize; KilledByEffect MutaliskSCBWWeapon@Damage" Send="DeathCustomize RagdollAcid"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {MutaliskSCBWWeapon@Damage MutaliskSCBWWeapon@DamageBounce1 MutaliskSCBWWeapon@DamageBounce2}" Send="DeathCustomize RagdollAcid"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {BattlecruiserSCBWWeaponGround@Damage BattlecruiserSCBWWeaponAir@Damage}" Send="DeathCustomize RagdollFire"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSCBWSiegedWeapon@DamageAccum SiegeTankSCBWSiegedWeapon@DamageAccum2 SiegeTankSCBWSiegedWeapon@DamageAccum3 SpiderMineSCBWWeapon@DamageAccum SpiderMineSCBWWeapon@DamageAccum2 SpiderMineSCBWWeapon@DamageAccum3 ScarabSCBWWeapon@Damage ScarabSCBWWeapon@DamageUpgraded}" Send="DeathCustomize RagdollSiegeTank"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {LurkerSCBWWeapon@Damage SunkenColonySCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
@@ -1249,7 +1263,7 @@
     <CActorEventMacro id="PhysicsDeathsSwarmAir">
         <On Terms="UnitDeathCustomize; KilledByEffect DamagePhysics" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {GhostSCBWNuclearStrike@Damage GhostSCBWNuclearStrike@DamageAccum}" Send="DeathCustomize RagdollNuke"/>
-        <On Terms="UnitDeathCustomize; KilledByEffect MutaliskSCBWWeapon@Damage" Send="DeathCustomize RagdollAcid"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {MutaliskSCBWWeapon@Damage MutaliskSCBWWeapon@DamageBounce1 MutaliskSCBWWeapon@DamageBounce2}" Send="DeathCustomize RagdollAcid"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {BattlecruiserSCBWWeaponGround@Damage BattlecruiserSCBWWeaponAir@Damage}" Send="DeathCustomize RagdollFire"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {ValkyrieSCBWWeapon@DamageAccum ValkyrieSCBWWeapon@DamageAccum2 ValkyrieSCBWWeapon@DamageAccum3 CorsairSCBWWeapon@DamageAccum CorsairSCBWWeapon@DamageAccum2 CorsairSCBWWeapon@DamageAccum3}" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {ScourgeSCBWWeapon@Damage DevourerSCBWWeapon@DamageAccum SporeColonySCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
@@ -1474,4 +1488,7 @@
     <CActorStateMonitor id="ZergBloodMediumBuilding">
         <On Terms="UnitCreation.ExtractorRich" Send="Create"/>
     </CActorStateMonitor>
+    <CActorEventMacro id="WhiffSequenceModelMacro_Scout" parent="WhiffSequenceModelMacro">
+        <Remove Terms="Signal.*.Impact; HasStatus InSequence" Target="::Creator" Send="Signal ResetSequence"/>
+    </CActorEventMacro>
 </Catalog>

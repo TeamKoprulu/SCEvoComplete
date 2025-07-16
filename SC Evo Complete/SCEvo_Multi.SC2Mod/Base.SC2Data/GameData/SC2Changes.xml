@@ -19,7 +19,6 @@
         <Flags index="UseDuration" value="0"/>
     </CEffectApplyBehavior>
     <CEffectUserData id="BeamTargetCD@Oracle" parent="SCBW_WeaponCooldown">
-        <EditorCategories value="Race:Neutral"/>
         <Amount value="0.86"/>
     </CEffectUserData>
     <CEffectSwitch id="OracleWeaponTimeWarpSwitch">
@@ -29,24 +28,21 @@
         <ValidatorArray value="NotSiegeTankSCBW"/>
     </CEffectApplyBehavior>
     <CEffectTeleport id="MothershipStrategicRecallTeleport">
-        <TeleportEffect value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+        <TeleportEffect value="SCBW_CategoryRemoveTeleportRemove"/>
     </CEffectTeleport>
     <CEffectTeleport id="NexusMassRecallTeleport">
-        <TeleportEffect value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+        <TeleportEffect value="SCBW_CategoryRemoveTeleportRemove"/>
     </CEffectTeleport>
     <CEffectApplyBehavior id="VoidRayWeaponABTarget">
         <Flags index="UseDuration" value="0"/>
     </CEffectApplyBehavior>
     <CEffectUserData id="BeamTargetCD@VoidRay" parent="SCBW_WeaponCooldown">
-        <EditorCategories value="Race:Neutral"/>
         <Amount value="0.5"/>
     </CEffectUserData>
     <CEffectApplyBehavior id="VoidRayWeaponABTargetTimeWarped">
         <Flags index="UseDuration" value="0"/>
     </CEffectApplyBehavior>
-    <CEffectUserData id="BeamTargetCD@Sentry" parent="SCBW_WeaponCooldown">
-        <EditorCategories value="Race:Neutral"/>
-    </CEffectUserData>
+    <CEffectUserData id="BeamTargetCD@Sentry" parent="SCBW_WeaponCooldown"/>
     <CEffectSwitch id="VoidRayWeaponTimeWarpSwitch">
         <CaseArray index="0" Validator="" Effect="BeamTargetCD@VoidRay" FallThrough="1"/>
     </CEffectSwitch>
@@ -246,6 +242,10 @@
     <CEffectSwitch id="RavenScramblerMissileABswitch">
         <CaseArray index="0" Validator="IsCarrierOrCarrierSCBW"/>
     </CEffectSwitch>
+    <CEffectApplyBehavior id="YoinkImpactSpiderMine">
+        <ValidatorArray index="0" value="IsSpiderMineSCBW"/>
+        <KillHallucination value="1"/>
+    </CEffectApplyBehavior>
     <CEffectSet id="RavenScramblerMissileCarrierRecallSet">
         <EffectArray value="SCBW_CarrierRecall"/>
         <SetSource value="1"/>
@@ -257,11 +257,6 @@
         <AreaArray index="2" Validator="ArchonSCBWWeapon@SplashValidator"/>
         <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
     </CEffectDamage>
-    <CEffectSet id="YoinkImpactSpiderMine">
-        <ValidatorArray value="IsSpiderMineSCBW"/>
-        <EffectArray value="SpiderMineSCBWWeapon@Impact"/>
-        <SetSource value="1"/>
-    </CEffectSet>
     <CEffectCreateUnit id="YoinkStartCreatePlaceholder">
         <ValidatorArray value="NotLarvaSCBW"/>
     </CEffectCreateUnit>
@@ -288,18 +283,18 @@
     </CEffectTeleport>
     <CEffectSet id="BlinkBehaviors">
         <EditorCategories value="Race:Protoss"/>
-        <EffectArray value="ReaverSCBWWeapon@TeleportRemoveBehaviorSelf"/>
+        <EffectArray value="SCBW_CategoryRemoveTeleportRemoveCaster"/>
         <EffectArray value="DarkTemplarBlinkAB"/>
     </CEffectSet>
     <CEffectSet id="YoinkSet">
-        <EffectArray value="ReaverSCBWWeapon@TeleportRemoveBehaviorTarget"/>
+        <EffectArray value="SCBW_CategoryRemoveTeleportRemove"/>
         <EffectArray value="YoinkImpactSpiderMine"/>
     </CEffectSet>
     <CEffectTeleport id="AdeptPhaseShiftTeleport">
-        <TeleportEffect value="ReaverSCBWWeapon@TeleportRemoveBehaviorSelf"/>
+        <TeleportEffect value="SCBW_CategoryRemoveTeleportRemoveCaster"/>
     </CEffectTeleport>
     <CEffectTeleport id="Blink">
-        <TeleportEffect value="ReaverSCBWWeapon@TeleportRemoveBehaviorSelf"/>
+        <TeleportEffect value="SCBW_CategoryRemoveTeleportRemoveCaster"/>
     </CEffectTeleport>
     <CEffectDamage id="BroodlingEscortDamageUnit">
         <ImpactUnitValidator value="SCBW_MissChance@WeaponNotMissedTarget"/>
@@ -432,6 +427,9 @@
         <EffectArray index="3" value="WorkerIssueGatherOrderGeneric"/>
         <EffectArray value="WorkerVespeneWalkRemoveBehavior"/>
     </CEffectSet>
+    <CAbilBuild id="ZergBuild">
+        <EffectArray index="Start" value="DroneSCBW@TrainStart"/>
+    </CAbilBuild>
     <CAbilRally id="RallyHatchery">
         <TechAliasArray value="_HatchRally"/>
     </CAbilRally>
@@ -475,6 +473,9 @@
         <TechAliasArray value="_Disruptable"/>
         <AutoCastValidatorArray value="NotEggSCBW"/>
     </CAbilEffectTarget>
+    <CValidatorCombine id="IsNotEggUnit">
+        <CombineArray value="IsNotTransportOverlordCocoon"/>
+    </CValidatorCombine>
     <CValidatorUnitCompareOrderCount id="WorkerChannelNoQueuedOrders">
         <Value value="1"/>
     </CValidatorUnitCompareOrderCount>
@@ -483,6 +484,7 @@
         <CombineArray value="NotEggSCBW"/>
         <CombineArray value="NotLurkerSCBWEgg"/>
         <CombineArray value="SCBW_NoMassTransport"/>
+        <CombineArray value="NotScarabSCBW"/>
     </CValidatorCombine>
     <CValidatorCombine id="IsNotRecallingCombine">
         <CombineArray value="SCBW_NoMassTransport"/>
@@ -1033,6 +1035,27 @@
     <CActorDoodad id="ZhakulDasCurtain">
         <ShadowWhenTransparent value="1"/>
     </CActorDoodad>
+    <CActorUnit id="Carrier">
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+    </CActorUnit>
+    <CActorUnit id="Tempest">
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+    </CActorUnit>
+    <CActorUnit id="Sentry">
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+    </CActorUnit>
+    <CActorUnit id="DarkTemplar">
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+    </CActorUnit>
+    <CActorUnit id="Observer">
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="UnitBirth.ObserverSiegeMode" Send="AnimBracketStart Work Stand,Work,Start Stand,Work Stand,Work,End Instant 1.750000 AsTimeScale"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+    </CActorUnit>
     <CWeaponLegacy id="LurkerMP">
         <Tip value="Weapon/Tip/PierceWeapon"/>
         <AttackType value="Chaos"/>
@@ -1206,7 +1229,7 @@
     </CUnit>
     <CUnit id="Raven">
         <CardLayouts index="0">
-            <LayoutButtons index="7" Requirements="SCBW_NotDetectionSuppressed"/>
+            <LayoutButtons index="6" Requirements="SCBW_NotDetectionSuppressed"/>
         </CardLayouts>
     </CUnit>
     <CUnit id="Banshee">
@@ -1288,6 +1311,14 @@
     <CUnit id="WidowMineBurrowed">
         <Attributes index="Robotic" value="1"/>
     </CUnit>
+    <CBehaviorBuff id="YoinkImpactSpiderMine">
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <Duration value="0.0625"/>
+        <DurationRandomMin value="0.0625"/>
+        <DurationRandomMax value="0.125"/>
+        <ExpireEffect value="SpiderMineSCBWWeapon@Impact"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="BeamTargetCD">
         <Duration value="0">
             <AccumulatorArray value="SCBW_WeaponCooldown@Accum"/>

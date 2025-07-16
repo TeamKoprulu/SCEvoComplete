@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectUserData id="SCBW_DamageFormula@TypeConc">
+        <Key value="WeaponType"/>
+        <Amount value="2"/>
+        <SourceKey value="WeaponType"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectUserData id="SCBW_DamageFormula@TypeExpl">
+        <Key value="WeaponType"/>
+        <SourceKey value="WeaponType"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectUserData id="SCBW_DamageFormula@SplashFactorStep">
+        <Key value="SplashFactor"/>
+        <SourceKey value="SplashFactor"/>
+    </CEffectUserData>
+    <CEffectUserData id="SCBW_DamageFormula@SplashFactorReset">
+        <Key value="SplashFactor"/>
+        <Amount value="0"/>
+        <SourceKey value="SplashFactor"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectUserData id="SCBW_DamageFormula@FractionalArmorUpdate">
+        <Amount value="0"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="SCBW_DamageFormula@FractionalArmor">
+        <WhichUnit Value="Source"/>
+    </CEffectApplyBehavior>
+    <CValidatorUnitState id="SCBW_DamageFormula@IsHallucination">
+        <Enabled value="1"/>
+        <State value="Hallucination"/>
+    </CValidatorUnitState>
+    <CValidatorCombine id="SCBW_DamageFormula@IgnoreArmor">
+        <CombineArray value="SCBW_DamageFormula@IsHallucination"/>
+    </CValidatorCombine>
+    <CValidatorEffectTreeUserData id="SCBW_DamageFormula@TypeConc">
+        <Key value="WeaponType"/>
+        <Value value="2"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="SCBW_DamageFormula@TypeExpl">
+        <Key value="WeaponType"/>
+        <Value value="1"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="SCBW_DamageFormula@SplashFactorOuter">
+        <Key value="SplashFactor"/>
+        <Value value="2"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="SCBW_DamageFormula@SplashFactorMid">
+        <Key value="SplashFactor"/>
+        <Value value="1"/>
+    </CValidatorEffectTreeUserData>
+    <CScoreValueCustom id="SCBW_DamageFormula@DamageMultiplierDealt" parent="BaseScoreValue">
+        <Flags index="Hidden" value="1"/>
+        <Type value="Fixed"/>
+    </CScoreValueCustom>
+    <CScoreValueCustom id="SCBW_DamageFormula@DamageMultiplierTaken" parent="BaseScoreValue">
+        <Flags index="Hidden" value="1"/>
+        <Type value="Fixed"/>
+    </CScoreValueCustom>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@LifeArmorSwitch">
+        <CaseArray Validator="SCBW_DamageFormula@IgnoreArmor"/>
+        <CaseDefault value="SCBW_DamageFormula@LifeArmor"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@ShieldArmorSwitch">
+        <CaseArray Validator="SCBW_DamageFormula@IgnoreArmor"/>
+        <CaseDefault value="SCBW_DamageFormula@ShieldArmor"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@Clamp">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@FormulaUnscaled"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@Minimum"/>
+        </Parameters>
+        <Operation value="Maximum"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorConstant id="SCBW_DamageFormula@Minimum">
+        <Amount value="0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula">
+        <MinAccumulation value="0"/>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@Clamp"/>
+        </Parameters>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageMatrixAbsorb">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@IncomingDamageScaled"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="ScienceVesselSCBWDefensiveMatrix@Remaining"/>
+        </Parameters>
+        <Operation value="Minimum"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageMatrixRemain">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@IncomingDamageScaled"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageMatrixAbsorbSwitch"/>
+        </Parameters>
+        <Operation value="Subtract"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@DamageMatrixSwitch">
+        <CaseArray Validator="ScienceVesselSCBWDefensiveMatrix@HasShield" Accumulator="SCBW_DamageFormula@DamageMatrix"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageShieldsAbsorbMax">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@ShieldCurrent"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@TypeShieldFactor"/>
+        </Parameters>
+        <Operation value="Divide"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageShieldsRemain">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageShieldsPhase"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageShieldsAbsorbSwitch"/>
+        </Parameters>
+        <Operation value="Subtract"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageScalarMax">
+        <MinAccumulation value="0.001"/>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageScalar"/>
+        </Parameters>
+    </CAccumulatorArithmetic>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@DamageShieldsAbsorbSwitch">
+        <CaseArray Validator="hasShields" Accumulator="SCBW_DamageFormula@DamageShieldsAbsorb"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@IncomingDamageScaled">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@IncomingDamageParam1"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageScalar"/>
+        </Parameters>
+        <Operation value="Multiply"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageShieldsPhase">
+        <MinAccumulation value="0"/>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageMatrixRemain"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@ShieldArmor"/>
+        </Parameters>
+        <Operation value="Subtract"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@DamageShieldsSwitch">
+        <CaseArray Validator="hasShields" Accumulator="SCBW_DamageFormula@DamageShields"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageLifeParam1">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageShieldsRemain"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@LifeArmor"/>
+        </Parameters>
+        <Operation value="Subtract"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageShieldsAbsorb">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageShieldsPhase"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageShieldsAbsorbMax"/>
+        </Parameters>
+        <Operation value="Minimum"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@DamageMatrixAbsorbSwitch">
+        <CaseArray Validator="ScienceVesselSCBWDefensiveMatrix@HasShield" Accumulator="SCBW_DamageFormula@DamageMatrixAbsorb"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@FormulaUnscaled">
+        <MinAccumulation value="0"/>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@Formula"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageScalarMax"/>
+        </Parameters>
+        <Operation value="Divide"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageLife">
+        <MinAccumulation value="0"/>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageLifeParam1"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@TypeFactor"/>
+        </Parameters>
+        <Operation value="Multiply"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageShields">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageShieldsAbsorb"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@TypeShieldFactor"/>
+        </Parameters>
+        <Operation value="Multiply"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageMatrix">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageMatrixAbsorb"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@TypeShieldFactor"/>
+        </Parameters>
+        <Operation value="Multiply"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@Formula">
+        <MinAccumulation value="0"/>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageMatrixSwitch"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageShieldsSwitch"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageLife"/>
+        </Parameters>
+    </CAccumulatorArithmetic>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@TypeShieldFactor">
+        <CaseArray Validator="SCBW_DamageFormula@TypeConc" Accumulator="SCBW_DamageFormula@TypeShieldFactorConc"/>
+        <CaseDefault value="SCBW_DamageFormula@TypeShieldFactorExpl"/>
+        <MinAccumulation value="0"/>
+        <MaxAccumulation value="10"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@TypeFactor">
+        <CaseArray Validator="SCBW_DamageFormula@TypeConc" Accumulator="SCBW_DamageFormula@TypeFactorConc"/>
+        <CaseDefault value="SCBW_DamageFormula@TypeFactorExpl"/>
+        <MinAccumulation value="0"/>
+        <MaxAccumulation value="10"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@DamageScalar">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageMultiplierTaken"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@DamageMultiplierDealt"/>
+        </Parameters>
+        <Operation value="Multiply"/>
+        <MinAccumulation value="0"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorPlayerScoreValue id="SCBW_DamageFormula@DamageMultiplierTaken">
+        <Player Value="Target"/>
+        <Value value="SCBW_DamageFormula@DamageMultiplierTaken"/>
+    </CAccumulatorPlayerScoreValue>
+    <CAccumulatorVitals id="SCBW_DamageFormula@ShieldCurrent">
+        <Ratio value="1"/>
+        <VitalType value="Shields"/>
+        <UnitSource Value="Target"/>
+        <ModificationType value="PerUnit"/>
+    </CAccumulatorVitals>
+    <CAccumulatorPlayerScoreValue id="SCBW_DamageFormula@DamageMultiplierDealt">
+        <Player Value="Caster"/>
+        <Value value="SCBW_DamageFormula@DamageMultiplierDealt"/>
+    </CAccumulatorPlayerScoreValue>
+    <!-- Explosive Factors -->
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeShieldFactorExplArmored">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeShieldFactorExplDefault">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeShieldFactorExplLight">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@TypeShieldFactorExpl">
+        <CaseArray Validator="UnitIsArmored" Accumulator="SCBW_DamageFormula@TypeShieldFactorExplArmored"/>
+        <CaseArray Validator="UnitIsLight" Accumulator="SCBW_DamageFormula@TypeShieldFactorExplLight"/>
+        <CaseDefault value="SCBW_DamageFormula@TypeShieldFactorExplDefault"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeFactorExplArmored">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeFactorExplDefault">
+        <Amount value="0.75"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeFactorExplLight">
+        <Amount value="0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@TypeFactorExpl">
+        <CaseArray Validator="UnitIsArmored" Accumulator="SCBW_DamageFormula@TypeFactorExplArmored"/>
+        <CaseArray Validator="UnitIsLight" Accumulator="SCBW_DamageFormula@TypeFactorExplLight"/>
+        <CaseDefault value="SCBW_DamageFormula@TypeFactorExplDefault"/>
+    </CAccumulatorSwitch>
+    <!-- Concussive Factors -->
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeShieldFactorConcArmored">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeShieldFactorConcDefault">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeShieldFactorConcLight">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@TypeShieldFactorConc">
+        <CaseArray Validator="UnitIsArmored" Accumulator="SCBW_DamageFormula@TypeShieldFactorConcArmored"/>
+        <CaseArray Validator="UnitIsLight" Accumulator="SCBW_DamageFormula@TypeShieldFactorConcLight"/>
+        <CaseDefault value="SCBW_DamageFormula@TypeShieldFactorConcDefault"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeFactorConcArmored">
+        <Amount value="0.25"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeFactorConcDefault">
+        <Amount value="0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@TypeFactorConcLight">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@TypeFactorConc">
+        <CaseArray Validator="UnitIsArmored" Accumulator="SCBW_DamageFormula@TypeFactorConcArmored"/>
+        <CaseArray Validator="UnitIsLight" Accumulator="SCBW_DamageFormula@TypeFactorConcLight"/>
+        <CaseDefault value="SCBW_DamageFormula@TypeFactorConcDefault"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@IncomingDamageParam1">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@IncomingDamageParam2"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="DevourerSCBWWeapon@AcidSpores"/>
+        </Parameters>
+    </CAccumulatorArithmetic>
+    <CAccumulatorArithmetic id="SCBW_DamageFormula@IncomingDamageParam2">
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@IncomingDamage"/>
+        </Parameters>
+        <Parameters value="0">
+            <AccumulatorArray value="SCBW_DamageFormula@SplashFactorSwitch"/>
+        </Parameters>
+        <Operation value="Multiply"/>
+    </CAccumulatorArithmetic>
+    <CAccumulatorUserData id="SCBW_DamageFormula@LifeArmorSource">
+        <Key value="LifeArmor"/>
+        <BehaviorScope Value="Source" Behavior="SCBW_DamageFormula@FractionalArmor"/>
+    </CAccumulatorUserData>
+    <CAccumulatorUserData id="SCBW_DamageFormula@ShieldArmor">
+        <Key value="ShieldArmor"/>
+        <BehaviorScope Value="Target" Behavior="SCBW_DamageFormula@FractionalArmor"/>
+    </CAccumulatorUserData>
+    <CAccumulatorConstant id="SCBW_DamageFormula@SplashFactorMid">
+        <Amount value="0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@SplashFactorOuter">
+        <Amount value="0.25"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="SCBW_DamageFormula@SplashFactorInner">
+        <Amount value="1"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="SCBW_DamageFormula@SplashFactorSwitch">
+        <CaseArray Validator="SCBW_DamageFormula@SplashFactorMid" Accumulator="SCBW_DamageFormula@SplashFactorMid"/>
+        <CaseArray Validator="SCBW_DamageFormula@SplashFactorOuter" Accumulator="SCBW_DamageFormula@SplashFactorOuter"/>
+        <CaseDefault value="SCBW_DamageFormula@SplashFactorInner"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorUserData id="SCBW_DamageFormula@IncomingDamage">
+        <Key value="IncomingDamage"/>
+    </CAccumulatorUserData>
+    <CAccumulatorUserData id="SCBW_DamageFormula@LifeArmor">
+        <Key value="LifeArmor"/>
+        <BehaviorScope Value="Target" Behavior="SCBW_DamageFormula@FractionalArmor"/>
+    </CAccumulatorUserData>
+    <CDataCollection id="SCBW_DamageFormula">
+        <EditorCategories value="Race:Neutral,ObjectType:Other"/>
+        <DataRecord Entry="Behavior,SCBW_DamageFormula@FractionalArmor"/>
+        <DataRecord Entry="Effect,SCBW_DamageFormula@TypeExpl"/>
+        <DataRecord Entry="Effect,SCBW_DamageFormula@TypeConc"/>
+        <DataRecord Entry="Effect,SCBW_DamageFormula@SplashFactorReset"/>
+        <DataRecord Entry="Effect,SCBW_DamageFormula@SplashFactorStep"/>
+        <DataRecord Entry="Effect,SCBW_DamageFormula@FractionalArmorUpdate"/>
+        <DataRecord Entry="Effect,SCBW_DamageFormula@FractionalArmor"/>
+        <DataRecord Entry="ScoreValue,SCBW_DamageFormula@DamageMultiplierDealt"/>
+        <DataRecord Entry="ScoreValue,SCBW_DamageFormula@DamageMultiplierTaken"/>
+        <DataRecord Entry="Validator,SCBW_DamageFormula@TypeConc"/>
+        <DataRecord Entry="Validator,SCBW_DamageFormula@TypeExpl"/>
+        <DataRecord Entry="Validator,SCBW_DamageFormula@SplashFactorOuter"/>
+        <DataRecord Entry="Validator,SCBW_DamageFormula@SplashFactorMid"/>
+        <DataRecord Entry="Validator,SCBW_DamageFormula@IgnoreArmor"/>
+        <DataRecord Entry="Validator,SCBW_DamageFormula@IsHallucination"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@Clamp"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@FormulaUnscaled"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@Minimum"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageMatrixAbsorb"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@IncomingDamageScaled"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageMatrixRemain"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageMatrixAbsorbSwitch"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageMatrixSwitch"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageMatrix"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageShieldsAbsorbMax"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@ShieldCurrent"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactor"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageShieldsRemain"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageShieldsPhase"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageShieldsAbsorbSwitch"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageScalarMax"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageScalar"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageShieldsAbsorb"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@IncomingDamageParam1"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@ShieldArmor"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageShieldsSwitch"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageShields"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageLifeParam1"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@LifeArmor"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@Formula"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageLife"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactor"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorConc"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorExpl"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorConc"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorExpl"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageMultiplierTaken"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@DamageMultiplierDealt"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorExplArmored"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorExplDefault"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorExplLight"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorExplArmored"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorExplDefault"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorExplLight"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorConcArmored"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorConcDefault"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeShieldFactorConcLight"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorConcArmored"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorConcDefault"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@TypeFactorConcLight"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@IncomingDamageParam2"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@IncomingDamage"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@SplashFactorSwitch"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@LifeArmorSource"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@SplashFactorMid"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@SplashFactorOuter"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@SplashFactorInner"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@LifeArmorSwitch"/>
+        <DataRecord Entry="Accumulator,SCBW_DamageFormula@ShieldArmorSwitch"/>
+    </CDataCollection>
+    <CBehaviorAttribute id="SCBW_DamageFormula@FractionalArmor">
+        <BehaviorFlags index="Permanent" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Neutral"/>
+        <MaxPoints value="0"/>
+    </CBehaviorAttribute>
+</Catalog>

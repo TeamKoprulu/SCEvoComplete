@@ -1,6 +1,7 @@
 static const string NYDUS_TYPE = "NydusCanalSCBW";
 static trigger CargoTrig;
 static trigger DeathTrig;
+static const int PreplacedNydusLinks_Max = 30;
 
 static string PeerNydusKey(unit u){
     return "NydusCanalSCBW."+IntToString(UnitGetTag(u))+".Peer";
@@ -72,6 +73,29 @@ bool NydusCanalSCBW_BuildFinishTrig(bool a, bool b){
     return true;
 }
 
+bool NydusCanalSCBW_LinkPreplaced(bool a, bool b){
+    unitgroup objectGroup;
+    unit nydus1; unit nydus2;
+    int i;
+    for (i = 1; i <= PreplacedNydusLinks_Max; i += 1) {
+        objectGroup = UnitGroupFromId(i);
+        if(objectGroup == null){ break; }
+        if(UnitGroupCount(objectGroup, c_unitCountAlive) != 2){ continue; }
+        nydus1 = UnitGroupUnit(objectGroup, 1);
+        nydus2 = UnitGroupUnit(objectGroup, 2);
+        if(UnitGetType(nydus1) != NYDUS_TYPE  || UnitGetType(nydus2) != NYDUS_TYPE ) { continue; }
+        PeerNydusSet(nydus1,nydus2);
+        RegisterNydus(nydus1);
+        RegisterNydus(nydus2);
+        UnitCreateEffectUnit(nydus1, NYDUS_TYPE+"@Dummy", nydus2);
+        UnitCreateEffectUnit(nydus2, NYDUS_TYPE+"@Dummy", nydus1);
+        UnitCreateEffectUnit(nydus1, NYDUS_TYPE+"@Build", nydus2);
+        UnitCreateEffectUnit(nydus2, NYDUS_TYPE+"@Build", nydus1);
+    }
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
 void NydusCanalSCBW_Init(){
     trigger t;
     t= TriggerCreate("NydusCanalSCBW_TeleportCargoTrig");
@@ -82,4 +106,6 @@ void NydusCanalSCBW_Init(){
     TriggerAddEventUnitConstructProgress(t,null,c_unitProgressStageStart);
     t= TriggerCreate("NydusCanalSCBW_BuildFinishTrig");
     TriggerAddEventUnitConstructProgress(t,null,c_unitProgressStageComplete);
+    t= TriggerCreate("NydusCanalSCBW_LinkPreplaced");
+    TriggerAddEventTimeElapsed(t, 0.0625, c_timeGame);
 }
