@@ -1,58 +1,96 @@
 
 // -------------- KopruluMenu -------------------
-int KopruluMenu;
-int KopruluMenuToggleButton;
-int KopruluMenuSkinsButton;
+static int KopruluMenu;
+static int KopruluMenuToggleButton;
+static int KopruluMenuSkinsButton;
+static timer KopruluSkinsTimer;
+int gv_KopruluSkinsCount = 0;
 trigger KopruluSkinsResponses_t;
 trigger KopruluSkinsTimerExpire_t;
-timer KopruluSkinsTimer;
-const int c_KopruluSkinsCount = 3;
+const string c_KopruluSkinsUserType = "SCEV_KopruluSkins";
+const int c_KopruluSkinsMaxSkins = 32;
+struct KopruluSkinStruct{
+    string id;
+    bool BWExclusive;
+    string race;
+    string skin;
+    string function;
+    int menuControl;
+};
+typedef structref <KopruluSkinStruct> KopruluSkin;
 
-int[c_KopruluSkinsCount + 1] KopruluSkinsItems;
+KopruluSkinStruct[c_KopruluSkinsMaxSkins] gv_KopruluSkins;
+
+static bool l_IntToBool(int i){
+    if(i == 1) { return true; }
+    return false;
+}
+
+static void KopruluSkinsInitialize() {
+    int i;
+    string instance;
+    int count = 1;
+
+    for (i = 1; i <= UserDataInstanceCount(c_KopruluSkinsUserType); i += 1) {
+        instance = UserDataInstance(c_KopruluSkinsUserType, i);
+        if(UserDataGetInt(c_KopruluSkinsUserType, instance, "Enabled", 1) == 0) { continue; }
+        
+        gv_KopruluSkins[count - 1].id = instance;
+        gv_KopruluSkins[count - 1].BWExclusive = l_IntToBool(UserDataGetInt(c_KopruluSkinsUserType, instance, "BWExclusive", 1));
+        gv_KopruluSkins[count - 1].race = UserDataGetGameLink(c_KopruluSkinsUserType, instance, "Race", 1);
+        gv_KopruluSkins[count - 1].skin = UserDataGetGameLink(c_KopruluSkinsUserType, instance, "Skin", 1);
+        gv_KopruluSkins[count - 1].function = UserDataGetString(c_KopruluSkinsUserType, instance, "Function", 1);
+
+        count += 1;
+    }
+
+    gv_KopruluSkinsCount = count;
+}
+
+
+
+void KopruluSkinsToggleSkin(int player, KopruluSkin kopruluSkin, bool state){
+    string race;
+    bool isBWRace;
+    race = PlayerRace(player);
+    isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
+    
+    if(kopruluSkin.BWExclusive && isBWRace == false){
+        return;
+    }
+
+    Extension_BankSaveSkin(player, kopruluSkin.id, BoolToInt(state));
+
+    if(kopruluSkin.function != ""){
+        DataTableSetInt(true, "KopruluSkinsFunction_Player", player);
+        DataTableSetBool(true, "KopruluSkinsFunction_State", state);
+        TriggerExecute(TriggerCreate(kopruluSkin.function), false, false);
+    }
+    else{
+        if(state){
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(player, kopruluSkin.skin, state);
+        }
+    }
+
+}
 
 bool KopruluSkinsResponses_Func(bool test_conds, bool run_actions){
     playergroup players = PlayerGroupActive();
+    int i;
     int player = EventPlayer();
-    string race;
-    string skin;
-    bool isBWRace;
     bool checked;
+
     if(!PlayerGroupHasPlayer(players, player) || (PlayerStatus(player) != c_playerStatusActive) ) {
         return false;
     }
-    race = PlayerRace(player);
-    checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
-    isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
-
-    if(EventDialogControl() == KopruluSkinsItems[0]){
-        skin = c_extBankKey_Setting_ClassicSkins;
-    }
-    else if(EventDialogControl() == KopruluSkinsItems[1]){
-        skin = c_extBankKey_Setting_AiurNexus;
-    }
-    else if(EventDialogControl() == KopruluSkinsItems[2]){
-        skin = c_extBankKey_Setting_KorhalCC;
-    }
     
-    Extension_OptionsBankSaveValue(player, skin, IntToString(BoolToInt(checked)));
-    if(checked){
-        if(skin == c_extBankKey_Setting_ClassicSkins){
-            if(isBWRace){
-                libSCEV_gf_LegacyIconsActivate(checked, PlayerGroupSingle(player));
-            }
+    for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
+        if(EventDialogControl() == gv_KopruluSkins[i].menuControl){
+            checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
+            KopruluSkinsToggleSkin(player, gv_KopruluSkins[i], checked);
+            break;
         }
 
-        else if(skin == c_extBankKey_Setting_AiurNexus){
-            if(isBWRace){
-                libNtve_gf_PlayerApplySkinReplacingExistingUnit(player, "NexusSCBW_Aiur", checked);
-            }
-        }
-
-        else if(skin == c_extBankKey_Setting_KorhalCC){
-            if(isBWRace){
-                libNtve_gf_PlayerApplySkinReplacingExistingUnit(player, "CommandCenterSCBW_Korhal", checked);
-            }
-        }
     }
 
     return true;
@@ -85,15 +123,17 @@ bool KopruluSkinsTimerExpire_Func(bool test_conds, bool run_actions){
 
 void KopruluMenuCreateUI(){
     int i;
+    int k;
     int di;
     int fullscreenPanel;
     playergroup pg = PlayerGroupActive();
     string race;
     int tmp_player;
     bool isBWRace;
-
+    KopruluSkin kopruluSkin;
+    
     if(KopruluMenu == c_invalidDialogControlId){
-
+        KopruluSkinsInitialize();
         fullscreenPanel = DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer/FullscreenUpperContainer");
         KopruluMenu = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "KopruluMenu");
         DialogControlSetPropertyAsBool(KopruluMenu, c_triggerControlPropertyVisible, pg, false);
@@ -109,21 +149,22 @@ void KopruluMenuCreateUI(){
             KopruluSkinsResponses_t = TriggerCreate("KopruluSkinsResponses_Func");
             TriggerEnable(KopruluSkinsResponses_t, false);
 
-            for (i = 0; i < c_KopruluSkinsCount; i += 1) {
-                KopruluSkinsItems[i] = DialogControlHookup(fullscreenPanel, c_triggerControlTypeCheckBox, "KopruluMenu_SkinsPanel/CheckBox_" + l_IntToStringDoubleDigit(i));
-                DialogControlSetPropertyAsBool(KopruluSkinsItems[i], c_triggerControlPropertyChecked, pg, false);
-                DialogControlSetPropertyAsBool(KopruluSkinsItems[i], c_triggerControlPropertyEnabled, pg, false);
-                TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, KopruluSkinsItems[i], c_triggerControlEventTypeChecked);
-            }
+            for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
+                kopruluSkin = gv_KopruluSkins[i];
+                di = DialogControlHookup(fullscreenPanel, c_triggerControlTypeCheckBox, "KopruluMenu_SkinsPanel/CheckBox_" + l_IntToStringDoubleDigit(i));
+                kopruluSkin.menuControl = di;
+                DialogControlSetPropertyAsBool(di, c_triggerControlPropertyChecked, pg, false);
+                DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, pg, false);
+                TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, di, c_triggerControlEventTypeChecked);
 
-            for (i = 1; i <= PlayerGroupCount(pg); i += 1) {
-                tmp_player = PlayerGroupPlayer(pg, i);
-                race = PlayerRace(tmp_player);
-                isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
-                if(isBWRace){
-                    DialogControlSetPropertyAsBool(KopruluSkinsItems[0], c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
-                    DialogControlSetPropertyAsBool(KopruluSkinsItems[1], c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
-                    DialogControlSetPropertyAsBool(KopruluSkinsItems[2], c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
+                for (k = 1; k <= PlayerGroupCount(pg); k += 1) {
+                    tmp_player = PlayerGroupPlayer(pg, k);
+                    race = PlayerRace(tmp_player);
+                    isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
+
+                    if(kopruluSkin.BWExclusive && isBWRace){
+                        DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
+                    }
                 }
             }
 
@@ -141,4 +182,19 @@ void KopruluMenuCreateUI(){
     }
     return;
 
+}
+
+// Classic Icons activation
+bool KopruluSkinsClassicIconsActivate_Func(bool test_conds, bool run_actions){
+    int player = DataTableGetInt(true, "KopruluSkinsFunction_Player");
+    bool state =  DataTableGetBool(true, "KopruluSkinsFunction_State");
+    DataTableValueRemove(true, "KopruluSkinsFunction_Player");
+    DataTableValueRemove(true, "KopruluSkinsFunction_State");
+    // Can only be enabled
+    if(state == true){
+        libSCEV_gf_LegacyIconsActivate(state, PlayerGroupSingle(player));
+    }
+
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
 }

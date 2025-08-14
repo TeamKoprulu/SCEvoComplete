@@ -59,9 +59,8 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
     int i;
     playergroup pg = PlayerGroupActive();
     int k;
-    bool enabled;
-    string race;
-    bool isBWRace;
+    bank playerBank;
+    KopruluSkin kopruluSkin;
 
     KopruluMenuCreateUI();
     Wait(0.0, c_timeGame);
@@ -70,39 +69,35 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
     for (i = 1; i <= PlayerGroupCount(PlayerGroupActive()); i += 1) {
         tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
         if(PlayerType(tmp_player) != c_playerTypeUser){ continue; }
-        race = PlayerRace(tmp_player);
-        isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
-
-        for (k = 0; k < c_extBankKey_SettingCount; k += 1) {
-            if(BankSectionExists(gv_extensionBank[tmp_player], c_extOptionBankSection)){
-                if(BankKeyExists(gv_extensionBank[tmp_player], c_extOptionBankSection, c_extBankKey_Setting+IntToString(k))){
-                    enabled = l_IntToBool(StringToInt(BankValueGetAsString(gv_extensionBank[tmp_player], c_extOptionBankSection, c_extBankKey_Setting+IntToString(k))));
-                    if(k == 0){
-                        DialogControlSetPropertyAsBool(KopruluSkinsItems[k], c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), enabled);
-                        if(enabled){
-                            if(isBWRace){
-                                libSCEV_gf_LegacyIconsActivate(true, PlayerGroupSingle(tmp_player));
-                            }
-                        }
-                    }
-                    else if(k == 1){
-                        DialogControlSetPropertyAsBool(KopruluSkinsItems[k], c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), enabled);
-                        if(enabled){
-                            PlayerApplySkin(tmp_player, "NexusSCBW_Aiur", enabled);
-                        }
-                    }
-
-                    else if(k == 2){
-                        DialogControlSetPropertyAsBool(KopruluSkinsItems[k], c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), enabled);
-                        if(enabled){
-                            PlayerApplySkin(tmp_player, "CommandCenterSCBW_Korhal", enabled);
-                        }
-                    }
-
+        playerBank = gv_extensionBank[tmp_player];
+        if(!BankSectionExists(playerBank, c_extBankSectionOptions)){ continue; }
+        
+        if(BankKeyExists(playerBank, c_extBankSectionOptions, c_extBankKeyVersion)){ 
+            if(BankValueGetAsFixed(playerBank, c_extBankSectionOptions, c_extBankKeyVersion) != c_extOptionsVersion)
+            {
+                BankSectionRemove(gv_extensionBank[tmp_player], c_extBankSectionOptions);
+                if(BankSectionExists(gv_extensionBank[tmp_player], c_extBankSectionSkins)){
+                    BankSectionRemove(gv_extensionBank[tmp_player], c_extBankSectionSkins);
                 }
+                BankSave(gv_extensionBank[tmp_player]);
+                DYB_BankBackupsClear(tmp_player, gv_extensionBank[tmp_player], 1);
+                DYB_BankBackup(tmp_player, gv_extensionBank[tmp_player], 1);
             }
         }
 
+        if(!BankSectionExists(playerBank, c_extBankSectionSkins)){ continue; }
+        for (k = 0; k < gv_KopruluSkinsCount - 1; k += 1) {
+            kopruluSkin = gv_KopruluSkins[k];
+            if(BankKeyExists(playerBank, c_extBankSectionSkins, kopruluSkin.id)){
+                if(BankValueGetAsInt(playerBank, c_extBankSectionSkins, kopruluSkin.id) == 1){
+                    KopruluSkinsToggleSkin(tmp_player, kopruluSkin, true);
+                    DialogControlSetPropertyAsBool(kopruluSkin.menuControl, c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), true);
+                }
+                else{
+                    DialogControlSetPropertyAsBool(kopruluSkin.menuControl, c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), false);
+                }
+            }
+        }
     }
 
     Wait(0.0625, c_timeGame);
@@ -112,29 +107,18 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
     return true;
 }
 
-void Extension_OptionsBankSaveValue(int p, string key, string value){
-    // DYBLoadBankHelper(-1);
+void Extension_BankSaveSkin(int player, string key, int value){
 
-    if(!BankSectionExists(gv_extensionBank[p], c_extOptionBankSection)){
-        BankValueSetFromFixed(gv_extensionBank[p], c_extOptionBankSection, "Version", c_extOptionsVersion);
+    if(!BankSectionExists(gv_extensionBank[player], c_extBankSectionOptions)){
+        BankValueSetFromFixed(gv_extensionBank[player], c_extBankSectionOptions, c_extBankKeyVersion, c_extOptionsVersion);
     }
 
-    BankValueSetFromString(gv_extensionBank[p], c_extOptionBankSection, key, value);
+    BankValueSetFromInt(gv_extensionBank[player], c_extBankSectionSkins, key, value);
     
-    BankSave(gv_extensionBank[p]);
-    DYB_BankBackupsClear(p, gv_extensionBank[p], 1);
-    DYB_BankBackup(p, gv_extensionBank[p], 1);
+    BankSave(gv_extensionBank[player]);
+    DYB_BankBackupsClear(player, gv_extensionBank[player], 1);
+    DYB_BankBackup(player, gv_extensionBank[player], 1);
 }
-
-bool Extension_OptionsBankLoadValueAsBool(int p, string key){
-    
-    if(!BankSectionExists(gv_extensionBank[p], c_extOptionBankSection)){
-        return false;
-    }
-
-    return l_IntToBool(StringToInt(BankValueGetAsString(gv_extensionBank[p], c_extOptionBankSection, key)));
-}
-
 
 int[DYB_MAX_PLAYERS] gv_syncedBytes;
 void OnValueChanged(int player, string bankName, string section, string key, string val, int syncType, int valType) {
