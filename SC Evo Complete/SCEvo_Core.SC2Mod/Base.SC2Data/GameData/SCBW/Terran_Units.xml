@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectApplyBehavior id="SpiderMineSCBW@InitialStun">
+        <EditorCategories value="Race:Terran"/>
+    </CEffectApplyBehavior>
     <CEffectMorph id="SpiderMineSCBW@BurrowClearMorph">
         <ValidatorArray value="IsSpiderMineSCBW"/>
         <EditorCategories value="Race:Terran"/>
@@ -36,17 +39,15 @@
         <Flags index="AutoCastOn" value="1"/>
         <Flags index="IgnoreFacing" value="1"/>
         <Flags index="SuppressMovement" value="1"/>
-        <InfoArray Unit="SpiderMineSCBW@Burrowed">
+        <InfoArray Unit="SpiderMineSCBW@Burrowed" RandomDelayMax="0.6875">
             <SectionArray index="Actor">
-                <DurationArray index="Delay" value="0.875"/>
-                <DurationArray index="Duration" value="0.5"/>
+                <DurationArray index="Duration" value="0.25"/>
             </SectionArray>
             <SectionArray index="Mover">
-                <DurationArray index="Delay" value="0.875"/>
-                <DurationArray index="Duration" value="0.5"/>
+                <DurationArray index="Duration" value="0.25"/>
             </SectionArray>
             <SectionArray index="Stats">
-                <DurationArray index="Delay" value="1.375"/>
+                <DurationArray index="Delay" value="0.375"/>
             </SectionArray>
         </InfoArray>
         <AutoCastFilters value="Ground;Player,Ally,Neutral,Structure,Hover,Worker,Missile,Stasis,Dead,Hidden,Invulnerable,Benign"/>
@@ -63,15 +64,15 @@
         <Flags index="AutoCastOn" value="1"/>
         <Flags index="IgnoreFacing" value="1"/>
         <Flags index="SuppressMovement" value="1"/>
-        <InfoArray Unit="SpiderMineSCBW" RandomDelayMin="0.25" RandomDelayMax="0.375">
+        <InfoArray Unit="SpiderMineSCBW" RandomDelayMax="0.5">
             <SectionArray index="Actor">
-                <DurationArray index="Duration" value="0.5625"/>
+                <DurationArray index="Duration" value="0.25"/>
             </SectionArray>
             <SectionArray index="Mover">
-                <DurationArray index="Duration" value="0.5625"/>
+                <DurationArray index="Duration" value="0.25"/>
             </SectionArray>
             <SectionArray index="Stats">
-                <DurationArray index="Duration" value="0.5625"/>
+                <DurationArray index="Duration" value="0.875"/>
                 <EffectArray index="Start" value="SpiderMineSCBWWeapon@ScanTargets"/>
                 <EffectArray index="Finish" value="SpiderMineSCBWWeapon@UnburrowFinish"/>
             </SectionArray>
@@ -1186,22 +1187,56 @@
         <On Terms="AbilMorph.*.Finish; MorphFrom SpiderMineSCBW@Burrowed" Send="Destroy"/>
         <Abil Link="SpiderMineSCBW@UnburrowRangeDummy"/>
     </CActorRange>
-    <CActorUnit id="SpiderMineSCBW" parent="GenericUnitStandard" unitName="SpiderMineSCBW">
+    <CActorUnit id="SpiderMineSCBW" parent="GenericUnitMorph" unitName="SpiderMineSCBW">
         <Aliases value="_UnitSmall"/>
+        <On index="69" Terms="AbilMorph.SpiderMineSCBW@Unburrow.Finish; MorphTo SpiderMineSCBW" Send="Create"/>
+        <On index="70" Terms="AbilMorph.SpiderMineSCBW@Unburrow.Start; MorphFrom SpiderMineSCBW@Burrowed" Send="Destroy"/>
         <On Terms="UnitBirth.SpiderMineSCBW@Burrowed" Send="Create"/>
         <On Terms="UnitBirth.SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="AnimClear Unburrow"/>
         <On Terms="AbilMorph.*.Cancel; MorphTo SpiderMineSCBW@Burrowed" Send="AnimClear Burrow"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimClear Burrow"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimPlay Unburrow Unburrow"/>
+        <!--On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimClear Burrow"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimPlay Unburrow Unburrow"/-->
         <On Terms="AbilMorph.SpiderMineSCBW@Burrow.Start" Send="Create SpiderMineSCBW@BurrowSound"/>
         <On Terms="UnitMovementUpdate.*.Walk" Send="Create SpiderMineSCBW@SeekSound"/>
         <On Terms="UnitMovementUpdate.*.Stand" Target="SpiderMineSCBW@SeekSound" Send="Destroy"/>
         <On Terms="UnitBirth.SpiderMineSCBW@Placement" Send="Create"/>
         <On Terms="UnitDeathCustomize; KilledByEffect Suicide" Send="DeathCustomize Variation0"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
         <!--<On Terms="Abil.attack.ReadyStart" Send="Create SpiderMineSCBW@SeekSound"/>-->
         <DeathArray index="Normal" ModelLink="SpiderMineSCBW@Explosion" SoundLink="SpiderMineSCBW@Explosion"/>
+        <DeathCustoms index="2" ModelLink="SpiderMineSCBW@Explosion"/>
+        <DeathCustoms ModelLink="Invisible" Name="Variation0"/>
+        <PlacementModel value="SpiderMineSCBW@Placement"/>
+        <PortraitModel value="SpiderMineSCBW@Portrait"/>
+        <BarOffset value="10"/>
+        <BarWidth value="36"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel0.dds"/>
+        <NameOffset value="10"/>
+        <UnitFlags index="StandAnimBirthVariation" value="1"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="SpiderMineSCBW@MorphModel" parent="GenericUnitBaseMorphTransition" unitName="SpiderMineSCBW@MorphModel">
+        <Aliases value="_UnitSmall"/>
+        <AcceptedHostedPropTransfers index="Visibility" value="0"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimPlay Unburrow Unburrow"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom SpiderMineSCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom SpiderMineSCBW@Burrowed" Send="Destroy"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect Suicide" Send="DeathCustomize Variation0"/>
+        <Model value="SpiderMineSCBW"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="SpiderMineSCBW@Explosion" SoundLink="SpiderMineSCBW@Explosion"/>
+        <DeathCustoms index="2" ModelLink="SpiderMineSCBW@Explosion" Name="AntiGravTerran"/>
+        <DeathCustoms ModelLink="Invisible" Name="Variation0"/>
         <PlacementModel value="SpiderMineSCBW@Placement"/>
         <PortraitModel value="SpiderMineSCBW@Portrait"/>
         <BarOffset value="10"/>
@@ -1216,9 +1251,6 @@
         <Wireframe>
             <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
         </Wireframe>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathCustoms index="2" ModelLink="SpiderMineSCBW@Explosion" Name="AntiGravTerran"/>
-        <DeathCustoms ModelLink="Invisible" Name="Variation0"/>
     </CActorUnit>
     <CActorModel id="VultureSCBW@DeathLight" parent="UnitDeathModel">
         <CopySource value="::Creator"/>
@@ -1763,7 +1795,7 @@
             <Image value="Assets\Textures\wireframe-terran-scv@scbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-unit-terran-scv@scbw.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
         <SoundArray index="Ready" value="SCVSCBW@Ready"/>
         <SoundArray index="Help" value="Alert_TerranEconomyUnderAttack"/>
         <SoundArray index="What" value="SCVSCBW@What"/>
@@ -2010,7 +2042,7 @@
             <Image value="Assets\Textures\wireframe-terran-medic@scbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\BTN-Unit-Terran-Medic.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
         <SoundArray index="Ready" value="MedicSCBW@Ready"/>
         <SoundArray index="Help" value="MedicSCBW@Help"/>
         <SoundArray index="What" value="MedicSCBW@What"/>
@@ -2432,7 +2464,7 @@
             <Image value="Assets\Textures\Wireframe-Terran-Ghost.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
         <SoundArray index="Ready" value="KerriganSCBW@Ready"/>
         <SoundArray index="Help" value="KerriganSCBW@Help"/>
         <SoundArray index="What" value="KerriganSCBW@What"/>
@@ -2533,7 +2565,7 @@
             <Image value="Assets\Textures\Wireframe-Terran-Ghost@scbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-unit-terran-ghost@scbw.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
         <SoundArray index="Ready" value="GhostSCBW@Ready"/>
         <SoundArray index="Help" value="GhostSCBW@Help"/>
         <SoundArray index="What" value="GhostSCBW@What"/>
@@ -2582,7 +2614,7 @@
             <Image value="Assets\Textures\wireframe-terran-firebatscbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-unit-terran-firebat@scbw.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
         <SoundArray index="Ready" value="FirebatSCBW@Ready"/>
         <SoundArray index="Help" value="FirebatSCBW@Help"/>
         <SoundArray index="What" value="FirebatSCBW@What"/>
@@ -2697,7 +2729,7 @@
             <Image value="Assets\Textures\wireframe-terran-marine@scbw.dds"/>
         </GroupIcon>
         <HeroIcon value="Assets\Textures\btn-unit-terran-marine@scbw.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel0.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
         <SoundArray index="Ready" value="MarineSCBW@Ready"/>
         <SoundArray index="Help" value="MarineSCBW@Help"/>
         <SoundArray index="What" value="MarineSCBW@What"/>
@@ -3635,8 +3667,8 @@
         <TechPurchaseCamera value="Star2CameraMid01"/>
         <UnitGlossaryCamera value="Star2CameraMid01"/>
         <SquibTypeDefault value="LightArmor"/>
-        <ScaleMax value="1.500000,1.500000,1.500000"/>
-        <ScaleMin value="1.500000,1.500000,1.500000"/>
+        <ScaleMax value="1.650000,1.650000,1.650000"/>
+        <ScaleMin value="1.650000,1.650000,1.650000"/>
         <Tipability value="0.850000"/>
         <TipabilityLength value="0.150000"/>
         <TipabilityWidth value="0.150000"/>
@@ -3645,8 +3677,8 @@
         <Model value="Assets\Effects\Terran\SpiderMinePlacement\SpiderMinePlacement.m3"/>
         <SelectionRadius value="0.250000"/>
         <ShadowRadius value="0.250000"/>
-        <ScaleMax value="1.500000,1.500000,1.500000"/>
-        <ScaleMin value="1.500000,1.500000,1.500000"/>
+        <ScaleMax value="1.650000,1.650000,1.650000"/>
+        <ScaleMin value="1.650000,1.650000,1.650000"/>
         <Tipability value="0.850000"/>
         <TipabilityLength value="0.150000"/>
         <TipabilityWidth value="0.150000"/>
@@ -4734,9 +4766,12 @@
         <DataRecord Entry="Actor,SpiderMineSCBW@UnburrowSound"/>
         <DataRecord Entry="Actor,SpiderMineSCBW@SeekSound"/>
         <DataRecord Entry="Actor,SpiderMineSCBW@UnburrowRange"/>
+        <DataRecord Entry="Actor,SpiderMineSCBW@MorphModel"/>
+        <DataRecord Entry="Behavior,SpiderMineSCBW@InitialStun"/>
         <DataRecord Entry="Behavior,SpiderMineSCBW@BurrowFirst"/>
         <DataRecord Entry="Button,SpiderMineSCBW@Info"/>
         <DataRecord Entry="Effect,SpiderMineSCBW@BurrowOrder"/>
+        <DataRecord Entry="Effect,SpiderMineSCBW@InitialStun"/>
         <DataRecord Entry="Effect,SpiderMineSCBW@BurrowClearMorph"/>
         <DataRecord Entry="Model,SpiderMineSCBW@Explosion"/>
         <DataRecord Entry="Model,SpiderMineSCBW@Placement"/>
@@ -5339,6 +5374,7 @@
         <CardLayouts>
             <LayoutButtons Face="SpiderMineSCBW@Info" Type="Passive" Row="2" Column="0"/>
         </CardLayouts>
+        <EffectArray index="Create" value="SpiderMineSCBW@InitialStun"/>
     </CUnit>
     <CUnit id="BattlecruiserSCBW" parent="TerranShipSCBW">
         <DeathRevealRadius value="3"/>
@@ -6390,6 +6426,15 @@
         <GlossaryWeakArray index="2" removed="1"/>
         <HotkeyCategory value=""/>
     </CUnit>
+    <CBehaviorBuff id="SpiderMineSCBW@InitialStun">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <Duration value="2.125"/>
+        <DurationRandomMax value="2.0625"/>
+        <Modification>
+            <StateFlags index="Stun" value="1"/>
+        </Modification>
+    </CBehaviorBuff>
     <CBehaviorBuff id="SpiderMineSCBW@BurrowFirst">
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
         <Duration value="5"/>
