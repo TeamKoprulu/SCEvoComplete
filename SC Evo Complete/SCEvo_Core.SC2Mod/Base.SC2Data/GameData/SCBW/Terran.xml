@@ -1,11 +1,207 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CKineticFollow id="ValkyrieSCBWWeapon@DummyKinetic">
+        <Where Effect="ValkyrieSCBWWeapon@CP" Value="TargetUnit"/>
+    </CKineticFollow>
+    <CEffectCreatePersistent default="1" id="ValkyrieSCBWWeapon@OffsetBase">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnitOrPoint"/>
+        <InitialEffect value="ValkyrieSCBWWeapon@DummyCreate"/>
+        <!--
+            <PeriodicOffsetArray value="-0.0312,-0.0312,0"/>
+            <PeriodicOffsetArray value="-1.5937,-0.9687,0"/>
+            <PeriodicOffsetArray value="-0.2187,-0.375,0"/>
+            <PeriodicOffsetArray value="1.125,1.625,0"/>
+            <PeriodicOffsetArray value="1.5312,-0.7812,0"/>
+            <PeriodicOffsetArray value="-1.25,1.4375,0"/>
+            <PeriodicOffsetArray value="0.125,0.5937,0"/>
+            <PeriodicOffsetArray value="-0.875,-1.5625,0"/>
+            <PeriodicOffsetArray value="-1.5625,0.4687,0"/>
+            <PeriodicOffsetArray value="1.6875,0.4062,0"/>
+            <PeriodicOffsetArray value="-0.3437,1.6562,0"/>
+            <PeriodicOffsetArray value="-0.4687,0.2812,0"/>
+            <PeriodicOffsetArray value="0.5937,-1.5625,0"/>
+            <PeriodicOffsetArray value="0.5312,-0.25,0"/>
+         -->
+    </CEffectCreatePersistent>
     <CEffectUserData default="1" id="ScienceVesselSCBWDefensiveMatrix@UDBase">
         <EditorCategories value="Race:Terran"/>
         <Key value="DefensiveMatrixShield"/>
         <SourceKey value="DefensiveMatrixShield"/>
         <TargetLocationType value="Unit"/>
         <BehaviorScope Value="Target" Behavior="ScienceVesselSCBWDefensiveMatrix@Data"/>
+        <Operation value="Set"/>
+    </CEffectUserData>
+    <CEffectSet id="ValkyrieSCBWWeapon@CPFinal">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="ValkyrieSCBWWeapon@OffsetReset"/>
+        <EffectArray value="ValkyrieSCBWWeapon@CasterStunRB"/>
+    </CEffectSet>
+    <CEffectRemoveBehavior id="ValkyrieSCBWWeapon@CasterStunRB">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Caster"/>
+        <BehaviorLink value="ValkyrieSCBWWeapon@CasterStun"/>
+    </CEffectRemoveBehavior>
+    <CEffectSet id="FirebatSCBWWeapon@CliffCheck">
+        <ValidatorArray value="TargetNotAcrossCliff"/>
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="FirebatSCBWWeapon@CP"/>
+    </CEffectSet>
+    <CEffectUserData id="ValkyrieSCBWWeapon@LMSideReset">
+        <EditorCategories value="Race:Terran"/>
+        <Key value="LaunchSide"/>
+        <SourceKey value="LaunchSide"/>
+        <Operation value="Set"/>
+        <BehaviorScope Effect="ValkyrieSCBWWeapon@CP"/>
+    </CEffectUserData>
+    <CEffectSwitch id="ValkyrieSCBWWeapon@LMSwitch">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Effect="ValkyrieSCBWWeapon@LMSide" FallThrough="1"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@LMSide" Effect="ValkyrieSCBWWeapon@LMLeft"/>
+        <CaseDefault value="ValkyrieSCBWWeapon@LMRight"/>
+    </CEffectSwitch>
+    <CEffectUserData id="ValkyrieSCBWWeapon@LMSide">
+        <EditorCategories value="Race:Terran"/>
+        <Key value="LaunchSide"/>
+        <SourceKey value="LaunchSide"/>
+        <EffectFailure value="ValkyrieSCBWWeapon@LMSideReset"/>
+        <BehaviorScope Effect="ValkyrieSCBWWeapon@CP"/>
+        <ValidateMax value="2"/>
+    </CEffectUserData>
+    <CEffectApplyBehavior id="ValkyrieSCBWWeapon@Marker">
+        <EditorCategories value="Race:Terran"/>
+        <Count value="2"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="ValkyrieSCBWWeapon@MarkerRB">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Effect="ValkyrieSCBWWeapon@CP"/>
+        <BehaviorLink value="ValkyrieSCBWWeapon@Marker"/>
+        <Count value="1"/>
+        <RequireCasterUnit Effect="ValkyrieSCBWWeapon@CP" Value="Caster"/>
+    </CEffectRemoveBehavior>
+    <CEffectDamage id="ValkyrieSCBWWeapon@DummyFateExpire">
+        <EditorCategories value="Race:Terran"/>
+        <Flags index="Kill" value="1"/>
+        <Flags index="NoKillCredit" value="1"/>
+        <Death value="Timeout"/>
+    </CEffectDamage>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@RedirectCPDummy">
+        <EditorCategories value="Race:Terran"/>
+        <ExpireDelay value="0.038"/>
+        <ExpireEffect value="ValkyrieSCBWWeapon@Redirect"/>
+        <ExpireOffset value="0,0,0.001"/>
+    </CEffectCreatePersistent>
+    <CEffectRedirectMissile id="ValkyrieSCBWWeapon@Redirect">
+        <ValidatorArray value="ValkyrieSCBWWeapon@DummyTeleport"/>
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Source"/>
+        <ImpactLocation Value="TargetPoint"/>
+    </CEffectRedirectMissile>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@RedirectCP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Effect="ValkyrieSCBWWeapon@DummySpawn" Value="TargetUnit"/>
+        <ExpireEffect value="ValkyrieSCBWWeapon@RedirectCPDummy"/>
+        <ExpireOffset value="0,0,0.001"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="ValkyrieSCBWWeapon@DummyKill">
+        <ImpactLocation Effect="ValkyrieSCBWWeapon@DummySpawn" Value="TargetUnit"/>
+        <Flags index="Kill" value="1"/>
+        <Flags index="NoKillCredit" value="1"/>
+    </CEffectDamage>
+    <CEffectSet id="ValkyrieSCBWWeapon@DummySpawn">
+        <EffectArray value="ValkyrieSCBWWeapon@DummyKinetic"/>
+        <EffectArray value="ValkyrieSCBWWeapon@LMSwitch"/>
+    </CEffectSet>
+    <CEffectApplyKinetic id="ValkyrieSCBWWeapon@DummyKinetic"/>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset01" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-0.0312,-0.0312,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset02" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-1.5937,-0.9687,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset03" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-0.2187,-0.375,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset04" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="1.125,1.625,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset05" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="1.5312,-0.7812,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset06" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-1.25,1.4375,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset07" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="0.125,0.5937,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset08" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-0.875,-1.5625,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset09" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-1.5625,0.4687,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset10" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="1.6875,0.4062,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset11" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-0.3437,1.6562,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset12" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="-0.4687,0.2812,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset13" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="0.5937,-1.5625,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@Offset14" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <InitialOffset value="0.5312,-0.25,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreateUnit id="ValkyrieSCBWWeapon@DummyCreate">
+        <WhichLocation Value="TargetPoint"/>
+        <CreateFlags index="Birth" value="0"/>
+        <CreateFlags index="DropOff" value="0"/>
+        <CreateFlags index="OffsetByRadius" value="0"/>
+        <CreateFlags index="Placement" value="0"/>
+        <CreateFlags index="PlacementIgnoreBlockers" value="1"/>
+        <CreateFlags index="PlacementIgnoreCliffTest" value="1"/>
+        <CreateFlags index="ProvideFood" value="0"/>
+        <CreateFlags index="TechComplete" value="0"/>
+        <CreateFlags index="UseFood" value="0"/>
+        <CreateFlags index="NormalizeSpawnOffset" value="0"/>
+        <SpawnOwner Value="Neutral"/>
+        <SpawnEffect value="ValkyrieSCBWWeapon@DummySpawn"/>
+        <SpawnUnit value="ValkyrieSCBWWeapon@Dummy"/>
+    </CEffectCreateUnit>
+    <CEffectSwitch id="ValkyrieSCBWWeapon@OffsetSwitch">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset01" Effect="ValkyrieSCBWWeapon@Offset01"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset02" Effect="ValkyrieSCBWWeapon@Offset02"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset03" Effect="ValkyrieSCBWWeapon@Offset03"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset04" Effect="ValkyrieSCBWWeapon@Offset04"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset05" Effect="ValkyrieSCBWWeapon@Offset05"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset06" Effect="ValkyrieSCBWWeapon@Offset06"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset07" Effect="ValkyrieSCBWWeapon@Offset07"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset08" Effect="ValkyrieSCBWWeapon@Offset08"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset09" Effect="ValkyrieSCBWWeapon@Offset09"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset10" Effect="ValkyrieSCBWWeapon@Offset10"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset11" Effect="ValkyrieSCBWWeapon@Offset11"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset12" Effect="ValkyrieSCBWWeapon@Offset12"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset13" Effect="ValkyrieSCBWWeapon@Offset13"/>
+        <CaseArray Validator="ValkyrieSCBWWeapon@Offset14" Effect="ValkyrieSCBWWeapon@Offset14"/>
+        <CaseDefault value="ValkyrieSCBWWeapon@Offset01"/>
+    </CEffectSwitch>
+    <CEffectUserData id="ValkyrieSCBWWeapon@OffsetIncrement">
+        <EditorCategories value="Race:Terran"/>
+        <Key value="OffsetIndex"/>
+        <SourceKey value="OffsetIndex"/>
+        <ValidateMax value="14"/>
+        <EffectFailure value="ValkyrieSCBWWeapon@OffsetReset"/>
+        <BehaviorScope Behavior="ValkyrieSCBWWeapon@OffsetIndex"/>
+    </CEffectUserData>
+    <CEffectUserData id="ValkyrieSCBWWeapon@OffsetReset">
+        <EditorCategories value="Race:Terran"/>
+        <Key value="OffsetIndex"/>
+        <SourceKey value="OffsetIndex"/>
+        <BehaviorScope Behavior="ValkyrieSCBWWeapon@OffsetIndex"/>
         <Operation value="Set"/>
     </CEffectUserData>
     <CEffectSet id="ScienceVesselSCBWIrradiate@ApplySet">
@@ -179,6 +375,7 @@
     </CEffectEnumArea>
     <CEffectSet id="SpiderMineSCBWWeapon@MimicCheck">
         <ValidatorArray value="SCBW_IsDisguisedChangeling"/>
+        <ValidatorArray value="SpiderMineSCBWWeapon@NoMimicDisable"/>
         <EditorCategories value="Race:Terran"/>
     </CEffectSet>
     <CEffectApplyBehavior id="SpiderMineSCBWWeapon@MimicDisable">
@@ -448,6 +645,11 @@
         <CaseDefault value="SiegeTankSCBWSiegedWeapon@Switch"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
+    <CEffectSwitch id="SiegeTankSCBWSiegedWeapon@ImpactSplashSwitch">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Validator="Pathable" Effect="SiegeTankSCBWSiegedWeapon@ImpactSplash"/>
+        <CaseDefault value="SiegeTankSCBWSiegedWeapon@ImpactSplashCliff"/>
+    </CEffectSwitch>
     <CEffectDamage id="SiegeTankSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Terran">
         <Kind value="Ranged"/>
         <Death value="Blast"/>
@@ -461,7 +663,10 @@
     </CEffectApplyBehavior>
     <CEffectSet id="WraithSCBWWeaponAir@Impact" parent="SCBW_WeaponImpactExplBase" Race="Terran" x="WraithSCBWWeaponAir"/>
     <CEffectSet id="ValkyrieSCBWWeapon@ImpactSplash" parent="SCBW_SplashImpactZonesBase" Race="Terran" x="ValkyrieSCBWWeapon"/>
-    <CEffectSet id="ValkyrieSCBWWeapon@Impact" parent="SCBW_SplashImpactExplBase" Race="Terran" x="ValkyrieSCBWWeapon"/>
+    <CEffectSet id="ValkyrieSCBWWeapon@Impact" parent="SCBW_SplashImpactExplBase" Race="Terran" x="ValkyrieSCBWWeapon">
+        <EffectArray value="ValkyrieSCBWWeapon@DummyKill"/>
+        <EffectArray value="ValkyrieSCBWWeapon@MarkerRB"/>
+    </CEffectSet>
     <CEffectSet id="MissileTurretSCBWWeapon@Impact" parent="SCBW_WeaponImpactExplBase" Race="Terran" x="MissileTurretSCBWWeapon"/>
     <CEffectSet id="GhostSCBWWeapon@Impact" parent="SCBW_WeaponImpactConcBase" Race="Terran" x="GhostSCBWWeapon"/>
     <CEffectUserData id="GhostSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Terran" x="GhostSCBWWeapon"/>
@@ -558,64 +763,78 @@
         <Amount value="12"/>
     </CEffectDamage>
     <CEffectSet id="ValkyrieSCBWWeapon@Set">
-        <EffectArray value="ValkyrieSCBWWeapon@LM"/>
-        <EffectArray value="ValkyrieSCBWWeapon@LM"/>
+        <EffectArray value="ValkyrieSCBWWeapon@Marker"/>
+        <EffectArray value="ValkyrieSCBWWeapon@OffsetIncrement"/>
+        <EffectArray value="ValkyrieSCBWWeapon@OffsetSwitch"/>
+        <EffectArray value="ValkyrieSCBWWeapon@OffsetIncrement"/>
+        <EffectArray value="ValkyrieSCBWWeapon@OffsetSwitch"/>
         <EditorCategories value="Race:Terran"/>
     </CEffectSet>
-    <CEffectCreatePersistent id="ValkyrieSCBWWeapon@CPOffsets">
-        <EditorCategories value="Race:Terran"/>
-        <WhichLocation Value="TargetUnit"/>
-        <PeriodCount value="4"/>
-        <PeriodicEffectArray value="ValkyrieSCBWWeapon@Set"/>
-        <PeriodicOffsetArray value="-0.0312,-0.0312,0"/>
-        <PeriodicOffsetArray value="-1.5937,-0.9687,0"/>
-        <PeriodicOffsetArray value="-0.2187,-0.375,0"/>
-        <PeriodicOffsetArray value="1.125,1.625,0"/>
-        <PeriodicOffsetArray value="1.5312,-0.7812,0"/>
-        <PeriodicOffsetArray value="-1.25,1.4375,0"/>
-        <PeriodicOffsetArray value="0.125,0.5937,0"/>
-        <PeriodicOffsetArray value="-0.875,-1.5625,0"/>
-        <PeriodicOffsetArray value="-1.5625,0.4687,0"/>
-        <PeriodicOffsetArray value="1.6875,0.4062,0"/>
-        <PeriodicOffsetArray value="-0.3437,1.6562,0"/>
-        <PeriodicOffsetArray value="-0.4687,0.2812,0"/>
-        <PeriodicOffsetArray value="0.5937,-1.5625,0"/>
-        <PeriodicOffsetArray value="0.5312,-0.25,0"/>
-    </CEffectCreatePersistent>
     <CEffectCreatePersistent id="ValkyrieSCBWWeapon@CP">
         <EditorCategories value="Race:Terran"/>
-        <WhichLocation Value="TargetUnit"/>
+        <WhichLocation Value="TargetUnitOrPoint"/>
         <InitialEffect value="ValkyrieSCBWWeapon@CasterStun"/>
         <PeriodCount value="4"/>
         <PeriodicValidator value="ValkyrieSCBWWeapon@PersistentValidator"/>
         <PeriodicEffectArray value="ValkyrieSCBWWeapon@Set"/>
         <PeriodicPeriodArray value="0"/>
-        <PeriodicPeriodArray value="0.625"/>
-        <PeriodicPeriodArray value="0.625"/>
-        <PeriodicPeriodArray value="0.625"/>
+        <PeriodicPeriodArray value="0.5625"/>
+        <PeriodicPeriodArray value="0.5625"/>
+        <PeriodicPeriodArray value="0.5625"/>
+        <TimeScaleSource Value="Caster"/>
+        <FinalEffect value="ValkyrieSCBWWeapon@CPFinal"/>
     </CEffectCreatePersistent>
     <CEffectDamage id="ValkyrieSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Terran">
-        <Kind value="Ranged"/>
-        <AreaArray Radius="0.1562" Fraction="1"/>
-        <SearchFilters value="Air,Visible;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Invulnerable,Benign,Passive"/>
-        <SearchFlags index="SameCliff" value="0"/>
-        <ExcludeArray Value="Target"/>
         <Marker>
             <MatchFlags index="Link" value="1"/>
             <MatchFlags index="CasterUnit" value="1"/>
         </Marker>
+        <Kind value="Ranged"/>
+        <KindSplash value="Ranged"/>
+        <AreaArray Radius="0.1562" Fraction="1" Validator="ValkyrieSCBWWeapon@Marker"/>
+        <AreaArray Radius="3.125" Fraction="1"/>
+        <IncludeArray Effect="ValkyrieSCBWWeapon@CP" Value="Target"/>
+        <SearchFilters value="Air,Visible;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Invulnerable,Benign,Passive"/>
+        <TargetSorts>
+            <SortArray value="TSRandom"/>
+        </TargetSorts>
+        <MaxCount value="1"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+        <SearchFlags index="OffsetAreaByAngle" value="0"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectDamage id="ValkyrieSCBWWeapon@DamageAccum2" parent="ExplosiveBaseDamageSCBW" Race="Terran">
+        <Marker>
+            <MatchFlags index="Link" value="1"/>
+            <MatchFlags index="CasterUnit" value="1"/>
+        </Marker>
+        <Kind value="Splash"/>
         <KindSplash value="Splash"/>
+        <AreaArray Radius="1.5625" Fraction="1"/>
+        <ExcludeArray Effect="ValkyrieSCBWWeapon@CP" Value="Target"/>
+        <SearchFilters value="Air,Visible;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Invulnerable,Benign,Passive"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+        <SearchFlags index="OffsetAreaByAngle" value="0"/>
+        <SearchFlags index="SameCliff" value="0"/>
     </CEffectDamage>
-    <CEffectDamage id="ValkyrieSCBWWeapon@DamageAccum2" parent="ValkyrieSCBWWeapon@DamageAccum">
-        <Name value="Effect/Name/ValkyrieSCBWWeapon@DamageAccum2"/>
-        <AreaArray index="0" Radius="1.5625" Fraction="1" Validator="noMarkers"/>
-        <ImpactUnitValidator value="noMarkers"/>
-    </CEffectDamage>
-    <CEffectDamage id="ValkyrieSCBWWeapon@DamageAccum3" parent="ValkyrieSCBWWeapon@DamageAccum">
+    <CEffectDamage id="ValkyrieSCBWWeapon@DamageAccum3" parent="ValkyrieSCBWWeapon@DamageAccum2">
         <Name value="Effect/Name/ValkyrieSCBWWeapon@DamageAccum3"/>
         <AreaArray index="0" Radius="3.125" Fraction="1" Validator="noMarkers"/>
-        <ImpactUnitValidator value="noMarkers"/>
     </CEffectDamage>
+    <CEffectLaunchMissile id="ValkyrieSCBWWeapon@LMLeft">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="ValkyrieSCBWWeapon@Impact"/>
+        <AmmoUnit value="ValkyrieSCBWWeapon@Missile"/>
+        <ValidatorArray index="0" removed="1"/>
+        <Movers Link="ValkyrieSCBWWeapon@MoverLeft" IfRangeLTE="500"/>
+        <LaunchLocation Effect="ValkyrieSCBWWeapon@CP" Value="CasterUnit"/>
+        <PeriodicEffect value="ValkyrieSCBWWeapon@RedirectCP"/>
+    </CEffectLaunchMissile>
+    <CEffectLaunchMissile id="ValkyrieSCBWWeapon@LMRight" parent="ValkyrieSCBWWeapon@LMLeft">
+        <Name value="Effect/Name/ValkyrieSCBWWeapon@LMRight"/>
+        <Marker Link="Effect/ValkyrieSCBWWeapon@LMRight"/>
+        <Movers index="0" Link="ValkyrieSCBWWeapon@MoverRight" IfRangeLTE="500"/>
+    </CEffectLaunchMissile>
     <CEffectCreatePersistent id="FirebatSCBWWeapon@CP">
         <EditorCategories value="Race:Terran"/>
         <WhichLocation Value="SourceUnit"/>
@@ -634,11 +853,6 @@
         <ValidatorArray value="FirebatSCBWWeapon@CPValidator"/>
         <PeriodicValidator value="FirebatSCBWWeapon@CPValidator"/>
     </CEffectCreatePersistent>
-    <CEffectLaunchMissile id="ValkyrieSCBWWeapon@LM">
-        <EditorCategories value="Race:Terran"/>
-        <ImpactEffect value="ValkyrieSCBWWeapon@Impact"/>
-        <AmmoUnit value="ValkyrieSCBWWeapon@Missile"/>
-    </CEffectLaunchMissile>
     <CEffectDamage id="SCVSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Terran"/>
         <Amount value="5"/>
@@ -649,7 +863,7 @@
             <MatchFlags index="CasterUnit" value="1"/>
         </Marker>
         <ImpactLocation Value="TargetPoint"/>
-        <KindSplash value="Splash"/>
+        <KindSplash value="Ranged"/>
         <Death value="Fire"/>
         <AreaArray Radius="0.4218" Fraction="1" Validator="FirebatSCBWWeapon@Damage"/>
         <!--AreaArray Radius="0.5625" Fraction="0.5" Validator="FirebatSCBWWeapon@Damage"/>
@@ -657,16 +871,21 @@
         <ExcludeArray Value="Outer"/>
         <IncludeArray Value="Target"/>
         <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Kind value="Ranged"/>
     </CEffectDamage>
     <CEffectDamage id="FirebatSCBWWeapon@DamageAccum2" parent="FirebatSCBWWeapon@DamageAccum">
         <Name value="Effect/Name/FirebatSCBWWeapon@DamageAccum2"/>
         <ImpactUnitValidator value="noMarkers"/>
         <AreaArray index="0" Radius="0.5625" Fraction="1" Validator="FirebatSCBWWeapon@Splash"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
     </CEffectDamage>
     <CEffectDamage id="FirebatSCBWWeapon@DamageAccum3" parent="FirebatSCBWWeapon@DamageAccum">
         <Name value="Effect/Name/FirebatSCBWWeapon@DamageAccum3"/>
         <ImpactUnitValidator value="noMarkers"/>
         <AreaArray index="0" Radius="0.7031" Fraction="1" Validator="FirebatSCBWWeapon@Splash"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
     </CEffectDamage>
     <CEffectDamage id="MarineSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Terran"/>
@@ -708,6 +927,18 @@
         <Name value="Effect/Name/SiegeTankSCBWSiegedWeapon@DamageAccum3"/>
         <AreaArray index="0" Radius="1.25" Fraction="1" Validator="SiegeTankSCBWSiegedWeapon@Splash"/>
     </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageCliff" parent="SiegeTankSCBWSiegedWeapon@DamageAccum">
+        <Name value="Effect/Name/SiegeTankSCBWSiegedWeapon@DamageCliff"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageCliff2" parent="SiegeTankSCBWSiegedWeapon@DamageAccum2">
+        <Name value="Effect/Name/SiegeTankSCBWSiegedWeapon@DamageCliff2"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectDamage id="SiegeTankSCBWSiegedWeapon@DamageCliff3" parent="SiegeTankSCBWSiegedWeapon@DamageAccum3">
+        <Name value="Effect/Name/SiegeTankSCBWSiegedWeapon@DamageCliff3"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
     <CEffectCreatePersistent id="SiegeTankSCBWSiegedWeapon@Miss">
         <EditorCategories value="Race:Terran"/>
         <WhichLocation Effect="SiegeTankSCBWSiegedWeapon@InitialSet" Value="TargetUnit"/>
@@ -748,7 +979,14 @@
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
     <CEffectSet id="SiegeTankSCBWSiegedWeapon@ImpactSplash" parent="SCBW_SplashImpactZonesBase" Race="Terran" x="SiegeTankSCBWSiegedWeapon"/>
-    <CEffectSet id="SiegeTankSCBWSiegedWeapon@Impact" parent="SCBW_SplashImpactExplBase" Race="Terran" x="SiegeTankSCBWSiegedWeapon"/>
+    <CEffectSet id="SiegeTankSCBWSiegedWeapon@ImpactSplashCliff" parent="SCBW_SplashImpactZonesBase" Race="Terran" x="SiegeTankSCBWSiegedWeapon">
+        <EffectArray index="1" value="SiegeTankSCBWSiegedWeapon@DamageCliff"/>
+        <EffectArray index="3" value="SiegeTankSCBWSiegedWeapon@DamageCliff2"/>
+        <EffectArray index="5" value="SiegeTankSCBWSiegedWeapon@DamageCliff3"/>
+    </CEffectSet>
+    <CEffectSet id="SiegeTankSCBWSiegedWeapon@Impact" parent="SCBW_SplashImpactExplBase" Race="Terran" x="SiegeTankSCBWSiegedWeapon">
+        <EffectArray index="2" value="SiegeTankSCBWSiegedWeapon@ImpactSplashSwitch"/>
+    </CEffectSet>
     <CEffectLaunchMissile id="VultureSCBWWeapon@LM">
         <EditorCategories value="Race:Terran"/>
         <ImpactEffect value="VultureSCBWWeapon@Impact"/>
@@ -1004,7 +1242,7 @@
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
         <AINotifyFlags index="MajorDanger" value="1"/>
-        <KindSplash value="Splash"/>
+        <Kind value="Spell"/>
         <Amount value="0">
             <AccumulatorArray value="GhostSCBWNuclearStrike@DamageFormula"/>
         </Amount>
@@ -1341,7 +1579,7 @@
         <AmmoUnit value="BattlecruiserSCBWYamato@Missile"/>
     </CEffectLaunchMissile>
     <CEffectDamage id="BattlecruiserSCBWYamato@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Terran">
-        <Kind value="Ranged"/>
+        <Kind value="Spell"/>
         <Death value="Blast"/>
     </CEffectDamage>
     <CEffectUserData id="BattlecruiserSCBWYamato@DamageApply" parent="DamageIncoming" Race="Terran" x="BattlecruiserSCBWYamato"/>
@@ -2089,6 +2327,29 @@
         <Field value="Radius"/>
         <Value value="##x##"/>
     </CValidatorUnitCompareField>
+    <CValidatorEffectTreeUserData default="1" id="ValkyrieSCBWWeapon@OffsetBase">
+        <Key value="OffsetIndex"/>
+        <BehaviorScope Behavior="ValkyrieSCBWWeapon@OffsetIndex"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorLocationCompareRange id="SpiderMineSCBWWeapon@MimicValidator">
+        <WhichLocation Value="TargetUnit"/>
+        <Compare value="LE"/>
+        <Range value="3.25"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorUnitCompareBehaviorCount id="ValkyrieSCBWWeapon@Marker">
+        <Compare value="GT"/>
+        <Behavior value="ValkyrieSCBWWeapon@Marker"/>
+        <RequireCasterUnit Value="Caster"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="GhostSCBWLockdown@NotCaster">
+        <WhichUnit Value="Caster"/>
+        <Behavior value="GhostSCBWLockdown"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorLocationCompareRange id="ValkyrieSCBWWeapon@DummyTeleport">
+        <Compare value="GT"/>
+        <Range value="5"/>
+        <Value Effect="ValkyrieSCBWWeapon@CP" Value="TargetUnit"/>
+    </CValidatorLocationCompareRange>
     <CValidatorUnitCompareBehaviorCount id="ScienceVesselSCBWDefensiveMatrix@NoShield">
         <Behavior value="ScienceVesselSCBWDefensiveMatrix"/>
     </CValidatorUnitCompareBehaviorCount>
@@ -2108,6 +2369,11 @@
         <CombineArray value="SCBW_CasterNotStasisNotStunnedNotDead"/>
         <CombineArray value="CasterIsNotHidden"/>
     </CValidatorCombine>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@LMSide">
+        <Key value="LaunchSide"/>
+        <BehaviorScope Effect="ValkyrieSCBWWeapon@CP"/>
+        <Value value="1"/>
+    </CValidatorEffectTreeUserData>
     <CValidatorUnitInWeaponRange id="VultureSCBWWeapon@StrafingInRange"/>
     <CValidatorPlayerRequirement id="VultureSCBWSpeedUpgrade@Not">
         <Value value="VultureSCBWSpeedUpgrade@Count"/>
@@ -2273,12 +2539,55 @@
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorPlayerRequirement id="VultureSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="VultureSCBWSpeedUpgrade@Count"/>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset01" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="1"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset02" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="2"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset03" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="3"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset04" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="4"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset05" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="5"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset06" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="6"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset07" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="7"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset08" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="8"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset09" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="9"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset10" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="10"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset11" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="11"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset12" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="12"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset13" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="13"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ValkyrieSCBWWeapon@Offset14" parent="ValkyrieSCBWWeapon@OffsetBase">
+        <Value value="14"/>
+    </CValidatorEffectTreeUserData>
     <CValidatorCombine id="ValkyrieSCBWWeapon@PersistentValidator">
         <Type value="And"/>
         <CombineArray value="ValkyrieSCBWWeapon@Range"/>
         <CombineArray value="SCBW_CasterNotStasisNotStunnedNotDead"/>
         <CombineArray value="TargetNotDead"/>
         <CombineArray value="SCBW_TargetIsAirFilter"/>
+        <CombineArray value="SCBW_AttackNotSuppressed"/>
     </CValidatorCombine>
     <CValidatorLocationCompareRange id="ValkyrieSCBWWeapon@Range">
         <WhichLocation Value="TargetUnitOrPoint"/>
@@ -3705,6 +4014,25 @@
     </CRequirementEq>
     <CRequirementCountBehavior id="GhostSCBWLockdown@CountAtUnit" parent="SCBW_BehaviorCountAtUnitNoTech" x="GhostSCBWLockdown"/>
     <CRequirementCountBehavior id="MedicSCBWOpticFlare@CountAtUnit" parent="SCBW_BehaviorCountAtUnitNoTech" x="MedicSCBWOpticFlare"/>
+    <CActorSound id="GhostSCBWLockdown@LoopSound" parent="SoundContinuous">
+        <Terms value="Cap 1"/>
+        <On Terms="Behavior.GhostSCBWLockdown.On" Send="Create"/>
+        <On Terms="Behavior.GhostSCBWLockdown.Off" Send="Destroy"/>
+        <Host Subject="_Selectable"/>
+        <Sound value="GhostSCBWLockdown@Loop"/>
+    </CActorSound>
+    <CActorModel id="SiegeTankSCBWSiegedWeapon@ImpactModel" parent="GenericAttackImpactModel">
+        <InheritType value="OneShot"/>
+        <Inherits index="Visibility" value="0"/>
+    </CActorModel>
+    <CActorUnit id="ValkyrieSCBWWeapon@Dummy" parent="GenericUnitEmpty">
+        <On Terms="UnitBirth.ValkyrieSCBWWeapon@Dummy" Send="Create"/>
+        <On Terms="UnitDeath" Send="Destroy"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="SetOpacity 1.000000"/>
+        <Scale value="0.250000"/>
+        <ModelFlags index="NeedsVolumeMonitoring" value="1"/>
+    </CActorUnit>
     <CActorEventMacro id="ScienceVesselSCBWDefensiveMatrix@Macro">
         <!-- Terran -->
         <On Terms="ActorCreation; ValidateUnit IsBattlecruiser" Send="SetScale 1.200000,1.500000,1.000000"/>
@@ -3714,6 +4042,7 @@
         <On Terms="ActorCreation; ValidateUnit IsHerculesCombineSCBW" Send="SetScale 1.100000,1.700000,1.100000"/>
         <On Terms="ActorCreation; ValidateUnit IsThor" Send="SetScale 1.400000,1.200000,1.200000"/>
         <On Terms="ActorCreation; ValidateUnit IsValkyrieSCBW" Send="SetScale 1.200000,1.300000,0.900000"/>
+        <On Terms="ActorCreation; ValidateUnit IsWraithSCBW" Send="SetScale 1.300000"/>
         <On Terms="ActorCreation; ValidateUnit IsScienceVesselSCBW" Send="SetScale 1.100000"/>
         <On Terms="ActorCreation; ValidateUnit SCBW_IsReaper" Send="SetScale 1.200000"/>
         <On Terms="ActorCreation; ValidateUnit IsHellion" Send="SetScale 1.000000,1.200000,1.200000"/>
@@ -3746,6 +4075,7 @@
         <On Terms="ActorCreation; ValidateUnit IsDefilerSCBW" Send="SetScale 1.200000,1.400000,1.200000"/>
     </CActorEventMacro>
     <CActorModel id="SiegeTankSCBWSiegedWeapon@ImpactTargetFire" parent="ModelAnimationStyleOneShotUNIT">
+        <Inherits index="Visibility" value="1"/>
         <On Terms="Effect.SiegeTankSCBWSiegedWeapon@Switch.Start; At Target" Send="Create"/>
         <Host Subject="_Unit"/>
         <HostSiteOps Ops="SOpAttachTarget"/>
@@ -3793,6 +4123,7 @@
     </CActorForceSphere>
     <CActorModel id="ValkyrieSCBWWeapon@Impact" parent="ModelAnimationStyleOneShot">
         <Host Subject="_Missile"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
     </CActorModel>
     <CActorRange id="ComsatStationSCBWScannerSweep@Visual">
         <Host Subject="ComsatStationSCBWScannerSweep@Model"/>
@@ -3834,6 +4165,7 @@
         <On Terms="Effect.SiegeTankSCBWSiegedWeapon@MissDummy.Start; At Effect" Send="Create"/>
         <On Terms="ActorCreation" Send="Create SiegeTankSCBWSiegedWeapon@MissAttackForce"/>
         <Model value="SiegeTankSCBWSiegedWeapon@Impact"/>
+        <InheritType value="OneShot"/>
     </CActorModel>
     <CActorForceConeRoundedEnd id="GoliathSCBWWeaponAir@Force">
         <On Terms="ActorCreation" Send="Create GoliathSCBWWeaponAir@SprayForce"/>
@@ -3917,11 +4249,18 @@
         <ActionFlags index="LaunchForceSite" value="1"/>
     </CActorAction>
     <CActorMissile id="BattlecruiserSCBWWeaponGround@Missile" parent="GenericAttackMissile" unitName="BattlecruiserSCBWWeaponGround@Missile"/>
-    <CActorAction id="ValkyrieSCBWWeapon@Action" parent="GenericAttack" effectImpact="ValkyrieSCBWWeapon@Impact" effectLaunch="ValkyrieSCBWWeapon@LM">
-        <LaunchAttachQuery Methods="ValkyrieSCBWWeapon@AMPattern"/>
+    <CActorAction id="ValkyrieSCBWWeapon@ActionLeft" parent="GenericAttack" effectImpact="ValkyrieSCBWWeapon@Impact" effectLaunch="ValkyrieSCBWWeapon@LMLeft">
+        <LaunchAttachQuery Methods="ValkyrieSCBWWeapon@AMPatternLeft"/>
         <LaunchAssets Sound="ValkyrieSCBWWeapon@Launch"/>
         <Missile value="ValkyrieSCBWWeapon@Missile"/>
-        <ImpactMap index="None" Model="" Sound="ValkyrieSCBWWeapon@Impact"/>
+        <ImpactMap index="None" Sound="ValkyrieSCBWWeapon@Impact"/>
+        <ImpactSound value="GenericAttackImpactSoundNoVisibilityInherit"/>
+    </CActorAction>
+    <CActorAction id="ValkyrieSCBWWeapon@ActionRight" parent="GenericAttack" effectImpact="ValkyrieSCBWWeapon@Impact" effectLaunch="ValkyrieSCBWWeapon@LMRight">
+        <LaunchAttachQuery Methods="ValkyrieSCBWWeapon@AMPatternRight"/>
+        <LaunchAssets Sound=""/>
+        <Missile value="ValkyrieSCBWWeapon@Missile"/>
+        <ImpactMap index="None" Sound="ValkyrieSCBWWeapon@Impact"/>
         <ImpactSound value="GenericAttackImpactSoundNoVisibilityInherit"/>
     </CActorAction>
     <CActorMissile id="ValkyrieSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="ValkyrieSCBWWeapon@Missile">
@@ -4087,24 +4426,21 @@
         <AcquisitionPitchHalfArc value="15.000000"/>
         <AccuracyHalfArc value="5.000000"/>
     </CActorAction>
+    <CActorModel id="SiegeTankSCBWSiegedWeapon@DamageModel" parent="GenericAttackDamageModel">
+        <Supporter Subject="_Selectable"/>
+        <On Terms="SupporterDestruction" Send="AnimBracketStop BSD"/>
+    </CActorModel>
     <CActorAction id="SiegeTankSCBWWeapon@Attack" parent="GenericAttackWhiff" effectAttack="SiegeTankSCBWWeapon@Impact">
         <LaunchAttachQuery Methods="AMFilterWeapon01 AMPatternRollingStripe"/>
         <LaunchAssets Model="SiegeTankSCBWWeapon@Launch" Sound="SiegeTankSCBWWeapon@Launch"/>
         <ImpactMap index="None" Model="SiegeTankSCBWWeapon@Impact" Sound="SiegeTankSCBWWeapon@Impact"/>
         <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="SiegeTankAttackForce"/>
     </CActorAction>
-    <CActorModel id="SiegeTankSCBWSiegedWeapon@DamageModel" parent="ModelAnimationStyleOneShotNoOrphan">
-        <Flags index="SuppressCreationErrors" value="1"/>
-        <Inherits index="Visibility" value="1"/>
-        <Supporter Subject="_Selectable"/>
-        <On Terms="SupporterDestruction" Send="AnimBracketStop BSD"/>
-        <Model value="GenericAttackModel"/>
-        <ModelFlags index="AllowHitTest" value="0"/>
-    </CActorModel>
-    <CActorAction id="SiegeTankSCBWSiegedWeapon@Attack" parent="GenericAttackWhiff" effectAttack="SiegeTankSCBWSiegedWeapon@Impact">
+    <CActorAction id="SiegeTankSCBWSiegedWeapon@Attack" parent="GenericAttack" effectAttack="SiegeTankSCBWSiegedWeapon@Impact">
         <LaunchAssets Model="SiegeTankSCBWSiegedWeapon@Launch" Sound="SiegeTankSCBWSiegedWeapon@Launch"/>
         <ImpactSiteOps Ops="SOpActionCenter SOpTargetUnitZ" HoldPosition="1"/>
         <ImpactMap index="None" Model="SiegeTankSCBWSiegedWeapon@Impact" Sound="SiegeTankSCBWSiegedWeapon@Impact"/>
+        <ImpactModel value="SiegeTankSCBWSiegedWeapon@ImpactModel"/>
         <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="SiegeTankSCBWSiegedWeapon@ImpactAttackForce"/>
         <DamageSiteOps Ops="SOpAttachHarness"/>
         <DamageMap index="None" Model="SiegeTankSCBWSiegedWeapon@Damage"/>
@@ -4344,7 +4680,6 @@
     <!--        <ModelFlags index="AllowHitTest" value="0"/>-->
     <!--    </CActorModel-->
     <CActorModel id="ScienceVesselSCBWIrradiate@Effect" parent="ModelAnimationStyleContinuous">
-        <Inherits index="CloakEffect" value="1"/>
         <Inherits index="Visibility" value="1"/>
         <On Terms="Behavior.ScienceVesselSCBWIrradiate@Irradiated.On" Send="Create"/>
         <On Terms="Behavior.ScienceVesselSCBWIrradiate@Irradiated.Off" Send="Destroy"/>
@@ -4459,14 +4794,17 @@
         <Terms value="ValidateUnit NotCloaked"/>
         <On Terms="Behavior.WraithSCBWCloak.On" Send="Create"/>
     </CActorSound>
-    <CActorModel id="GhostSCBWLockdown@ImpactReaction" parent="GenericAttackImpactModelReaction">
-        <Terms value="ValidateUnit IsMechanical"/>
-    </CActorModel>
     <CActorModel id="GhostSCBWLockdown@Model" parent="ModelAnimationStyleContinuousUNIT">
         <Inherits index="Visibility" value="1"/>
         <On Terms="Behavior.GhostSCBWLockdown.On" Send="Create"/>
         <On Terms="Behavior.GhostSCBWLockdown.Off" Send="Destroy"/>
+        <On Terms="ActorCreation" Target="::Host" Send="SetTintColor 192,192,192 0.125000 OneShot LockdownTint"/>
+        <On Terms="ActorDestruction" Target="::Host" Send="ClearTintColor 0.125000 LockdownTint"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
+        <ModelFlags index="AutomateGlobalLoops" value="1"/>
+    </CActorModel>
+    <CActorModel id="GhostSCBWLockdown@ImpactReaction" parent="GenericAttackImpactModelReaction">
+        <Terms value="ValidateUnit IsMechanical"/>
     </CActorModel>
     <CActorAction id="GhostSCBWLockdown@Attack" parent="GenericAttack" effectImpact="GhostSCBWLockdown@AB" effectLaunch="GhostSCBWLockdown@LM">
         <Missile value="GhostSCBWLockdown@Missile"/>
@@ -4606,6 +4944,12 @@
     <CTargetSortValidator id="SpiderMineSCBWWeapon@TargetMarker">
         <Validator value="SpiderMineSCBWWeapon@TargetMarker"/>
     </CTargetSortValidator>
+    <CTargetSortValidator id="ValkyrieSCBWWeapon@Marker">
+        <Validator value="ValkyrieSCBWWeapon@Marker"/>
+    </CTargetSortValidator>
+    <CModel id="ValkyrieSCBWWeapon@Dummy" parent="Invisible">
+        <Model value="Assets\Doodads\Shapes\ShapeOrb\ShapeOrb.m3"/>
+    </CModel>
     <CModel id="MissileTurretSCBWWeapon@LaunchFX" parent="LaunchFX">
         <Model value="Assets\Effects\Terran\Cyclone_Missile_Launch\Cyclone_Missile_Launch.m3"/>
         <EditorCategories value="Race:Terran"/>
@@ -4802,16 +5146,20 @@
         <EditorCategories value="Race:Terran"/>
     </CModel>
     <CModel id="SiegeTankSCBWSiegedWeapon@DirectedImpact" parent="ImpactFX">
-        <Model value="Assets\Effects\Terran\SiegeTankWeaponImpactBuilding\SiegeTankWeaponImpactBuilding.m3"/>
+        <Model value="Assets\Effects\Terran\SiegeTankAttackImpactDirect@SCBWEffect\SiegeTankAttackImpactDirect@SCBWEffect.m3"/>
         <EditorCategories value="Race:Terran"/>
+        <ScaleMax value="0.900000,0.900000,0.900000"/>
+        <ScaleMin value="0.900000,0.900000,0.900000"/>
     </CModel>
     <CModel id="SiegeTankSCBWSiegedWeapon@DirectedLaunch" parent="LaunchFX">
         <Model value="Assets\Effects\Terran\SiegeTankWeaponLaunch\SiegeTankWeaponLaunch.m3"/>
         <EditorCategories value="Race:Terran"/>
     </CModel>
     <CModel id="SiegeTankSCBWSiegedWeapon@Impact" parent="ImpactFX">
-        <Model value="Assets\Effects\Terran\WidowMineImpact\WidowMineImpact.m3"/>
+        <Model value="Assets\Effects\Terran\SiegeTankAttackImpact@SCBWEffect\SiegeTankAttackImpact@SCBWEffect.m3"/>
         <EditorCategories value="Race:Terran"/>
+        <ScaleMax value="0.900000,0.900000,0.900000"/>
+        <ScaleMin value="0.900000,0.900000,0.900000"/>
     </CModel>
     <CModel id="SiegeTankSCBWSiegedWeapon@Launch" parent="LaunchFX">
         <Model value="Assets\Effects\Terran\SiegeTankWeaponLaunch\SiegeTankWeaponLaunch.m3"/>
@@ -4907,18 +5255,20 @@
         <EditorCategories value="Race:Terran"/>
     </CModel>
     <CModel id="GhostSCBWLockdown@Glaze" parent="Glaze">
-        <Model value="Assets\Effects\Glaze\Glaze_Goliath_Lockdown\Glaze_Goliath_Lockdown.m3"/>
+        <Model value="Assets\Effects\Terran\Lockdown@Glaze\Lockdown@Glaze.m3"/>
         <EditorCategories value="Race:Terran"/>
     </CModel>
     <CModel id="GhostSCBWLockdown@Impact" parent="RaceImpactFX" Race="Terran">
         <Model value="Assets\Effects\Terran\Goliath_Lockdown_Impact\Goliath_Lockdown_Impact.m3"/>
     </CModel>
     <CModel id="GhostSCBWLockdown@Missile" parent="MissileFX">
-        <Model value="Assets\Effects\Terran\Goliath_Lockdown_Missile\Goliath_Lockdown_Missile.m3"/>
+        <Model value="Assets\Effects\Terran\Lockdown@Missile\Lockdown@Missile.m3"/>
         <EditorCategories value="Race:Terran"/>
+        <ScaleMax value="0.500000,0.500000,0.500000"/>
+        <ScaleMin value="0.500000,0.500000,0.500000"/>
     </CModel>
     <CModel id="GhostSCBWLockdown@Model" parent="PersistentSpellFX">
-        <Model value="Assets\Effects\Terran\Goliath_Lockdown\Goliath_Lockdown.m3"/>
+        <Model value="Assets\Effects\Terran\Lockdown@Effect\Lockdown@Effect.m3"/>
         <EditorCategories value="Race:Terran"/>
     </CModel>
     <CModel id="MarineSCBWStimpack@EndImpact" parent="OneShotSpellFX">
@@ -5059,7 +5409,7 @@
         <RangeSlop value="7"/>
         <Period value="3.75"/>
         <DamagePoint value="0.0625"/>
-        <Backswing value="2.5"/>
+        <Backswing value="2.25"/>
         <Effect value="ValkyrieSCBWWeapon@CP"/>
         <AllowedMovement value="Slowing"/>
         <ArcSlop value="45"/>
@@ -5089,31 +5439,35 @@
     </CWeaponLegacy>
     <CWeaponLegacy id="FirebatSCBWWeapon">
         <EditorCategories value="Race:Terran"/>
-        <Options index="Melee" value="1"/>
         <Icon value="Assets\Textures\btn-upgrade-terranscbw-infantryweaponslevel0.dds"/>
         <DisplayEffect value="FirebatSCBWWeapon@DamageConc"/>
         <DisplayAttackCount value="3"/>
-        <!--<DisplayAttackCount value="2"/>-->
         <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AcquireCliffLevelRange value="-0.5,0.5"/>
         <MinScanRange value="3"/>
         <Range value="1"/>
         <Marker>
             <MatchFlags index="Id" value="1"/>
         </Marker>
         <Period value="1.3125"/>
+        <AttackType value="Chaos"/>
         <DamagePoint value="0.01"/>
+        <Effect value="FirebatSCBWWeapon@CliffCheck"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="FirebatSCBWWeapon@Melee" parent="FirebatSCBWWeapon">
+        <Name value="Weapon/Name/FirebatSCBWWeapon@Melee"/>
+        <Options index="Hidden" value="1"/>
+        <Options index="Melee" value="1"/>
         <Effect value="FirebatSCBWWeapon@CP"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="FirebatSCBWWeapon@Bunker" parent="FirebatSCBWWeapon">
         <Options index="Disabled" value="1"/>
         <Options index="Hidden" value="1"/>
-        <Options index="Melee" value="0"/>
-        <AcquireCliffLevelRange value="-0.5,0.5"/>
         <MinScanRange value="5"/>
-        <AttackType value="Chaos"/>
         <Effect value="FirebatSCBWWeapon@BunkerCliffCheck"/>
-        <UninterruptibleDuration value="0.6562"/>
         <LegacyOptions index="Uninterruptible" value="1"/>
+        <UninterruptibleDuration value="0.6562"/>
+        <Name value="Weapon/Name/FirebatSCBWWeapon@Bunker"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="MarineSCBWWeapon">
         <EditorCategories value="Race:Terran"/>
@@ -5284,6 +5638,17 @@
     </CMoverMissile>
     <CMoverMissile id="ValkyrieSCBWWeapon@Mover">
         <MotionPhases>
+            <Driver value="Throw"/>
+            <Acceleration value="3200"/>
+            <Speed value="1"/>
+            <MaxSpeed value="8"/>
+            <Outro value="0.7,1.2"/>
+            <RotationLaunchActorType value="Supplied"/>
+            <ThrowRotationType value="ThrowForward"/>
+            <ThrowBandYaw value="-360,-360,-360,-360"/>
+            <ThrowBandPitch value="-360,-360,-360,-360"/>
+        </MotionPhases>
+        <MotionPhases>
             <Driver value="Guidance"/>
             <Acceleration value="18"/>
             <MaxSpeed value="16"/>
@@ -5291,7 +5656,7 @@
             <YawPitchRoll value="719.2968"/>
             <Overlays Scale="1,0.5"/>
         </MotionPhases>
-        <MotionPhases YawPitchRoll="MAX"/>
+        <!--MotionPhases YawPitchRoll="MAX"/-->
         <MotionOverlays>
             <Type value="Revolver"/>
             <Polarity value="Random"/>
@@ -5316,6 +5681,34 @@
             <RevolverAccel value="0"/>
             <RevolverAccelRange value="0"/>
         </MotionOverlays>
+    </CMoverMissile>
+    <CMoverMissile id="ValkyrieSCBWWeapon@MoverLeft" parent="ValkyrieSCBWWeapon@Mover">
+        <MotionPhases index="0">
+            <Driver value="Throw"/>
+            <Acceleration value="3200"/>
+            <Speed value="1"/>
+            <MaxSpeed value="8"/>
+            <Outro value="0.7,1.2"/>
+            <RotationLaunchActorType value="Supplied"/>
+            <ThrowRotationType value="ThrowForward"/>
+            <ThrowVector value="0.9,-0.8,0"/>
+            <ThrowBandYaw value="-360,-360,-360,-360"/>
+            <ThrowBandPitch value="-360,-360,-360,-360"/>
+        </MotionPhases>
+    </CMoverMissile>
+    <CMoverMissile id="ValkyrieSCBWWeapon@MoverRight" parent="ValkyrieSCBWWeapon@Mover">
+        <MotionPhases index="0">
+            <Driver value="Throw"/>
+            <Acceleration value="3200"/>
+            <Speed value="1"/>
+            <MaxSpeed value="8"/>
+            <Outro value="0.7,1.2"/>
+            <RotationLaunchActorType value="Supplied"/>
+            <ThrowRotationType value="ThrowForward"/>
+            <ThrowVector value="-0.9,-0.8,0"/>
+            <ThrowBandYaw value="-360,-360,-360,-360"/>
+            <ThrowBandPitch value="-360,-360,-360,-360"/>
+        </MotionPhases>
     </CMoverMissile>
     <CMoverMissile id="GoliathSCBWWeaponAir@Missile">
         <PathMode value="Flying"/>
@@ -5545,6 +5938,12 @@
         <Key value="DefensiveMatrixShield"/>
         <BehaviorScope Value="Target" Behavior="ScienceVesselSCBWDefensiveMatrix@Data"/>
     </CAccumulatorUserData>
+    <CSound id="GhostSCBWLockdown@Loop" parent="Spell">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Sabo_Drone_Power_Loop_01.wav" LoopCount="-1" FacialGroup=""/>
+        <DupeMuteCount value="3"/>
+        <Volume value="-25.000000,-24.000000"/>
+    </CSound>
     <CSound id="MissileTurretSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Terran\GoliathSCBW\GoliathSCBWWeaponAir@Impact00.ogg"/>
@@ -5587,16 +5986,15 @@
     <CSound id="ValkyrieSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Terran\ValkyrieSCBW\ValkyrieSCBWWeapon@Impact00.ogg"/>
-        <Volume value="-2.000000,-2.000000"/>
+        <DupeMuteCount value="12"/>
+        <Pan value="-1.000000,0.000000"/>
     </CSound>
     <CSound id="ValkyrieSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Terran\ValkyrieSCBW\ValkyrieSCBWWeapon@Launch00.ogg"/>
-        <Category value="Spell"/>
         <DupeDestroyCount value="10"/>
         <DupeMaximumMethod value="Replace"/>
-        <OverlapTimeDelta value="500"/>
-        <Volume value="-1.000000,-1.000000"/>
+        <OverlapTimeDelta value="350"/>
     </CSound>
     <CSound id="WraithSCBWWeaponAir@Launch" parent="Combat">
         <EditorCategories value="Race:Terran"/>
@@ -5750,11 +6148,13 @@
     </CSound>
     <CSound id="SiegeTankSCBWSiegedWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Neutral\explolrg.ogg" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBWSiegedWeapon@Impact00.ogg" Weight="5"/>
+        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBWSiegedWeapon@Impact00.ogg"/>
+        <AssetArray File="Assets\Sounds\Terran\SiegeTankSCBW\SiegeTankSCBWSiegedWeapon@Impact01.ogg" Weight="5" FacialGroup=""/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
         <Volume value="-3.000000,-3.000000"/>
+        <DupeHistoryCount value="0"/>
+        <Select value="Random"/>
     </CSound>
     <CSound id="SiegeTankSCBWSiegedWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Terran"/>
@@ -5927,6 +6327,8 @@
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Terran\GhostSCBW\GhostSCBWLockdown@Launch00.ogg"/>
         <DupeMaximumMethod value="Replace"/>
+        <Volume value="-4.000000,-4.000000"/>
+        <NonLocalVolumeAdjustment value="2.000000,2.000000"/>
         <!--<Volume value="-6.860000,-6.860000"/>-->
     </CSound>
     <CSound id="GhostSCBWCloak@Off" parent="Spell">
@@ -6482,32 +6884,93 @@
         <DataRecord Entry="Upgrade,TerranVehicleWeaponsSCBW@Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionAbil id="ValkyrieSCBWWeapon" parent="TerranShipWeaponSCBW">
+        <DataRecord Entry="Actor,ValkyrieSCBWWeapon@Dummy"/>
         <DataRecord Entry="Actor,ValkyrieSCBWWeapon@Impact"/>
-        <DataRecord Entry="Actor,ValkyrieSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,ValkyrieSCBWWeapon@ActionLeft"/>
+        <DataRecord Entry="Actor,ValkyrieSCBWWeapon@ActionRight"/>
         <DataRecord Entry="Actor,ValkyrieSCBWWeapon@Missile"/>
         <DataRecord Entry="Actor,ValkyrieSCBWWeapon@MissileDeathForce"/>
         <DataRecord Entry="Actor,ValkyrieSCBWWeapon@MissileDeathForceUp"/>
-        <DataRecord Entry="AttachMethod,ValkyrieSCBWWeapon@AMPattern"/>
+        <DataRecord Entry="AttachMethod,ValkyrieSCBWWeapon@AMPatternLeft"/>
+        <DataRecord Entry="AttachMethod,ValkyrieSCBWWeapon@AMPatternRight"/>
         <DataRecord Entry="Behavior,ValkyrieSCBWWeapon@CasterStun"/>
+        <DataRecord Entry="Behavior,ValkyrieSCBWWeapon@Marker"/>
+        <DataRecord Entry="Behavior,ValkyrieSCBWWeapon@OffsetIndex"/>
+        <DataRecord Entry="Behavior,ValkyrieSCBWWeapon@DummyFate"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DamageAccum"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DamageAccum2"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DamageAccum3"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@CP"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DummyCreate"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@CPFinal"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@OffsetReset"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@CasterStunRB"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@LMSideReset"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@LMSwitch"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@LMSide"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@LMLeft"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@LMRight"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Marker"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@MarkerRB"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DummyFateExpire"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@RedirectCPDummy"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Redirect"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@RedirectCP"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DummySpawn"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DummyKill"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DummyKinetic"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset01"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset02"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset03"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset04"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset05"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset06"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset07"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset08"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset09"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset10"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset11"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset12"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset13"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Offset14"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@OffsetSwitch"/>
+        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@OffsetIncrement"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@CasterStun"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@ImpactSplash"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Impact"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DamageApply"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@Set"/>
-        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@LM"/>
-        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@CPOffsets"/>
-        <DataRecord Entry="Effect,ValkyrieSCBWWeapon@CP"/>
         <DataRecord Entry="Effect,ValkyrieSCBWWeapon@DamageExpl"/>
+        <DataRecord Entry="Kinetic,ValkyrieSCBWWeapon@DummyKinetic"/>
+        <DataRecord Entry="Model,ValkyrieSCBWWeapon@Dummy"/>
         <DataRecord Entry="Model,ValkyrieSCBWWeapon@Impact"/>
         <DataRecord Entry="Model,ValkyrieSCBWWeapon@Missile"/>
+        <DataRecord Entry="Mover,ValkyrieSCBWWeapon@MoverLeft"/>
+        <DataRecord Entry="Mover,ValkyrieSCBWWeapon@MoverRight"/>
         <DataRecord Entry="Mover,ValkyrieSCBWWeapon@Mover"/>
         <DataRecord Entry="Sound,ValkyrieSCBWWeapon@Launch"/>
         <DataRecord Entry="Sound,ValkyrieSCBWWeapon@Impact"/>
+        <DataRecord Entry="TargetSort,ValkyrieSCBWWeapon@Marker"/>
+        <DataRecord Entry="Unit,ValkyrieSCBWWeapon@Dummy"/>
         <DataRecord Entry="Unit,ValkyrieSCBWWeapon@Missile"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@LMSide"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@DummyTeleport"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset01"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset02"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset03"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset04"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset05"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset06"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset07"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset08"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset09"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset10"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset11"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset12"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset13"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Offset14"/>
         <DataRecord Entry="Validator,ValkyrieSCBWWeapon@PersistentValidator"/>
+        <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Marker"/>
         <DataRecord Entry="Validator,ValkyrieSCBWWeapon@Range"/>
         <DataRecord Entry="Weapon,ValkyrieSCBWWeapon"/>
         <DataRecord Entry="Accumulator,ValkyrieSCBWWeapon@Damage"/>
@@ -6533,6 +6996,8 @@
         <DataRecord Entry="Actor,FirebatSCBWWeapon@Impact"/>
         <DataRecord Entry="Behavior,FirebatSCBWWeapon@SuppressMovement"/>
         <DataRecord Entry="Behavior,FirebatSCBWWeapon@Bunker"/>
+        <DataRecord Entry="Effect,FirebatSCBWWeapon@CliffCheck"/>
+        <DataRecord Entry="Effect,FirebatSCBWWeapon@CP"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@FacingOffset"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@SuppressMovement"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@Facing"/>
@@ -6545,7 +7010,6 @@
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageAccum2"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageAccum3"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageApply"/>
-        <DataRecord Entry="Effect,FirebatSCBWWeapon@CP"/>
         <DataRecord Entry="Effect,FirebatSCBWWeapon@DamageConc"/>
         <DataRecord Entry="Model,FirebatSCBWWeapon@Impact"/>
         <DataRecord Entry="Model,FirebatSCBWWeapon@Launch"/>
@@ -6558,6 +7022,7 @@
         <DataRecord Entry="Validator,FirebatSCBWWeapon@Damage"/>
         <DataRecord Entry="Validator,FirebatSCBWWeapon@Splash"/>
         <DataRecord Entry="Weapon,FirebatSCBWWeapon"/>
+        <DataRecord Entry="Weapon,FirebatSCBWWeapon@Melee"/>
         <DataRecord Entry="Weapon,FirebatSCBWWeapon@Bunker"/>
         <DataRecord Entry="Accumulator,FirebatSCBWWeapon@Damage"/>
         <Pattern value="SCBW_Weapon_Accumulator"/>
@@ -6636,6 +7101,7 @@
         <DataRecord Entry="Weapon,SCVSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="SiegeTankSCBWSiegedWeapon" parent="TerranVehicleWeaponSCBW">
+        <DataRecord Entry="Actor,SiegeTankSCBWSiegedWeapon@ImpactModel"/>
         <DataRecord Entry="Actor,SiegeTankSCBWSiegedWeapon@ImpactTargetFire"/>
         <DataRecord Entry="Actor,SiegeTankSCBWSiegedWeapon@MissAttackUpForce"/>
         <DataRecord Entry="Actor,SiegeTankSCBWSiegedWeapon@MissAttackForce"/>
@@ -6648,11 +7114,17 @@
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageAccum"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageAccum2"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageAccum3"/>
+        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageCliff"/>
+        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageCliff2"/>
+        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageCliff3"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissChance"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@InitialSet"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissSwitch"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissOffsetSwitch"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@Switch"/>
+        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@ImpactSplashSwitch"/>
+        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@ImpactSplash"/>
+        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@ImpactSplashCliff"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageApply"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@ImpactDirect"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageDirect"/>
@@ -6662,7 +7134,6 @@
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissLarge"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissMassive"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@MissMedium"/>
-        <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@ImpactSplash"/>
         <DataRecord Entry="Effect,SiegeTankSCBWSiegedWeapon@DamageExpl"/>
         <DataRecord Entry="Model,SiegeTankSCBWSiegedWeapon@Damage"/>
         <DataRecord Entry="Model,SiegeTankSCBWSiegedWeapon@Impact"/>
@@ -6742,15 +7213,16 @@
         <DataRecord Entry="Model,SpiderMineSCBWWeapon@Impact"/>
         <DataRecord Entry="TargetSort,SpiderMineSCBWWeapon@TargetSort"/>
         <DataRecord Entry="TargetSort,SpiderMineSCBWWeapon@TargetMarker"/>
+        <DataRecord Entry="Validator,SpiderMineSCBWWeapon@NoMimicDisable"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@NoTargetMarker"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@CasterAttackingTarget"/>
-        <DataRecord Entry="Validator,SpiderMineSCBWWeapon@NoMimicDisable"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@InvisPersistentValidator"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@InvisRangeCheckNegate"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@TargetMarker"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@InvisEnumSetTargetFilters"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@InvisChaseRange"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@Splash"/>
+        <DataRecord Entry="Validator,SpiderMineSCBWWeapon@MimicValidator"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@ChasingValidator"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@InvisChasing"/>
         <DataRecord Entry="Validator,SpiderMineSCBWWeapon@NotInvisChasing"/>
@@ -6980,9 +7452,10 @@
     <CDataCollectionAbil id="GhostSCBWLockdown" parent="TerranAbilSCBW">
         <EditorCategories value="DataGroup:Ability,DataFamily:Melee,Race:Terran,ObjectType:Unit"/>
         <DataRecord Entry="Abil,GhostSCBWLockdown"/>
+        <DataRecord Entry="Actor,GhostSCBWLockdown@LoopSound"/>
         <DataRecord Entry="Actor,GhostSCBWLockdown@Range"/>
-        <DataRecord Entry="Actor,GhostSCBWLockdown@ImpactReaction"/>
         <DataRecord Entry="Actor,GhostSCBWLockdown@Model"/>
+        <DataRecord Entry="Actor,GhostSCBWLockdown@ImpactReaction"/>
         <DataRecord Entry="Actor,GhostSCBWLockdown@Attack"/>
         <DataRecord Entry="Actor,GhostSCBWLockdown@Glaze"/>
         <DataRecord Entry="Actor,GhostSCBWLockdown@Missile"/>
@@ -7001,11 +7474,13 @@
         <DataRecord Entry="Requirement,GhostSCBWLockdown"/>
         <DataRecord Entry="RequirementNode,GhostSCBWLockdown@CountAtUnit"/>
         <DataRecord Entry="RequirementNode,GhostSCBWLockdown"/>
+        <DataRecord Entry="Sound,GhostSCBWLockdown@Loop"/>
         <DataRecord Entry="Sound,GhostSCBWLockdown@Launch"/>
         <DataRecord Entry="Sound,GhostSCBWLockdown@Impact"/>
         <DataRecord Entry="Sound,GhostSCBWLockdown@Birth"/>
         <DataRecord Entry="Unit,GhostSCBWLockdown@Missile"/>
         <DataRecord Entry="Upgrade,GhostSCBWLockdown@Upgrade"/>
+        <DataRecord Entry="Validator,GhostSCBWLockdown@NotCaster"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="GhostSCBWNuclearStrike" parent="TerranAbilSCBW">
         <DataRecord Entry="Abil,GhostSCBWNuclearStrike"/>
@@ -7354,14 +7829,20 @@
         <DataRecord Entry="Upgrade,MechPlating@Lvl2"/>
         <DataRecord Entry="Upgrade,MechPlating@Lvl3"/>
     </CDataCollectionUpgrade>
+    <CAttachMethodPattern id="ValkyrieSCBWWeapon@AMPatternRight">
+        <Keyword value="SetA"/>
+        <Base value="::RollingIndex"/>
+        <Driver value="ValkyrieSCBWWeapon@LMRight"/>
+    </CAttachMethodPattern>
+    <CAttachMethodPattern id="ValkyrieSCBWWeapon@AMPatternLeft">
+        <Keyword value="SetB"/>
+        <Base value="::RollingIndex"/>
+        <Driver value="ValkyrieSCBWWeapon@LMLeft"/>
+    </CAttachMethodPattern>
     <CAttachMethodPattern id="MissileTurretSCBWWeapon@AMPattern">
         <Keyword value="SetA"/>
         <Base value="::RollingIndex"/>
         <Driver value="MissileTurretSCBWWeapon@LM"/>
-    </CAttachMethodPattern>
-    <CAttachMethodPattern id="ValkyrieSCBWWeapon@AMPattern">
-        <Keyword value="SetA"/>
-        <Driver value="ValkyrieSCBWWeapon@LM"/>
     </CAttachMethodPattern>
     <CAttachMethodPattern id="VultureSCBWWeapon@AMPattern">
         <Keyword value="SetA"/>
@@ -7375,6 +7856,31 @@
         <Driver value="GoliathSCBWWeaponAir@LM"/>
     </CAttachMethodPattern>
     <CPreloadModel id="FirebatSCBWWeapon@Launch"/>
+    <CUnit id="ValkyrieSCBWWeapon@Dummy" parent="SCBW_InvulnerableDummy">
+        <DeathRevealRadius value="0"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="Uncursorable" value="1"/>
+        <FlagArray index="NoDraw" value="1"/>
+        <FlagArray index="Undetectable" value="1"/>
+        <FlagArray index="Unradarable" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="KillCredit" value="0"/>
+        <FlagArray index="NoScore" value="1"/>
+        <FlagArray index="ShowResources" value="0"/>
+        <FlagArray index="Unstoppable" value="1"/>
+        <FlagArray index="ClearRallyOnTargetLost" value="0"/>
+        <FlagArray index="PlayerRevivable" value="0"/>
+        <FlagArray index="CameraFollow" value="0"/>
+        <Mover value="Fly"/>
+        <Height value="3.75"/>
+        <Radius value="0"/>
+        <SeparationRadius value="0"/>
+        <EditorCategories value="ObjectType:Other"/>
+        <Name value="Unit/Name/ValkyrieSCBWWeapon@Dummy"/>
+        <PlaneArray index="Ground" value="0"/>
+        <PlaneArray index="Air" value="1"/>
+        <BehaviorArray Link="ValkyrieSCBWWeapon@DummyFate"/>
+    </CUnit>
     <CUnit id="MissileTurretSCBWWeapon@Missile" parent="MISSILE_HALFLIFE">
         <Race value="BWTe"/>
         <Mover value="MissileTurretSCBWWeapon@Mover"/>
@@ -7439,6 +7945,27 @@
         <Mover value="BattlecruiserSCBWYamato@Mover"/>
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
     </CUnit>
+    <CBehaviorBuff id="ValkyrieSCBWWeapon@Marker">
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <MaxStackCount value="65535"/>
+        <Duration value="5"/>
+        <BuffFlags index="RefreshStack" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ValkyrieSCBWWeapon@DummyFate">
+        <BehaviorFlags index="Permanent" value="1"/>
+        <BehaviorFlags index="EnabledWhileDead" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Terran"/>
+        <Duration value="5"/>
+        <ExpireEffect value="ValkyrieSCBWWeapon@DummyFateExpire"/>
+    </CBehaviorBuff>
+    <CBehaviorAttribute id="ValkyrieSCBWWeapon@OffsetIndex">
+        <BehaviorFlags index="Permanent" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <MaxPoints value="0"/>
+    </CBehaviorAttribute>
     <CBehaviorBuff id="FirebatSCBWWeapon@SuppressMovement">
         <EditorCategories value="AbilityorEffectType:Units,Race:Terran"/>
         <Duration value="0.6562"/>
@@ -7463,7 +7990,7 @@
     <CBehaviorBuff id="ValkyrieSCBWWeapon@CasterStun">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units"/>
-        <Duration value="2.5"/>
+        <Duration value="2.25"/>
         <Modification WeaponRange="15" WeaponScanLimit="0">
             <ModifyFlags index="OrdersUninterruptible" value="1"/>
         </Modification>
@@ -7481,7 +8008,7 @@
         <EditorCategories value="AbilityorEffectType:Units"/>
         <MaxStackCount value="65535"/>
         <MaxStackCountPerCaster value="1"/>
-        <Duration value="2"/>
+        <RemoveValidatorArray value="SpiderMineSCBWWeapon@MimicValidator"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="SpiderMineSCBWWeapon@Chasing">
         <InfoFlags index="Hidden" value="1"/>
@@ -7598,12 +8125,6 @@
         <Modification>
             <ModifyFlags index="Detected" value="1"/>
             <StateFlags index="SuppressCloak" value="1"/>
-            <BehaviorLinkDisableArray value="GhostSCBWCloak"/>
-            <BehaviorLinkDisableArray value="WraithSCBWCloak"/>
-            <BehaviorLinkDisableArray value="GhostCloak"/>
-            <BehaviorLinkDisableArray value="WraithCloak"/>
-            <BehaviorLinkDisableArray value="CloakingFieldeffect"/>
-            <BehaviorLinkDisableArray value="PermanentlyCloaked"/>
         </Modification>
         <DamageResponse>
             <Handled value="ScienceVesselSCBWDefensiveMatrix@DamageResponse"/>
@@ -7646,12 +8167,6 @@
         <Modification>
             <ModifyFlags index="Detected" value="0"/>
             <StateFlags index="SuppressCloak" value="0"/>
-            <BehaviorLinkDisableArray index="0" removed="1"/>
-            <BehaviorLinkDisableArray index="1" removed="1"/>
-            <BehaviorLinkDisableArray index="2" removed="1"/>
-            <BehaviorLinkDisableArray index="3" removed="1"/>
-            <BehaviorLinkDisableArray index="4" removed="1"/>
-            <BehaviorLinkDisableArray index="5" removed="1"/>
         </Modification>
         <DamageResponse Handled="ScienceVesselSCBWDefensiveMatrix@DamageResponseSpell">
             <Kind index="Spell" value="1"/>
@@ -7677,6 +8192,7 @@
         <AINotifyEffect value="ScienceVesselSCBWIrradiate@SearchPeriodic"/>
         <Modification>
             <ModifyFlags index="Detected" value="1"/>
+            <StateFlags index="SuppressCloak" value="1"/>
         </Modification>
         <InitialEffect value="ScienceVesselSCBWIrradiate@ApplySet"/>
     </CBehaviorBuff>
@@ -7757,6 +8273,7 @@
             <ModifyFlags index="SuppressMoving" value="1"/>
             <ModifyFlags index="SuppressTurning" value="1"/>
             <StateFlags index="Stun" value="1"/>
+            <StateFlags index="SuppressCloak" value="1"/>
             <StateFlags index="SuppressDetection" value="1"/>
             <StateFlags index="SuppressPassenger" value="1"/>
             <StateFlags index="SuppressRadar" value="1"/>
@@ -7796,8 +8313,8 @@
     </CBehaviorBuff>
     <CBehaviorBuff id="VultureSCBWWeapon@StrafingDisableWeapon">
         <EditorCategories value="AbilityorEffectType:Units"/>
-        <Duration value="0">
-            <AccumulatorArray value="SCBW_WeaponCooldown@Accum"/>
+        <Duration value="0.0625">
+            <AccumulatorArray value="SCBW_WeaponCooldown@Final"/>
         </Duration>
         <Modification DecelerationMultiplier="0.5">
             <WeaponDisableArray value="VultureSCBWWeapon@StrafingWeapon"/>
@@ -7849,9 +8366,9 @@
     <CUpgrade id="GhostSCBWCloakResearch" parent="SCBW_Research">
         <Icon value="Assets\Textures\btn-upgrade-terran-personalcloaking@scbw.dds"/>
         <Race value="BWTe"/>
+        <ScoreAmount value="200"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <ScoreAmount value="200"/>
         <AffectedUnitArray value="GhostSCBW"/>
     </CUpgrade>
     <CUpgrade id="GhostSCBWEnergyUpgrade" parent="SCBW_EnergyUpgrade">
@@ -7863,10 +8380,10 @@
         <AffectedUnitArray value="GhostSCBW"/>
     </CUpgrade>
     <CUpgrade id="GhostSCBWHoldFireResearch" parent="SCBW_Research">
+        <Flags index="TechTreeCheat" value="0"/>
         <Race value="BWTe"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <Flags index="TechTreeCheat" value="0"/>
     </CUpgrade>
     <CUpgrade id="GhostSCBWLockdownResearch" parent="SCBW_Research">
         <Icon value="Assets\Textures\btn-abilty-terran-lockdown@scbw.dds"/>
@@ -7886,10 +8403,10 @@
         <AffectedUnitArray value="GhostSCBW"/>
     </CUpgrade>
     <CUpgrade id="GhostSCBWWeaponsFreeResearch" parent="SCBW_Research">
+        <Flags index="TechTreeCheat" value="0"/>
         <Race value="BWTe"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <Flags index="TechTreeCheat" value="0"/>
     </CUpgrade>
     <CUpgrade id="GoliathSCBWRangeUpgrade" parent="SCBW_Research">
         <EffectArrayTemplate Reference="Weapon,^ParamId^WeaponAir,Range" Value="3"/>
@@ -7945,9 +8462,9 @@
     </CUpgrade>
     <CUpgrade id="StimpackSCBWResearch" parent="SCBW_Research">
         <Icon value="Assets\Textures\btn-ability-terran-stimpack-color.dds"/>
+        <Race value="BWTe"/>
         <ScoreAmount value="200"/>
         <ScoreResult value="BuildOrder"/>
-        <Race value="BWTe"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
         <AffectedUnitArray value="MarineSCBW"/>
         <AffectedUnitArray value="FirebatSCBW"/>
@@ -7976,9 +8493,9 @@
     <CUpgrade id="ScienceVesselSCBWDefensiveMatrixResearch" parent="SCBW_Research">
         <Icon value="Assets\Textures\btn-upgrade-swann-defensivematrix.dds"/>
         <Race value="BWTe"/>
+        <ScoreAmount value="300"/>
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
-        <ScoreAmount value="300"/>
     </CUpgrade>
     <CUpgrade id="ScienceVesselSCBWEMPShockwaveResearch" parent="SCBW_Research">
         <Icon value="Assets\Textures\btn-ability-terran-empshockwave@scbw.dds"/>

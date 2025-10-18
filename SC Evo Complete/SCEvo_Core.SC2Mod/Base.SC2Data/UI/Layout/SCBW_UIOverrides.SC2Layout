@@ -259,7 +259,36 @@
             <Anchor side="Left" relative="$parent/UnitWireframe" pos="Min" offset="0"/>
             <Anchor side="Right" relative="$parent/UnitWireframe" pos="Max" offset="0"/>
             <Visible val="False"/>
-            <Text val="&lt;d ref=&quot;$RunAccumulators:ScienceVesselSCBWDefensiveMatrix@RemainingSource$+0.5&quot;/&gt; / &lt;d ref=&quot;Accumulator,ScienceVesselSCBWDefensiveMatrix,Amount&quot;/&gt;"/>
+
+            <Frame type="DataRefFrame" name="DataRef">
+                <Anchor relative="$parent"/>
+                <Argument name="ref" val="$RunAccumulators:ScienceVesselSCBWDefensiveMatrix@RemainingSource$"/>
+            </Frame>
+            <Frame type="MathFrame" name="ShieldValue">
+                <A val="{$parent/DataRef/@RealValue}"/>
+                <B val="0"/>
+                <Operator val="Add"/>
+            </Frame>
+            <StateGroup name="LessThanOne">
+                <DefaultState val="Default"/>
+                <State name="True">
+                    <When type="Property" frame="DataRef" operator="LessThan" RealValue="1"/>
+                    <Action type="SetProperty" frame="ShieldValue" B="0.5"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" frame="ShieldValue" B="0.0"/>
+                </State>
+
+            </StateGroup>
+            <Frame type="TextFormatFrame" name="FormatText">
+                <Anchor relative="$parent" />
+                <FormatText val="%0% / %1%"/>
+                <Replacement index="0" val="{$parent/ShieldValue/@ResultCeil}"/>
+                <Replacement index="1" val="&lt;d ref=&quot;Accumulator,ScienceVesselSCBWDefensiveMatrix,Amount&quot;/&gt;"/>
+            </Frame>
+
+            <Text val="{FormatText/@Text}"/>
+            <!-- <Text val="&lt;d ref=&quot;$RunAccumulators:ScienceVesselSCBWDefensiveMatrix@RemainingSource$&quot;/&gt; / &lt;d ref=&quot;Accumulator,ScienceVesselSCBWDefensiveMatrix,Amount&quot;/&gt;"/> -->
         </Frame>
         <Frame type="Label" name="MatrixLifeLabel">
             <Style val="UnitWireframeVital"/>

@@ -3,18 +3,21 @@
     <CValidatorCombine id="ArbiterSCBWCloakField@Disable">
         <CombineArray value="SCBW_HaveScramblerMissileBehavior"/>
     </CValidatorCombine>
-    <CValidatorLocationEnumArea id="ArbiterSCBWRecall@Enum">
-        <AreaArray index="0" Radius="2.544"/>
-    </CValidatorLocationEnumArea>
-    <CValidatorLocationEnumArea id="ArbiterSCBWRecall@EnumAir">
-        <AreaArray index="0" Radius="2.544"/>
-    </CValidatorLocationEnumArea>
+    <CValidatorCombine id="ArbiterSCBWRecall@CPPeriodic">
+        <CombineArray value="CasterDoesNotHaveScramblerMissileBehavior"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWRecall@CPSet">
+        <CombineArray value="CasterDoesNotHaveScramblerMissileBehavior"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWRecall@Set">
+        <CombineArray value="TargetNotUntargetable"/>
+        <CombineArray value="IsNotInterceptor"/>
+    </CValidatorCombine>
     <CValidatorUnitFilters id="ArchonSCBWWeapon@DamageFilters">
         <Filters value="-;Player,Ally,Neutral"/>
     </CValidatorUnitFilters>
     <CValidatorCombine id="ArchonSCBWWeapon@Splash">
-        <CombineArray index="0" value="ArchonSCBWWeapon@TargetCondition"/>
-        <CombineArray index="1" removed="1"/>
+        <CombineArray index="0" value="SCBW_NotBurrowedInDarkSwarm"/>
     </CValidatorCombine>
     <CValidatorCombine id="CarrierSCBWWeapon@CP@Periodic">
         <CombineArray value="SCBW_CasterDoesNotHaveScramblerMissileBehaviorCarrier"/>
@@ -31,7 +34,17 @@
         <CombineArray value="IsNotEgg"/>
         <CombineArray value="NotEggSCBW"/>
     </CValidatorCombine>
+    <CValidatorCombine id="FirebatSCBWWeapon@Splash">
+        <CombineArray index="2" value="SCBW_NotBurrowedInDarkSwarm"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="InfestedTerranSCBWWeapon@Splash">
+        <CombineArray index="1" value="SCBW_NotBurrowedInDarkSwarm"/>
+    </CValidatorCombine>
     <CValidatorUnitType id="IsOverlordTransport" parent="IsTemplate" unitName="OverlordTransport"/>
+    <CValidatorUnitCompareBehaviorCount id="SCBW_Detector15">
+        <Compare value="GT"/>
+        <Behavior value="Detector13p75"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="SCBW_HaveScramblerMissileBehavior">
         <CombineArray value="NotHaveScramblerMissileBehavior"/>
         <Negate value="1"/>
@@ -63,12 +76,6 @@
     <CValidatorUnitFilters id="FirebatSCBW@DamageFilters">
         <Filters value="-;Player,Ally,Neutral"/>
     </CValidatorUnitFilters>
-    <CValidatorCombine id="FirebatSCBWWeapon@Splash">
-        <CombineArray index="2" removed="1"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="InfestedTerranSCBWWeapon@Splash">
-        <CombineArray index="1" removed="1"/>
-    </CValidatorCombine>
     <CValidatorCombine id="IsDefensiveStructure">
         <CombineArray value="SCBW_IsDefensiveStructure"/>
     </CValidatorCombine>
@@ -81,20 +88,38 @@
         <CombineArray value="IsBunkerSCBW"/>
     </CValidatorCombine>
     <CValidatorUnitType id="SCBW_IsLiberatorAG" parent="IsTemplate" unitName="LiberatorAG"/>
+    <CValidatorCondition id="SCBW_NotBurrowedInDarkSwarm">
+        <IfArray Test="UnderDarkSwarmCombine" Return="SCBW_NotBurrowed"/>
+    </CValidatorCondition>
     <CValidatorUnitOrderQueue id="SCBW_TargetNotTacticalJumping">
         <ResultFailed value="Error,Error/CantTargetBattlecruiserHyperjump"/>
         <WhichUnit Value="Target"/>
         <AbilLink value="Hyperjump"/>
         <Find value="0"/>
     </CValidatorUnitOrderQueue>
+    <CValidatorCombine id="SCBW_UnloadAcquireTargetValidator">
+        <CombineArray value="IsColossus"/>
+        <CombineArray value="IsImmortal"/>
+        <CombineArray value="IsSiegeTank"/>
+        <CombineArray value="IsSiegeTankSCBW"/>
+    </CValidatorCombine>
     <CValidatorCombine id="SCVSCBW@Repair">
         <CombineArray index="5" removed="1"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="ScienceVesselSCBWDefensiveMatrix@HasNoShield">
         <Behavior value="ScienceVesselSCBWDefensiveMatrix"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="SCBW_BeamWeaponImpactValidator">
+        <Type value="And"/>
+        <CombineArray value="NotUnderDarkSwarmCombine"/>
+        <CombineArray value="SCBW_MissChance@WeaponNotMissed"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ScourgeSCBWWeapon@TSValidator">
+        <CombineArray value="ZerglingSCBW@ThreatensZergling"/>
+        <CombineArray value="SCBW_IsLiberatorAG"/>
+    </CValidatorCombine>
     <CValidatorCombine id="SiegeTankSCBWSiegedWeapon@Splash">
-        <CombineArray index="1" removed="1"/>
+        <CombineArray index="1" value="SCBW_NotBurrowedInDarkSwarm"/>
     </CValidatorCombine>
     <CValidatorCombine id="SpiderMineSCBWWeapon@KillSpiderMines">
         <Type value="And"/>
@@ -107,7 +132,8 @@
         <Value value="25"/>
     </CValidatorUnitCompareVital>
     <CValidatorCombine id="SpiderMineSCBWWeapon@Splash">
-        <CombineArray index="1" removed="1"/>
+        <CombineArray index="1" value="SCBW_NotBurrowedInDarkSwarm"/>
+        <CombineArray value="NotSpiderMineSCBW@Burrowed"/>
     </CValidatorCombine>
     <CValidatorPlayerRequirement id="zerglingmovementspeed@Have" parent="SCBW_PlayerRequirement_Target" x="zerglingmovementspeed@Count"/>
     <CValidatorPlayerRequirement id="overlordspeed@Have" parent="SCBW_PlayerRequirement_Target" x="overlordspeed@Count"/>

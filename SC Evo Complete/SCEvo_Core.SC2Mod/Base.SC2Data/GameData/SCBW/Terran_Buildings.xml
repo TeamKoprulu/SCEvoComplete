@@ -649,6 +649,9 @@
     <CRequirementCountUnit id="ControlTowerSCBW@CountAtUnit" parent="SCBW_AddonCount" x="ControlTowerSCBW"/>
     <CRequirementCountUnit id="PhysicsLabSCBW@CountAtUnit" parent="SCBW_AddonCount" x="PhysicsLabSCBW"/>
     <CRequirementCountUnit id="CovertOpsSCBW@CountAtUnit" parent="SCBW_AddonCount" x="CovertOpsSCBW"/>
+    <CActorTurret id="MissileTurretSCBW@TurretIdle">
+        <On Terms="TurretEnable.MissileTurretSCBW@Idle; ValidateUnit IsConstructing" Send="Create"/>
+    </CActorTurret>
     <CActorModel id="CommandCenterSCBW@CommandPlayerDecalW" parent="ModelAddition">
         <Inherits index="BaseModelScale" value="0"/>
         <Inherits index="CloakEffect" value="0"/>
@@ -829,6 +832,7 @@
     <CActorUnit id="AcademySCBW" parent="TerranBuildingSCBW" unitName="AcademySCBW">
         <Aliases value="_UnitHuge"/>
         <Macros value="QueueAnim"/>
+        <Macros value="SCBW_ObserverWhatMacro"/>
         <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="AcademySCBW@Explode"/>
         <BarOffset value="125"/>
         <BarWidth value="155"/>
@@ -891,12 +895,11 @@
     <CActorSplat id="RefinerySCBW@RichSplat" parent="GenericUnitSplat" unitName="RefinerySCBW@Rich"/>
     <CActorTurret id="MissileTurretSCBW@Turret">
         <On Terms="TurretEnable.MissileTurretSCBW" Send="Create"/>
+        <On Terms="TurretEnable.MissileTurretSCBW" Target="MissileTurretSCBW@TurretIdle" Send="Destroy"/>
     </CActorTurret>
     <CActorModel id="MissileTurretSCBW@Build" parent="TerranBuildingSCBW@BuildSmall"/>
     <CActorUnit id="MissileTurretSCBW" parent="TerranBuildingSCBW" unitName="MissileTurretSCBW">
         <Aliases value="_UnitHuge"/>
-        <On Terms="Signal.*.test" Send="Create TurretUnitDeathModel"/>
-        <On Terms="Signal.*.test" Send="SetOpacity"/>
         <CreepHeightClass value="Small"/>
         <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="MissileTurretSCBW@Explode"/>
         <PlacementSound value="TerranBuildingSCBW@PlacementSmall"/>
@@ -2560,11 +2563,13 @@
         <DataRecord Entry="Unit,ScienceFacilitySCBW@Flying"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="MissileTurretSCBW" parent="TerranBuildingSCBW">
+        <DataRecord Entry="Actor,MissileTurretSCBW@TurretIdle"/>
         <DataRecord Entry="Actor,MissileTurretSCBW@SkinnablePlacementModel"/>
         <DataRecord Entry="Actor,MissileTurretSCBW@ProtectRange"/>
         <DataRecord Entry="Actor,MissileTurretSCBW@Turret"/>
         <DataRecord Entry="Actor,MissileTurretSCBW@Build"/>
         <DataRecord Entry="Actor,MissileTurretSCBW@Splat"/>
+        <DataRecord Entry="Behavior,MissileTurretSCBW@TurretDisable"/>
         <DataRecord Entry="Button,MissileTurretSCBW@Passive"/>
         <DataRecord Entry="Model,MissileTurretSCBW@Build"/>
         <DataRecord Entry="Model,MissileTurretSCBW@Placement"/>
@@ -2574,6 +2579,7 @@
         <DataRecord Entry="RequirementNode,MissileTurretSCBW@Count"/>
         <DataRecord Entry="Sound,MissileTurretSCBW@Explode"/>
         <DataRecord Entry="Turret,MissileTurretSCBW"/>
+        <DataRecord Entry="Turret,MissileTurretSCBW@Idle"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="RefinerySCBW" parent="TerranBuildingSCBW">
         <DataRecord Entry="Actor,RefinerySCBW@RichBuild"/>
@@ -2652,6 +2658,14 @@
         <YawRate value="720"/>
         <YawIdleRate value="-180"/>
         <Fidget DelayMax="30" DelayMin="10"/>
+    </CTurret>
+    <CTurret id="MissileTurretSCBW@Idle" parent="MissileTurretSCBW">
+        <Idle value="Hold"/>
+        <Fidget>
+            <ChanceArray index="Anim" value="0"/>
+            <ChanceArray index="Idle" value="100"/>
+            <ChanceArray index="Turn" value="0"/>
+        </Fidget>
     </CTurret>
     <CUnit id="ArmorySCBW" parent="TerranBuildingSCBW">
         <LifeStart value="750"/>
@@ -2890,11 +2904,11 @@
                 <Column value="0"/>
             </LayoutButtons>
         </CardLayouts>
-        <Radius value="1.25"/>
-        <SeparationRadius value="1.25"/>
+        <Radius value="1.625"/>
+        <SeparationRadius value="1.625"/>
         <ScoreKill value="125"/>
         <SubgroupPriority value="5"/>
-        <MinimapRadius value="1.75"/>
+        <MinimapRadius value="1.625"/>
         <HotkeyCategory value="Unit/Category/TerranUnitsSCBW"/>
         <Sight value="8"/>
     </CUnit>
@@ -3311,6 +3325,7 @@
         <LifeMax value="200"/>
         <Sight value="11"/>
         <CostResource index="Minerals" value="75"/>
+        <BuildTime value="28.125"/>
         <RepairTime value="25"/>
         <AttackTargetPriority value="19"/>
         <AbilArray Link="stop"/>
@@ -3318,7 +3333,9 @@
         <AbilArray Link="que1"/>
         <BehaviorArray Link="Detector9"/>
         <BehaviorArray Link="UnderConstruction"/>
+        <BehaviorArray Link="MissileTurretSCBW@TurretDisable"/>
         <WeaponArray Link="MissileTurretSCBWWeapon" Turret="MissileTurretSCBW"/>
+        <WeaponArray Turret="MissileTurretSCBW@Idle"/>
         <CardLayouts>
             <LayoutButtons Face="Halt" Type="AbilCmd" AbilCmd="BuildInProgress,Halt" Row="2" Column="3"/>
             <LayoutButtons Face="DetectorSCBW@Detector" Type="Passive" Requirements="SCBW_NotDetectionSuppressed" Row="2" Column="2"/>
@@ -3343,7 +3360,6 @@
         <GlossaryWeakArray value="MarineSCBW"/>
         <GlossaryWeakArray value="ZerglingSCBW"/>
         <GlossaryWeakArray value="ZealotSCBW"/>
-        <BuildTime value="28.125"/>
         <HotkeyCategory value="Unit/Category/TerranUnitsSCBW"/>
     </CUnit>
     <CUnit id="BunkerSCBW" parent="TerranBuildingSCBW">
@@ -3432,8 +3448,8 @@
                 <Column value="0"/>
             </LayoutButtons>
         </CardLayouts>
-        <Radius value="1.25"/>
-        <SeparationRadius value="1.25"/>
+        <Radius value="1.625"/>
+        <SeparationRadius value="1.625"/>
         <Footprint value="Footprint3x3Contour"/>
         <PlacementFootprint value="Footprint3x3"/>
         <ScoreMake value="125"/>
@@ -3637,6 +3653,15 @@
         <TacticalAIThink value="AIThinkBarracksSCBW"/>
         <HotkeyCategory value="Unit/Category/TerranUnitsSCBW"/>
     </CUnit>
+    <CBehaviorBuff id="MissileTurretSCBW@TurretDisable">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="IsConstructing"/>
+        <Modification>
+            <TurretEnableArray value="MissileTurretSCBW@Idle"/>
+            <TurretDisableArray value="MissileTurretSCBW"/>
+        </Modification>
+    </CBehaviorBuff>
     <CBehaviorBuff id="BunkerSCBW@Salvage" parent="Salvage"/>
     <CBehaviorBuff id="BunkerSCBW@RangeBonus">
         <InfoFlags index="Hidden" value="1"/>

@@ -125,7 +125,6 @@ bool auto_libSCEV_gf_LegacyExtensionInit_TriggerFunc (bool testConds, bool runAc
         }
 
     }
-    libSCEV_gf_LegacyRandomizeColors();
     HelpPanelShowTechTreeRace(PlayerGroupAll(), "Prot", false);
     HelpPanelShowTechTreeRace(PlayerGroupAll(), "Terr", false);
     HelpPanelShowTechTreeRace(PlayerGroupAll(), "Zerg", false);
@@ -830,6 +829,7 @@ void libSCEV_gf_FractionalArmorActivate (bool lp_onOff) {
     }
 
     TriggerEnable(libSCEV_gt_FractionalArmorAdd, lp_onOff);
+    TriggerEnable(libSCEV_gt_FractionalArmorArmorUpdate, lp_onOff);
     TriggerEnable(libSCEV_gt_FractionalArmorUpdateTrigger, lp_onOff);
     TriggerEnable(libSCEV_gt_FractionalArmorUpgrade, lp_onOff);
     TriggerEnable(libSCEV_gt_FractionalArmorPlayerDamage, lp_onOff);
@@ -1200,6 +1200,11 @@ void libSCEV_gf_RaceSupplyActivate (bool lp_activateDeactivate) {
     int autoCE8B6A8B_var;
 
     // Implementation
+    if (((CatalogEntryIsValid(c_gameCatalogRace, "Human") == true) || (CatalogEntryIsValid(c_gameCatalogRace, "NightElf") == true) || (CatalogEntryIsValid(c_gameCatalogRace, "Orc") == true) || (CatalogEntryIsValid(c_gameCatalogRace, "Undead") == true))) {
+        TriggerDebugOutput(1, StringToText("Warcraft races detect, cannot activate Race Supply feature."), false);
+        return ;
+    }
+
     if ((lp_activateDeactivate == true) && (libSCEV_gv_raceSupplyInitialized == false)) {
         libSCEV_gf_RaceSupplyInitialize();
         TriggerEnable(libSCEV_gt_RaceSupplyActivateTrigger, true);
@@ -1250,6 +1255,9 @@ void libSCEV_gf_RaceSupplyCatalogUpdate (int lp_player, int lp_raceGroup) {
     string lv_abilLink;
     int lv_count;
     int lv_infoIndex;
+    string lv_gameLink;
+    string lv_loopLinks;
+    int lv_k;
 
     // Automatic Variable Declarations
     int autoBE7EF045_catalog;
@@ -1260,6 +1268,9 @@ void libSCEV_gf_RaceSupplyCatalogUpdate (int lp_player, int lp_raceGroup) {
     lv_race = "";
     lv_resourceIndex = -1;
     lv_multiTrainUnits = "";
+    lv_gameLink = "";
+    lv_loopLinks = "";
+    lv_k = 1;
 
     // Implementation
     if ((libSCEV_gv_raceSupplyActivated[lp_player] == true)) {
@@ -1311,6 +1322,14 @@ void libSCEV_gf_RaceSupplyCatalogUpdate (int lp_player, int lp_raceGroup) {
         else {
             CatalogFieldValueSet(c_gameCatalogUnit, lv_entry, "CostResource[" + IntToString(lv_resourceIndex) + "]", lp_player, IntToString(FixedToInt(lv_foodCost)));
         }
+    }
+    lv_k = 1;
+    lv_loopLinks = UserDataGetString("SCBW_RaceSupply@Data", "SupplyBoosts", "Data", 1);
+    lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    while ((lv_gameLink != "") && (CatalogEntryIsValid(c_gameCatalogBehavior, lv_gameLink) == true)) {
+        libNtve_gf_CatalogFieldValueSetAsReal(c_gameCatalogBehavior, lv_gameLink, "Modification.Food", lp_player, 0.0);
+        lv_k += 1;
+        lv_gameLink = StringWord(lv_loopLinks, lv_k);
     }
 }
 
@@ -1364,19 +1383,34 @@ void libSCEV_gf_RaceSupplyInitialize () {
     lv_k = 1;
     lv_loopLinks = UserDataGetString("SCBW_RaceSupply@Data", "TriggerEffects", "Data", 1);
     lv_gameLink = StringWord(lv_loopLinks, lv_k);
-    while ((lv_gameLink != "")) {
+    while ((lv_gameLink != "") && (CatalogEntryIsValid(c_gameCatalogEffect, lv_gameLink) == true)) {
         libSCEV_gf_RaceSupplyRegisterActivationEffect(libSCEV_gt_RaceSupplyActivateTrigger, (lv_gameLink));
         lv_k += 1;
         lv_gameLink = StringWord(lv_loopLinks, lv_k);
     }
+
     lv_k = 1;
     lv_loopLinks = UserDataGetString("SCBW_RaceSupply@Data", "TemporaryMindControlBehaviors", "Data", 1);
     lv_gameLink = StringWord(lv_loopLinks, lv_k);
-    while ((lv_gameLink != "")) {
-        libSCEV_gf_RaceSupplyRegisterActivationBehavior(libSCEV_gt_RaceSupplyTempMindControl, (lv_gameLink));
+    while ((lv_gameLink != "") && (CatalogEntryIsValid(c_gameCatalogBehavior, lv_gameLink) == true)) {
+        libSCEV_gf_RaceSupplyRegisterBehavior(libSCEV_gt_RaceSupplyTempMindControl, (lv_gameLink), c_unitBehaviorChangeCreate);
+        libSCEV_gf_RaceSupplyRegisterBehavior(libSCEV_gt_RaceSupplyTempMindControl, (lv_gameLink), c_unitBehaviorChangeDestroy);
         lv_k += 1;
         lv_gameLink = StringWord(lv_loopLinks, lv_k);
     }
+
+    lv_k = 1;
+    lv_loopLinks = UserDataGetString("SCBW_RaceSupply@Data", "SupplyBoosts", "Data", 1);
+    lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    while ((lv_gameLink != "") && (CatalogEntryIsValid(c_gameCatalogBehavior, lv_gameLink) == true) && (libSCEV_gv_raceSupplySupplyBoostCount <= libSCEV_gv_raceSupplySupplyBoostCountMax)) {
+        libSCEV_gf_RaceSupplyRegisterBehavior(libSCEV_gt_RaceSupplySupplyBoosts, (lv_gameLink), c_unitBehaviorChangeCreate);
+        libSCEV_gv_raceSupplySupplyBoostBuffs[libSCEV_gv_raceSupplySupplyBoostCount] = lv_gameLink;
+        libSCEV_gv_raceSupplySupplyBoostBonus[libSCEV_gv_raceSupplySupplyBoostCount] = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogBehavior, lv_gameLink, "Modification.Food", c_playerAny);
+        libSCEV_gv_raceSupplySupplyBoostCount += 1;
+        lv_k += 1;
+        lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    }
+
     libSCEV_gv_raceSupplyInitialized = true;
 }
 
@@ -1557,6 +1591,7 @@ void libSCEV_gf_RaceSupplyToggleTriggers (bool lp_onOff) {
     TriggerEnable(libSCEV_gt_RaceSupplyMergeStart, lp_onOff);
     TriggerEnable(libSCEV_gt_RaceSupplyArmingFinished, lp_onOff);
     TriggerEnable(libSCEV_gt_RaceSupplyOwnerChange, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplySupplyBoosts, lp_onOff);
     TriggerEnable(libSCEV_gt_RaceSupplyActivateTrigger, lp_onOff);
     TriggerEnable(libSCEV_gt_RaceSupplySyncSupplies, lp_onOff);
     TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl, lp_onOff);
@@ -1921,11 +1956,10 @@ void libSCEV_gf_RaceSupplyRegisterActivationEffect (trigger lp_trigger, string l
     TriggerAddEventPlayerEffectUsed(lp_trigger, c_playerAny, lp_effectLink);
 }
 
-void libSCEV_gf_RaceSupplyRegisterActivationBehavior (trigger lp_trigger, string lp_behaviorLink) {
+void libSCEV_gf_RaceSupplyRegisterBehavior (trigger lp_trigger, string lp_behaviorLink, int lp_changeType) {
     // Automatic Variable Declarations
     // Implementation
-    TriggerAddEventUnitBehaviorChange(lp_trigger, null, lp_behaviorLink, c_unitBehaviorChangeCreate);
-    TriggerAddEventUnitBehaviorChange(lp_trigger, null, lp_behaviorLink, c_unitBehaviorChangeDestroy);
+    TriggerAddEventUnitBehaviorChange(lp_trigger, null, lp_behaviorLink, lp_changeType);
 }
 
 fixed libSCEV_gf_RaceSupplyGetProviderTotal (int lp_player, int lp_raceGroup) {
@@ -1933,10 +1967,13 @@ fixed libSCEV_gf_RaceSupplyGetProviderTotal (int lp_player, int lp_raceGroup) {
     fixed lv_totalMax;
     unit lv_u;
     fixed lv_food;
+    int lv_i;
 
     // Automatic Variable Declarations
     unitgroup auto34C77C37_g;
     int auto34C77C37_u;
+    int auto2EB1EB97_ae;
+    const int auto2EB1EB97_ai = 1;
 
     // Variable Initialization
 
@@ -1965,6 +2002,14 @@ fixed libSCEV_gf_RaceSupplyGetProviderTotal (int lp_player, int lp_raceGroup) {
             continue;
         }
 
+        auto2EB1EB97_ae = libSCEV_gv_raceSupplySupplyBoostCount;
+        lv_i = 0;
+        for ( ; ( (auto2EB1EB97_ai >= 0 && lv_i <= auto2EB1EB97_ae) || (auto2EB1EB97_ai < 0 && lv_i >= auto2EB1EB97_ae) ) ; lv_i += auto2EB1EB97_ai ) {
+            if ((UnitHasBehavior2(lv_u, libSCEV_gv_raceSupplySupplyBoostBuffs[lv_i]) == true)) {
+                lv_food += libSCEV_gv_raceSupplySupplyBoostBonus[lv_i];
+            }
+
+        }
         if ((lv_food > 0.0)) {
             lv_totalMax += lv_food;
         }
@@ -2693,14 +2738,20 @@ void libSCEV_gt_SCEvoFeatureInit_Init () {
 // Trigger: FractionalArmor:Add
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_FractionalArmorAdd_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_unit;
+
     // Automatic Variable Declarations
+    // Variable Initialization
+    lv_unit = EventUnitCreatedUnit();
+
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_fractionalArmorFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_fractionalArmorFilter) == true))) {
             return false;
         }
     }
@@ -2710,7 +2761,7 @@ bool libSCEV_gt_FractionalArmorAdd_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    libSCEV_gf_FractionalArmorUpdate(EventUnit());
+    libSCEV_gf_FractionalArmorUpdate(lv_unit);
     return true;
 }
 
@@ -2718,9 +2769,46 @@ bool libSCEV_gt_FractionalArmorAdd_Func (bool testConds, bool runActions) {
 void libSCEV_gt_FractionalArmorAdd_Init () {
     libSCEV_gt_FractionalArmorAdd = TriggerCreate("libSCEV_gt_FractionalArmorAdd_Func");
     TriggerEnable(libSCEV_gt_FractionalArmorAdd, false);
-    TriggerAddEventUnitRegion(libSCEV_gt_FractionalArmorAdd, null, RegionEntireMap(), true);
-    TriggerAddEventUnitProperty(libSCEV_gt_FractionalArmorAdd, null, c_unitPropLifeArmor);
-    TriggerAddEventUnitProperty(libSCEV_gt_FractionalArmorAdd, null, c_unitPropShieldArmor);
+    TriggerAddEventUnitCreated(libSCEV_gt_FractionalArmorAdd, null, null, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: FractionalArmor:ArmorUpdate
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_FractionalArmorArmorUpdate_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_unit;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_unit = EventUnit();
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_unit) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_fractionalArmorFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_FractionalArmorUpdate(lv_unit);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_FractionalArmorArmorUpdate_Init () {
+    libSCEV_gt_FractionalArmorArmorUpdate = TriggerCreate("libSCEV_gt_FractionalArmorArmorUpdate_Func");
+    TriggerEnable(libSCEV_gt_FractionalArmorArmorUpdate, false);
+    TriggerAddEventUnitProperty(libSCEV_gt_FractionalArmorArmorUpdate, null, c_unitPropLifeArmor);
+    TriggerAddEventUnitProperty(libSCEV_gt_FractionalArmorArmorUpdate, null, c_unitPropShieldArmor);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2951,14 +3039,22 @@ void libSCEV_gt_MissChanceRevealAttacker_Init () {
 // Trigger: MissChance:Add
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_unit;
+    int lv_owner;
+
     // Automatic Variable Declarations
+    // Variable Initialization
+    lv_unit = EventUnitCreatedUnit();
+    lv_owner = UnitGetOwner(lv_unit);
+
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
+        if (!((UnitFilterMatch(lv_unit, lv_owner, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
             return false;
         }
     }
@@ -2968,9 +3064,9 @@ bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    UnitBehaviorAdd(EventUnit(), "SCBW_MissChance", EventUnit(), 1);
-    if ((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(EventUnit()), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
-        UnitBehaviorAdd(EventUnit(), "SCBW_MissChance@ShrubCheck", EventUnit(), 1);
+    UnitBehaviorAdd(lv_unit, "SCBW_MissChance", lv_unit, 1);
+    if ((UnitFilterMatch(lv_unit, lv_owner, UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(lv_unit), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
+        UnitBehaviorAdd(lv_unit, "SCBW_MissChance@ShrubCheck", lv_unit, 1);
     }
 
     return true;
@@ -2980,7 +3076,7 @@ bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
 void libSCEV_gt_MissChanceAdd_Init () {
     libSCEV_gt_MissChanceAdd = TriggerCreate("libSCEV_gt_MissChanceAdd_Func");
     TriggerEnable(libSCEV_gt_MissChanceAdd, false);
-    TriggerAddEventUnitRegion(libSCEV_gt_MissChanceAdd, null, RegionEntireMap(), true);
+    TriggerAddEventUnitCreated(libSCEV_gt_MissChanceAdd, null, null, null);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3744,10 +3840,16 @@ void libSCEV_gt_RaceSupplySyncSupplies_Init () {
 // Trigger: RaceSupply:TempMindControl
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_RaceSupplyTempMindControl_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_unit;
+
     // Automatic Variable Declarations
+    // Variable Initialization
+    lv_unit = EventUnit();
+
     // Conditions
     if (testConds) {
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -3759,8 +3861,8 @@ bool libSCEV_gt_RaceSupplyTempMindControl_Func (bool testConds, bool runActions)
 
     if ((EventUnitBehaviorChange() == c_unitBehaviorChangeCreate)) {
         TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl_ConstructStart, true);
-        while ((UnitIsValid(EventUnit()) == true) && (UnitIsAlive(EventUnit()) == true) && (UnitHasBehavior2(EventUnit(), EventUnitBehavior()) == true)) {
-            UnitBehaviorAdd(EventUnit(), "SCBW_RaceSupply@TempMindControl", EventUnit(), 1);
+        while ((UnitIsValid(lv_unit) == true) && (UnitIsAlive(lv_unit) == true) && (UnitHasBehavior2(lv_unit, EventUnitBehavior()) == true)) {
+            UnitBehaviorAdd(lv_unit, "SCBW_RaceSupply@TempMindControl", lv_unit, 1);
             Wait(0.25, c_timeGame);
         }
         if ((TriggerActiveCount(TriggerGetCurrent()) == 1)) {
@@ -3769,7 +3871,7 @@ bool libSCEV_gt_RaceSupplyTempMindControl_Func (bool testConds, bool runActions)
 
     }
     else {
-        UnitBehaviorRemove(EventUnit(), "SCBW_RaceSupply@TempMindControl", 1);
+        UnitBehaviorRemove(lv_unit, "SCBW_RaceSupply@TempMindControl", 1);
     }
     return true;
 }
@@ -3839,21 +3941,23 @@ bool libSCEV_gt_RaceSupplyUnitBirth_Func (bool testConds, bool runActions) {
     int lv_player;
     int lv_raceGroup;
     fixed lv_foodValue;
+    unit lv_unit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -3863,18 +3967,18 @@ bool libSCEV_gt_RaceSupplyUnitBirth_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_player = UnitGetOwner(lv_unit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(lv_unit);
     if ((lv_foodValue > 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterProvider(true, lv_unit, lv_player, lv_raceGroup);
     }
     else if ((lv_foodValue < 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterConsumer(true, lv_unit, lv_player, lv_raceGroup);
     }
     return true;
 }
@@ -3894,21 +3998,23 @@ bool libSCEV_gt_RaceSupplyUnitDeath_Func (bool testConds, bool runActions) {
     int lv_player;
     int lv_raceGroup;
     fixed lv_foodValue;
+    unit lv_unit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -3918,21 +4024,21 @@ bool libSCEV_gt_RaceSupplyUnitDeath_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_player = UnitGetOwner(lv_unit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(lv_unit);
     if ((lv_foodValue > 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterProvider(false, EventUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterProvider(false, lv_unit, lv_player, lv_raceGroup);
     }
     else if ((lv_foodValue < 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterConsumer(false, EventUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterConsumer(false, lv_unit, lv_player, lv_raceGroup);
     }
-    if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, EventUnit()) == true)) {
-        libSCEV_gf_RaceSupplyRegisterProducer(false, EventUnit(), lv_player, lv_raceGroup);
+    if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, lv_unit) == true)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(false, lv_unit, lv_player, lv_raceGroup);
     }
 
     return true;
@@ -3953,21 +4059,23 @@ bool libSCEV_gt_RaceSupplyUnitRemoved_Func (bool testConds, bool runActions) {
     int lv_player;
     int lv_raceGroup;
     fixed lv_foodValue;
+    unit lv_unit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -3977,21 +4085,21 @@ bool libSCEV_gt_RaceSupplyUnitRemoved_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_player = UnitGetOwner(lv_unit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(lv_unit);
     if ((lv_foodValue > 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterProvider(false, EventUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterProvider(false, lv_unit, lv_player, lv_raceGroup);
     }
     else if ((lv_foodValue < 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterConsumer(false, EventUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterConsumer(false, lv_unit, lv_player, lv_raceGroup);
     }
-    if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, EventUnit()) == true)) {
-        libSCEV_gf_RaceSupplyRegisterProducer(false, EventUnit(), lv_player, lv_raceGroup);
+    if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, lv_unit) == true)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(false, lv_unit, lv_player, lv_raceGroup);
     }
 
     return true;
@@ -4110,17 +4218,20 @@ bool libSCEV_gt_RaceSupplyTrainFinish_Func (bool testConds, bool runActions) {
     int lv_player;
     int lv_raceGroup;
     fixed lv_foodValue;
+    unit lv_producer;
+    unit lv_trained;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_producer = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_producer) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_producer)] == true))) {
             return false;
         }
     }
@@ -4130,18 +4241,19 @@ bool libSCEV_gt_RaceSupplyTrainFinish_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnitProgressUnit(), UnitGetOwner(EventUnit()));
+    lv_player = UnitGetOwner(lv_producer);
+    lv_trained = EventUnitProgressUnit();
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_trained, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnitProgressUnit());
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(lv_trained);
     if ((lv_foodValue > 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterProvider(true, lv_trained, lv_player, lv_raceGroup);
     }
     else if ((lv_foodValue < 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterConsumer(true, lv_trained, lv_player, lv_raceGroup);
     }
     return true;
 }
@@ -4208,21 +4320,23 @@ bool libSCEV_gt_RaceSupplyMorphStart_Func (bool testConds, bool runActions) {
     int lv_player;
     int lv_raceGroup;
     fixed lv_food;
+    unit lv_unit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -4232,13 +4346,13 @@ bool libSCEV_gt_RaceSupplyMorphStart_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_player = UnitGetOwner(lv_unit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(lv_unit);
     if ((lv_food < 0.0)) {
         libSCEV_gf_RaceSupplyRecalcConsumer(lv_player, lv_raceGroup, true);
     }
@@ -4260,21 +4374,23 @@ bool libSCEV_gt_RaceSupplyMorphConstructionStart_Func (bool testConds, bool runA
     int lv_player;
     int lv_raceGroup;
     fixed lv_food;
+    unit lv_unit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -4284,18 +4400,18 @@ bool libSCEV_gt_RaceSupplyMorphConstructionStart_Func (bool testConds, bool runA
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
-    if (((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false) || (libSCEV_gf_RaceSupplyIsMorphUnit(UnitGetType(EventUnit()), lv_player, lv_raceGroup) == false))) {
+    lv_player = UnitGetOwner(lv_unit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
+    if (((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false) || (libSCEV_gf_RaceSupplyIsMorphUnit(UnitGetType(lv_unit), lv_player, lv_raceGroup) == false))) {
         return true;
     }
 
-    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(lv_unit);
     if ((lv_food < 0.0)) {
         libSCEV_gf_RaceSupplyRecalcConsumer(lv_player, lv_raceGroup, true);
     }
 
-    while ((UnitIsValid(EventUnit()) == true) && (UnitIsValid(EventUnitProgressUnit()) == true) && (libNtve_gf_UnitIsUnderConstruction(EventUnitProgressUnit()) == true)) {
+    while ((UnitIsValid(lv_unit) == true) && (UnitIsValid(EventUnitProgressUnit()) == true) && (libNtve_gf_UnitIsUnderConstruction(EventUnitProgressUnit()) == true)) {
         Wait(0.25, c_timeGame);
     }
     libSCEV_gf_RaceSupplySyncSendEvent(lv_player, lv_raceGroup);
@@ -4317,21 +4433,23 @@ bool libSCEV_gt_RaceSupplyConstructionFinish_Func (bool testConds, bool runActio
     int lv_player;
     int lv_raceGroup;
     fixed lv_food;
+    unit lv_unit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnitProgressUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnitProgressUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnitProgressUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnitProgressUnit(), UnitGetOwner(EventUnitProgressUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -4341,15 +4459,15 @@ bool libSCEV_gt_RaceSupplyConstructionFinish_Func (bool testConds, bool runActio
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnitProgressUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnitProgressUnit(), lv_player);
+    lv_player = UnitGetOwner(lv_unit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(EventUnitProgressUnit());
+    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(lv_unit);
     if ((lv_food > 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterProvider(true, lv_unit, lv_player, lv_raceGroup);
     }
 
     return true;
@@ -4370,6 +4488,7 @@ bool libSCEV_gt_RaceSupplyMergeStart_Func (bool testConds, bool runActions) {
     int lv_player;
     int lv_raceGroup;
     fixed lv_food;
+    unit lv_eventUnit;
     unit[2] lv_unit;
     int lv_i;
 
@@ -4378,18 +4497,19 @@ bool libSCEV_gt_RaceSupplyMergeStart_Func (bool testConds, bool runActions) {
     const int auto86FA2C5D_ai = 1;
 
     // Variable Initialization
+    lv_eventUnit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_eventUnit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_eventUnit)] == true))) {
             return false;
         }
 
-        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+        if (!((UnitFilterMatch(lv_eventUnit, UnitGetOwner(lv_eventUnit), libSCEV_gv_raceSupplyFilter) == true))) {
             return false;
         }
     }
@@ -4399,13 +4519,13 @@ bool libSCEV_gt_RaceSupplyMergeStart_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_player = UnitGetOwner(lv_eventUnit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_eventUnit, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_unit[0] = EventUnit();
+    lv_unit[0] = lv_eventUnit;
     lv_unit[1] = EventUnitTargetUnit();
     lv_i = 0;
     for ( ; ( (auto86FA2C5D_ai >= 0 && lv_i <= auto86FA2C5D_ae) || (auto86FA2C5D_ai < 0 && lv_i >= auto86FA2C5D_ae) ) ; lv_i += auto86FA2C5D_ai ) {
@@ -4439,17 +4559,20 @@ bool libSCEV_gt_RaceSupplyArmingFinished_Func (bool testConds, bool runActions) 
     int lv_player;
     int lv_raceGroup;
     fixed lv_foodValue;
+    unit lv_unit;
+    unit lv_armedUnit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
-        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
             return false;
         }
     }
@@ -4459,18 +4582,19 @@ bool libSCEV_gt_RaceSupplyArmingFinished_Func (bool testConds, bool runActions) 
         return true;
     }
 
-    lv_player = UnitGetOwner(EventUnit());
-    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnitProgressUnit(), UnitGetOwner(EventUnit()));
+    lv_player = UnitGetOwner(lv_unit);
+    lv_armedUnit = EventUnitProgressUnit();
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_armedUnit, lv_player);
     if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
         return true;
     }
 
-    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnitProgressUnit());
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(lv_armedUnit);
     if ((lv_foodValue > 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterProvider(true, lv_armedUnit, lv_player, lv_raceGroup);
     }
     else if ((lv_foodValue < 0.0)) {
-        libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterConsumer(true, lv_armedUnit, lv_player, lv_raceGroup);
     }
     return true;
 }
@@ -4489,13 +4613,15 @@ bool libSCEV_gt_RaceSupplyOwnerChange_Func (bool testConds, bool runActions) {
     // Variable Declarations
     int lv_raceGroup;
     int lv_player;
+    unit lv_unit;
 
     // Automatic Variable Declarations
     // Variable Initialization
+    lv_unit = EventUnit();
 
     // Conditions
     if (testConds) {
-        if (!((UnitIsValid(EventUnit()) == true))) {
+        if (!((UnitIsValid(lv_unit) == true))) {
             return false;
         }
 
@@ -4510,32 +4636,32 @@ bool libSCEV_gt_RaceSupplyOwnerChange_Func (bool testConds, bool runActions) {
     }
 
     Wait(0.0, c_timeGame);
-    if ((UnitHasBehavior2(EventUnit(), "SCBW_RaceSupply@TempMindControl") == true)) {
+    if (((UnitIsValid(lv_unit) == false) || (UnitHasBehavior2(lv_unit, "SCBW_RaceSupply@TempMindControl") == true))) {
         return true;
     }
 
-    if ((libSCEV_gv_raceSupplyActivated[EventUnitOwnerOld()] == true)) {
-        lv_player = EventUnitOwnerOld();
-        lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_player = EventUnitOwnerOld();
+    if ((libSCEV_gv_raceSupplyActivated[lv_player] == true)) {
+        lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
         if ((lv_raceGroup != -1) && (libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_active == true)) {
-            if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_consumers, EventUnit()) == true)) {
-                libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnit(), lv_player, lv_raceGroup);
+            if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_consumers, lv_unit) == true)) {
+                libSCEV_gf_RaceSupplyRegisterConsumer(false, lv_unit, lv_player, lv_raceGroup);
             }
-            else if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, EventUnit()) == true)) {
-                libSCEV_gf_RaceSupplyRegisterProducer(true, EventUnit(), lv_player, lv_raceGroup);
+            else if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, lv_unit) == true)) {
+                libSCEV_gf_RaceSupplyRegisterProducer(false, lv_unit, lv_player, lv_raceGroup);
             }
-            else if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_providers, EventUnit()) == true)) {
-                libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnit(), lv_player, lv_raceGroup);
+            else if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_providers, lv_unit) == true)) {
+                libSCEV_gf_RaceSupplyRegisterProvider(false, lv_unit, lv_player, lv_raceGroup);
             }
         }
 
     }
 
-    if ((libSCEV_gv_raceSupplyActivated[EventUnitOwnerNew()] == true)) {
-        lv_player = EventUnitOwnerNew();
-        lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_player = EventUnitOwnerNew();
+    if ((libSCEV_gv_raceSupplyActivated[lv_player] == true)) {
+        lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
         if ((lv_raceGroup != -1) && (libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_active == true)) {
-            libSCEV_gf_RaceSupplyRegisterUnit(lv_player, EventUnit());
+            libSCEV_gf_RaceSupplyRegisterUnit(lv_player, lv_unit);
         }
 
     }
@@ -4548,6 +4674,66 @@ void libSCEV_gt_RaceSupplyOwnerChange_Init () {
     libSCEV_gt_RaceSupplyOwnerChange = TriggerCreate("libSCEV_gt_RaceSupplyOwnerChange_Func");
     TriggerEnable(libSCEV_gt_RaceSupplyOwnerChange, false);
     TriggerAddEventUnitChangeOwner(libSCEV_gt_RaceSupplyOwnerChange, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:SupplyBoosts
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplySupplyBoosts_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_unit;
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_foodValue;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_unit = EventUnit();
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_unit) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_unit)] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_unit, UnitGetOwner(lv_unit), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(lv_unit);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_unit, lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(lv_unit);
+    lv_foodValue += libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogBehavior, (EventUnitBehavior()), "Modification.Food", c_playerAny);
+    if ((lv_foodValue > 0.0)) {
+        if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_providers, lv_unit) == false)) {
+            libSCEV_gf_RaceSupplyRegisterProvider(true, lv_unit, lv_player, lv_raceGroup);
+        }
+        else {
+            libSCEV_gf_RaceSupplySyncSendEvent(lv_player, lv_raceGroup);
+        }
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplySupplyBoosts_Init () {
+    libSCEV_gt_RaceSupplySupplyBoosts = TriggerCreate("libSCEV_gt_RaceSupplySupplyBoosts_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplySupplyBoosts, false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -5007,8 +5193,11 @@ bool libSCEV_gt_MindControlStealTech_Func (bool testConds, bool runActions) {
     string lv_upgradeLink;
     int lv_delta;
     int lv_i;
+    unitgroup lv_stealGroup;
 
     // Automatic Variable Declarations
+    unitgroup autoEB476EC3_g;
+    int autoEB476EC3_u;
     string auto0F44F30A_userType;
     int auto0F44F30A_i;
     int auto833169CE_ae;
@@ -5021,6 +5210,7 @@ bool libSCEV_gt_MindControlStealTech_Func (bool testConds, bool runActions) {
     lv_leaderAlias = "";
     lv_instanceLink = "";
     lv_upgradeLink = "";
+    lv_stealGroup = UnitGroupEmpty();
 
     // Conditions
     if (testConds) {
@@ -5036,36 +5226,48 @@ bool libSCEV_gt_MindControlStealTech_Func (bool testConds, bool runActions) {
 
     lv_casterOwner = UnitGetOwner(lv_caster);
     lv_targetOwner = UnitGetOwner(lv_target);
-    lv_unitLink = (UnitGetType(lv_target));
-    lv_leaderAlias = CatalogFieldValueGet(c_gameCatalogUnit, lv_unitLink, "LeaderAlias", c_playerAny);
-    auto0F44F30A_userType = "DarkArchonSCBWMindControl@StealTable";
-    auto0F44F30A_i = 1;
-    for ( ; auto0F44F30A_i <= UserDataInstanceCount(auto0F44F30A_userType) ; auto0F44F30A_i += 1 ) {
-        lv_instance = UserDataInstance(auto0F44F30A_userType, auto0F44F30A_i);
-        lv_instanceLink = (lv_instance);
-        if (((lv_unitLink == lv_instanceLink) || (lv_leaderAlias == lv_instanceLink))) {
-            lv_continue = true;
-            break;
-        }
-
-    }
-    if ((lv_continue == false)) {
-        return true;
+    UnitGroupAdd(lv_stealGroup, lv_target);
+    if ((UnitCargoValue(lv_target, c_unitCargoUnitCount) > 0)) {
+        UnitGroupAddUnitGroup(lv_stealGroup, UnitCargoGroup(lv_target));
     }
 
-    auto833169CE_ae = (UserDataFieldValueCount("DarkArchonSCBWMindControl@StealTable", "UpgradeLink") + 1);
-    lv_i = 1;
-    for ( ; ( (auto833169CE_ai >= 0 && lv_i <= auto833169CE_ae) || (auto833169CE_ai < 0 && lv_i >= auto833169CE_ae) ) ; lv_i += auto833169CE_ai ) {
-        lv_upgradeLink = UserDataGetUpgrade("DarkArchonSCBWMindControl@StealTable", lv_instance, "UpgradeLink", lv_i);
-        if (((lv_upgradeLink == "") || (lv_upgradeLink == null))) {
-            return true;
+    autoEB476EC3_g = lv_stealGroup;
+    autoEB476EC3_u = UnitGroupCount(autoEB476EC3_g, c_unitCountAll);
+    for (;; autoEB476EC3_u -= 1) {
+        lv_target = UnitGroupUnitFromEnd(autoEB476EC3_g, autoEB476EC3_u);
+        if (lv_target == null) { break; }
+        lv_unitLink = (UnitGetType(lv_target));
+        lv_leaderAlias = CatalogFieldValueGet(c_gameCatalogUnit, lv_unitLink, "LeaderAlias", c_playerAny);
+        lv_continue = false;
+        auto0F44F30A_userType = "DarkArchonSCBWMindControl@StealTable";
+        auto0F44F30A_i = 1;
+        for ( ; auto0F44F30A_i <= UserDataInstanceCount(auto0F44F30A_userType) ; auto0F44F30A_i += 1 ) {
+            lv_instance = UserDataInstance(auto0F44F30A_userType, auto0F44F30A_i);
+            lv_instanceLink = (lv_instance);
+            if (((lv_unitLink == lv_instanceLink) || (lv_leaderAlias == lv_instanceLink))) {
+                lv_continue = true;
+                break;
+            }
+
+        }
+        if ((lv_continue == false)) {
+            continue;
         }
 
-        lv_delta = (TechTreeUpgradeCount(lv_targetOwner, lv_upgradeLink, c_techCountCompleteOnly) - TechTreeUpgradeCount(lv_casterOwner, lv_upgradeLink, c_techCountCompleteOnly));
-        if ((lv_delta > 0) && (TechTreeUpgradeIsAllowed(lv_casterOwner, lv_upgradeLink) == true)) {
-            TechTreeUpgradeAddLevel(lv_casterOwner, lv_upgradeLink, MaxI(lv_delta, 0));
-        }
+        auto833169CE_ae = (UserDataFieldValueCount("DarkArchonSCBWMindControl@StealTable", "UpgradeLink") + 1);
+        lv_i = 1;
+        for ( ; ( (auto833169CE_ai >= 0 && lv_i <= auto833169CE_ae) || (auto833169CE_ai < 0 && lv_i >= auto833169CE_ae) ) ; lv_i += auto833169CE_ai ) {
+            lv_upgradeLink = UserDataGetUpgrade("DarkArchonSCBWMindControl@StealTable", lv_instance, "UpgradeLink", lv_i);
+            if (((lv_upgradeLink == "") || (lv_upgradeLink == null))) {
+                break;
+            }
 
+            lv_delta = (TechTreeUpgradeCount(lv_targetOwner, lv_upgradeLink, c_techCountCompleteOnly) - TechTreeUpgradeCount(lv_casterOwner, lv_upgradeLink, c_techCountCompleteOnly));
+            if ((lv_delta > 0) && (TechTreeUpgradeIsAllowed(lv_casterOwner, lv_upgradeLink) == true)) {
+                TechTreeUpgradeAddLevel(lv_casterOwner, lv_upgradeLink, MaxI(lv_delta, 0));
+            }
+
+        }
     }
     return true;
 }
@@ -5348,6 +5550,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MineralWallsUpdate_Init();
     libSCEV_gt_SCEvoFeatureInit_Init();
     libSCEV_gt_FractionalArmorAdd_Init();
+    libSCEV_gt_FractionalArmorArmorUpdate_Init();
     libSCEV_gt_FractionalArmorUpgrade_Init();
     libSCEV_gt_FractionalArmorUpdateTrigger_Init();
     libSCEV_gt_FractionalArmorPlayerDamage_Init();
@@ -5382,6 +5585,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_RaceSupplyMergeStart_Init();
     libSCEV_gt_RaceSupplyArmingFinished_Init();
     libSCEV_gt_RaceSupplyOwnerChange_Init();
+    libSCEV_gt_RaceSupplySupplyBoosts_Init();
     libSCEV_gt_RaceSupplyFastBuildDetector_Init();
     libSCEV_gt_MimicCheckStorePlayerIndex_Init();
     libSCEV_gt_MimicCheckSpiderMine_Init();

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CActorSplat default="1" id="ProtossCursorSplatSCBW" parent="CursorSplat">
+        <Macros value="GlobalLoopMacro"/>
+        <Model value="ProtossAOECursorSplatSCBW"/>
+    </CActorSplat>
     <CActorModel default="1" id="SCBW_InfestationBaseModel">
         <Aliases value="_Snapshot"/>
         <Inherits index="CloakEffect" value="1"/>
@@ -76,7 +80,7 @@
         <On Terms="ActorCreation; CreepIntersects" Send="CreepEngulfmentStartTransition"/>
         <On Terms="UnitConstruction.##unitName##.Start" Send="Create ##unitName##@Build"/>
         <ModelFlags index="OutlineOccluder" value="1"/>
-        <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="Protoss_BuildingWarpIn"/>
+        <EventDataSound Name="BuildingWarpIn" Actor="UnitSound" Sound="ProtossBuildingSCBW@WarpIn"/>
         <CreepHeightClass value="Medium"/>
         <CreepRateGrow value="Grow"/>
         <CreepRateShrink value="Shrink"/>
@@ -400,6 +404,12 @@
     <CActorSound id="GenericAttackImpactSoundNoVisibilityInherit" parent="GenericAttackSound">
         <Inherits index="Visibility" value="0"/>
     </CActorSound>
+    <CActorEventMacro id="SCBW_ObserverWhatMacro">
+        <On Terms="SelectionLocalUpdate.*.Start; IsLocalParticipantType Observer; IsStatus ObserverWhat 0" Send="TimerSet 10.000000 ObserverClickCooldown"/>
+        <On Terms="SelectionLocalUpdate.*.Start; IsLocalParticipantType Observer; IsStatus ObserverWhat 0" Send="PlayUnitSound What"/>
+        <On Terms="SelectionLocalUpdate.*.Start; IsLocalParticipantType Observer; IsStatus ObserverWhat 0" Send="StatusSet ObserverWhat 1"/>
+        <On Terms="TimerExpired; TimerName ObserverClickCooldown; IsLocalParticipantType Observer; IsStatus ObserverWhat 1" Send="StatusSet ObserverWhat 0"/>
+    </CActorEventMacro>
     <CActorSiteOpDeltaSum id="SOpAttachCenterDeltaSum">
         <Deltas Subject="_Unit">
             <AttachQuerySource Methods="Origin"/>
@@ -1262,7 +1272,7 @@
         <On Terms="UnitDeathCustomize; KilledByEffect {GhostSCBWNuclearStrike@Damage GhostSCBWNuclearStrike@DamageAccum}" Send="DeathCustomize RagdollNuke"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {MutaliskSCBWWeapon@Damage MutaliskSCBWWeapon@DamageBounce1 MutaliskSCBWWeapon@DamageBounce2}" Send="DeathCustomize RagdollAcid"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {BattlecruiserSCBWWeaponGround@Damage BattlecruiserSCBWWeaponAir@Damage}" Send="DeathCustomize RagdollFire"/>
-        <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSCBWSiegedWeapon@DamageAccum SiegeTankSCBWSiegedWeapon@DamageAccum2 SiegeTankSCBWSiegedWeapon@DamageAccum3 SpiderMineSCBWWeapon@DamageAccum SpiderMineSCBWWeapon@DamageAccum2 SpiderMineSCBWWeapon@DamageAccum3 ScarabSCBWWeapon@Damage ScarabSCBWWeapon@DamageUpgraded}" Send="DeathCustomize RagdollSiegeTank"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect {SiegeTankSCBWSiegedWeapon@DamageAccum SiegeTankSCBWSiegedWeapon@DamageAccum2 SiegeTankSCBWSiegedWeapon@DamageAccum3 SiegeTankSCBWSiegedWeapon@DamageCliff SiegeTankSCBWSiegedWeapon@DamageCliff2 SiegeTankSCBWSiegedWeapon@DamageCliff3 SpiderMineSCBWWeapon@DamageAccum SpiderMineSCBWWeapon@DamageAccum2 SpiderMineSCBWWeapon@DamageAccum3 ScarabSCBWWeapon@Damage ScarabSCBWWeapon@DamageUpgraded}" Send="DeathCustomize RagdollSiegeTank"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {LurkerSCBWWeapon@Damage SunkenColonySCBWWeapon@DamageAccum}" Send="DeathCustomize RagdollBasic"/>
         <On Terms="UnitDeathCustomize; KilledByEffect {InfestedTerranSCBWWeapon@DamageAccum InfestedTerranSCBWWeapon@DamageAccum2 InfestedTerranSCBWWeapon@DamageAccum3 GuardianSCBWWeapon@Damage}" Send="DeathCustomize RagdollAcid"/>
     </CActorEventMacro>
@@ -1327,7 +1337,9 @@
         </TerrainSquibs>
         <StandAnimTurnTime value="4"/>
     </CActorUnit>
-    <CActorSound id="ChangelingMarineSCBW_Land" parent="SoundOneShot"/>
+    <CActorSound id="ChangelingMarineSCBW_Land" parent="SoundOneShot">
+        <Sound value="ChangelingMarine_Land"/>
+    </CActorSound>
     <CActorUnit id="ChangelingZealotSCBW" parent="GenericUnitMorph" unitName="ChangelingZealotSCBW">
         <ModelFlags index="OutlineEmitter" value="1"/>
         <Model value="ZealotSCBW"/>
@@ -1380,18 +1392,21 @@
         </TerrainSquibs>
         <StandAnimTurnTime value="4.5"/>
     </CActorUnit>
-    <CActorSound id="ChangelingZealotSCBW_Land" parent="SoundOneShot"/>
+    <CActorSound id="ChangelingZealotSCBW_Land" parent="SoundOneShot">
+        <Sound value="ChangelingZealot_Land"/>
+    </CActorSound>
     <CActorUnit id="ChangelingZerglingSCBW" parent="GenericUnitMorph" unitName="ChangelingZerglingSCBW">
         <ModelFlags index="OutlineEmitter" value="1"/>
         <Model value="ZerglingSCBW"/>
         <DeathArray index="Normal" ModelLink="ChangelingDeathZergling" SoundLink="Changling_Explode"/>
         <PortraitModel value="ZerglingSCBW@Portrait"/>
-        <WalkAnimMoveSpeed value="2.1992"/>
+        <WalkAnimMoveSpeed value="2.5"/>
         <BarWidth value="36"/>
         <BarOffset value="30"/>
         <AcceptedHostedPropTransfers index="Scale" value="0"/>
         <On Terms="ActorCreation" Send="SetLocalTintColor 255,128,255"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create ChangelingZerglingSCBW_Land"/>
+        <On Terms="ActorCreation" Send="AnimGroupApply Slow"/>
         <UnitIcon value="Assets\Textures\btn-unit-zerg-zergling@scbw.dds"/>
         <HeroIcon value="Assets\Textures\btn-unit-zerg-zergling@scbw.dds"/>
         <GroupIcon>
@@ -1427,7 +1442,9 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleTiny"/>
         </TerrainSquibs>
     </CActorUnit>
-    <CActorSound id="ChangelingZerglingSCBW_Land" parent="SoundOneShot"/>
+    <CActorSound id="ChangelingZerglingSCBW_Land" parent="SoundOneShot">
+        <Sound value="ChangelingZergling_Land"/>
+    </CActorSound>
     <CActorModel id="SCBW_HallucinationDeathLarge" parent="ModelAnimationStyleOneShot">
         <On Terms="ActorCreation" Send="Create SCBW_HallucinationDeathLargeSound"/>
         <Host Subject="_Selectable"/>
