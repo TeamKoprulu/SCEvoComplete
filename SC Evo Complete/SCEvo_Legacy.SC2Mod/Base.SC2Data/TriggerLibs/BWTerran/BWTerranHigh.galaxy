@@ -875,7 +875,7 @@ void BWTerranHDRecoveryStart (int player) {
     AISetStock( player, 1, c_BWTB_CommandCenter );
     AISetStock( player, 1, c_BWTU_SCV );
     AISetStockFarms( player, c_BWTB_SupplyDepot, c_stockNeededFarms);
-    AISetStock( player, 9, c_BWTU_SCV );
+    AISetStock( player, 8, c_BWTU_SCV );
 
 }
 
@@ -884,6 +884,9 @@ void BWTerranHDRecoveryStart (int player) {
 //--------------------------------------------------------------------------------------------------
 void BWTerranHDVitalUpgrades (int player) {
     
+    if (AITechCount(player, c_BWTU_SiegeTank_Alias, c_techCountInProgressOrBetter) >= 2) {
+        AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
+    }
     if (AIHighCurrentlyUnderHeavyAttack(player)) {
         return;
     }
@@ -911,20 +914,11 @@ void BWTerranHDVitalUpgrades (int player) {
         AISetStockUnitNext( player, 2, c_BWTB_EngineeringBay, c_stockAlways );
     }
 
-    if (AITechCount(player, c_BWTU_Medic, c_techCountInProgressOrBetter) >= 4) {
-        AISetStock( player, 1, c_BWTR_MedicSCBWOpticFlareResearch );
-    } 
-
-    if (AITechCount(player, c_BWTU_SiegeTank_Alias, c_techCountInProgressOrBetter) >= 2) {
-        AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
-    }
-
     if (AITechCount(player, c_BWTU_Vulture, c_techCountInProgressOrBetter) >= 4) {
         AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
     }
 
     if (AITechCount(player, c_BWTU_ScienceVessel, c_techCountInProgressOrBetter) >= 2) {
-        AISetStock( player, 1, c_BWTR_ScienceVesselSCBWIrradiateResearch );
         AISetStock( player, 1, c_BWTR_ScienceVesselSCBWEMPShockwaveResearch );
     }
     
@@ -967,7 +961,6 @@ void BWTerranHDGeneralUpgrades (int player) {
     }
     
     if (AITechCount(player, c_BWTU_Vulture, c_techCountInProgressOrBetter) >= 6) {
-        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
         AISetStock( player, 1, c_BWTR_VultureSCBWSpeedUpgrade );
     }   
 
@@ -978,6 +971,10 @@ void BWTerranHDGeneralUpgrades (int player) {
     if (AITechCount(player, c_BWTU_Goliath, c_techCountInProgressOrBetter) >= 6) {
         AISetStock( player, 1, c_BWTR_GoliathSCBWRangeUpgrade );
     }    
+
+    if (AITechCount(player, c_BWTU_Medic, c_techCountInProgressOrBetter) >= 4) {
+        AISetStock( player, 1, c_BWTR_MedicSCBWOpticFlareResearch );
+    } 
     
     if (AITechCount(player, c_BWTU_SiegeTank_Alias, c_techCountInProgressOrBetter) +
         AITechCount(player, c_BWTU_Goliath, c_techCountInProgressOrBetter) +
@@ -1014,14 +1011,9 @@ void BWTerranHDGeneralUpgrades (int player) {
 
         AISetStockUnitNext( player, 2, c_BWTB_Armory, c_stockAlways );
     }
-    
-    if (AITechCount(player, c_BWTU_ScienceVessel, c_techCountCompleteOnly) >= 2) {
-        AISetStock( player, 1, c_BWTR_ScienceVesselSCBWEMPShockwaveResearch );
-    }
 
     if (AITechCount(player, c_BWTU_ScienceVessel, c_techCountInProgressOrBetter) >= 2) {
         AISetStock( player, 1, c_BWTR_ScienceVesselSCBWIrradiateResearch );
-        AISetStock( player, 1, c_BWTR_ScienceVesselSCBWEMPShockwaveResearch );
     }
 
     if (AITechCount(player, c_BWTU_Battlecruiser, c_techCountInProgressOrBetter) >= 3) {
@@ -1085,7 +1077,7 @@ void BWTerranHDDefaultExtraMidStock (int player) {
 //  BWTerranHDEmergencyDetectionAntiAir
 //--------------------------------------------------------------------------------------------------
 void BWTerranHDEmergencyDetectionAntiAir (int player) {
-    if (AIGetTime() < 240) {
+    if (AIGetTime() < 300) {
         return; // don't worry about anti-air or detection prior to 4 minutes (even if the player requests it)
     }
 
@@ -1094,6 +1086,7 @@ void BWTerranHDEmergencyDetectionAntiAir (int player) {
         AISetStock( player, 2, c_BWTB_MissileTurret );
     }
     if (AISuspectAirDanger(player, c_earlyAirDangerTime)) {
+        AISetStock( player, 1, c_BWTU_ScienceVessel );
         AISetStock( player, 2, c_BWTB_MissileTurret );
     }
 }
@@ -1200,7 +1193,7 @@ void BWTerranHDDefenseOtherTowns (int player) {
                 }
             }
             
-            AISetStockEx(player, town, amount, c_BWTB_MissileTurret, c_makeResourceDefense | c_nearDropoff, 0);
+            AISetStockEx(player, town, amount, c_BWTB_MissileTurret, c_makeResourceDefense, 0);
             AISetStockEx(player, town, 1, c_BWTB_Bunker, c_makeDefense, 0);
         }
     }
@@ -1220,15 +1213,15 @@ void BWTerranHDMakeCounters (int player) {
     }
 
     AIMakeCounters(player, c_BWTU_Marine,         c_stockAlways, groundMultiplier);
-    AIMakeCounters(player, c_BWTU_Firebat,       c_stockAlways, groundMultiplier);
-    AIMakeCounters(player, c_BWTU_Medic,         c_stockAlways, groundMultiplier);
+    AIMakeCounters(player, c_BWTU_Firebat,        c_stockAlways, groundMultiplier);
+    AIMakeCounters(player, c_BWTU_Medic,          c_stockAlways, groundMultiplier);
     AIMakeCounters(player, c_BWTU_Ghost,          c_stockAlways, groundMultiplier);
     AIMakeCounters(player, c_BWTU_Vulture,        c_stockAlways, groundMultiplier);
     AIMakeCounters(player, c_BWTU_SiegeTank,      c_stockAlways, groundMultiplier);
     AIMakeCounters(player, c_BWTU_Goliath,        c_stockAlways, groundMultiplier);
-    AIMakeCounters(player, c_BWTU_ScienceVessel,          c_stockAlways, 1.0);
-    AIMakeCounters(player, c_BWTU_Wraith,        c_stockAlways, airMultiplier);
-    AIMakeCounters(player, c_BWTU_Valkyrie,      c_stockAlways, airMultiplier);
+    AIMakeCounters(player, c_BWTU_ScienceVessel,  c_stockAlways, 1.0);
+    AIMakeCounters(player, c_BWTU_Wraith,         c_stockAlways, airMultiplier);
+    AIMakeCounters(player, c_BWTU_Valkyrie,       c_stockAlways, airMultiplier);
     AIMakeCounters(player, c_BWTU_Battlecruiser,  c_stockAlways, airMultiplier);
 }
 
@@ -1291,77 +1284,92 @@ bool BWTerranHDIsSubStateStillValid (int player, int buildIndex) {
 //  BWTerranHDLateCoreMMMediViking
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateCoreMMMediViking (int player, int state) {
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateCoreMMMediViking") + PlayerName(player)));
     if (state == e_armyTypeValidate) {
         // this is our default late game subState needs to always return valid
         return true;
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
-        AISetStockUnitNext( player, 2, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );      
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 2, c_BWTU_Medic, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 2, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
         AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 2, c_BWTU_Medic, c_stockAlways );
         AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 1, c_BWTB_Factory,            c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Factory, c_stockIdle );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
         AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+        AISetStockUnitNext( player, 20, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Firebat, c_stockAlways );
         return true;  //  44 food cap
     }
+
     if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Marine, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
-        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_Firebat, c_stockAlways );
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 28, c_BWTU_Marine, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 20, c_BWTU_Firebat, c_stockAlways );
         return true;  //  72 food cap
     }
-    if (state == e_armyTypeFull) { 
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 6, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 6, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 30, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 28, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 24, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 36, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 32, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 30, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 40, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 18, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Ghost, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 48, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 36, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Medic, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 52, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 38, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 18, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 64, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 42, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 24, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1371,79 +1379,93 @@ bool BWTerranHDLateCoreMMMediViking (int player, int state) {
 //  BWTerranHDLateCoreMMMediSiege
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateCoreMMMediSiege (int player, int state) {
-    int techCount;
+    int techCount = 0;
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateCoreMMMediSiege") + PlayerName(player)));
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Factory, c_techCountCompleteOnly);
         return (techCount >= 1);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
+        // Barely adequate army including anti-air, higher priority than full economy
         AISetStockUnitNext( player, 2, c_BWTU_Firebat, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );      
+        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 2, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
         AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 1, c_BWTB_Factory,            c_stockIdle );
+        AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Factory, c_stockIdle );
+        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 2, c_BWTB_Factory, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
         AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
-        return true;  //  46 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
-        return true;  //  70 food cap
+        AISetStockUnitNext( player, 2, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
+        AISetStockUnitNext( player, 5, c_BWTU_SiegeTank, c_stockAlways );
+        return true;  //  44 food cap
     }
-    if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 6, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 3, c_BWTB_Factory, c_stockIdle );
+        AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 6, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
         AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 14, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 18, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
+        return true;  //  72 food cap
+    }
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 7, c_BWTB_Barracks, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
+        AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 34, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 26, c_BWTU_Firebat, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 28, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 32, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_SiegeTank, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 42, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 42, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 34, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_SiegeTank, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1453,80 +1475,94 @@ bool BWTerranHDLateCoreMMMediSiege (int player, int state) {
 //  BWTerranHDLateCoreMMMediHarass
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateCoreMMMediHarass (int player, int state) {
-    int techCount;
+    int techCount = 0;
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateCoreMMMediHarass") + PlayerName(player)));
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Barracks, c_techCountCompleteOnly);
         return (techCount >= 2);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
+        // Barely adequate army including anti-air, higher priority than full economy
         AISetStockUnitNext( player, 2, c_BWTU_Firebat, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );      
+        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 2, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
         AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
         AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
         AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 1, c_BWTB_Factory,            c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Factory, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
         AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
-        return true;  //  48 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Marine, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
-        AISetStockUnitNext( player, 2, c_BWTU_Wraith, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
-        AISetStockUnitNext( player, 3, c_BWTU_Valkyrie, c_stockAlways );
-        return true;  //  70 food cap
-    }
-    if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 6, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Marine, c_stockAlways );
+        return true;  //  44 food cap
+    }
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 5, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 12, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 26, c_BWTU_Marine, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
         AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 30, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 36, c_BWTU_Marine, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
+        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 34, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
+        return true;  //  72 food cap
+    }
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 6, c_BWTB_Barracks, c_stockIdle );
         AISetStockUnitNext( player, 10, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 36, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 26, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 3, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 3, c_BWTB_ControlTower, c_stockIdle );
         AISetStockUnitNext( player, 6, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 44, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 42, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 30, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 48, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 32, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 20, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1536,78 +1572,86 @@ bool BWTerranHDLateCoreMMMediHarass (int player, int state) {
 //  BWTerranHDLateCoreMMMediBC
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateCoreMMMediBC (int player, int state) {
-    int techCount;
+    int techCount = 0;
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateCoreMMMediBC") + PlayerName(player)));
+
     if (state == e_armyTypeValidate) {
-        techCount += AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
+        techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
         return (techCount >= 1);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
-        AISetStockUnitNext( player, 2, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );      
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 2, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
         AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 1, c_BWTB_Factory,            c_stockIdle );
-        return true;  //  28 food cap
-    }
-    if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 3, c_BWTU_Medic, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
         AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Factory, c_stockIdle );
+        return true;  //  28 food cap
+    }
+
+    if (state == e_armyTypeMedium) {
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
         return true;  //  44 food cap
     }
+
     if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 5, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 5, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_PhysicsLab, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 28, c_BWTU_Marine, c_stockAlways );
         AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
-        AISetStockUnitNext( player, 2, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Battlecruiser, c_stockAlways );
-        return true;  //  72 food cap
-    }
-    if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 6, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 30, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Battlecruiser, c_stockAlways );
+        return true;  //  72 food cap
+    }
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 6, c_BWTB_Barracks, c_stockIdle );
         AISetStockUnitNext( player, 30, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 1, c_BWTU_Dropship, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 36, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 2, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
+        AISetStockUnitNext( player, 6, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Battlecruiser, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 28, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 38, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 5, c_BWTU_Battlecruiser, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 40, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 30, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 5, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_GhostSCBWLockdownResearch );
+        AISetStock( player, 1, c_BWTR_GhostSCBWEnergyUpgrade );
+        AISetStockUnitNext( player, 12, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 46, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Battlecruiser, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1617,72 +1661,86 @@ bool BWTerranHDLateCoreMMMediBC (int player, int state) {
 //  BWTerranHDLateHighTechHellionSeige
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateHighTechHellionSeige (int player, int state) {
-    int techCount;
+    int techCount = 0;
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateHighTechHellionSeige") + PlayerName(player)));
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Factory, c_techCountCompleteOnly);
         return (techCount >= 2);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding
-        AISetStockUnitNext( player, 2, c_BWTU_Vulture, c_stockAlways );
+        // Barely adequate army including anti-air, higher priority than full economy
         AISetStockUnitNext( player, 1, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 5, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
+        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
+        // Small army, higher priority than important tech, basic production, basic defense
         AISetStockUnitNext( player, 2, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
+        // Medium army, higher priority than general expansion, extra production
         AISetStockUnitNext( player, 3, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );  
-        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );      
-        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
+        AISetStockUnitNext( player, 8, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_VultureSCBWSpeedUpgrade );
         AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  48 food cap
+        AISetStockUnitNext( player, 2, c_BWTU_Medic, c_stockAlways );
+        return true;  //  44 food cap
     }
+
     if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Goliath, c_stockAlways );
-        return true;  //  68 food cap
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Goliath, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_GoliathSCBWRangeUpgrade );
+        return true;  //  72 food cap
     }
+
     if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockIdle );
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockAlways );
+        AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_SiegeTank, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Dropship, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 3, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 16, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Goliath, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  ~200 food cap
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1692,71 +1750,81 @@ bool BWTerranHDLateHighTechHellionSeige (int player, int state) {
 //  BWTerranHDLateHighTechSiegeThor
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateHighTechSiegeThor (int player, int state) {
-    int techCount;
+    int techCount = 0;
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateHighTechSiegeThor") + PlayerName(player)));
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Factory, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_Armory, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_Armory, c_techCountCompleteOnly);
         return (techCount >= 2);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding
-        AISetStockUnitNext( player, 2, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_SiegeTank, c_stockAlways );
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 4, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 5, c_BWTU_SiegeTank, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
+        // Small army, higher priority than important tech, basic production, basic defense
         AISetStockUnitNext( player, 2, c_BWTB_Factory, c_stockIdle );
         AISetStockUnitNext( player, 1, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts  
+        // Medium army, higher priority than general expansion, extra production
         AISetStockUnitNext( player, 3, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );  
-        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );      
-        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
-        AISetStockUnitNext( player, 6, c_BWTU_Goliath, c_stockAlways );
-        return true;  //  50 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );
         AISetStockUnitNext( player, 8, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 9, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Goliath, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
+        return true;  //  44 food cap
+    }
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Vulture, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_VultureSCBWSpeedUpgrade );
+        AISetStockUnitNext( player, 12, c_BWTU_Goliath, c_stockAlways );
         return true;  //  72 food cap
     }
+
     if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
+        // Full army, lowest priority, this is the very last part of the stock
         AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_Vulture, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Goliath, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Dropship, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 18, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 20, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 14, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 30, c_BWTU_Goliath, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1766,74 +1834,82 @@ bool BWTerranHDLateHighTechSiegeThor (int player, int state) {
 //  BWTerranHDLateHighTechMechBC
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateHighTechMechBC (int player, int state) {
-    int techCount;
+    int techCount = 0;
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateHighTechMechBC") + PlayerName(player)));
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Factory, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
         return (techCount >= 2);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding
-        AISetStockUnitNext( player, 2, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_SiegeTank, c_stockAlways );
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 5, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
+        // Small army, higher priority than important tech, basic production, basic defense
         AISetStockUnitNext( player, 2, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts  
+        // Medium army, higher priority than general expansion, extra production
         AISetStockUnitNext( player, 3, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );  
-        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );      
-        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
-        AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  48 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 8, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Battlecruiser, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Goliath, c_stockAlways );
-        return true;  //  70 food cap
-    }
-    if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockIdle );
         AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
+        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
+        return true;  //  44 food cap
+    }
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
+        AISetStockUnitNext( player, 3, c_BWTU_Battlecruiser, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
+        return true;  //  72 food cap
+    }
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTB_MachineShop, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Vulture, c_stockAlways );
         AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Battlecruiser, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 20, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Firebat, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_Battlecruiser, c_stockAlways );
-        AISetStockUnitNext( player, 64, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Vulture, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_GoliathSCBWRangeUpgrade );
+        AISetStockUnitNext( player, 10, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 20, c_BWTU_Vulture, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 14, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 30, c_BWTU_Marine, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1843,59 +1919,68 @@ bool BWTerranHDLateHighTechMechBC (int player, int state) {
 //  BWTerranHDLateAirVikingBC
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateAirVikingBC (int player, int state) {
-    int techCount;
+    int techCount = 0;
+    //UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, (StringToText("BWTerranHDLateHighTechMechBC") + PlayerName(player)));
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
         return (techCount >= 2);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 3, c_BWTU_Wraith, c_stockAlways );
-        return true;  //  6 food cap
+        return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
-        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );  
-        return true;  //  12 food cap
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 3, c_BWTB_Starport, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTB_ControlTower, c_stockIdle );
-        AISetStockUnitNext( player, 10, c_BWTU_Wraith, c_stockAlways );
-        return true;  //  20 food cap
+        AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_PhysicsLab, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTU_Battlecruiser, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Battlecruiser, c_stockAlways );
         return true;  //  44 food cap
     }
+
     if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 3, c_BWTB_Starport, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_ControlTower, c_stockIdle );
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 4, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 3, c_BWTB_ControlTower, c_stockIdle );
         AISetStockUnitNext( player, 6, c_BWTU_Battlecruiser, c_stockAlways );
-        AISetStockUnitNext( player, 3, c_BWTB_Starport,           c_stockIdle );
-        AISetStockUnitNext( player, 3, c_BWTB_ControlTower,    c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTB_ControlTower, c_stockIdle );
         AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_Battlecruiser, c_stockAlways );
         return true;  //  72 food cap
     }
+
     if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 4, c_BWTB_Starport,           c_stockIdle );
-        AISetStockUnitNext( player, 3, c_BWTB_ControlTower,    c_stockIdle );
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 5, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 5, c_BWTB_ControlTower, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_Battlecruiser, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_ScienceVessel, c_stockAlways );
         AISetStockUnitNext( player, 16, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 16, c_BWTU_Battlecruiser, c_stockAlways );
+        AISetStockUnitNext( player, 20, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 22, c_BWTU_Battlecruiser, c_stockAlways );
-        return true;  //  ~200 food cap
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1905,59 +1990,65 @@ bool BWTerranHDLateAirVikingBC (int player, int state) {
 //  BWTerranHDLateAirMixedAir
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateAirMixedAir (int player, int state) {
-    int techCount;
+    int techCount = 0;
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
         return (techCount >= 2);
     }
 
-
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 3, c_BWTU_Wraith, c_stockAlways );
-        return true;  //  6 food cap
+        return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
-        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );  
-        return true;  //  12 food cap
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 3, c_BWTB_Starport, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTB_ControlTower, c_stockIdle );
         AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
-        return true;  //  16 food cap
+        return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
-        AISetStockUnitNext( player, 2, c_BWTU_Battlecruiser, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_ScienceVessel, c_stockAlways );
+        // Medium army, higher priority than general expansion, extra production
         AISetStockUnitNext( player, 4, c_BWTU_Battlecruiser, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_ScienceVessel, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Battlecruiser, c_stockAlways );
         return true;  //  44 food cap
     }
+
     if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 3, c_BWTB_Starport,           c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_ControlTower,    c_stockIdle );
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 4, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 3, c_BWTB_ControlTower, c_stockIdle );
         AISetStockUnitNext( player, 6, c_BWTU_Battlecruiser, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_ScienceVessel, c_stockAlways );
-        return true;  //  68 food cap
+        AISetStock( player, 1, c_BWTR_BattlecruiserSCBWYamatoResearch );
+        return true;  //  72 food cap
     }
+
     if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 4, c_BWTB_Starport,           c_stockIdle );
-        AISetStockUnitNext( player, 3, c_BWTB_ControlTower,    c_stockIdle );
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 5, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 5, c_BWTB_ControlTower, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_Battlecruiser, c_stockAlways );
         AISetStockUnitNext( player, 10, c_BWTU_ScienceVessel, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 16, c_BWTU_Battlecruiser, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
         AISetStockUnitNext( player, 20, c_BWTU_Battlecruiser, c_stockAlways );
-        return true;  //  ~200 food cap
+        return true;  //  200 food cap
     }
 
     return true;
@@ -1967,81 +2058,80 @@ bool BWTerranHDLateAirMixedAir (int player, int state) {
 //  BWTerranHDLateSpecialMMMediHarass
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateSpecialMMMediHarass (int player, int state) {
-    int techCount;
+    int techCount = 0;
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Barracks, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_CovertOps, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_CovertOps, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
         return (techCount >= 3);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
+        // Barely adequate army including anti-air, higher priority than full economy
         AISetStockUnitNext( player, 2, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );      
+        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 2, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
         AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 1, c_BWTB_Factory,            c_stockIdle );
+        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Factory, c_stockIdle );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 8, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  48 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
-        AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
-        return true;  //  70 food cap
-    }
-    if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 6, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
         AISetStockUnitNext( player, 10, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 30, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 18, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
+        return true;  //  44 food cap
+    }
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 5, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
         AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Firebat, c_stockAlways );
         AISetStockUnitNext( player, 32, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 28, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
+        AISetStockUnitNext( player, 14, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  72 food cap
+    }
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 6, c_BWTB_Barracks, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 40, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 30, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockAlways );
+        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 52, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 26, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 38, c_BWTU_Firebat, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -2051,81 +2141,83 @@ bool BWTerranHDLateSpecialMMMediHarass (int player, int state) {
 //  BWTerranHDLateSpecialMMMediGhostRaven
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateSpecialMMMediGhostRaven (int player, int state) {
-    int techCount;
+    int techCount = 0;
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Barracks, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_CovertOps, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_CovertOps, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
         return (techCount >= 3);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding  
-        AISetStockUnitNext( player, 2, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );      
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 2, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
         AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 1, c_BWTB_Factory,            c_stockIdle );
+        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Factory, c_stockIdle );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
-        AISetStockUnitNext( player, 8, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  48 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 4, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTU_Dropship, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
-        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 3, c_BWTU_ScienceVessel, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Wraith, c_stockAlways );
-        return true;  //  70 food cap
-    }
-    if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 6, c_BWTB_Barracks,           c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_Academy,    c_stockIdle );
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
         AISetStockUnitNext( player, 10, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 20, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Firebat, c_stockAlways );
+        return true;  //  44 food cap
+    }
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 5, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
         AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_ScienceVessel, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 30, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Dropship, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_ScienceVessel, c_stockAlways );
+        AISetStockUnitNext( player, 24, c_BWTU_Marine, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+        AISetStockUnitNext( player, 10, c_BWTU_Wraith, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
+        AISetStockUnitNext( player, 18, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  72 food cap
+    }
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 6, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 20, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 38, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 24, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 36, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 14, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 3, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 16, c_BWTU_ScienceVessel, c_stockAlways );
-        AISetStockUnitNext( player, 40, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 28, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 3, c_BWTB_ControlTower, c_stockIdle );
+        AISetStockUnitNext( player, 3, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 18, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 44, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 20, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Valkyrie, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -2135,80 +2227,86 @@ bool BWTerranHDLateSpecialMMMediGhostRaven (int player, int state) {
 //  BWTerranHDLateSpecialMechBansheeRaven
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateSpecialMechBansheeRaven (int player, int state) {
-    int techCount;
+    int techCount = 0;
+
     if (state == e_armyTypeValidate) {
-        techCount = AITechCount(player, c_BWTB_Factory, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
-        return (techCount >= 2);
+        techCount = AITechCount(player, c_BWTB_Barracks, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_CovertOps, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
+        return (techCount >= 3);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding
-        AISetStockUnitNext( player, 2, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_SiegeTank, c_stockAlways );
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 4, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
-        AISetStockUnitNext( player, 2, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 1, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
+        // Small army, higher priority than important tech, basic production, basic defense
+        AISetStockUnitNext( player, 2, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_Academy, c_stockIdle );
+        AISetStockUnitNext( player, 10, c_BWTU_Firebat, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_StimpackSCBWResearch );
+        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Factory, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_ScienceFacility, c_stockIdle );
+        AISetStockUnitNext( player, 1, c_BWTB_CovertOps, c_stockIdle );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts  
-        AISetStockUnitNext( player, 3, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );  
-        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );      
-        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
-        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Firebat, c_stockAlways );
-        return true;  //  50 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
-        AISetStockUnitNext( player, 2, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Wraith, c_stockAlways );
-        AISetStock( player, 1, c_BWTR_WraithSCBWCloakResearch );
-        AISetStockUnitNext( player, 3, c_BWTU_ScienceVessel, c_stockAlways );
-        return true;  //  70 food cap
-    }
-    if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
-        AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_ControlTower, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_ScienceVessel, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
+        // Medium army, higher priority than general expansion, extra production
+        AISetStockUnitNext( player, 4, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 12, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Marine, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
+        return true;  //  44 food cap
+    }
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 5, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 28, c_BWTU_Marine, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_MarineSCBWRangeUpgrade );
+        AISetStockUnitNext( player, 5, c_BWTU_ScienceVessel, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
+        return true;  //  72 food cap
+    }
+
+    if (state == e_armyTypeFull) {
+        // Full army, lowest priority, this is the very last part of the stock
+        AISetStockUnitNext( player, 6, c_BWTB_Barracks, c_stockIdle );
+        AISetStockUnitNext( player, 14, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 36, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 20, c_BWTU_Firebat, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_ScienceVessel, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Dropship, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Valkyrie, c_stockAlways );
-        return true;  //  ~200 food cap
+        AISetStockUnitNext( player, 8, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 18, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 42, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 12, c_BWTU_ScienceVessel, c_stockAlways );
+        AISetStockUnitNext( player, 30, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 50, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Wraith, c_stockAlways );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_ScienceVessel, c_stockAlways );
+        AISetStockUnitNext( player, 58, c_BWTU_Marine, c_stockAlways );
+        return true;  //  200 food cap
     }
 
     return true;
@@ -2218,76 +2316,86 @@ bool BWTerranHDLateSpecialMechBansheeRaven (int player, int state) {
 //  BWTerranHDLateSpecialMechCycloneLib
 //--------------------------------------------------------------------------------------------------
 bool BWTerranHDLateSpecialMechCycloneLib (int player, int state) {
-    int techCount;
+    int techCount = 0;
+
     if (state == e_armyTypeValidate) {
         techCount = AITechCount(player, c_BWTB_Factory, c_techCountCompleteOnly);
-        techCount = AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
+        techCount += AITechCount(player, c_BWTB_Starport, c_techCountCompleteOnly);
         return (techCount >= 2);
     }
 
     if (state == e_armyTypeMinimum) {
-        // bare minimum army, only thing higher priority is bare minimum economy
+        // Bare minimum army, only thing higher priority is bare minimum economy
         AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
         return true;  //  8 food cap
     }
+
     if (state == e_armyTypeBase) {
-        // barely adequete army including anti-air, higher priority than full economy and low expanding
-        AISetStockUnitNext( player, 2, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_SiegeTank, c_stockAlways );
+        // Barely adequate army including anti-air, higher priority than full economy
+        AISetStockUnitNext( player, 5, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_SiegeModeSCBWResearch );
+        AISetStockUnitNext( player, 1, c_BWTB_MachineShop, c_stockIdle );
         return true;  //  18 food cap
     }
+
     if (state == e_armyTypeSmall) {
-        // small army, higher priority then important tech, basic production, basic defense, counters
+        // Small army, higher priority than important tech, basic production, basic defense
         AISetStockUnitNext( player, 2, c_BWTB_Factory, c_stockIdle );
         AISetStockUnitNext( player, 1, c_BWTB_MachineShop, c_stockIdle );
-        AISetStockUnitNext( player, 4, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
         return true;  //  28 food cap
     }
+
     if (state == e_armyTypeMedium) {
-        // medium army, higher priority then general expansion, extra production, extra transports/scouts  
+        // Medium army, higher priority than general expansion, extra production
         AISetStockUnitNext( player, 3, c_BWTB_Factory, c_stockIdle );
-        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );  
-        AISetStockUnitNext( player, 6, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );      
-        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
-        AISetStockUnitNext( player, 4, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Marine, c_stockAlways );
-        return true;  //  50 food cap
-    }
-    if (state == e_armyTypeLarge) {
-        // large army, higher priority then extra town defense & misc upgrades
+        AISetStockUnitNext( player, 2, c_BWTB_MachineShop, c_stockIdle );
         AISetStockUnitNext( player, 8, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Vulture, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 3, c_BWTU_ScienceVessel, c_stockAlways );
-        return true;  //  70 food cap
+        AISetStockUnitNext( player, 6, c_BWTU_Vulture, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_VulturePlaceSpiderMineSCBWResearch );
+        AISetStockUnitNext( player, 1, c_BWTB_Armory, c_stockIdle );
+        AISetStockUnitNext( player, 6, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 10, c_BWTU_Marine, c_stockAlways );
+        return true;  //  44 food cap
     }
+
+    if (state == e_armyTypeLarge) {
+        // Large army, higher priority than extra town defense & misc upgrades
+        AISetStockUnitNext( player, 10, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 16, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
+        AISetStockUnitNext( player, 3, c_BWTU_ScienceVessel, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_VultureSCBWSpeedUpgrade );
+        return true;  //  72 food cap
+    }
+
     if (state == e_armyTypeFull) {
-        // full army, lowest priority, this is the very last part of the stock
+        // Full army, lowest priority, this is the very last part of the stock
         AISetStockUnitNext( player, 4, c_BWTB_Factory, c_stockIdle );
         AISetStockUnitNext( player, 3, c_BWTB_MachineShop, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTB_Starport, c_stockIdle );
         AISetStockUnitNext( player, 2, c_BWTB_ControlTower, c_stockIdle );
         AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 13, c_BWTU_SiegeTank, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Goliath, c_stockAlways );
+        AISetStock( player, 1, c_BWTR_GoliathSCBWRangeUpgrade );
+        AISetStockUnitNext( player, 12, c_BWTU_SiegeTank, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Vulture, c_stockAlways );
         AISetStockUnitNext( player, 2, c_BWTU_ScienceVessel, c_stockAlways );
         AISetStockUnitNext( player, 6, c_BWTU_Wraith, c_stockAlways );
-        AISetStockUnitNext( player, 8, c_BWTU_Goliath, c_stockAlways );
-        AISetStockUnitNext( player, 12, c_BWTU_Marine, c_stockAlways );
-        AISetStockUnitNext( player, 6, c_BWTU_Firebat, c_stockAlways );
-        AISetStockUnitNext( player, 5, c_BWTU_Medic, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Valkyrie, c_stockAlways );
-        AISetStockUnitNext( player, 10, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Goliath, c_stockAlways );
+        AISetStockUnitNext( player, 14, c_BWTU_Marine, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Firebat, c_stockAlways );
+        AISetStockUnitNext( player, 6, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 20, c_BWTU_Goliath, c_stockAlways );
         AISetStockUnitNext( player, 8, c_BWTU_Valkyrie, c_stockAlways );
         AISetStockUnitNext( player, 4, c_BWTU_ScienceVessel, c_stockAlways );
-        AISetStockUnitNext( player, 2, c_BWTU_Ghost, c_stockAlways );
-        AISetStockUnitNext( player, 4, c_BWTU_Dropship, c_stockAlways );
-        AISetStockUnitNext( player, 13, c_BWTU_Vulture, c_stockAlways );
+        AISetStockUnitNext( player, 4, c_BWTU_Ghost, c_stockAlways );
+        AISetStockUnitNext( player, 8, c_BWTU_Medic, c_stockAlways );
+        AISetStockUnitNext( player, 22, c_BWTU_Vulture, c_stockAlways );
         AISetStockUnitNext( player, 12, c_BWTU_Wraith, c_stockAlways );
-        return true;  //  ~200 food cap
+        return true;  //  200 food cap
     }
 
     return true;
