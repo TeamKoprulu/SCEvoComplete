@@ -513,11 +513,9 @@
         <EffectArray value="InterceptorSCBW@HealShieldsRB"/>
         <EffectArray value="InterceptorSCBW@HealLifeRB"/>
         <EffectArray value="InterceptorSCBW@NotLaunchableRB"/>
+        <EffectArray value="InterceptorSCBW@ReturnAB"/>
         <EditorCategories value="Race:Protoss"/>
     </CEffectSet>
-    <!--        <AttributeBonus index="Light" value="-5"/>-->
-    <!--        <AttributeBonus index="Armored" value="5"/>-->
-    <!--        -->
     <CEffectLaunchMissile id="DragoonSCBWWeapon@LM">
         <EditorCategories value="Race:Protoss"/>
         <ImpactEffect value="DragoonSCBWWeapon@Impact"/>
@@ -543,8 +541,7 @@
         <WhichLocation Value="TargetUnit"/>
         <TimeScaleSource Value="Caster"/>
         <PeriodCount value="1"/>
-        <PeriodicEffectArray value="InterceptorSCBWWeapon@Damage"/>
-        <PeriodicPeriodArray value="0"/>
+        <PeriodicEffectArray value="InterceptorSCBWWeapon@LM"/>
         <PeriodicPeriodArray value="0"/>
     </CEffectCreatePersistent>
     <CEffectDamage id="CorsairSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Protoss">
@@ -1453,6 +1450,11 @@
         <WhichUnit Value="Source"/>
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
+    <CEffectLaunchMissile id="InterceptorSCBWWeapon@LM">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="InterceptorSCBWWeapon@Impact"/>
+        <AmmoUnit value="InterceptorSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
     <CEffectRemoveBehavior id="ReaverSCBWWeapon@TeleportTrackRemoveTracker">
         <EditorCategories value="Race:Protoss"/>
         <WhichUnit Effect="ReaverSCBWWeapon@LaunchSwitch"/>
@@ -1475,6 +1477,9 @@
     <CEffectSet id="ReaverSCBWWeapon@TeleportTrackSet">
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="ReaverSCBWWeapon@TargetLockedOnReacquire"/>
+    </CEffectSet>
+    <CEffectSet id="InterceptorSCBWWeapon@Impact">
+        <EffectArray value="InterceptorSCBWWeapon@Damage"/>
     </CEffectSet>
     <CAbilEffectInstant id="ReaverSCBWWeapon@UnloadStunAbil">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -1504,7 +1509,7 @@
     </CAbilEffectInstant>
     <CAbilResearch id="GatewaySCBWResonantMatrixResearch" parent="SCBW_Research" race="Protoss">
         <AbilityCategories index="User1" value="1"/>
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="170">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -2732,6 +2737,7 @@
         <Icon value="Assets\Textures\btn-ability-protoss-resonantmatrix.dds"/>
         <AlertIcon value="Assets\Textures\btn-ability-protoss-resonantmatrix.dds"/>
         <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Column="1"/>
     </CButton>
     <CButton id="ObserverSCBWSpeedUpgrade@Passive" parent="SCBW_ResearchPassive" x="ObserverSCBWSpeedUpgrade">
         <Icon value="Assets\Textures\btn-upgrade-protoss-graviticbooster.dds"/>
@@ -3915,33 +3921,6 @@
     <CActorMissile id="DragoonSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DragoonSCBWWeapon@Missile">
         <On Terms="UnitBirth" Send="AnimSetTimeScaleAbsolute Lifetime 1.000000"/>
     </CActorMissile>
-    <CActorModel id="InterceptorSCBWWeapon@TestImpact" parent="GenericAttackImpactModel">
-        <On Terms="ActorCreation" Target="::Creator" Send="Signal 1"/>
-    </CActorModel>
-    <CActorAction id="InterceptorSCBWWeapon@Action" parent="GenericAttackBase">
-        <LaunchAttachQuery Methods="AMFilterWeapon"/>
-        <LaunchAssets Sound="InterceptorSCBWWeapon@Launch"/>
-        <Beam value="InterceptorSCBWWeapon@Beam"/>
-        <BeamScope value="Caster"/>
-        <ImpactMap index="None" Model="InterceptorSCBWWeapon@Impact" Sound="InterceptorSCBWWeapon@Impact"/>
-        <ImpactModel value="InterceptorSCBWWeapon@TestImpact"/>
-        <DamagePhysics Name="InterceptorSCBWWeapon@Impact" MatchKeys="Basic" Physics="InterceptorAttackDeathForce"/>
-        <DamagePhysics Name="InterceptorSCBWWeapon@Impact" MatchKeys="BasicAir" Physics="InterceptorAttackAirDeathForce"/>
-        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
-        <ImpactSite value="GenericAttackImpactSiteWhiff"/>
-        <ImpactModelReaction value="GenericAttackImpactModelReactionWhiff"/>
-        <On Terms="EffectActionCommence" Target="::HostImpactInternal" Send="Signal Impact"/>
-        <On Terms="Effect.InterceptorSCBWWeapon@CP.Start; At Caster" Send="Create"/>
-        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
-        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Stop; At Caster; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
-    </CActorAction>
-    <CActorBeamSimple id="InterceptorSCBWWeapon@Beam">
-        <Macros value="ActionTargetTeleportDestroy"/>
-        <Flags index="SuppressSaveLoad" value="1"/>
-        <On Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death ContentPlayOnce"/>
-        <On Terms="ActorOrphan" Send="Destroy"/>
-        <On Terms="AnimBracketState.*.AfterClosing; AnimName BSD" Send="Destroy"/>
-    </CActorBeamSimple>
     <CActorForceCylinder id="PhotonCannonSCBWWeapon@DeathForce">
         <HostSiteOps Ops="SOpIncomingMissileDot25"/>
         <Receiver Subject="::Main"/>
@@ -4220,7 +4199,6 @@
     <CActorSplat id="DarkArchonSCBWMaelstrom@CursorSplat" parent="ProtossCursorSplat" abil="DarkArchonSCBWMaelstrom"/>
     <CActorModel id="DarkArchonSCBWMaelstrom@Impact" parent="ModelAnimationStyleOneShot">
         <On Terms="Effect.DarkArchonSCBWMaelstrom@Search.Start" Send="Create"/>
-        <Scale value="0.800000"/>
     </CActorModel>
     <CActorSound id="DarkArchonSCBWMaelstrom@LaunchSound" parent="SoundOneShot">
         <On Terms="Abil.DarkArchonSCBWMaelstrom.SourceCastStart" Send="Create"/>
@@ -4521,6 +4499,41 @@
         <On Terms="ActorOrphan" Send="Destroy"/>
         <Sound value="ShieldBatterySCBWRecharge@SoundLoopCaster"/>
     </CActorSound>
+    <CActorAction id="InterceptorSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="InterceptorSCBWWeapon@Damage" effectLaunch="InterceptorSCBWWeapon@LM">
+        <LaunchAttachQuery Methods="Center 0"/>
+        <Missile value="InterceptorSCBWWeapon@Missile"/>
+        <ImpactMap index="None" Model="InterceptorSCBWWeapon@Impact" Sound="InterceptorSCBWWeapon@Impact"/>
+        <ImpactPhysics Name="InterceptorSCBWWeapon" MatchKeys="Basic" Physics="InterceptorSCBWWeapon@ActionDeathForce"/>
+        <AccuracyHalfArc value="3.000000"/>
+        <AcquisitionYawHalfArc value="5.000000"/>
+        <AcquisitionPitchHalfArc value="10.000000"/>
+        <LaunchSiteOps Ops="SOpAttachHarness SOpMoveByDot75"/>
+        <LaunchAssets Sound="InterceptorSCBWWeapon@Launch"/>
+    </CActorAction>
+    <!--CActorAction id="InterceptorSCBWWeapon@Action" parent="GenericAttackBase">
+        <LaunchAttachQuery Methods="AMFilterWeapon"/>
+        <LaunchAssets Sound="InterceptorSCBWWeapon@Launch"/>
+        <Beam value="InterceptorSCBWWeapon@Beam"/>
+        <BeamScope value="Caster"/>
+        <ImpactMap index="None" Model="InterceptorSCBWWeapon@Impact" Sound="InterceptorSCBWWeapon@Impact"/>
+        <ImpactModel value="InterceptorSCBWWeapon@TestImpact"/>
+        <DamagePhysics Name="InterceptorSCBWWeapon@Impact" MatchKeys="Basic" Physics="InterceptorAttackDeathForce"/>
+        <DamagePhysics Name="InterceptorSCBWWeapon@Impact" MatchKeys="BasicAir" Physics="InterceptorAttackAirDeathForce"/>
+        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+        <ImpactSite value="GenericAttackImpactSiteWhiff"/>
+        <ImpactModelReaction value="GenericAttackImpactModelReactionWhiff"/>
+        <On Terms="EffectActionCommence" Target="::HostImpactInternal" Send="Signal Impact"/>
+        <On Terms="Effect.InterceptorSCBWWeapon@CP.Start; At Caster" Send="Create"/>
+        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <On Terms="Effect.InterceptorSCBWWeapon@Damage.Stop; At Caster; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
+    </CActorAction-->
+    <!--CActorBeamSimple id="InterceptorSCBWWeapon@Beam">
+        <Macros value="ActionTargetTeleportDestroy"/>
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <On Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death ContentPlayOnce"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="AnimBracketState.*.AfterClosing; AnimName BSD" Send="Destroy"/>
+    </CActorBeamSimple-->
     <CActorModel id="ReaverSCBWWeapon@UnloadStun" parent="ModelAnimationStyleContinuous">
         <Aliases value="_Snapshot"/>
         <Inherits index="Visibility" value="1"/>
@@ -4531,6 +4544,28 @@
         <HostSiteOps Ops="SOpAttachOverhead"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
     </CActorModel>
+    <CActorMissile id="InterceptorSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="InterceptorSCBWWeapon@Missile">
+        <On Terms="ActorCreation" Send="SetOpacity"/>
+        <On Terms="ActorCreation" Send="SetOpacity 1.000000 0.100000"/>
+    </CActorMissile>
+    <CActorForceSphere id="InterceptorSCBWWeapon@ActionExplosionDeathForce">
+        <Host Subject="_ImpactGuide"/>
+        <HostSiteOps Ops="SOpRandomPointInSphereDot25"/>
+        <Magnitude value="10.000000,5.000000"/>
+        <Radius value="0.500000,0.150000"/>
+        <Duration value="0.100000"/>
+    </CActorForceSphere>
+    <CActorForceSphere id="InterceptorSCBWWeapon@ActionDeathForce" parent="MissileAttackDeathForce">
+        <Magnitude value="10.000000,5.000000"/>
+        <Radius value="0.500000,0.150000"/>
+        <On Terms="ActorCreation" Send="Create InterceptorSCBWWeapon@ActionExplosionDeathForce"/>
+    </CActorForceSphere>
+    <CModel id="InterceptorSCBWWeapon@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Protoss\InterceptorSCBWWeapon@Missile\InterceptorSCBWWeapon@Missile.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.300000,0.300000,0.300000"/>
+        <ScaleMin value="0.300000,0.300000,0.300000"/>
+    </CModel>
     <CModel id="HighTemplarSCBWPsiStorm@CastFX" parent="OneShotSpellFX" Race="Protoss">
         <Model value="Assets\Effects\Neutral\Void_VoidSliver_PsiArcImpact\Void_VoidSliver_PsiArcImpact.m3"/>
         <ScaleMax value="0.900000,0.900000,0.900000"/>
@@ -4729,6 +4764,8 @@
     <CModel id="DarkArchonSCBWMaelstrom@Impact" parent="OneShotSpellFX">
         <Model value="Assets\Effects\Protoss\DarkArchon_Confusion\DarkArchon_Confusion.m3"/>
         <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="1.200000,1.200000,1.200000"/>
+        <ScaleMin value="1.200000,1.200000,1.200000"/>
     </CModel>
     <CModel id="DarkArchonSCBWMaelstrom@StunImpact" parent="PersistentSpellFX">
         <Model value="Assets\COOP\Zeratul\Effects\DarkArchon_Zeratul_COOP_Maelstrom\DarkArchon_Zeratul_COOP_Maelstrom.m3"/>
@@ -5061,6 +5098,17 @@
         <Arc value="360"/>
         <Radius value="2.5"/>
     </CShapeArc>
+    <CMoverMissile id="InterceptorSCBWWeapon@Mover" parent="MissileDefault">
+        <MotionPhases index="0">
+            <Driver value="Guidance"/>
+            <Acceleration value="3200"/>
+            <MaxSpeed value="14"/>
+            <ClearanceAcceleration value="75"/>
+            <Outro value="-1"/>
+            <RotationLaunchActorType value="LaunchToTarget2D"/>
+            <YawPitchRoll value="719.2968"/>
+        </MotionPhases>
+    </CMoverMissile>
     <CMoverMissile id="ArbiterSCBWWeapon@Mover">
         <MotionPhases>
             <Driver value="Guidance"/>
@@ -5244,12 +5292,12 @@
         <AssetArray File="Assets\Sounds\Protoss\DarkTemplarSCBW\DarkTemplarSCBWWeapon@Launch00.ogg"/>
         <DupeDestroyCount value="5"/>
     </CSound>
-    <CSound id="CarrierSCBWWeapon@Launch" parent="Spell">
+    <CSound id="CarrierSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\CarrierSCBW\CarrierSCBWWeapon@Launch00.ogg"/>
-        <DupeDestroyCount value="3"/>
+        <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
-        <DupeMuteCount value="2"/>
+        <DupeMuteCount value="4"/>
         <DupeThresholdPoints/>
         <DupeThresholdPoints Count="4" Volume="-4.000000"/>
         <DupePrioritization value="Oldest"/>
@@ -5295,47 +5343,48 @@
         <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Impact00.ogg"/>
         <DupeThresholdPoints/>
         <DupeThresholdPoints Count="16" Volume="-6.000000"/>
+        <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="DragoonSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Launch00.ogg"/>
         <DupeThresholdPoints/>
         <DupeThresholdPoints Count="16" Volume="-6.000000"/>
+        <Volume value="3.000000,3.000000"/>
     </CSound>
     <CSound id="InterceptorSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\Interceptor\Interceptor_AttackImpact0.wav"/>
-        <AssetArray File="Assets\Sounds\Protoss\Interceptor\Interceptor_AttackImpact1.wav"/>
-        <AssetArray File="Assets\Sounds\Protoss\Interceptor\Interceptor_AttackImpact2.wav"/>
-        <AssetArray File="Assets\Sounds\Protoss\Interceptor\Interceptor_AttackImpact3.wav"/>
-        <DupeDestroyCount value="1"/>
-        <DupeMaximumMethod value="Replace"/>
-        <DupeMuteCount value="1"/>
+        <AssetArray File="Assets\Sounds\Terran\WraithSCBW\WraithSCBWWeaponAir@Impact00.ogg"/>
+        <DupeDestroyCount value="3"/>
+        <DupeMuteCount value="3"/>
         <DupeThresholdPoints/>
         <DupeThresholdPoints Count="4" Volume="-4.000000"/>
         <DupePrioritization value="Oldest"/>
-        <Pitch value="0.000000,6.000000"/>
+        <Volume value="-10.000000,-9.000000"/>
+        <DupeMaximumMethod value="Replace"/>
         <PlayDelay value="0,30"/>
-        <Volume value="-11.000000,-10.000000"/>
     </CSound>
     <CSound id="InterceptorSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\InterceptorSCBW\InterceptorSCBWWeapon@Launch00.ogg"/>
-        <DupeDestroyCount value="1"/>
-        <DupeMaximumMethod value="Replace"/>
-        <DupeMuteCount value="1"/>
+        <DupeDestroyCount value="3"/>
+        <DupeMuteCount value="3"/>
         <DupeThresholdPoints/>
         <DupeThresholdPoints Count="4" Volume="-4.000000"/>
         <DupePrioritization value="Oldest"/>
-        <Volume value="-6.000000,-6.000000"/>
+        <Volume value="-10.000000,-7.000000"/>
+        <DupeMaximumMethod value="Replace"/>
+        <PlayDelay value="0,30"/>
     </CSound>
     <CSound id="PhotonCannonSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\PhotonCannonSCBW\PhotonCannonSCBWWeapon@Impact00.ogg"/>
+        <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="PhotonCannonSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\PhotonCannonSCBW\PhotonCannonSCBWWeapon@Launch00.ogg"/>
+        <Volume value="3.000000,3.000000"/>
     </CSound>
     <CSound id="ProbeSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
@@ -5462,6 +5511,7 @@
     <CSound id="DarkArchonSCBWMerge@Sound" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\ArchonSCBW\ArchonSCBWMerge@Sound00.ogg"/>
+        <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="CorsairSCBWDisruptionWeb@Launch" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
@@ -5511,22 +5561,23 @@
     <CSound id="DarkArchonSCBWFeedback@Launch" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\DarkArchonSCBW\DarkArchonSCBWFeedback@Launch00.ogg"/>
-        <Volume value="-3.000000,-3.000000"/>
     </CSound>
     <CSound id="ArchonSCBWMerge@Sound" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\ArchonSCBW\ArchonSCBWMerge@Sound00.ogg"/>
+        <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBWMindControl@Sound" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\DarkArchonSCBW\DarkArchonSCBWMindControl@Launch00.ogg"/>
         <Flags index="Purgable" value="0"/>
         <DupeMuteCount value="6"/>
+        <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBWMaelstrom@Launch" parent="Spell">
         <AssetArray File="Assets\Sounds\Protoss\DarkArchonSCBW\DarkArchonSCBWMaelstrom@Launch00.ogg"/>
-        <DupeMuteCount value="3"/>
-        <Volume value="-3.000000,-3.000000"/>
+        <DupeMuteCount value="4"/>
+        <Volume value="-1.000000,-1.000000"/>
     </CSound>
     <CSound id="ArbiterSCBWStasisField@Off" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
@@ -5571,6 +5622,7 @@
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBWPsiStorm@Launch00.ogg"/>
         <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBWPsiStorm@Launch01.ogg"/>
+        <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="HighTemplarSCBWPsiStorm@Cast" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
@@ -5578,16 +5630,18 @@
         <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_02.wav" FacialGroup=""/>
         <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_03.wav" FacialGroup=""/>
         <Pitch value="-4.000000,-3.000000"/>
-        <Volume value="-16.000000,-15.000000"/>
+        <Volume value="-14.000000,-13.000000"/>
         <NonLocalVolumeAdjustment value="4.000000,4.000000"/>
     </CSound>
     <CSound id="HighTemplarSCBWHallucination@Death" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBWHallucination@Death00.ogg"/>
+        <Volume value="1.000000,2.500000"/>
     </CSound>
     <CSound id="HighTemplarSCBWHallucination@Launch" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBWHallucination@Launch00.ogg"/>
+        <Volume value="1.000000,1.000000"/>
     </CSound>
     <CSound id="ShieldBatterySCBWRecharge@SoundLoopCaster" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
@@ -5647,8 +5701,8 @@
         <DataRecord Entry="Requirement,GatewaySCBWResonantMatrixResearch@Show"/>
         <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch@Count"/>
         <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch@Allow"/>
-        <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch"/>
         <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch@Show"/>
+        <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch"/>
         <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch@NotCount"/>
         <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch@NotQoB"/>
         <DataRecord Entry="RequirementNode,GatewaySCBWResonantMatrixResearch@QoB"/>
@@ -5731,6 +5785,7 @@
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl2Show"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3Show"/>
+        <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl1Count"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl1NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl1QoB"/>
@@ -5741,7 +5796,6 @@
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@QoB2"/>
-        <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Count"/>
         <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl1"/>
         <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl2"/>
         <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl3"/>
@@ -5795,6 +5849,7 @@
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl2Show"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3Show"/>
+        <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl1Count"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl1NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl1QoB"/>
@@ -5805,7 +5860,6 @@
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@QoB2"/>
-        <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Count"/>
         <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl1"/>
         <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl2"/>
         <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl3"/>
@@ -6179,6 +6233,7 @@
         <DataRecord Entry="Weapon,DarkTemplarSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DragoonSCBWWeapon" parent="ProtossInfantryWeaponSCBW">
+        <DataRecord Entry="Actor,DragoonSCBWWeapon@DeathForceUp"/>
         <DataRecord Entry="Actor,DragoonSCBWWeapon@Action"/>
         <DataRecord Entry="Actor,DragoonSCBWWeapon@DeathForce"/>
         <DataRecord Entry="Actor,DragoonSCBWWeapon@Missile"/>
@@ -6198,15 +6253,21 @@
         <Pattern value="SCBW_Weapon_Accumulator"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="InterceptorSCBWWeapon" parent="ProtossShipWeaponSCBW">
-        <DataRecord Entry="Actor,InterceptorSCBWWeapon@TestImpact"/>
         <DataRecord Entry="Actor,InterceptorSCBWWeapon@Action"/>
-        <DataRecord Entry="Actor,InterceptorSCBWWeapon@Beam"/>
+        <DataRecord Entry="Actor,InterceptorSCBWWeapon@Missile"/>
+        <DataRecord Entry="Actor,InterceptorSCBWWeapon@ActionExplosionDeathForce"/>
+        <DataRecord Entry="Actor,InterceptorSCBWWeapon@ActionDeathForce"/>
         <DataRecord Entry="Effect,InterceptorSCBWWeapon@Damage"/>
         <DataRecord Entry="Effect,InterceptorSCBWWeapon@CP"/>
+        <DataRecord Entry="Effect,InterceptorSCBWWeapon@LM"/>
+        <DataRecord Entry="Effect,InterceptorSCBWWeapon@Impact"/>
         <DataRecord Entry="Model,InterceptorSCBWWeapon@Impact"/>
+        <DataRecord Entry="Model,InterceptorSCBWWeapon@Missile"/>
         <DataRecord Entry="Model,InterceptorSCBWWeapon@Beam"/>
-        <DataRecord Entry="Sound,InterceptorSCBWWeapon@Launch"/>
+        <DataRecord Entry="Mover,InterceptorSCBWWeapon@Mover"/>
         <DataRecord Entry="Sound,InterceptorSCBWWeapon@Impact"/>
+        <DataRecord Entry="Sound,InterceptorSCBWWeapon@Launch"/>
+        <DataRecord Entry="Unit,InterceptorSCBWWeapon@Missile"/>
         <DataRecord Entry="Weapon,InterceptorSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="PhotonCannonSCBWWeapon" parent="ProtossInfantryWeaponSCBW">
@@ -6336,6 +6397,7 @@
         <DataRecord Entry="Abil,ReaverSCBWWeapon@Stop"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@Launch"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@RangeIndicator"/>
+        <DataRecord Entry="Actor,ReaverSCBWWeapon@TargetTint"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@TargetWarning"/>
         <DataRecord Entry="Actor,ReaverSCBWWeapon@UnloadStun"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@ScarabTracker"/>
@@ -6748,6 +6810,7 @@
         <DataRecord Entry="Requirement,DarkArchonSCBWMindControl"/>
         <DataRecord Entry="RequirementNode,DarkArchonSCBWMindControl"/>
         <DataRecord Entry="Sound,DarkArchonSCBWMindControl@Sound"/>
+        <DataRecord Entry="User,DarkArchonSCBWMindControl@StealTable"/>
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl@Set"/>
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl@ActivationNot"/>
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl@Caster"/>
@@ -6755,7 +6818,6 @@
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl"/>
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl@ActivationNotCaster"/>
         <DataRecord Entry="Validator,DarkArchonSCBWMindControl@PreventionNot"/>
-        <DataRecord Entry="User,DarkArchonSCBWMindControl@StealTable"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HighTemplarSCBWHallucination" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,HighTemplarSCBWHallucination"/>
@@ -6774,6 +6836,7 @@
         <DataRecord Entry="Effect,HighTemplarSCBWHallucination@CU"/>
         <DataRecord Entry="Model,HighTemplarSCBWHallucination@Birth"/>
         <DataRecord Entry="Requirement,HighTemplarSCBWHallucination"/>
+        <DataRecord Entry="RequirementNode,HighTemplarSCBWHallucination@NotAtUnit"/>
         <DataRecord Entry="RequirementNode,HighTemplarSCBWHallucination@CountAtUnit"/>
         <DataRecord Entry="RequirementNode,HighTemplarSCBWHallucination"/>
         <DataRecord Entry="Sound,HighTemplarSCBWHallucination@Launch"/>
@@ -6784,15 +6847,15 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HighTemplarSCBWPsiStorm" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,HighTemplarSCBWPsiStorm"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastMacro"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastFX"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@ImpactSound"/>
+        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastSound"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Model"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Sound"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CursorSplat"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Range"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastSound"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastFX"/>
-        <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastMacro"/>
         <DataRecord Entry="Behavior,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="Button,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@CPDelayInital"/>
@@ -6801,16 +6864,16 @@
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Damage"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@DamageInitial"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Search"/>
+        <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@CastFX"/>
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@Model"/>
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@CursorSplat"/>
-        <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@CastFX"/>
         <DataRecord Entry="Preload,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Requirement,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="RequirementNode,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Impact"/>
-        <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Launch"/>
         <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Cast"/>
+        <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Launch"/>
         <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@Damage"/>
         <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@DamageTargetFilters"/>
     </CDataCollectionAbil>
@@ -6856,6 +6919,7 @@
     <CAttachMethodPattern id="ZealotSCBWWeapon@AMPattern">
         <Keyword value="SetA"/>
         <Driver value="ZealotSCBWWeapon@Damage"/>
+        <Base value="::RollingIndex"/>
     </CAttachMethodPattern>
     <CPreloadModel id="HighTemplarSCBWPsiStorm@Impact"/>
     <CPreloadModel id="ReaverSCBWWeapon@Impact"/>
@@ -6886,6 +6950,11 @@
     </CUnit>
     <CUnit id="HighTemplarSCBWWeapon@Missile" parent="MISSILE_INVULNERABLE">
         <Race value="BWPr"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="InterceptorSCBWWeapon@Missile" parent="MISSILE">
+        <Race value="BWPr"/>
+        <Mover value="InterceptorSCBWWeapon@Mover"/>
         <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
     </CUnit>
     <CBehaviorBuff id="ReaverSCBWWeapon@LaunchNoPath">
@@ -7089,6 +7158,8 @@
             <BehaviorLinkDisableArray value="WraithSCBWCloak"/>
             <BehaviorLinkDisableArray value="GhostCloak"/>
             <BehaviorLinkDisableArray value="BansheeCloak"/>
+            <BehaviorLinkDisableArray value="ArbiterSCBWCloakField"/>
+            <BehaviorLinkDisableArray value="CloakField"/>
             <RateMultiplierArray index="Cooldown" value="0.001"/>
         </Modification>
     </CBehaviorBuff>

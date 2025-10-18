@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectRandomPointInCircle id="InterceptorSCBW@ReturnOrderOffset">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="CasterUnitOrPoint"/>
+        <Effect value="InterceptorSCBW@ReturnOrder"/>
+        <Radius value="1.5"/>
+        <RestrictToCircumference value="1"/>
+    </CEffectRandomPointInCircle>
+    <CEffectIssueOrder id="InterceptorSCBW@ReturnOrder">
+        <EditorCategories value="Race:Protoss"/>
+        <Abil value="move"/>
+        <Target Value="TargetPoint"/>
+        <ValidatorArray value="InterceptorSCBW@ReturnOrderValidator"/>
+        <WhichUnit Effect="InterceptorSCBW@ReturnOrderOffset"/>
+        <Player Effect="InterceptorSCBW@ReturnOrderOffset"/>
+    </CEffectIssueOrder>
+    <CEffectApplyBehavior id="InterceptorSCBW@ReturnAB">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="InterceptorSCBW@Return"/>
+    </CEffectApplyBehavior>
     <CEffectApplyBehavior id="DragoonSCBW@CoverAnim">
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
@@ -250,6 +269,20 @@
         </InfoArray>
         <ConstructionMover value="Construction"/>
     </CAbilBuild>
+    <CValidatorUnitCompareOrderCount id="InterceptorSCBW@ReturnOrderValidator">
+        <WhichUnit Effect="InterceptorSCBW@ReturnOrderOffset" Value="Target"/>
+    </CValidatorUnitCompareOrderCount>
+    <CValidatorUnitOrderQueue id="InterceptorSCBW@CarrierNotPatrolling">
+        <WhichUnit Value="Source"/>
+        <AbilLink value="move"/>
+        <AbilCmdIndex value="1"/>
+        <Find value="0"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="InterceptorSCBW@NotAttacking">
+        <WhichUnit Value="Target"/>
+        <AbilLink value="attack"/>
+        <Find value="0"/>
+    </CValidatorUnitOrderQueue>
     <CValidatorUnitCompareBehaviorCount id="ObserverSCBWSieged@Detector">
         <Compare value="GT"/>
         <Behavior value="ObserverSCBWSieged@Detector"/>
@@ -1101,6 +1134,12 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
     </CLight>
+    <CActorSiteOpBankerUnit id="InterceptorSCBW@Banker">
+        <RollMax value="50.000000"/>
+        <RollInActivationAngle value="15.000000"/>
+        <RollInArc value="110.000000"/>
+        <RollOutDuration value="0.600000"/>
+    </CActorSiteOpBankerUnit>
     <CActorModel id="ShuttleSCBW@TransportLoadModel" parent="ModelAnimationStyleOneShot">
         <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoLoad" Send="Create"/>
         <!--<On Terms="ActorCreation" Send="Create UnitWarpIntoShuttle_ActorSound"/>-->
@@ -1312,6 +1351,7 @@
         <On Terms="UnitHeightUpdate.*.Land" Send="Create InterceptorSCBW@Land"/>
         <On Terms="Behavior.ReleaseInterceptorsTimedLifeWarning.Off" Send="AnimPlay Work Work PlayForever"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="Effect.InterceptorSCBWWeapon@CP.Start; At Caster" Send="$Spell"/>
         <DeathCustoms ModelLink="InterceptorSCBW@DeathRagdoll" Name="RagdollBasic" PhysicsMatchKeysOrdered="BasicAir,Basic">
             <BodySquibs Name="Basic" Model="ProtossTinyRobotSquibDeathRagdoll"/>
         </DeathCustoms>
@@ -1354,6 +1394,8 @@
         <UnitFlags index="ShowBlobShadow" value="0"/>
         <UnitIcon value="Assets\Textures\btn-unit-protoss-interceptor@scbw.dds"/>
         <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
+        <HostSiteOps Ops="InterceptorSCBW@Banker"/>
+        <Remove Terms="UnitHeightUpdate.*.Land" Send="Create InterceptorSCBW@Land"/>
     </CActorUnit>
     <CActorUnit id="CarrierSCBW" parent="GenericUnitStandard" unitName="CarrierSCBW">
         <Aliases value="_UnitHuge"/>
@@ -1373,7 +1415,7 @@
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <DeathCustoms>
-            <ActorModel value="CarrierDeathRagdoll"/>
+            <ActorModel value="CarrierSCBW@DeathRagdoll"/>
             <ModelLink value="CarrierSCBW@DeathRagdoll"/>
             <Name value="RagdollBasic"/>
             <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
@@ -1397,7 +1439,7 @@
         <Baselines index="Walk" BlendIn="1.500000" BlendOut="2.000000"/>
         <BuildModel value="CarrierSCBW@WarpIn"/>
         <DeathArray index="Normal" ModelLink="CarrierSCBW@Death" SoundLink="CarrierSCBW@Death"/>
-        <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
+        <DeathActorModel value="CarrierSCBW@DeathActor"/>
         <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
         <PlacementModel value="CarrierSCBW@Placement"/>
         <PortraitModel value="CarrierSCBW@Portrait"/>
@@ -1430,6 +1472,21 @@
         <On Terms="UnitDeathCustomize" Send="Destroy"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
     </CActorModel>
+    <CActorModel id="CarrierSCBW@DeathActor" parent="UnitDeathModelWithDeathMotionFlier">
+        <On Terms="ActorCreation; ModelName CarrierSCBW@Death" Send="TextureSelectById CarrierSCBW@Diff"/>
+        <On Terms="ActorCreation; ModelName CarrierSCBW@Death" Send="TextureSelectById CarrierSCBW@Spec"/>
+    </CActorModel>
+    <CActorModel id="CarrierSCBW@DeathRagdoll" parent="UnitDeathRagdollFlier">
+        <On Terms="ActorCreation" Send="Create CarrierSCBW@DeathRagdollDetonationForce"/>
+        <On Terms="ActorCreation; ModelName CarrierSCBW@DeathRagdoll" Send="TextureSelectById CarrierSCBW@Diff"/>
+        <On Terms="ActorCreation; ModelName CarrierSCBW@DeathRagdoll" Send="TextureSelectById CarrierSCBW@Spec"/>
+    </CActorModel>
+    <CActorForceSphere id="CarrierSCBW@DeathRagdollDetonationForce" parent="DeathRagdollDetonationForce">
+        <HostSiteOps Ops="SOpAttachInternalDetonation SOpMoveDownByDot5 SOpRandomPointInSphereDot5"/>
+        <Magnitude value="20.000000,10.000000"/>
+        <ForceFlags index="FallOff" value="0"/>
+        <Radius value="2.000000,1.000000"/>
+    </CActorForceSphere>
     <CActorUnit id="ArchonSCBW" parent="GenericUnitBase" unitName="ArchonSCBW">
         <Aliases value="_UnitLarge"/>
         <On Terms="Behavior.Hallucination.On" Send="Create HallucinationBirthSoundLarge"/>
@@ -2444,13 +2501,24 @@
         <TechPurchaseCamera value="Star2CameraMid02"/>
         <UnitGlossaryCamera value="Star2CameraMid02"/>
         <SelectionLayer value="3"/>
+        <ScaleMax value="0.935000,0.935000,0.935000"/>
+        <ScaleMin value="0.935000,0.935000,0.935000"/>
+        <RequiredAnims value="Assets\Units\Protoss\Interceptor_Remastered\Interceptor_Remastered_RequiredAnims.m3a"/>
     </CModel>
     <CModel id="CarrierSCBW@Death" parent="CarrierDeathBase">
         <Model value="Assets\Units\Protoss\Carrier_Remastered_Death\Carrier_Remastered_Death.m3"/>
+        <TextureDeclares Prefix="Carrier_Remastered_" Slot="main">
+            <Adaptions TriggerOnSubstring="_Diff" Slot="main"/>
+            <Adaptions TriggerOnSubstring="_Spec" Slot="main"/>
+        </TextureDeclares>
     </CModel>
     <CModel id="CarrierSCBW@DeathLow" parent="ProtossLargeUnitDeathLowAndSound"/>
     <CModel id="CarrierSCBW@DeathRagdoll" parent="CarrierDeathRagdollBase">
         <Model value="Assets\Units\Protoss\Carrier_Remastered_DeathRagdoll\Carrier_Remastered_DeathRagdoll.m3"/>
+        <TextureDeclares Prefix="Carrier_Remastered_" Slot="main">
+            <Adaptions TriggerOnSubstring="_Diff" Slot="main"/>
+            <Adaptions TriggerOnSubstring="_Spec" Slot="main"/>
+        </TextureDeclares>
     </CModel>
     <CModel id="CarrierSCBW" parent="CarrierBase">
         <TextureDeclares Prefix="carrier_">
@@ -2943,6 +3011,13 @@
     <CAccumulatorConstant id="ObserverSCBW@DetectRange">
         <Amount value="9"/>
     </CAccumulatorConstant>
+    <CTexture id="CarrierSCBW@Diff">
+        <Slot value="main.diffuse"/>
+    </CTexture>
+    <CTexture id="CarrierSCBW@Spec">
+        <Slot value="main.specular"/>
+        <File value="Assets\Textures\CarrierSCBW@Diff.dds"/>
+    </CTexture>
     <CSound id="ShuttleSCBW@TransportLoad" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\SharedEffectsSCBW\ProtossTransportSCBW@Load00.ogg"/>
@@ -3804,6 +3879,9 @@
         <TechInfoUpgradeUsed value="CarrierSCBWHangarIncreaseUpgrade"/>
         <DataRecord Entry="Actor,CarrierSCBW@Land"/>
         <DataRecord Entry="Actor,CarrierSCBW@WarpInStargate"/>
+        <DataRecord Entry="Actor,CarrierSCBW@DeathActor"/>
+        <DataRecord Entry="Actor,CarrierSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Actor,CarrierSCBW@DeathRagdollDetonationForce"/>
         <DataRecord Entry="Button,CarrierSCBW@InterceptorRecall"/>
         <DataRecord Entry="Button,CarrierSCBW@InterceptorEscort"/>
         <DataRecord Entry="Button,CarrierSCBW@Passive"/>
@@ -3827,6 +3905,8 @@
         <DataRecord Entry="Sound,CarrierSCBW@Pissed"/>
         <DataRecord Entry="Sound,CarrierSCBW@Movement"/>
         <DataRecord Entry="Tactical,CarrierSCBW"/>
+        <DataRecord Entry="Texture,CarrierSCBW@Diff"/>
+        <DataRecord Entry="Texture,CarrierSCBW@Spec"/>
         <DataRecord Entry="Validator,CarrierSCBW@HangarQueueEmpty"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="CorsairSCBW" parent="ProtossAirUnitSCBW">
@@ -3936,7 +4016,9 @@
         <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="InterceptorSCBW" parent="ProtossAirUnitSCBW">
+        <DataRecord Entry="Actor,InterceptorSCBW@Banker"/>
         <DataRecord Entry="Actor,InterceptorSCBW@Land"/>
+        <DataRecord Entry="Behavior,InterceptorSCBW@Return"/>
         <DataRecord Entry="Behavior,InterceptorSCBW@NotLaunchable"/>
         <DataRecord Entry="Behavior,InterceptorSCBW@RegenerateLife"/>
         <DataRecord Entry="Behavior,InterceptorSCBW@RegenerateShields"/>
@@ -3947,8 +4029,11 @@
         <DataRecord Entry="Effect,InterceptorSCBW@HealShieldsRB"/>
         <DataRecord Entry="Effect,InterceptorSCBW@HealLifeRB"/>
         <DataRecord Entry="Effect,InterceptorSCBW@NotLaunchableRB"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@ReturnAB"/>
         <DataRecord Entry="Effect,InterceptorSCBW@CreateSet"/>
         <DataRecord Entry="Effect,InterceptorSCBW@ReturnSet"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@ReturnOrderOffset"/>
+        <DataRecord Entry="Effect,InterceptorSCBW@ReturnOrder"/>
         <DataRecord Entry="Effect,InterceptorSCBW@HealSet"/>
         <DataRecord Entry="Effect,InterceptorSCBW@NotLaunchableAB"/>
         <DataRecord Entry="Effect,InterceptorSCBW@HealShields"/>
@@ -3970,9 +4055,10 @@
         <DataRecord Entry="Sound,InterceptorSCBW@Land"/>
         <DataRecord Entry="Sound,InterceptorSCBW@Death"/>
         <DataRecord Entry="Tactical,InterceptorSCBW"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@VitalityCondition"/>
+        <DataRecord Entry="Validator,InterceptorSCBW@ReturnOrderValidator"/>
         <DataRecord Entry="Validator,InterceptorSCBW@CarrierNotPatrolling"/>
         <DataRecord Entry="Validator,InterceptorSCBW@NotAttacking"/>
-        <DataRecord Entry="Validator,InterceptorSCBW@VitalityCondition"/>
         <DataRecord Entry="Validator,InterceptorSCBW@VitalityCheckOne"/>
         <DataRecord Entry="Validator,InterceptorSCBW@VitalityCheckTwo"/>
         <DataRecord Entry="Validator,InterceptorSCBW@LifeLT20"/>
@@ -4115,10 +4201,10 @@
         <DataRecord Entry="Actor,ProbeSCBW@HarvestSound"/>
         <DataRecord Entry="Actor,ProbeSCBW@Death"/>
         <DataRecord Entry="Actor,ProbeSCBW@Land"/>
-        <DataRecord Entry="Button,ProbeSCBW@Build"/>
-        <DataRecord Entry="Button,ProbeSCBW@BuildAdv"/>
         <DataRecord Entry="Button,ProbeSCBW@Harvest"/>
         <DataRecord Entry="Button,ProbeSCBW@ReturnCargo"/>
+        <DataRecord Entry="Button,ProbeSCBW@BuildAdv"/>
+        <DataRecord Entry="Button,ProbeSCBW@Build"/>
         <DataRecord Entry="Model,ProbeSCBW@DeathRagdoll"/>
         <DataRecord Entry="RequirementNode,ProbeSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ProbeSCBW@AllowUnit"/>
@@ -5592,9 +5678,21 @@
     <CBehaviorBuff id="ObserverSCBW@Detector" parent="Detector9">
         <Name value="Behavior/Name/ObserverSCBW@Detector"/>
     </CBehaviorBuff>
+    <CBehaviorBuff id="InterceptorSCBW@Return">
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <DisableValidatorArray value="InterceptorSCBW@RightNextToCarrier"/>
+        <DisableValidatorArray value="InterceptorSCBW@CarrierNotPatrolling"/>
+        <DisableValidatorArray value="InterceptorSCBW@NotAttacking"/>
+        <DisableValidatorArray value="TargetHasNoOrders"/>
+        <RemoveValidatorArray value="NotHidden"/>
+        <Period value="1"/>
+        <PeriodicEffect value="InterceptorSCBW@ReturnOrderOffset"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="InterceptorSCBW@ReturnSlow">
         <InfoIcon value="Assets/Textures/btn-command-returncargo.dds"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <DisableValidatorArray value="NotHidden"/>
         <DisableValidatorArray value="InterceptorSCBW@IsMovingThreshold"/>
         <DisableValidatorArray value="InterceptorSCBW@CloseToCarrier"/>
         <DisableValidatorArray value="InterceptorSCBW@CarrierNotPatrolling"/>
@@ -5605,14 +5703,15 @@
     <CBehaviorBuff id="InterceptorSCBW@ReturnHalt">
         <InfoIcon value="Assets/Textures/btn-command-returncargo.dds"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <DisableValidatorArray value="NotHidden"/>
         <DisableValidatorArray value="InterceptorSCBW@IsMovingThreshold"/>
         <DisableValidatorArray value="InterceptorSCBW@RightNextToCarrier"/>
         <DisableValidatorArray value="InterceptorSCBW@CarrierNotPatrolling"/>
         <DisableValidatorArray value="InterceptorSCBW@NotAttacking"/>
+        <InfoFlags index="Hidden" value="1"/>
         <Modification>
             <AbilClassDisableArray index="CAbilMove" value="1"/>
         </Modification>
-        <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="InterceptorSCBW@RegenerateLife">
         <InfoIcon value="Assets/Textures/btn-ability-terran-heal-color.dds"/>

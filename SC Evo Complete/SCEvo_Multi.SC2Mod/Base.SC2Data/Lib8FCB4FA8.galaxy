@@ -36,8 +36,71 @@ void lib8FCB4FA8_gt_Initialization_Init () {
     TriggerAddEventMapInit(lib8FCB4FA8_gt_Initialization);
 }
 
+//--------------------------------------------------------------------------------------------------
+// Trigger: LiberatorEnsnareTransferHandler
+//--------------------------------------------------------------------------------------------------
+bool lib8FCB4FA8_gt_LiberatorEnsnareTransferHandler_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    fixed lv_remaining;
+    unit lv_target;
+    int lv_i;
+    string lv_oldBuff;
+    string lv_newBuff;
+
+    // Automatic Variable Declarations
+    int auto0633564A_ae;
+    const int auto0633564A_ai = 1;
+
+    // Variable Initialization
+    lv_target = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_target) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((UnitHasBehavior2(lv_target, "QueenSCBWEnsnare") == true)) {
+        lv_oldBuff = "QueenSCBWEnsnare";
+        lv_newBuff = "QueenSCBWEnsnare@Movement";
+    }
+    else if ((UnitHasBehavior2(lv_target, "QueenSCBWEnsnare@Movement") == true)) {
+        lv_oldBuff = "QueenSCBWEnsnare@Movement";
+        lv_newBuff = "QueenSCBWEnsnare";
+    }
+    else if (true) {
+        return true;
+    }
+    lv_remaining = UnitBehaviorDuration(lv_target, lv_oldBuff);
+    UnitBehaviorRemove(lv_target, lv_oldBuff, 1);
+    UnitBehaviorAdd(lv_target, lv_newBuff, lv_target, 1);
+    auto0633564A_ae = UnitBehaviorCountAll(lv_target);
+    lv_i = 1;
+    for ( ; ( (auto0633564A_ai >= 0 && lv_i <= auto0633564A_ae) || (auto0633564A_ai < 0 && lv_i >= auto0633564A_ae) ) ; lv_i += auto0633564A_ai ) {
+        if ((UnitBehaviorGet(lv_target, lv_i) == lv_newBuff)) {
+            UnitBehaviorSetDurationRemaining(lv_target, UnitBehaviorGet(lv_target, lv_i), lv_remaining);
+            return true;
+        }
+
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void lib8FCB4FA8_gt_LiberatorEnsnareTransferHandler_Init () {
+    lib8FCB4FA8_gt_LiberatorEnsnareTransferHandler = TriggerCreate("lib8FCB4FA8_gt_LiberatorEnsnareTransferHandler_Func");
+    TriggerAddEventPlayerEffectUsed(lib8FCB4FA8_gt_LiberatorEnsnareTransferHandler, c_playerAny, "LiberatorMorphStartEnsnareTransfer");
+}
+
 void lib8FCB4FA8_InitTriggers () {
     lib8FCB4FA8_gt_Initialization_Init();
+    lib8FCB4FA8_gt_LiberatorEnsnareTransferHandler_Init();
 }
 
 //--------------------------------------------------------------------------------------------------

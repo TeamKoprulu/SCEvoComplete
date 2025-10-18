@@ -25,9 +25,34 @@ void libSCEV_InitVariables () {
 
     libSCEV_gv_mineralWallsGlobalMineralWalls = UnitGroupEmpty();
     libSCEV_gv_mineralWallsTimer = TimerCreate();
-    libSCEV_gv_fractionalArmorFilter = UnitFilter(0, 0, 0, (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)));
+    libSCEV_gv_fractionalArmorFilter = UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)));
     libSCEV_gv_missChanceRevealTimer = TimerCreate();
     libSCEV_gv_missChanceTrigger = libSCEV_gt_MissChanceHighGroundRegionEnter;
+    for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
+        for (init_j = 0; init_j <= 1; init_j += 1) {
+            libSCEV_gv_raceSupplyData[init_i][init_j].lv_ceiling = 200.0;
+            libSCEV_gv_raceSupplyData[init_i][init_j].lv_providers = UnitGroupEmpty();
+            libSCEV_gv_raceSupplyData[init_i][init_j].lv_consumers = UnitGroupEmpty();
+            libSCEV_gv_raceSupplyData[init_i][init_j].lv_producers = UnitGroupEmpty();
+        }
+    }
+    for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
+        for (init_j = 0; init_j <= 1; init_j += 1) {
+            libSCEV_gv_raceSupplyRaceGroups[init_i][init_j] = "";
+        }
+    }
+    for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
+        for (init_j = 0; init_j <= 1; init_j += 1) {
+            libSCEV_gv_raceSupplyMorphUnits[init_i][init_j] = "";
+        }
+    }
+    libSCEV_gv_raceSupplyFilter = UnitFilter(0, 0, (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), (1 << (c_targetFilterHallucination - 32)) | (1 << (c_targetFilterSummoned - 32)));
+    libSCEV_gv_raceSupplyRacesInitialized = "";
+    libSCEV_gv_raceSupplyPlayers = PlayerGroupEmpty();
+    libSCEV_gv_raceSupplyQueueAbils = UserDataGetString("SCBW_RaceSupply@Data", "QueueAbilities", "Data", 1);
+    for (init_i = 0; init_i <= 1; init_i += 1) {
+        libSCEV_gv_raceSupplyLabel[init_i] = c_invalidDialogControlId;
+    }
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
             libSCEV_gv_minimapAllyViewPings[init_i][init_j] = c_invalidPingId;
@@ -779,6 +804,9 @@ void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate
     else if ((lp_feature == libSCEV_ge_SCEvoFeatures_AllyMinimapView)) {
         libSCEV_gf_MinimapAllyViewEnableDisable(lv_enabledisable);
     }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_RaceBasedSupply)) {
+        libSCEV_gf_RaceSupplyActivate(lp_activateDeactivate);
+    }
     else if (true) {
     }
     libSCEV_gv_sCEvoFeatureEnabled[(lp_feature)] = lv_onOff;
@@ -1060,10 +1088,13 @@ void libSCEV_gf_OperationCwal (unit lp_unit, int lp_type) {
         UnitBehaviorAdd(lp_unit, "InstantMorph", lp_unit, 1);
     }
     else {
-        auto91789F07_ae = UnitQueueItemCount(lp_unit, 1);
+        auto91789F07_ae = MinI(UnitQueueGetProperty(lp_unit, c_unitQueuePropertyUsed), UnitQueueGetProperty(lp_unit, c_unitQueuePropertyCount));
         lv_i = 1;
         for ( ; ( (auto91789F07_ai >= 0 && lv_i <= auto91789F07_ae) || (auto91789F07_ai < 0 && lv_i >= auto91789F07_ae) ) ; lv_i += auto91789F07_ai ) {
-            UnitSetProgressComplete(lp_unit, lv_i, 100);
+            if ((UnitCheckProgressState(lp_unit, lv_i, c_unitProgressStatePaused) == false)) {
+                UnitSetProgressComplete(lp_unit, lv_i, 100);
+            }
+
         }
     }
 }
@@ -1158,6 +1189,1028 @@ void libSCEV_gf_InfiniteMoneyMapNewOrder (unit lp_unit, abilcmd lp_oldAbil, abil
         else {
             UnitIssueOrder(lp_unit, lv_orders[lv_i], c_orderQueueAddToEnd);
         }
+    }
+}
+
+void libSCEV_gf_RaceSupplyActivate (bool lp_activateDeactivate) {
+    // Automatic Variable Declarations
+    playergroup autoE1C2C6D3_g;
+    int autoE1C2C6D3_var;
+    playergroup autoCE8B6A8B_g;
+    int autoCE8B6A8B_var;
+
+    // Implementation
+    if ((lp_activateDeactivate == true) && (libSCEV_gv_raceSupplyInitialized == false)) {
+        libSCEV_gf_RaceSupplyInitialize();
+        TriggerEnable(libSCEV_gt_RaceSupplyActivateTrigger, true);
+        TriggerEnable(libSCEV_gt_RaceSupplySyncSupplies, true);
+        TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl, true);
+    }
+    else {
+        libSCEV_gf_RaceSupplyHideSupplyLabels(PlayerGroupAll());
+        if ((lp_activateDeactivate == true)) {
+            libSCEV_gf_RaceSupplyToggleTriggers(true);
+            autoCE8B6A8B_g = libSCEV_gv_raceSupplyPlayers;
+            autoCE8B6A8B_var = -1;
+            while (true) {
+                autoCE8B6A8B_var = PlayerGroupNextPlayer(autoCE8B6A8B_g, autoCE8B6A8B_var);
+                if (autoCE8B6A8B_var < 0) { break; }
+                libSCEV_gf_RaceSupplyCatalogUpdate(autoCE8B6A8B_var, -1);
+            }
+        }
+        else {
+            libSCEV_gf_RaceSupplyToggleTriggers(false);
+            autoE1C2C6D3_g = PlayerGroupActive();
+            autoE1C2C6D3_var = -1;
+            while (true) {
+                autoE1C2C6D3_var = PlayerGroupNextPlayer(autoE1C2C6D3_g, autoE1C2C6D3_var);
+                if (autoE1C2C6D3_var < 0) { break; }
+                libSCEV_gf_RaceSupplyCatalogReset(autoE1C2C6D3_var, -1);
+            }
+        }
+    }
+}
+
+void libSCEV_gf_RaceSupplyHideSupplyLabels (playergroup lp_playerGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    DialogControlSetVisible(libSCEV_gv_raceSupplyLabel[0], lp_playerGroup, false);
+    DialogControlSetVisible(libSCEV_gv_raceSupplyLabel[1], lp_playerGroup, false);
+}
+
+void libSCEV_gf_RaceSupplyCatalogUpdate (int lp_player, int lp_raceGroup) {
+    // Variable Declarations
+    string lv_entry;
+    int lv_catalog;
+    string lv_race;
+    int lv_resourceIndex;
+    fixed lv_foodCost;
+    string lv_multiTrainUnits;
+    string lv_instance;
+    string lv_abilLink;
+    int lv_count;
+    int lv_infoIndex;
+
+    // Automatic Variable Declarations
+    int autoBE7EF045_catalog;
+    int autoBE7EF045_i;
+
+    // Variable Initialization
+    lv_catalog = c_gameCatalogUnit;
+    lv_race = "";
+    lv_resourceIndex = -1;
+    lv_multiTrainUnits = "";
+
+    // Implementation
+    if ((libSCEV_gv_raceSupplyActivated[lp_player] == true)) {
+        libSCEV_gf_RaceSupplyCatalogReset(lp_player, lp_raceGroup);
+    }
+
+    libSCEV_gv_raceSupplyActivated[lp_player] = true;
+    autoBE7EF045_catalog = lv_catalog;
+    autoBE7EF045_i = 1;
+    for ( ; autoBE7EF045_i <= CatalogEntryCount(lv_catalog) ; autoBE7EF045_i += 1 ) {
+        lv_entry = CatalogEntryGet(autoBE7EF045_catalog, autoBE7EF045_i);
+        lv_resourceIndex = -1;
+        lv_race = CatalogFieldValueGet(c_gameCatalogUnit, lv_entry, "Race", c_playerAny);
+        lv_foodCost = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogUnit, lv_entry, "Food", c_playerAny);
+        if (((lv_foodCost == 0.0) || (CatalogFieldValueGetAsInt(c_gameCatalogUnit, lv_entry, "FlagArray[" + IntToString(21) + "]", c_playerAny) == 1))) {
+            continue;
+        }
+
+        if ((libSCEV_gf_RaceSupplyGetRaceGroup(lp_player, lv_race) < 0)) {
+            continue;
+        }
+        else if ((libSCEV_gf_RaceSupplyGetRaceGroup(lp_player, lv_race) == libSCEV_ge_RaceSupplyGroup_Secondary) && ((lp_raceGroup == -1) || (lp_raceGroup == libSCEV_ge_RaceSupplyGroup_Secondary))) {
+            lv_resourceIndex = 2;
+        }
+        else if ((libSCEV_gf_RaceSupplyGetRaceGroup(lp_player, lv_race) == libSCEV_ge_RaceSupplyGroup_Tertiary) && ((lp_raceGroup == -1) || (lp_raceGroup == libSCEV_ge_RaceSupplyGroup_Tertiary))) {
+            lv_resourceIndex = 3;
+        }
+        if ((lv_resourceIndex == -1)) {
+            continue;
+        }
+
+        lv_multiTrainUnits = UserDataGetString("SCBW_RaceSupply", lv_race, "MultiTrainUnits", 1);
+        CatalogFieldValueSet(c_gameCatalogUnit, lv_entry, "Food", lp_player, "0");
+        if ((lv_foodCost >= 0.0)) {
+            continue;
+        }
+
+        lv_foodCost = (lv_foodCost * -1.0);
+        if ((StringFind(lv_multiTrainUnits, (lv_entry), c_stringCase) >= 0)) {
+            lv_instance = lv_entry;;
+            if ((lv_entry == UserDataGetGameLink("SCBW_RaceSupply@MultiTrain", lv_instance, "UnitType", 1))) {
+                lv_abilLink = UserDataGetGameLink("SCBW_RaceSupply@MultiTrain", lv_instance, "TrainAbility", 1);
+                lv_infoIndex = UserDataGetInt("SCBW_RaceSupply@MultiTrain", lv_instance, "InfoIndex", 1);
+                lv_count = UserDataGetInt("SCBW_RaceSupply@MultiTrain", lv_instance, "Count", 1);
+                libNtve_gf_CatalogFieldValueSetAsReal(c_gameCatalogAbil, lv_abilLink, "InfoArray[" + IntToString(lv_infoIndex) + "].Resource[" + IntToString(lv_resourceIndex) + "]", lp_player, (lv_foodCost * IntToFixed(lv_count)));
+            }
+
+        }
+        else {
+            CatalogFieldValueSet(c_gameCatalogUnit, lv_entry, "CostResource[" + IntToString(lv_resourceIndex) + "]", lp_player, IntToString(FixedToInt(lv_foodCost)));
+        }
+    }
+}
+
+void libSCEV_gf_RaceSupplyCatalogReset (int lp_player, int lp_raceGroup) {
+    // Variable Declarations
+    string lv_link;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Implementation
+    if ((libSCEV_gv_raceSupplyActivated[lp_player] == false)) {
+        return ;
+    }
+
+    libSCEV_gv_raceSupplyActivated[lp_player] = false;
+}
+
+void libSCEV_gf_RaceSupplyInitialize () {
+    // Variable Declarations
+    string lv_playerRace;
+    int lv_k;
+    int lv_i;
+    string lv_gameLink;
+    string lv_loopLinks;
+
+    // Automatic Variable Declarations
+    playergroup autoB60FB934_g;
+    int autoB60FB934_var;
+
+    // Variable Initialization
+    lv_playerRace = "";
+    lv_k = 1;
+    lv_gameLink = "";
+    lv_loopLinks = "";
+
+    // Implementation
+    DialogControlHookupStandard(c_triggerControlTypeCountdownLabel, "UIContainer/FullscreenUpperContainer/ResourcePanel/ResourceFrame/RaceSupplyLabel0");
+    libSCEV_gv_raceSupplyLabel[0] = DialogControlLastCreated();
+    DialogControlSetVisible(libSCEV_gv_raceSupplyLabel[0], PlayerGroupAll(), false);
+    DialogControlHookupStandard(c_triggerControlTypeCountdownLabel, "UIContainer/FullscreenUpperContainer/ResourcePanel/ResourceFrame/RaceSupplyLabel1");
+    libSCEV_gv_raceSupplyLabel[1] = DialogControlLastCreated();
+    DialogControlSetVisible(libSCEV_gv_raceSupplyLabel[1], PlayerGroupAll(), false);
+    autoB60FB934_g = PlayerGroupActive();
+    autoB60FB934_var = -1;
+    while (true) {
+        autoB60FB934_var = PlayerGroupNextPlayer(autoB60FB934_g, autoB60FB934_var);
+        if (autoB60FB934_var < 0) { break; }
+        libSCEV_gf_RaceSupplyInitRaceGroup(autoB60FB934_var);
+    }
+    lv_k = 1;
+    lv_loopLinks = UserDataGetString("SCBW_RaceSupply@Data", "TriggerEffects", "Data", 1);
+    lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    while ((lv_gameLink != "")) {
+        libSCEV_gf_RaceSupplyRegisterActivationEffect(libSCEV_gt_RaceSupplyActivateTrigger, (lv_gameLink));
+        lv_k += 1;
+        lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    }
+    lv_k = 1;
+    lv_loopLinks = UserDataGetString("SCBW_RaceSupply@Data", "TemporaryMindControlBehaviors", "Data", 1);
+    lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    while ((lv_gameLink != "")) {
+        libSCEV_gf_RaceSupplyRegisterActivationBehavior(libSCEV_gt_RaceSupplyTempMindControl, (lv_gameLink));
+        lv_k += 1;
+        lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    }
+    libSCEV_gv_raceSupplyInitialized = true;
+}
+
+void libSCEV_gf_RaceSupplyInitRace (string lp_race) {
+    // Variable Declarations
+    int lv_i;
+    int lv_k;
+    string lv_gameLink;
+    string lv_raceInstance;
+    string lv_loopLinks;
+
+    // Automatic Variable Declarations
+    const int auto8E6E132B_ae = 2;
+    const int auto8E6E132B_ai = 1;
+
+    // Variable Initialization
+    lv_k = 1;
+    lv_gameLink = "";
+    lv_raceInstance = lp_race;
+    lv_loopLinks = "";
+
+    // Implementation
+    libSCEV_gv_raceSupplyRacesInitialized = (libSCEV_gv_raceSupplyRacesInitialized + (lp_race) + " ");
+    lv_i = 1;
+    for ( ; ( (auto8E6E132B_ai >= 0 && lv_i <= auto8E6E132B_ae) || (auto8E6E132B_ai < 0 && lv_i >= auto8E6E132B_ae) ) ; lv_i += auto8E6E132B_ai ) {
+        lv_k = 1;
+        lv_loopLinks = UserDataGetString("SCBW_RaceSupply", lv_raceInstance, "TrainAbilities", lv_i);
+        lv_gameLink = StringWord(lv_loopLinks, lv_k);
+        while ((lv_gameLink != "")) {
+            if ((lv_i == 2)) {
+                libSCEV_gf_RaceSupplyRegisterTrainAbility((lv_gameLink), false);
+            }
+            else {
+                libSCEV_gf_RaceSupplyRegisterTrainAbility((lv_gameLink), true);
+            }
+            lv_k += 1;
+            lv_gameLink = StringWord(lv_loopLinks, lv_k);
+        }
+    }
+    lv_k = 1;
+    lv_loopLinks = UserDataGetString("SCBW_RaceSupply", lv_raceInstance, "MergeAbilities", 1);
+    lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    while ((lv_gameLink != "")) {
+        libSCEV_gf_RaceSupplyRegisterMergeAbility(libSCEV_gt_RaceSupplyMergeStart, (lv_gameLink));
+        lv_k += 1;
+        lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    }
+    lv_k = 1;
+    lv_loopLinks = UserDataGetString("SCBW_RaceSupply", lv_raceInstance, "MorphAbilities", 1);
+    lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    while ((lv_gameLink != "")) {
+        libSCEV_gf_RaceSupplyRegisterMorphAbility(libSCEV_gt_RaceSupplyMorphStart, (lv_gameLink));
+        lv_k += 1;
+        lv_gameLink = StringWord(lv_loopLinks, lv_k);
+    }
+}
+
+void libSCEV_gf_RaceSupplyInitRaceGroup (int lp_player) {
+    int init_i;
+
+    // Variable Declarations
+    int lv_index;
+    int lv_k;
+    string lv_instance;
+    string[2] lv_raceGroups;
+    string lv_gameLink;
+    string lv_loopLinks;
+
+    // Automatic Variable Declarations
+    int auto061DE42C_ae;
+    const int auto061DE42C_ai = 1;
+    const int autoE15A5FA5_ae = 1;
+    const int autoE15A5FA5_ai = 1;
+
+    // Variable Initialization
+    for (init_i = 0; init_i <= 1; init_i += 1) {
+        lv_raceGroups[init_i] = "";
+    }
+    lv_gameLink = "";
+    lv_loopLinks = "";
+
+    // Implementation
+    auto061DE42C_ae = UserDataInstanceCount("SCBW_RaceSupply@Groups");
+    lv_k = 1;
+    for ( ; ( (auto061DE42C_ai >= 0 && lv_k <= auto061DE42C_ae) || (auto061DE42C_ai < 0 && lv_k >= auto061DE42C_ae) ) ; lv_k += auto061DE42C_ai ) {
+        lv_instance = UserDataInstance("SCBW_RaceSupply@Groups", lv_k);
+        if ((StringFind(UserDataGetString("SCBW_RaceSupply@Groups", lv_instance, "RaceGroup_Main", 1), (PlayerRace(lp_player)), c_stringCase) >= 0)) {
+            libSCEV_gv_raceSupplyRaceGroups[lp_player][0] = UserDataGetString("SCBW_RaceSupply@Groups", lv_instance, "RaceGroup_Second", 1);
+            libSCEV_gv_raceSupplyRaceGroups[lp_player][1] = UserDataGetString("SCBW_RaceSupply@Groups", lv_instance, "RaceGroup_Third", 1);
+            lv_raceGroups[0] = libSCEV_gv_raceSupplyRaceGroups[lp_player][0];
+            lv_raceGroups[1] = libSCEV_gv_raceSupplyRaceGroups[lp_player][1];
+            lv_index = 0;
+            for ( ; ( (autoE15A5FA5_ai >= 0 && lv_index <= autoE15A5FA5_ae) || (autoE15A5FA5_ai < 0 && lv_index >= autoE15A5FA5_ae) ) ; lv_index += autoE15A5FA5_ai ) {
+                libSCEV_gv_raceSupplyData[lp_player][lv_index].lv_ceiling = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogRace, StringWord(lv_raceGroups[lv_index], 1), "FoodCeiling", lp_player);
+                lv_k = 1;
+                lv_loopLinks = lv_raceGroups[lv_index];
+                lv_gameLink = StringWord(lv_loopLinks, lv_k);
+                while ((lv_gameLink != "")) {
+                    libSCEV_gv_raceSupplyMorphUnits[lp_player][lv_index] = (libSCEV_gv_raceSupplyMorphUnits[lp_player][lv_index] + UserDataGetString("SCBW_RaceSupply", lv_gameLink, "MorphBuilders", 1) + " ");
+                    lv_k += 1;
+                    lv_gameLink = StringWord(lv_loopLinks, lv_k);
+                }
+            }
+            break;
+        }
+
+    }
+}
+
+void libSCEV_gf_RaceSupplyActivateRace (int lp_player, string lp_race, int lp_raceGroup) {
+    // Variable Declarations
+    unit lv_u;
+    int lv_slotIndex;
+
+    // Automatic Variable Declarations
+    unitgroup auto1FD77250_g;
+    int auto1FD77250_u;
+    int autoE5E21C18_ae;
+    const int autoE5E21C18_ai = 1;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((lp_raceGroup < 0)) {
+        return ;
+    }
+
+    if ((libSCEV_gf_RaceSupplyIsRaceInitialized(lp_race) == false)) {
+        libSCEV_gf_RaceSupplyInitRace(lp_race);
+        auto1FD77250_g = UnitGroup(null, lp_player, RegionEntireMap(), libSCEV_gv_raceSupplyFilter, 0);
+        auto1FD77250_u = UnitGroupCount(auto1FD77250_g, c_unitCountAll);
+        for (;; auto1FD77250_u -= 1) {
+            lv_u = UnitGroupUnitFromEnd(auto1FD77250_g, auto1FD77250_u);
+            if (lv_u == null) { break; }
+            if ((UnitIsValid(lv_u) == true) && (UnitIsAlive(lv_u) == true) && (UnitQueueGetProperty(lv_u, c_unitQueuePropertyUsed) > 0) && (lp_raceGroup == libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_u, lp_player))) {
+                autoE5E21C18_ae = UnitQueueGetProperty(lv_u, c_unitQueuePropertyUsed);
+                lv_slotIndex = 1;
+                for ( ; ( (autoE5E21C18_ai >= 0 && lv_slotIndex <= autoE5E21C18_ae) || (autoE5E21C18_ai < 0 && lv_slotIndex >= autoE5E21C18_ae) ) ; lv_slotIndex += autoE5E21C18_ai ) {
+                    UnitIssueOrder(lv_u, libSCEV_gf_RaceSupplyGetCancelOrderForUnit(lv_u), c_orderQueueAddToFront);
+                }
+            }
+
+        }
+    }
+
+    if ((PlayerGroupHasPlayer(libSCEV_gv_raceSupplyPlayers, lp_player) == false)) {
+        PlayerGroupAdd(libSCEV_gv_raceSupplyPlayers, lp_player);
+    }
+
+    if ((DialogControlIsVisible(libSCEV_gv_raceSupplyLabel[lp_raceGroup], lp_player) == false)) {
+        DialogControlSetVisible(libSCEV_gv_raceSupplyLabel[lp_raceGroup], PlayerGroupSingle(lp_player), true);
+    }
+
+    if ((libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_active == false)) {
+        libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_active = true;
+        libSCEV_gf_RaceSupplyCatalogUpdate(lp_player, lp_raceGroup);
+        libSCEV_gf_RaceSupplyRegisterAllUnits(lp_player);
+    }
+
+    if ((TriggerIsEnabled(libSCEV_gt_RaceSupplyUnitBirth) == false)) {
+        libSCEV_gf_RaceSupplyToggleTriggers(true);
+    }
+
+}
+
+void libSCEV_gf_RaceSupplyToggleTriggers (bool lp_onOff) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerEnable(libSCEV_gt_RaceSupplyUnitBirth, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyUnitDeath, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyUnitRemoved, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyTrainFinish, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyTrainCancel, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyTrainEvent, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyMorphStart, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyMorphConstructionStart, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyConstructionFinish, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyMergeStart, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyArmingFinished, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyOwnerChange, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyActivateTrigger, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplySyncSupplies, lp_onOff);
+    TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl, lp_onOff);
+    if ((lp_onOff == false)) {
+        TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl_ConstructStart, lp_onOff);
+    }
+
+}
+
+void libSCEV_gf_RaceSupplySyncAvailable (int lp_player, int lp_raceGroup) {
+    // Variable Declarations
+    fixed lv_used;
+    fixed lv_max;
+    fixed lv_reserved;
+    fixed lv_available;
+    playergroup lv_playerGroup;
+    string lv_supplyString;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_playerGroup = PlayerGroupSingle(lp_player);
+    lv_supplyString = "";
+
+    // Implementation
+    lv_used = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_used;
+    lv_max = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_max;
+    if ((lv_max > libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_ceiling)) {
+        lv_max = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_ceiling;
+    }
+
+    lv_reserved = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_reserved;
+    lv_available = (lv_max - (lv_used + lv_reserved));
+    if ((lv_available < 0.0)) {
+        lv_available = 0.0;
+    }
+
+    if (((lv_used + lv_reserved) > lv_max)) {
+        libNtve_gf_SetDialogItemColor(libSCEV_gv_raceSupplyLabel[lp_raceGroup], Color(100.00, 0.00, 0.00), lv_playerGroup);
+    }
+    else {
+        libNtve_gf_SetDialogItemColor(libSCEV_gv_raceSupplyLabel[lp_raceGroup], Color(100,100,100), lv_playerGroup);
+    }
+    lv_supplyString = IntToString(FixedToInt(Ceiling((lv_used + lv_reserved))));
+    if ((lv_max == 0.0)) {
+        libNtve_gf_SetDialogItemText(libSCEV_gv_raceSupplyLabel[lp_raceGroup], StringToText(lv_supplyString), lv_playerGroup);
+    }
+    else {
+        libNtve_gf_SetDialogItemText(libSCEV_gv_raceSupplyLabel[lp_raceGroup], StringToText((lv_supplyString + "/" + IntToString(FixedToInt(lv_max)))), lv_playerGroup);
+    }
+    if ((lp_raceGroup == libSCEV_ge_RaceSupplyGroup_Secondary)) {
+        PlayerModifyPropertyInt(lp_player, c_playerPropTerrazine, c_playerPropOperSetTo, FixedToInt(lv_available));
+    }
+    else {
+        PlayerModifyPropertyInt(lp_player, c_playerPropCustom, c_playerPropOperSetTo, FixedToInt(lv_available));
+    }
+}
+
+void libSCEV_gf_RaceSupplySyncSendEvent (int lp_player, int lp_raceGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    libSCEV_gv_raceSupplySyncSuppliesPlayer = lp_player;
+    libSCEV_gv_raceSupplySyncSuppliesRace = lp_raceGroup;
+    TriggerSendEvent(libSCEV_gv_raceSupplySyncSuppliesEvent);
+}
+
+void libSCEV_gf_RaceSupplyRecalcAll (int lp_player, int lp_raceGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lp_player, lp_raceGroup) == false)) {
+        return ;
+    }
+
+    libSCEV_gf_RaceSupplyRecalcConsumer(lp_player, lp_raceGroup, false);
+    libSCEV_gf_RaceSupplyRecalcProvider(lp_player, lp_raceGroup, false);
+    libSCEV_gf_RaceSupplyRecalcProducer(lp_player, lp_raceGroup, false);
+    libSCEV_gf_RaceSupplyUnpauseQueues(lp_player, lp_raceGroup);
+    libSCEV_gf_RaceSupplySyncAvailable(lp_player, lp_raceGroup);
+}
+
+void libSCEV_gf_RaceSupplyUnpauseQueues (int lp_player, int lp_raceGroup) {
+    // Variable Declarations
+    int lv_slotsUsed;
+    int lv_slotIndex;
+    string lv_queuedUnitType;
+    unit lv_u;
+    fixed lv_food;
+    int lv_slotCount;
+    int lv_itemCount;
+    int lv_itemIndex;
+    fixed lv_used;
+    fixed lv_reserved;
+    fixed lv_max;
+
+    // Automatic Variable Declarations
+    unitgroup autoEF5AE938_g;
+    int autoEF5AE938_u;
+    int auto3BEA1E8A_ae;
+    const int auto3BEA1E8A_ai = 1;
+    int autoFD8439A1_ae;
+    const int autoFD8439A1_ai = 1;
+
+    // Variable Initialization
+
+    // Implementation
+    lv_used = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_used;
+    lv_reserved = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_reserved;
+    lv_max = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_max;
+    autoEF5AE938_g = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_producers;
+    autoEF5AE938_u = UnitGroupCount(autoEF5AE938_g, c_unitCountAll);
+    for (;; autoEF5AE938_u -= 1) {
+        lv_u = UnitGroupUnitFromEnd(autoEF5AE938_g, autoEF5AE938_u);
+        if (lv_u == null) { break; }
+        if (((UnitIsValid(lv_u) == false) || (UnitGetOwner(lv_u) != lp_player))) {
+            UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_producers, lv_u);
+            continue;
+        }
+
+        if ((UnitQueueGetProperty(lv_u, c_unitQueuePropertyTotal) == 1)) {
+            return ;
+        }
+
+        lv_slotsUsed = UnitQueueGetProperty(lv_u, c_unitQueuePropertyUsed);
+        lv_slotCount = UnitQueueGetProperty(lv_u, c_unitQueuePropertyCount);
+        auto3BEA1E8A_ae = MinI(lv_slotsUsed, lv_slotCount);
+        lv_slotIndex = 1;
+        for ( ; ( (auto3BEA1E8A_ai >= 0 && lv_slotIndex <= auto3BEA1E8A_ae) || (auto3BEA1E8A_ai < 0 && lv_slotIndex >= auto3BEA1E8A_ae) ) ; lv_slotIndex += auto3BEA1E8A_ai ) {
+            lv_food = 0.0;
+            lv_itemCount = UnitQueueItemCount(lv_u, lv_slotIndex);
+            if ((UnitCheckProgressState(lv_u, lv_slotIndex, c_unitProgressStateEmpty) == true)) {
+                continue;
+            }
+
+            autoFD8439A1_ae = lv_itemCount;
+            lv_itemIndex = 1;
+            for ( ; ( (autoFD8439A1_ai >= 0 && lv_itemIndex <= autoFD8439A1_ae) || (autoFD8439A1_ai < 0 && lv_itemIndex >= autoFD8439A1_ae) ) ; lv_itemIndex += autoFD8439A1_ai ) {
+                lv_queuedUnitType = libNtve_gf_QueuedUnitTypeInTrainingQueueSlot(lv_u, lv_slotIndex, lv_itemIndex);
+                if (((CatalogEntryIsValid(c_gameCatalogUnit, lv_queuedUnitType) == false) || (libSCEV_gf_RaceSupplyGetRaceGroup(lp_player, libSCEV_gf_RaceSupplyGetRaceFromUnitType(lv_queuedUnitType)) != lp_raceGroup))) {
+                    continue;
+                }
+
+                lv_food += libSCEV_gf_RaceSupplyGetFoodCostFromUnitType(lv_queuedUnitType);
+            }
+            if ((lv_food < 0.0)) {
+                lv_food = (-lv_food);
+            }
+
+            if ((UnitCheckProgressState(lv_u, lv_slotIndex, c_unitProgressStatePaused) == true) && (((lv_used + lv_reserved) + lv_food) <= lv_max)) {
+                lv_reserved += lv_food;
+                libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_reserved = lv_reserved;
+                UnitSetProgressStage(lv_u, lv_slotIndex, c_unitProgressStageResume);
+                if ((libSCEV_gv_operationCwalActive[lp_player] == true)) {
+                    UnitSetProgressComplete(lv_u, lv_slotIndex, 100);
+                }
+
+            }
+            else {
+                if ((((lv_used + lv_reserved) + lv_food) > lv_max) && (UnitGetProgressComplete(lv_u, lv_slotIndex) > 0.0) && (UnitQueueItemTime(lv_u, c_unitQueueTimeElapsed, lv_slotIndex) <= libSCEV_gf_RaceSupplyGetPauseThresholdForPlayer(lp_player))) {
+                    UnitSetProgressComplete(lv_u, lv_slotIndex, 0);
+                    UnitSetProgressStage(lv_u, lv_slotIndex, c_unitProgressStagePause);
+                }
+
+            }
+        }
+    }
+}
+
+void libSCEV_gf_RaceSupplyRecalcProvider (int lp_player, int lp_raceGroup, bool lp_sync) {
+    // Automatic Variable Declarations
+    // Implementation
+    libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_max = MaxF(libSCEV_gf_RaceSupplyGetProviderTotal(lp_player, lp_raceGroup), 0.0);
+    if ((lp_sync == true)) {
+        libSCEV_gf_RaceSupplySyncAvailable(lp_player, lp_raceGroup);
+    }
+
+}
+
+void libSCEV_gf_RaceSupplyRecalcConsumer (int lp_player, int lp_raceGroup, bool lp_sync) {
+    // Automatic Variable Declarations
+    // Implementation
+    libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_used = MaxF(libSCEV_gf_RaceSupplyGetConsumerTotal(lp_player, lp_raceGroup), 0.0);
+    if ((lp_sync == true)) {
+        libSCEV_gf_RaceSupplySyncAvailable(lp_player, lp_raceGroup);
+    }
+
+}
+
+void libSCEV_gf_RaceSupplyRecalcProducer (int lp_player, int lp_raceGroup, bool lp_sync) {
+    // Automatic Variable Declarations
+    // Implementation
+    libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_reserved = MaxF(libSCEV_gf_RaceSupplyGetProducerTotal(lp_player, lp_raceGroup), 0.0);
+    if ((lp_sync == true)) {
+        libSCEV_gf_RaceSupplySyncAvailable(lp_player, lp_raceGroup);
+    }
+
+}
+
+void libSCEV_gf_RaceSupplyRegisterAllUnits (int lp_player) {
+    // Variable Declarations
+    unit lv_u;
+
+    // Automatic Variable Declarations
+    unitgroup autoD0AA0870_g;
+    int autoD0AA0870_u;
+
+    // Variable Initialization
+
+    // Implementation
+    autoD0AA0870_g = UnitGroup(null, lp_player, RegionEntireMap(), libSCEV_gv_raceSupplyFilter, 0);
+    autoD0AA0870_u = UnitGroupCount(autoD0AA0870_g, c_unitCountAll);
+    for (;; autoD0AA0870_u -= 1) {
+        lv_u = UnitGroupUnitFromEnd(autoD0AA0870_g, autoD0AA0870_u);
+        if (lv_u == null) { break; }
+        if ((UnitIsValid(lv_u) == true) && (UnitIsAlive(lv_u) == true)) {
+            libSCEV_gf_RaceSupplyRegisterUnit(lp_player, lv_u);
+        }
+
+    }
+}
+
+void libSCEV_gf_RaceSupplyRegisterUnit (int lp_player, unit lp_unit) {
+    // Variable Declarations
+    int lv_raceGroup;
+    fixed lv_food;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Implementation
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lp_unit, lp_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lp_player, lv_raceGroup) == false)) {
+        return ;
+    }
+
+    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(lp_unit);
+    if ((lv_food > 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterProvider(true, lp_unit, lp_player, lv_raceGroup);
+    }
+    else if ((lv_food < 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterConsumer(true, lp_unit, lp_player, lv_raceGroup);
+    }
+    if ((UnitQueueGetProperty(lp_unit, c_unitQueuePropertyUsed) > 0)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(true, lp_unit, lp_player, lv_raceGroup);
+    }
+
+}
+
+void libSCEV_gf_RaceSupplyRegisterProvider (bool lp_register, unit lp_unit, int lp_player, int lp_raceGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((lp_register == true)) {
+        UnitGroupAdd(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_providers, lp_unit);
+    }
+    else {
+        UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_providers, lp_unit);
+    }
+    libSCEV_gf_RaceSupplySyncSendEvent(lp_player, lp_raceGroup);
+}
+
+void libSCEV_gf_RaceSupplyRegisterConsumer (bool lp_register, unit lp_unit, int lp_player, int lp_raceGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((lp_register == true)) {
+        UnitGroupAdd(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_consumers, lp_unit);
+    }
+    else {
+        UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_consumers, lp_unit);
+    }
+    libSCEV_gf_RaceSupplySyncSendEvent(lp_player, lp_raceGroup);
+}
+
+void libSCEV_gf_RaceSupplyRegisterProducer (bool lp_register, unit lp_unit, int lp_player, int lp_raceGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((lp_register == true)) {
+        UnitGroupAdd(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_producers, lp_unit);
+    }
+    else {
+        UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_producers, lp_unit);
+    }
+    libSCEV_gf_RaceSupplySyncSendEvent(lp_player, lp_raceGroup);
+}
+
+void libSCEV_gf_RaceSupplyRegisterTrainAbility (string lp_abilityLink, bool lp_queueable) {
+    // Variable Declarations
+    int lv_abilIndex;
+    string lv_unitLink;
+    int lv_abilCount;
+    trigger lv_trigger;
+
+    // Automatic Variable Declarations
+    int auto95DD5D40_ae;
+    const int auto95DD5D40_ai = 1;
+
+    // Variable Initialization
+    lv_trigger = libSCEV_gt_RaceSupplyTrainEvent;
+
+    // Implementation
+    if ((AbilityClass(lp_abilityLink) != c_classIdCAbilTrain) && (AbilityClass(lp_abilityLink) != c_classIdCAbilArmMagazine)) {
+        return ;
+    }
+
+    lv_abilCount = CatalogFieldValueCount(c_gameCatalogAbil, lp_abilityLink, "InfoArray", c_playerAny);
+    auto95DD5D40_ae = (lv_abilCount - 1);
+    lv_abilIndex = 0;
+    for ( ; ( (auto95DD5D40_ai >= 0 && lv_abilIndex <= auto95DD5D40_ae) || (auto95DD5D40_ai < 0 && lv_abilIndex >= auto95DD5D40_ae) ) ; lv_abilIndex += auto95DD5D40_ai ) {
+        if ((AbilityClass(lp_abilityLink) == c_classIdCAbilArmMagazine)) {
+            lv_unitLink = (CatalogFieldValueGet(c_gameCatalogAbil, lp_abilityLink, "InfoArray[" + IntToString(lv_abilIndex) + "].Unit", c_playerAny));
+        }
+        else {
+            if ((CatalogFieldValueCount(c_gameCatalogAbil, lp_abilityLink, "InfoArray[" + IntToString(lv_abilIndex) + "].Unit", c_playerAny) == 0)) {
+                continue;
+            }
+
+            lv_unitLink = (CatalogFieldValueGet(c_gameCatalogAbil, lp_abilityLink, "InfoArray[" + IntToString(lv_abilIndex) + "].Unit[" + IntToString(0) + "]", c_playerAny));
+        }
+        if (((lv_unitLink == null) || (lv_unitLink == ""))) {
+            continue;
+        }
+
+        if ((lp_queueable == true)) {
+            // Register Queue Ability Event
+            TriggerAddEventUnitAbility(lv_trigger, null, AbilityCommand(lp_abilityLink, lv_abilIndex), c_unitAbilStageQueue, false);
+        }
+
+        // Register Train Ability Execute & Cancel
+        TriggerAddEventUnitAbility(lv_trigger, null, AbilityCommand(lp_abilityLink, lv_abilIndex), c_unitAbilStageCancel, false);
+        TriggerAddEventUnitAbility(lv_trigger, null, AbilityCommand(lp_abilityLink, lv_abilIndex), c_unitAbilStageExecute, false);
+    }
+}
+
+void libSCEV_gf_RaceSupplyRegisterMergeAbility (trigger lp_trigger, string lp_abilLink) {
+    // Variable Declarations
+    int lv_abilStage;
+    abilcmd lv_abilCmd;
+    bool lv_includeSharedAbils;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_abilStage = -6;
+    lv_abilCmd = AbilityCommand(lp_abilLink, 1);
+
+    // Implementation
+    TriggerAddEventUnitAbility(lp_trigger, null, lv_abilCmd, lv_abilStage, lv_includeSharedAbils);
+}
+
+void libSCEV_gf_RaceSupplyRegisterMorphAbility (trigger lp_trigger, string lp_abilLink) {
+    // Variable Declarations
+    abilcmd lv_abilCmd;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_abilCmd = AbilityCommand(lp_abilLink, 0);
+
+    // Implementation
+    TriggerAddEventUnitAbility(lp_trigger, null, lv_abilCmd, c_abilMorphStageStatsEnd, false);
+    TriggerAddEventUnitAbility(lp_trigger, null, lv_abilCmd, c_unitAbilStageCancel, false);
+}
+
+void libSCEV_gf_RaceSupplyRegisterActivationEffect (trigger lp_trigger, string lp_effectLink) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventPlayerEffectUsed(lp_trigger, c_playerAny, lp_effectLink);
+}
+
+void libSCEV_gf_RaceSupplyRegisterActivationBehavior (trigger lp_trigger, string lp_behaviorLink) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventUnitBehaviorChange(lp_trigger, null, lp_behaviorLink, c_unitBehaviorChangeCreate);
+    TriggerAddEventUnitBehaviorChange(lp_trigger, null, lp_behaviorLink, c_unitBehaviorChangeDestroy);
+}
+
+fixed libSCEV_gf_RaceSupplyGetProviderTotal (int lp_player, int lp_raceGroup) {
+    // Variable Declarations
+    fixed lv_totalMax;
+    unit lv_u;
+    fixed lv_food;
+
+    // Automatic Variable Declarations
+    unitgroup auto34C77C37_g;
+    int auto34C77C37_u;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lp_player, lp_raceGroup) == false)) {
+        return 0.0;
+    }
+
+    auto34C77C37_g = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_providers;
+    auto34C77C37_u = UnitGroupCount(auto34C77C37_g, c_unitCountAll);
+    for (;; auto34C77C37_u -= 1) {
+        lv_u = UnitGroupUnitFromEnd(auto34C77C37_g, auto34C77C37_u);
+        if (lv_u == null) { break; }
+        if (((UnitIsValid(lv_u) == false) || (UnitGetOwner(lv_u) != lp_player))) {
+            UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_providers, lv_u);
+            continue;
+        }
+
+        if ((libNtve_gf_UnitIsUnderConstruction(lv_u) == true)) {
+            continue;
+        }
+
+        lv_food = libSCEV_gf_RaceSupplyGetFoodCost(lv_u);
+        if ((lv_food <= 0.0)) {
+            UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_providers, lv_u);
+            continue;
+        }
+
+        if ((lv_food > 0.0)) {
+            lv_totalMax += lv_food;
+        }
+
+    }
+    return lv_totalMax;
+}
+
+fixed libSCEV_gf_RaceSupplyGetConsumerTotal (int lp_player, int lp_raceGroup) {
+    // Variable Declarations
+    fixed lv_totalUsed;
+    unit lv_u;
+    fixed lv_food;
+
+    // Automatic Variable Declarations
+    unitgroup autoA705DF0C_g;
+    int autoA705DF0C_u;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lp_player, lp_raceGroup) == false)) {
+        return 0.0;
+    }
+
+    autoA705DF0C_g = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_consumers;
+    autoA705DF0C_u = UnitGroupCount(autoA705DF0C_g, c_unitCountAll);
+    for (;; autoA705DF0C_u -= 1) {
+        lv_u = UnitGroupUnitFromEnd(autoA705DF0C_g, autoA705DF0C_u);
+        if (lv_u == null) { break; }
+        if (((UnitIsValid(lv_u) == false) || ((UnitGetOwner(lv_u) != lp_player) && (UnitHasBehavior2(lv_u, "SCBW_RaceSupply@TempMindControl") == false)))) {
+            UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_consumers, lv_u);
+            continue;
+        }
+
+        if ((((libNtve_gf_UnitIsHidden(lv_u) == true) && (ValidatorExecute("SCBW_RaceSupply@MorphUnitValidator", lv_u, lv_u) == 0) && (libSCEV_gf_RaceSupplyIsMorphUnit(UnitGetType(lv_u), lp_player, lp_raceGroup) == true)) || ((UnitGetOwner(lv_u) == lp_player) && (UnitHasBehavior2(lv_u, "SCBW_RaceSupply@TempMindControl") == true)))) {
+            continue;
+        }
+
+        lv_food = libSCEV_gf_RaceSupplyGetFoodCost(lv_u);
+        if ((lv_food >= 0.0)) {
+            UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_consumers, lv_u);
+            continue;
+        }
+
+        if ((lv_food < 0.0)) {
+            lv_food = (-lv_food);
+        }
+
+        lv_totalUsed += lv_food;
+    }
+    return lv_totalUsed;
+}
+
+fixed libSCEV_gf_RaceSupplyGetProducerTotal (int lp_player, int lp_raceGroup) {
+    // Variable Declarations
+    fixed lv_totalQueue;
+    int lv_slotsUsed;
+    int lv_slotIndex;
+    string lv_queuedUnitType;
+    unit lv_u;
+    fixed lv_food;
+    int lv_slotCount;
+    int lv_itemCount;
+    int lv_itemIndex;
+
+    // Automatic Variable Declarations
+    unitgroup auto95629AC0_g;
+    int auto95629AC0_u;
+    int auto266A20EF_ae;
+    const int auto266A20EF_ai = 1;
+    int autoECAAC2D4_ae;
+    const int autoECAAC2D4_ai = 1;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lp_player, lp_raceGroup) == false)) {
+        return 0.0;
+    }
+
+    auto95629AC0_g = libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_producers;
+    auto95629AC0_u = UnitGroupCount(auto95629AC0_g, c_unitCountAll);
+    for (;; auto95629AC0_u -= 1) {
+        lv_u = UnitGroupUnitFromEnd(auto95629AC0_g, auto95629AC0_u);
+        if (lv_u == null) { break; }
+        if (((UnitIsValid(lv_u) == false) || (UnitGetOwner(lv_u) != lp_player))) {
+            UnitGroupRemove(libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_producers, lv_u);
+            continue;
+        }
+
+        lv_slotsUsed = UnitQueueGetProperty(lv_u, c_unitQueuePropertyUsed);
+        lv_slotCount = UnitQueueGetProperty(lv_u, c_unitQueuePropertyCount);
+        auto266A20EF_ae = MinI(lv_slotsUsed, lv_slotCount);
+        lv_slotIndex = 1;
+        for ( ; ( (auto266A20EF_ai >= 0 && lv_slotIndex <= auto266A20EF_ae) || (auto266A20EF_ai < 0 && lv_slotIndex >= auto266A20EF_ae) ) ; lv_slotIndex += auto266A20EF_ai ) {
+            lv_food = 0.0;
+            lv_itemCount = UnitQueueItemCount(lv_u, lv_slotIndex);
+            autoECAAC2D4_ae = lv_itemCount;
+            lv_itemIndex = 1;
+            for ( ; ( (autoECAAC2D4_ai >= 0 && lv_itemIndex <= autoECAAC2D4_ae) || (autoECAAC2D4_ai < 0 && lv_itemIndex >= autoECAAC2D4_ae) ) ; lv_itemIndex += autoECAAC2D4_ai ) {
+                lv_queuedUnitType = libNtve_gf_QueuedUnitTypeInTrainingQueueSlot(lv_u, lv_slotIndex, lv_itemIndex);
+                if (((CatalogEntryIsValid(c_gameCatalogUnit, lv_queuedUnitType) == false) || (libSCEV_gf_RaceSupplyGetRaceGroup(lp_player, libSCEV_gf_RaceSupplyGetRaceFromUnitType(lv_queuedUnitType)) != lp_raceGroup))) {
+                    continue;
+                }
+
+                lv_food += libSCEV_gf_RaceSupplyGetFoodCostFromUnitType(lv_queuedUnitType);
+            }
+            if ((lv_food >= 0.0)) {
+                continue;
+            }
+            else {
+                lv_food = (-lv_food);
+            }
+            if ((UnitCheckProgressState(lv_u, lv_slotIndex, c_unitProgressStatePaused) == false)) {
+                lv_totalQueue += lv_food;
+            }
+
+        }
+    }
+    return lv_totalQueue;
+}
+
+order libSCEV_gf_RaceSupplyGetCancelOrderForUnit (unit lp_unit) {
+    // Variable Declarations
+    string lv_abil;
+    order lv_ord;
+
+    // Automatic Variable Declarations
+    unit auto1445CFC9_unit;
+    int auto1445CFC9_i;
+
+    // Variable Initialization
+
+    // Implementation
+    auto1445CFC9_unit = lp_unit;
+    auto1445CFC9_i = 1;
+    for ( ; auto1445CFC9_i <= UnitAbilityCount(auto1445CFC9_unit) ; auto1445CFC9_i += 1 ) {
+        lv_abil = UnitAbilityGet(auto1445CFC9_unit, auto1445CFC9_i);
+        if ((lv_abil != null) && (StringFind(libSCEV_gv_raceSupplyQueueAbils, (lv_abil), c_stringCase) >= 0)) {
+            lv_ord = Order(AbilityCommand(lv_abil, 0));
+            if ((UnitOrderIsValid(lp_unit, lv_ord) == true)) {
+                return Order(AbilityCommand(lv_abil, 0));
+            }
+
+        }
+
+    }
+    return null;
+}
+
+int libSCEV_gf_RaceSupplyGetRaceGroup (int lp_player, string lp_race) {
+    // Variable Declarations
+    string lv_secondGroup;
+    string lv_thirdGroup;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_secondGroup = "";
+    lv_thirdGroup = "";
+
+    // Implementation
+    if (((lp_player > libSCEV_gv_mAX_PLAYERS) || (lp_player < 0))) {
+        return -1;
+    }
+
+    lv_secondGroup = libSCEV_gv_raceSupplyRaceGroups[lp_player][0];
+    lv_thirdGroup = libSCEV_gv_raceSupplyRaceGroups[lp_player][1];
+    if ((StringFind(lv_secondGroup, lp_race, c_stringCase) >= 0)) {
+        return libSCEV_ge_RaceSupplyGroup_Secondary;
+    }
+    else if ((StringFind(lv_thirdGroup, lp_race, c_stringCase) >= 0)) {
+        return libSCEV_ge_RaceSupplyGroup_Tertiary;
+    }
+    return -1;
+}
+
+fixed libSCEV_gf_RaceSupplyGetFoodCost (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    return libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogUnit, UnitGetType(lp_unit), "Food", c_playerAny);
+}
+
+fixed libSCEV_gf_RaceSupplyGetFoodCostFromUnitType (string lp_unitType) {
+    // Automatic Variable Declarations
+    // Implementation
+    return libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogUnit, lp_unitType, "Food", c_playerAny);
+}
+
+string libSCEV_gf_RaceSupplyGetRaceFromUnitType (string lp_unitType) {
+    // Automatic Variable Declarations
+    // Implementation
+    return CatalogFieldValueGet(c_gameCatalogUnit, lp_unitType, "Race", c_playerAny);
+}
+
+int libSCEV_gf_RaceSupplyGetRaceGroupFromUnit (unit lp_unit, int lp_player) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((lp_unit == null)) {
+        return -1;
+    }
+
+    return libSCEV_gf_RaceSupplyGetRaceGroup(lp_player, libSCEV_gf_RaceSupplyGetRaceFromUnitType(UnitGetType(lp_unit)));
+}
+
+bool libSCEV_gf_RaceSupplyRaceGroupIsActive (int lp_player, int lp_raceGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((lp_raceGroup < 0) || (libSCEV_gv_raceSupplyData[lp_player][lp_raceGroup].lv_active == false))) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+bool libSCEV_gf_RaceSupplyIsMorphUnit (string lp_morphLink, int lp_player, int lp_raceGroup) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((StringFind(libSCEV_gv_raceSupplyMorphUnits[lp_player][lp_raceGroup], (lp_morphLink), c_stringCase) >= 0)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libSCEV_gf_RaceSupplyIsRaceInitialized (string lp_race) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((StringFind(libSCEV_gv_raceSupplyRacesInitialized, (lp_race), c_stringCase) >= 0)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+fixed libSCEV_gf_RaceSupplyGetPauseThresholdForPlayer (int lp_player) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((libSCEV_gv_raceSupplyFastBuildEnabled[lp_player] == true)) {
+        return 1.25;
+    }
+    else {
+        return 0.0625;
     }
 }
 
@@ -1611,15 +2664,22 @@ bool libSCEV_gt_SCEvoFeatureInit_Func (bool testConds, bool runActions) {
         libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_FractionalArmor, true);
     }
 
+    if ((libSCEV_gf_SCEvoFeatureActive(libSCEV_ge_SCEvoFeatures_RaceBasedSupply) == false)) {
+        libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_RaceBasedSupply, true);
+    }
+
     libSCEV_gf_InfiniteMoneyMapCheck();
     libSCEV_gf_MergeStatusEffectsInitialize();
-    autoB31C4DE1_g = PlayerGroupActive();
-    autoB31C4DE1_var = -1;
-    while (true) {
-        autoB31C4DE1_var = PlayerGroupNextPlayer(autoB31C4DE1_g, autoB31C4DE1_var);
-        if (autoB31C4DE1_var < 0) { break; }
-        libSCEV_gf_DisableClassicSkins(autoB31C4DE1_var);
+    if ((GameIsOnline() == true)) {
+        autoB31C4DE1_g = PlayerGroupActive();
+        autoB31C4DE1_var = -1;
+        while (true) {
+            autoB31C4DE1_var = PlayerGroupNextPlayer(autoB31C4DE1_g, autoB31C4DE1_var);
+            if (autoB31C4DE1_var < 0) { break; }
+            libSCEV_gf_DisableClassicSkins(autoB31C4DE1_var);
+        }
     }
+
     return true;
 }
 
@@ -2462,10 +3522,24 @@ void libSCEV_gt_OperationCwalActivate_Init () {
 // Trigger: OperationCwal:Train
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_OperationCwalTrain_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+
     // Automatic Variable Declarations
+    // Variable Initialization
+    lv_player = UnitGetOwner(EventUnit());
+
     // Conditions
     if (testConds) {
-        if (!((libSCEV_gv_operationCwalActive[UnitGetOwner(EventUnit())] == true))) {
+        if (!((lv_player >= 0))) {
+            return false;
+        }
+
+        if (!((lv_player <= libSCEV_gv_mAX_PLAYERS))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_operationCwalActive[lv_player] == true))) {
             return false;
         }
     }
@@ -2473,6 +3547,10 @@ bool libSCEV_gt_OperationCwalTrain_Func (bool testConds, bool runActions) {
     // Actions
     if (!runActions) {
         return true;
+    }
+
+    if ((libSCEV_gv_raceSupplyActivated[lv_player] == true) && (libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player)) == true)) {
+        Wait(0.0, c_timeGame);
     }
 
     libSCEV_gf_OperationCwal(EventUnit(), libSCEV_ge_OperationCwal_Type_Normal);
@@ -2577,6 +3655,954 @@ void libSCEV_gt_InfiniteMoneyMapTrigger_Init () {
     libSCEV_gt_InfiniteMoneyMapTrigger = TriggerCreate("libSCEV_gt_InfiniteMoneyMapTrigger_Func");
     TriggerEnable(libSCEV_gt_InfiniteMoneyMapTrigger, false);
     TriggerAddEventUnitRegion(libSCEV_gt_InfiniteMoneyMapTrigger, null, RegionEntireMap(), true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:ActivateTrigger
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyActivateTrigger_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+    unit lv_target;
+    int lv_player;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_caster = EventPlayerEffectUsedUnit(c_effectUnitCaster);
+    lv_target = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+
+    // Conditions
+    if (testConds) {
+        if (!(((UnitIsValid(lv_caster) && UnitIsValid(lv_target)) == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(lv_target, UnitGetOwner(lv_caster), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(lv_caster);
+    if ((((lv_player >= 0) && (lv_player <= libSCEV_gv_mAX_PLAYERS)) == false)) {
+        return true;
+    }
+
+    libSCEV_gf_RaceSupplyActivateRace(lv_player, (libSCEV_gf_RaceSupplyGetRaceFromUnitType(UnitGetType(lv_target))), libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_target, lv_player));
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyActivateTrigger_Init () {
+    libSCEV_gt_RaceSupplyActivateTrigger = TriggerCreate("libSCEV_gt_RaceSupplyActivateTrigger_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyActivateTrigger, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:SyncSupplies
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplySyncSupplies_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_player = libSCEV_gv_raceSupplySyncSuppliesPlayer;
+    lv_raceGroup = libSCEV_gv_raceSupplySyncSuppliesRace;
+
+    // Conditions
+    if (testConds) {
+        if (!((libSCEV_gv_raceSupplySyncSuppliesLock[lv_player] == false))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gv_raceSupplySyncSuppliesLock[lv_player] = true;
+    libSCEV_gf_RaceSupplyRecalcAll(lv_player, lv_raceGroup);
+    libSCEV_gv_raceSupplySyncSuppliesLock[lv_player] = false;
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplySyncSupplies_Init () {
+    libSCEV_gt_RaceSupplySyncSupplies = TriggerCreate("libSCEV_gt_RaceSupplySyncSupplies_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplySyncSupplies, false);
+    TriggerAddEventGeneric(libSCEV_gt_RaceSupplySyncSupplies, libSCEV_gv_raceSupplySyncSuppliesEvent);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:TempMindControl
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyTempMindControl_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Conditions
+    if (testConds) {
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((EventUnitBehaviorChange() == c_unitBehaviorChangeCreate)) {
+        TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl_ConstructStart, true);
+        while ((UnitIsValid(EventUnit()) == true) && (UnitIsAlive(EventUnit()) == true) && (UnitHasBehavior2(EventUnit(), EventUnitBehavior()) == true)) {
+            UnitBehaviorAdd(EventUnit(), "SCBW_RaceSupply@TempMindControl", EventUnit(), 1);
+            Wait(0.25, c_timeGame);
+        }
+        if ((TriggerActiveCount(TriggerGetCurrent()) == 1)) {
+            TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl_ConstructStart, false);
+        }
+
+    }
+    else {
+        UnitBehaviorRemove(EventUnit(), "SCBW_RaceSupply@TempMindControl", 1);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyTempMindControl_Init () {
+    libSCEV_gt_RaceSupplyTempMindControl = TriggerCreate("libSCEV_gt_RaceSupplyTempMindControl_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:TempMindControl_ConstructStart
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyTempMindControl_ConstructStart_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    string lv_race;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((UnitHasBehavior2(EventUnit(), "SCBW_RaceSupply@TempMindControl") == true))) {
+            return false;
+        }
+
+        if (!((UnitIsValid(EventUnitProgressUnit()) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    lv_race = (libSCEV_gf_RaceSupplyGetRaceFromUnitType(UnitGetType(EventUnitProgressUnit())));
+    if ((libSCEV_gf_RaceSupplyIsRaceInitialized(lv_race) == false)) {
+        libSCEV_gf_RaceSupplyActivateRace(lv_player, lv_race, lv_raceGroup);
+    }
+    else {
+        libSCEV_gf_RaceSupplyRegisterUnit(lv_player, EventUnitProgressUnit());
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyTempMindControl_ConstructStart_Init () {
+    libSCEV_gt_RaceSupplyTempMindControl_ConstructStart = TriggerCreate("libSCEV_gt_RaceSupplyTempMindControl_ConstructStart_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyTempMindControl_ConstructStart, false);
+    TriggerAddEventUnitConstructProgress(libSCEV_gt_RaceSupplyTempMindControl_ConstructStart, null, c_unitProgressStageStart);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:UnitBirth
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyUnitBirth_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_foodValue;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    if ((lv_foodValue > 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnit(), lv_player, lv_raceGroup);
+    }
+    else if ((lv_foodValue < 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnit(), lv_player, lv_raceGroup);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyUnitBirth_Init () {
+    libSCEV_gt_RaceSupplyUnitBirth = TriggerCreate("libSCEV_gt_RaceSupplyUnitBirth_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyUnitBirth, false);
+    TriggerAddEventUnitRegion(libSCEV_gt_RaceSupplyUnitBirth, null, RegionEntireMap(), true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:UnitDeath
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyUnitDeath_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_foodValue;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    if ((lv_foodValue > 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterProvider(false, EventUnit(), lv_player, lv_raceGroup);
+    }
+    else if ((lv_foodValue < 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterConsumer(false, EventUnit(), lv_player, lv_raceGroup);
+    }
+    if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, EventUnit()) == true)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(false, EventUnit(), lv_player, lv_raceGroup);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyUnitDeath_Init () {
+    libSCEV_gt_RaceSupplyUnitDeath = TriggerCreate("libSCEV_gt_RaceSupplyUnitDeath_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyUnitDeath, false);
+    TriggerAddEventUnitDied(libSCEV_gt_RaceSupplyUnitDeath, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:UnitRemoved
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyUnitRemoved_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_foodValue;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    if ((lv_foodValue > 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterProvider(false, EventUnit(), lv_player, lv_raceGroup);
+    }
+    else if ((lv_foodValue < 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterConsumer(false, EventUnit(), lv_player, lv_raceGroup);
+    }
+    if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, EventUnit()) == true)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(false, EventUnit(), lv_player, lv_raceGroup);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyUnitRemoved_Init () {
+    libSCEV_gt_RaceSupplyUnitRemoved = TriggerCreate("libSCEV_gt_RaceSupplyUnitRemoved_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyUnitRemoved, false);
+    TriggerAddEventUnitRemoved(libSCEV_gt_RaceSupplyUnitRemoved, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:TrainEvent
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyTrainEvent_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    unit lv_producer;
+    string lv_unitType;
+    fixed lv_foodValue;
+    int lv_slotIndex;
+    int lv_itemIndex;
+    int lv_slotUsed;
+    int lv_slotCount;
+
+    // Automatic Variable Declarations
+    int autoCDCA7736_ae;
+    const int autoCDCA7736_ai = 1;
+    int autoA90EB030_ae;
+    const int autoA90EB030_ai = 1;
+
+    // Variable Initialization
+    lv_producer = EventUnit();
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_producer) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(lv_producer)] == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(lv_producer);
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(lv_producer, lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    if ((UnitQueueGetProperty(lv_producer, c_unitQueuePropertyUsed) == 0)) {
+        if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, lv_producer) == true)) {
+            libSCEV_gf_RaceSupplyRegisterProducer(false, lv_producer, lv_player, lv_raceGroup);
+        }
+
+        return true;
+    }
+
+    if ((EventUnitAbilityStage() == c_unitAbilStageQueue)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(true, lv_producer, lv_player, lv_raceGroup);
+    }
+    else if ((EventUnitAbilityStage() == c_unitAbilStageCancel)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(true, lv_producer, lv_player, lv_raceGroup);
+    }
+    else if ((EventUnitAbilityStage() == c_unitAbilStageExecute)) {
+        libSCEV_gf_RaceSupplyRegisterProducer(true, lv_producer, lv_player, lv_raceGroup);
+        if ((UnitQueueGetProperty(lv_producer, c_unitQueuePropertyTotal) <= 1)) {
+            return true;
+        }
+
+        lv_slotCount = UnitQueueGetProperty(lv_producer, c_unitQueuePropertyCount);
+        lv_slotUsed = UnitQueueGetProperty(lv_producer, c_unitQueuePropertyUsed);
+        autoCDCA7736_ae = MinI(lv_slotUsed, lv_slotCount);
+        lv_slotIndex = 1;
+        for ( ; ( (autoCDCA7736_ai >= 0 && lv_slotIndex <= autoCDCA7736_ae) || (autoCDCA7736_ai < 0 && lv_slotIndex >= autoCDCA7736_ae) ) ; lv_slotIndex += autoCDCA7736_ai ) {
+            if (((UnitCheckProgressState(lv_producer, lv_slotIndex, c_unitProgressStateEmpty) == true) || (UnitCheckProgressState(lv_producer, lv_slotIndex, c_unitProgressStatePaused) == true))) {
+                continue;
+            }
+
+            autoA90EB030_ae = UnitQueueItemCount(lv_producer, lv_slotIndex);
+            lv_itemIndex = 1;
+            for ( ; ( (autoA90EB030_ai >= 0 && lv_itemIndex <= autoA90EB030_ae) || (autoA90EB030_ai < 0 && lv_itemIndex >= autoA90EB030_ae) ) ; lv_itemIndex += autoA90EB030_ai ) {
+                lv_foodValue += libSCEV_gf_RaceSupplyGetFoodCostFromUnitType(libNtve_gf_QueuedUnitTypeInTrainingQueueSlot(lv_producer, lv_slotIndex, lv_itemIndex));
+            }
+            if ((UnitQueueItemTime(lv_producer, c_unitQueueTimeElapsed, lv_slotIndex) <= libSCEV_gf_RaceSupplyGetPauseThresholdForPlayer(lv_player)) && (((libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_used + libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_reserved) + AbsF(lv_foodValue)) > libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_max)) {
+                UnitSetProgressComplete(lv_producer, lv_slotIndex, 0);
+                UnitSetProgressStage(lv_producer, lv_slotIndex, c_unitProgressStagePause);
+            }
+
+        }
+    }
+    else if (true) {
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyTrainEvent_Init () {
+    libSCEV_gt_RaceSupplyTrainEvent = TriggerCreate("libSCEV_gt_RaceSupplyTrainEvent_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyTrainEvent, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:TrainFinish
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyTrainFinish_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_foodValue;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnitProgressUnit(), UnitGetOwner(EventUnit()));
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnitProgressUnit());
+    if ((lv_foodValue > 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+    }
+    else if ((lv_foodValue < 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyTrainFinish_Init () {
+    libSCEV_gt_RaceSupplyTrainFinish = TriggerCreate("libSCEV_gt_RaceSupplyTrainFinish_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyTrainFinish, false);
+    TriggerAddEventUnitTrainProgress(libSCEV_gt_RaceSupplyTrainFinish, null, c_unitProgressStageComplete);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:TrainCancel
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyTrainCancel_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroup(lv_player, libSCEV_gf_RaceSupplyGetRaceFromUnitType(libNtve_gf_TriggeringProgressUnitType()));
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, EventUnit()) == true)) {
+        libSCEV_gf_RaceSupplyRecalcProducer(lv_player, lv_raceGroup, true);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyTrainCancel_Init () {
+    libSCEV_gt_RaceSupplyTrainCancel = TriggerCreate("libSCEV_gt_RaceSupplyTrainCancel_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyTrainCancel, false);
+    TriggerAddEventUnitTrainProgress(libSCEV_gt_RaceSupplyTrainCancel, null, c_unitProgressStageCancel);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:MorphStart
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyMorphStart_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_food;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    if ((lv_food < 0.0)) {
+        libSCEV_gf_RaceSupplyRecalcConsumer(lv_player, lv_raceGroup, true);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyMorphStart_Init () {
+    libSCEV_gt_RaceSupplyMorphStart = TriggerCreate("libSCEV_gt_RaceSupplyMorphStart_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyMorphStart, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:MorphConstructionStart
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyMorphConstructionStart_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_food;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    if (((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false) || (libSCEV_gf_RaceSupplyIsMorphUnit(UnitGetType(EventUnit()), lv_player, lv_raceGroup) == false))) {
+        return true;
+    }
+
+    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(EventUnit());
+    if ((lv_food < 0.0)) {
+        libSCEV_gf_RaceSupplyRecalcConsumer(lv_player, lv_raceGroup, true);
+    }
+
+    while ((UnitIsValid(EventUnit()) == true) && (UnitIsValid(EventUnitProgressUnit()) == true) && (libNtve_gf_UnitIsUnderConstruction(EventUnitProgressUnit()) == true)) {
+        Wait(0.25, c_timeGame);
+    }
+    libSCEV_gf_RaceSupplySyncSendEvent(lv_player, lv_raceGroup);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyMorphConstructionStart_Init () {
+    libSCEV_gt_RaceSupplyMorphConstructionStart = TriggerCreate("libSCEV_gt_RaceSupplyMorphConstructionStart_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyMorphConstructionStart, false);
+    TriggerAddEventUnitConstructProgress(libSCEV_gt_RaceSupplyMorphConstructionStart, null, c_unitProgressStageStart);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:ConstructionFinish
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyConstructionFinish_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_food;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnitProgressUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnitProgressUnit())] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnitProgressUnit(), UnitGetOwner(EventUnitProgressUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnitProgressUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnitProgressUnit(), lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_food = libSCEV_gf_RaceSupplyGetFoodCost(EventUnitProgressUnit());
+    if ((lv_food > 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyConstructionFinish_Init () {
+    libSCEV_gt_RaceSupplyConstructionFinish = TriggerCreate("libSCEV_gt_RaceSupplyConstructionFinish_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyConstructionFinish, false);
+    TriggerAddEventUnitConstructProgress(libSCEV_gt_RaceSupplyConstructionFinish, null, c_unitProgressStageComplete);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:MergeStart
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyMergeStart_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_food;
+    unit[2] lv_unit;
+    int lv_i;
+
+    // Automatic Variable Declarations
+    const int auto86FA2C5D_ae = 1;
+    const int auto86FA2C5D_ai = 1;
+
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+
+        if (!((UnitFilterMatch(EventUnit(), UnitGetOwner(EventUnit()), libSCEV_gv_raceSupplyFilter) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_unit[0] = EventUnit();
+    lv_unit[1] = EventUnitTargetUnit();
+    lv_i = 0;
+    for ( ; ( (auto86FA2C5D_ai >= 0 && lv_i <= auto86FA2C5D_ae) || (auto86FA2C5D_ai < 0 && lv_i >= auto86FA2C5D_ae) ) ; lv_i += auto86FA2C5D_ai ) {
+        if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_consumers, lv_unit[lv_i]) == true)) {
+            libSCEV_gf_RaceSupplyRegisterConsumer(false, lv_unit[lv_i], lv_player, lv_raceGroup);
+        }
+
+        if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_providers, lv_unit[lv_i]) == true)) {
+            libSCEV_gf_RaceSupplyRegisterProvider(false, lv_unit[lv_i], lv_player, lv_raceGroup);
+        }
+
+        if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, lv_unit[lv_i]) == true)) {
+            libSCEV_gf_RaceSupplyRegisterProducer(false, lv_unit[lv_i], lv_player, lv_raceGroup);
+        }
+
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyMergeStart_Init () {
+    libSCEV_gt_RaceSupplyMergeStart = TriggerCreate("libSCEV_gt_RaceSupplyMergeStart_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyMergeStart, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:ArmingFinished
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyArmingFinished_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_player;
+    int lv_raceGroup;
+    fixed lv_foodValue;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!((libSCEV_gv_raceSupplyActivated[UnitGetOwner(EventUnit())] == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_player = UnitGetOwner(EventUnit());
+    lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnitProgressUnit(), UnitGetOwner(EventUnit()));
+    if ((libSCEV_gf_RaceSupplyRaceGroupIsActive(lv_player, lv_raceGroup) == false)) {
+        return true;
+    }
+
+    lv_foodValue = libSCEV_gf_RaceSupplyGetFoodCost(EventUnitProgressUnit());
+    if ((lv_foodValue > 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+    }
+    else if ((lv_foodValue < 0.0)) {
+        libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnitProgressUnit(), lv_player, lv_raceGroup);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyArmingFinished_Init () {
+    libSCEV_gt_RaceSupplyArmingFinished = TriggerCreate("libSCEV_gt_RaceSupplyArmingFinished_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyArmingFinished, false);
+    TriggerAddEventUnitArmMagazineProgress(libSCEV_gt_RaceSupplyArmingFinished, null, c_unitProgressStageComplete);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:OwnerChange
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyOwnerChange_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_raceGroup;
+    int lv_player;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(EventUnit()) == true))) {
+            return false;
+        }
+
+        if (!(((libSCEV_gv_raceSupplyActivated[EventUnitOwnerOld()] == true) || (libSCEV_gv_raceSupplyActivated[EventUnitOwnerNew()] == true)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(0.0, c_timeGame);
+    if ((UnitHasBehavior2(EventUnit(), "SCBW_RaceSupply@TempMindControl") == true)) {
+        return true;
+    }
+
+    if ((libSCEV_gv_raceSupplyActivated[EventUnitOwnerOld()] == true)) {
+        lv_player = EventUnitOwnerOld();
+        lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+        if ((lv_raceGroup != -1) && (libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_active == true)) {
+            if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_consumers, EventUnit()) == true)) {
+                libSCEV_gf_RaceSupplyRegisterConsumer(true, EventUnit(), lv_player, lv_raceGroup);
+            }
+            else if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_producers, EventUnit()) == true)) {
+                libSCEV_gf_RaceSupplyRegisterProducer(true, EventUnit(), lv_player, lv_raceGroup);
+            }
+            else if ((UnitGroupHasUnit(libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_providers, EventUnit()) == true)) {
+                libSCEV_gf_RaceSupplyRegisterProvider(true, EventUnit(), lv_player, lv_raceGroup);
+            }
+        }
+
+    }
+
+    if ((libSCEV_gv_raceSupplyActivated[EventUnitOwnerNew()] == true)) {
+        lv_player = EventUnitOwnerNew();
+        lv_raceGroup = libSCEV_gf_RaceSupplyGetRaceGroupFromUnit(EventUnit(), lv_player);
+        if ((lv_raceGroup != -1) && (libSCEV_gv_raceSupplyData[lv_player][lv_raceGroup].lv_active == true)) {
+            libSCEV_gf_RaceSupplyRegisterUnit(lv_player, EventUnit());
+        }
+
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyOwnerChange_Init () {
+    libSCEV_gt_RaceSupplyOwnerChange = TriggerCreate("libSCEV_gt_RaceSupplyOwnerChange_Func");
+    TriggerEnable(libSCEV_gt_RaceSupplyOwnerChange, false);
+    TriggerAddEventUnitChangeOwner(libSCEV_gt_RaceSupplyOwnerChange, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: RaceSupply:FastBuildDetector
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_RaceSupplyFastBuildDetector_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_p;
+    string lv_paramPlayer;
+
+    // Automatic Variable Declarations
+    playergroup autoEE8F10CC_g;
+
+    // Variable Initialization
+    lv_paramPlayer = TriggerEventParamName(libSCEV_gv_raceSupplyFastBuildEvent, "Player");
+
+    // Conditions
+    if (testConds) {
+        if (!((GameCheatsEnabled(c_gameCheatCategoryPublic) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((DataTableValueExists(false, lv_paramPlayer) == true)) {
+        if (((DataTableGetInt(false, lv_paramPlayer) < 0) || (DataTableGetInt(false, lv_paramPlayer) > libSCEV_gv_mAX_PLAYERS))) {
+            autoEE8F10CC_g = PlayerGroupAll();
+            lv_p = -1;
+            while (true) {
+                lv_p = PlayerGroupNextPlayer(autoEE8F10CC_g, lv_p);
+                if (lv_p < 0) { break; }
+                libSCEV_gv_raceSupplyFastBuildEnabled[lv_p] = !(libSCEV_gv_raceSupplyFastBuildEnabled[lv_p]);
+            }
+            return true;
+        }
+        else {
+            lv_p = DataTableGetInt(false, lv_paramPlayer);
+        }
+    }
+    else {
+        lv_p = EventPlayer();
+    }
+    libSCEV_gv_raceSupplyFastBuildEnabled[lv_p] = !(libSCEV_gv_raceSupplyFastBuildEnabled[lv_p]);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_RaceSupplyFastBuildDetector_Init () {
+    libSCEV_gt_RaceSupplyFastBuildDetector = TriggerCreate("libSCEV_gt_RaceSupplyFastBuildDetector_Func");
+    TriggerAddEventCheatUsed(libSCEV_gt_RaceSupplyFastBuildDetector, c_playerAny, c_gameCheatFastBuild);
+    TriggerAddEventGeneric(libSCEV_gt_RaceSupplyFastBuildDetector, libSCEV_gv_raceSupplyFastBuildEvent);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3340,6 +5366,23 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_OperationCwalConstuction_Init();
     libSCEV_gt_OperationCwalMorph_Init();
     libSCEV_gt_InfiniteMoneyMapTrigger_Init();
+    libSCEV_gt_RaceSupplyActivateTrigger_Init();
+    libSCEV_gt_RaceSupplySyncSupplies_Init();
+    libSCEV_gt_RaceSupplyTempMindControl_Init();
+    libSCEV_gt_RaceSupplyTempMindControl_ConstructStart_Init();
+    libSCEV_gt_RaceSupplyUnitBirth_Init();
+    libSCEV_gt_RaceSupplyUnitDeath_Init();
+    libSCEV_gt_RaceSupplyUnitRemoved_Init();
+    libSCEV_gt_RaceSupplyTrainEvent_Init();
+    libSCEV_gt_RaceSupplyTrainFinish_Init();
+    libSCEV_gt_RaceSupplyTrainCancel_Init();
+    libSCEV_gt_RaceSupplyMorphStart_Init();
+    libSCEV_gt_RaceSupplyMorphConstructionStart_Init();
+    libSCEV_gt_RaceSupplyConstructionFinish_Init();
+    libSCEV_gt_RaceSupplyMergeStart_Init();
+    libSCEV_gt_RaceSupplyArmingFinished_Init();
+    libSCEV_gt_RaceSupplyOwnerChange_Init();
+    libSCEV_gt_RaceSupplyFastBuildDetector_Init();
     libSCEV_gt_MimicCheckStorePlayerIndex_Init();
     libSCEV_gt_MimicCheckSpiderMine_Init();
     libSCEV_gt_ReaverPathingCheck_Init();
