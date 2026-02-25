@@ -4,6 +4,18 @@
         <ValidatorArray index="0" value="##id##"/>
         <EditorCategories value="Race:Zerg"/>
     </CEffectApplyBehavior>
+    <CEffectCreatePersistent id="DevourerSCBWWeapon@ImpactRedirect">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichLocation Effect="DevourerSCBWWeapon@LM" Value="TargetUnit"/>
+        <OffsetVectorEndLocation Effect="DevourerSCBWWeapon@LM" Value="TargetUnit"/>
+        <InitialEffect value="DevourerSCBWWeapon@Set"/>
+        <OffsetVectorStartLocation Value="CasterUnit"/>
+        <ValidatorArray value="DevourerSCBWWeapon@DamageMaxRange"/>
+    </CEffectCreatePersistent>
+    <CEffectRemoveBehavior id="DevourerSCBWWeapon@RBSpores">
+        <EditorCategories value="Race:Zerg"/>
+        <StackAlias value="AcidSpore"/>
+    </CEffectRemoveBehavior>
     <CEffectSwitch id="QueenSCBWEnsnare@ABSwitch">
         <EditorCategories value="Race:Zerg"/>
         <CaseArray Validator="QueenSCBWEnsnare@AB" Effect="QueenSCBWEnsnare@AB"/>
@@ -85,6 +97,7 @@
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore8"/>
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore9"/>
         <PeriodicPeriodArray value="0"/>
+        <InitialEffect value="DevourerSCBWWeapon@RBSpores"/>
     </CEffectCreatePersistent>
     <CEffectCreatePersistent id="InfestedTerranSCBWWeapon@DamageFallbackRedirect">
         <EditorCategories value="Race:Zerg"/>
@@ -253,7 +266,21 @@
         <InitialDelay value="0.6875"/>
         <EditorCategories value="Race:Zerg"/>
     </CEffectCreatePersistent>
-    <CEffectSet id="SunkenColonySCBWWeapon@Impact" parent="SCBW_WeaponImpactExplBase" Race="Zerg" x="SunkenColonySCBWWeapon"/>
+    <CEffectLaunchMissile id="DevourerSCBWWeapon@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ImpactEffect value="DevourerSCBWWeapon@ImpactRedirect"/>
+        <FinishEffect value="DevourerSCBWWeapon@Search"/>
+        <AmmoUnit value="DevourerSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectSet id="SunkenColonySCBWWeapon@Impact" parent="SCBW_WeaponImpactExplBase" Race="Zerg" x="SunkenColonySCBWWeapon">
+        <ValidatorArray value="SunkenColonySCBWWeapon@DamageAccumValidator"/>
+    </CEffectSet>
+    <CEffectSet id="DevourerSCBWWeapon@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="DevourerSCBWWeapon@DamageApply"/>
+        <EffectArray value="DevourerSCBWWeapon@DamageAccum"/>
+    </CEffectSet>
     <CEffectUserData id="InfestedTerranSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Zerg" x="InfestedTerranSCBWWeapon"/>
     <CEffectUserData id="DevourerSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Zerg" x="DevourerSCBWWeapon"/>
     <CEffectUserData id="SunkenColonySCBWWeapon@DamageApply" parent="DamageIncoming" Race="Zerg" x="SunkenColonySCBWWeapon"/>
@@ -327,31 +354,19 @@
         <EditorCategories value="Race:Zerg"/>
         <Behavior value="DevourerSCBWWeapon"/>
         <ValidatorArray value="NotHallucination"/>
+        <ValidatorArray value="DevourerSCBWWeapon@CloakedIsDetected"/>
     </CEffectApplyBehavior>
     <CEffectDamage id="DevourerSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Zerg">
         <Kind value="Ranged"/>
         <Death value="Disintegrate"/>
+        <ImpactLocation Effect="DevourerSCBWWeapon@LM" Value="TargetUnit"/>
     </CEffectDamage>
-    <CEffectLaunchMissile id="DevourerSCBWWeapon@LM">
-        <EditorCategories value="Race:Zerg"/>
-        <ImpactEffect value="DevourerSCBWWeapon@Set"/>
-        <AmmoUnit value="DevourerSCBWWeapon@Missile"/>
-        <Movers Link="MissileDefault" IfRangeLTE="1"/>
-        <Movers Link="DevourerSCBWWeapon@Missile" IfRangeLTE="4"/>
-    </CEffectLaunchMissile>
     <CEffectEnumArea id="DevourerSCBWWeapon@Search">
         <EditorCategories value="Race:Zerg"/>
-        <ExcludeArray Value="Target"/>
         <SearchFilters value="Air;Player,Ally,Neutral,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <AreaArray Radius="2.25" Effect="DevourerSCBWWeapon@AB"/>
+        <ImpactLocation Value="TargetPoint"/>
     </CEffectEnumArea>
-    <CEffectSet id="DevourerSCBWWeapon@Set">
-        <EditorCategories value="Race:Zerg"/>
-        <EffectArray value="DevourerSCBWWeapon@DamageApply"/>
-        <EffectArray value="DevourerSCBWWeapon@DamageAccum"/>
-        <EffectArray value="DevourerSCBWWeapon@AB"/>
-        <EffectArray value="DevourerSCBWWeapon@Search"/>
-    </CEffectSet>
     <CEffectSet id="MutaliskSCBWWeapon@BounceImpactSet">
         <EffectArray value="MutaliskSCBWWeapon@DamageSwitch"/>
         <EffectArray value="MutaliskSCBWWeapon@BounceSet"/>
@@ -507,14 +522,12 @@
         <Kind value="Ranged"/>
         <Amount value="18.75"/>
     </CEffectDamage>
-    <CEffectDamage id="HydraliskSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW">
-        <EditorCategories value="Race:Zerg"/>
+    <CEffectDamage id="HydraliskSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Zerg">
         <Kind value="Ranged"/>
         <Amount value="7.5"/>
         <DisplayFlags index="DisplayRounded" value="0"/>
     </CEffectDamage>
-    <CEffectDamage id="InfestedTerranSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW">
-        <EditorCategories value="Race:Zerg"/>
+    <CEffectDamage id="InfestedTerranSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Zerg">
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
         <AINotifyFlags index="MajorDanger" value="1"/>
@@ -522,8 +535,7 @@
         <Amount value="375"/>
         <Death value="Disintegrate"/>
     </CEffectDamage>
-    <CEffectDamage id="SunkenColonySCBWWeapon@Damage" parent="ExplosiveDamageUISCBW">
-        <EditorCategories value="Race:Zerg"/>
+    <CEffectDamage id="SunkenColonySCBWWeapon@Damage" parent="ExplosiveDamageUISCBW" Race="Zerg">
         <Kind value="Ranged"/>
         <Amount value="30"/>
     </CEffectDamage>
@@ -548,6 +560,12 @@
     <CEffectCreatePersistent id="DefilerSCBWDarkSwarm@DummyLocation">
         <OffsetVectorStartLocation Value="TargetPoint"/>
         <EditorCategories value="Race:Zerg"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="DefilerSCBWDarkSwarm@DummyPersistentInfinite" parent="DefilerSCBWDarkSwarm@DummyPersistent">
+        <Name value="Effect/Name/DefilerSCBWDarkSwarm@DummyPersistentInfinite"/>
+        <WhichLocation Effect="DefilerSCBWDarkSwarm@CPInfinite"/>
+        <OffsetVectorStartLocation Effect="DefilerSCBWDarkSwarm@CPInfinite"/>
+        <OffsetVectorEndLocation Effect="DefilerSCBWDarkSwarm@CPInfinite"/>
     </CEffectCreatePersistent>
     <CEffectCreatePersistent id="LurkerSCBWWeapon@CP">
         <EditorCategories value="Race:Zerg"/>
@@ -680,14 +698,14 @@
         <OffsetVectorStartLocation Value="TargetPoint"/>
         <InitialDelay value="0.1"/>
         <InitialEffect value="QueenSCBWInfestCommandCenter@SearchAddon"/>
-        <ValidatorArray value="IsCommandCenterSCBW"/>
+        <ValidatorArray value="CommandCenterSCBW@Is"/>
     </CEffectCreatePersistent>
     <CEffectSwitch id="QueenSCBWInfestCommandCenter@Switch">
         <EditorCategories value="Race:Zerg"/>
-        <CaseArray Validator="CommandCenterSCBW" Effect="InfestedCommandCenterSCBW@Morph"/>
-        <CaseArray Validator="CommandCenterSCBW@Flying" Effect="InfestedCommandCenterSCBW@MorphFlyer"/>
-        <CaseArray Validator="CommandCenter" Effect="InfestedCommandCenterSC2@Morph"/>
-        <CaseArray Validator="CommandCenterFlying" Effect="InfestedCommandCenterSC2@MorphFlyer"/>
+        <CaseArray Validator="CommandCenterSCBW@Is" Effect="InfestedCommandCenterSCBW@Morph"/>
+        <CaseArray Validator="CommandCenterSCBW@Flying@Is" Effect="InfestedCommandCenterSCBW@MorphFlyer"/>
+        <CaseArray Validator="IsCommandCenter" Effect="InfestedCommandCenterSC2@Morph"/>
+        <CaseArray Validator="IsCommandCenterFlying" Effect="InfestedCommandCenterSC2@MorphFlyer"/>
         <CaseArray Validator="IsOrbitalCommand" Effect="InfestedOrbitalCommandSCBW@Morph"/>
         <CaseArray Validator="IsOrbitalCommandFlying" Effect="InfestedOrbitalCommandSCBW@MorphFlyer"/>
         <CaseArray Validator="IsPlanetaryFortress" Effect="InfestedPlanetaryFortressSCBW@Morph"/>
@@ -717,10 +735,10 @@
     </CEffectModifyUnit>
     <CEffectSet id="QueenSCBWInfestCommandCenter@Set">
         <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@SearchAddonDelay"/>
         <EffectArray value="QueenSCBWInfestCommandCenter@Switch"/>
         <EffectArray value="QueenSCBWInfestCommandCenter@MU"/>
         <EffectArray value="QueenSCBWInfestCommandCenter@MUChangeOwner"/>
-        <EffectArray value="QueenSCBWInfestCommandCenter@SearchAddonDelay"/>
         <ValidatorArray value="SCBW_NotMorphing"/>
     </CEffectSet>
     <CEffectModifyUnit id="QueenSCBWInfestCommandCenter@MUChangeOwner">
@@ -735,10 +753,18 @@
     </CEffectSet>
     <CEffectCreatePersistent id="DefilerSCBWDarkSwarm@CP">
         <EditorCategories value="Race:Zerg"/>
-        <PeriodCount value="225"/>
+        <PeriodCount value="210"/>
         <PeriodicEffectArray value="DefilerSCBWDarkSwarm@Search"/>
         <PeriodicPeriodArray value="0.25"/>
         <InitialEffect value="DefilerSCBWDarkSwarm@DummyPersistent"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="DefilerSCBWDarkSwarm@CPInfinite" parent="DefilerSCBWDarkSwarm@CP">
+        <Name value="Effect/Name/DefilerSCBWDarkSwarm@CPInfinite"/>
+        <ExpireEffect value="DefilerSCBWDarkSwarm@CPInfinite"/>
+        <PeriodCount value="65535"/>
+        <PeriodicValidator value="TargetNotDead"/>
+        <WhichLocation Value="TargetUnit"/>
+        <InitialEffect value="DefilerSCBWDarkSwarm@DummyPersistentInfinite"/>
     </CEffectCreatePersistent>
     <CEffectLaunchMissile id="DefilerSCBWDarkSwarm@LM">
         <ImpactLocation Value="TargetPoint"/>
@@ -759,7 +785,7 @@
     </CEffectDamage>
     <CEffectEnumArea id="DefilerSCBWDarkSwarm@Search">
         <EditorCategories value="Race:Zerg"/>
-        <SearchFilters value="-;Air,Structure,Missile,Stasis,Dead,Hidden"/>
+        <SearchFilters value="-;Air,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <AreaArray Radius="2.8125" Effect="DefilerSCBWDarkSwarm@Set"/>
         <AINotifyFlags index="HelpFriend" value="1"/>
     </CEffectEnumArea>
@@ -770,14 +796,12 @@
     <CEffectApplyBehavior id="DefilerSCBWPlague@AB">
         <EditorCategories value="Race:Zerg"/>
         <Behavior value="DefilerSCBWPlague"/>
-        <OwningPlayer Value="Caster"/>
     </CEffectApplyBehavior>
     <CEffectSet id="DefilerSCBWPlague@Set">
         <ValidatorArray value=""/>
         <EditorCategories value="Race:Zerg"/>
         <EffectArray value="DefilerSCBWPlague@AB"/>
         <EffectArray value="HighTemplarSCBWHallucination@KillHallucination"/>
-        <OwningPlayer Value="Caster"/>
     </CEffectSet>
     <CEffectEnumArea id="DefilerSCBWPlague@Search">
         <EditorCategories value="Race:Zerg"/>
@@ -786,7 +810,6 @@
         <AreaArray Radius="2.25" Effect="DefilerSCBWPlague@Set"/>
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
-        <OwningPlayer Value="Caster"/>
     </CEffectEnumArea>
     <CEffectApplyBehavior id="QueenSCBWSpawnBroodlings@TimedLife">
         <EditorCategories value="Race:Zerg"/>
@@ -897,7 +920,7 @@
     </CEffectDamage>
     <CAbilResearch id="DefilerSCBWConsumeResearch" parent="SCBW_Research">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
@@ -908,7 +931,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="DefilerSCBWEnergyUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -917,14 +940,14 @@
     </CAbilResearch>
     <CAbilResearch id="DefilerSCBWPlagueResearch" parent="SCBW_Research">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="OverlordSCBWSightUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="125">
+        <InfoArray index="Research1" Time="117">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -932,7 +955,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="OverlordSCBWSpeedUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="125">
+        <InfoArray index="Research1" Time="117">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -940,7 +963,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="OverlordSCBWTransportResearch" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="150">
+        <InfoArray index="Research1" Time="140">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -948,7 +971,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="QueenSCBWEnergyUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -957,7 +980,7 @@
     </CAbilResearch>
     <CAbilResearch id="QueenSCBWEnsnareResearch" parent="SCBW_Research">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
-        <InfoArray index="Research1" Time="75">
+        <InfoArray index="Research1" Time="70">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
@@ -969,14 +992,14 @@
     </CAbilResearch>
     <CAbilResearch id="QueenSCBWSpawnBroodlingsResearch" parent="SCBW_Research">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
-        <InfoArray index="Research1" Time="75">
+        <InfoArray index="Research1" Time="70">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="HydraliskSCBWRangeUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -984,7 +1007,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="HydraliskSCBWSpeedUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -992,7 +1015,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="LurkerSCBWResearch" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="112.5">
+        <InfoArray index="Research1" Time="105">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1000,7 +1023,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="UltraliskSCBWArmorUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="125">
+        <InfoArray index="Research1" Time="117">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1008,7 +1031,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="UltraliskSCBWSpeedUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="125">
+        <InfoArray index="Research1" Time="117">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1016,15 +1039,15 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZergFlyerAttacksSCBW" parent="SCBW_ResearchLeveled" race="Zerg">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="175"/>
             <Resource index="Vespene" value="175"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="250"/>
             <Resource index="Vespene" value="250"/>
         </InfoArray>
@@ -1032,15 +1055,15 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZergFlyerCarapaceSCBW" parent="SCBW_ResearchLeveled" race="Zerg">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="225"/>
             <Resource index="Vespene" value="225"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="300"/>
             <Resource index="Vespene" value="300"/>
         </InfoArray>
@@ -1048,15 +1071,15 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZergGroundCarapaceSCBW" parent="SCBW_ResearchLeveled" race="Zerg">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="225"/>
             <Resource index="Vespene" value="225"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="300"/>
             <Resource index="Vespene" value="300"/>
         </InfoArray>
@@ -1064,15 +1087,15 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZergMeleeAttacksSCBW" parent="SCBW_ResearchLeveled" race="Zerg">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1080,15 +1103,15 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZergMissileAttacksSCBW" parent="SCBW_ResearchLeveled" race="Zerg">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1096,7 +1119,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZergSCBWBurrowResearch" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="75">
+        <InfoArray index="Research1" Time="70">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
@@ -1104,7 +1127,7 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZerglingSCBWAttackSpeedUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1112,14 +1135,14 @@
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
     <CAbilResearch id="ZerglingSCBWSpeedUpgrade" parent="SCBW_Research" race="Zerg">
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
         <AbilityCategories index="User1" value="1"/>
         <Activity value="UI/Evolving"/>
     </CAbilResearch>
-    <CAbilEffectTarget id="DefilerSCBWConsume">
+    <CAbilEffectTarget id="DefilerSCBWConsume" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
         <Effect index="0" value="DefilerSCBWConsume@AB"/>
         <TargetFilters value="Biological;Self,Ally,Neutral,Enemy,Structure,Missile,Stasis,UnderConstruction,Dead,Hidden,Hallucination,Invulnerable"/>
@@ -1128,12 +1151,11 @@
         <ArcSlop value="90"/>
         <CastIntroTime value="0.1875"/>
         <UninterruptibleArray index="Cast" value="1"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="DefilerSCBWConsume" Requirements="DefilerSCBWConsume">
-            <Flags index="UseDefaultButton" value="1"/>
-            <Flags index="CreateDefaultButton" value="1"/>
-        </CmdButtonArray>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="DefilerSCBWDarkSwarm">
+    <CAbilEffectTarget id="DefilerSCBWConsume@Hardcore" parent="DefilerSCBWConsume">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="DefilerSCBWDarkSwarm" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
         <Effect index="0" value="DefilerSCBWDarkSwarm@LM"/>
         <Cost>
@@ -1148,12 +1170,11 @@
         <UninterruptibleArray index="Channel" value="1"/>
         <UninterruptibleArray index="Finish" value="1"/>
         <CursorEffect value="DefilerSCBWDarkSwarm@Search"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="DefilerSCBWDarkSwarm">
-            <Flags index="UseDefaultButton" value="1"/>
-            <Flags index="CreateDefaultButton" value="1"/>
-        </CmdButtonArray>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="DefilerSCBWPlague">
+    <CAbilEffectTarget id="DefilerSCBWDarkSwarm@Hardcore" parent="DefilerSCBWDarkSwarm">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="DefilerSCBWPlague" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
         <Effect index="0" value="DefilerSCBWPlague@Search"/>
         <Cost>
@@ -1164,12 +1185,11 @@
         <FinishTime value="0.25"/>
         <UninterruptibleArray index="Finish" value="1"/>
         <CursorEffect value="DefilerSCBWPlague@Search"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="DefilerSCBWPlague" Requirements="DefilerSCBWPlague">
-            <Flags index="UseDefaultButton" value="1"/>
-            <Flags index="CreateDefaultButton" value="1"/>
-        </CmdButtonArray>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="QueenSCBWParasite">
+    <CAbilEffectTarget id="DefilerSCBWPlague@Hardcore" parent="DefilerSCBWPlague">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWParasite" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
         <Effect index="0" value="QueenSCBWParasite@LM"/>
         <Cost>
@@ -1177,16 +1197,15 @@
         </Cost>
         <TargetFilters value="-;Player,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="12"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="QueenSCBWParasite">
-            <Flags index="UseDefaultButton" value="1"/>
-            <Flags index="CreateDefaultButton" value="1"/>
-        </CmdButtonArray>
         <CastIntroTime value="0.5"/>
         <UninterruptibleArray index="Cast" value="1"/>
         <UninterruptibleArray index="Channel" value="1"/>
         <UninterruptibleArray index="Finish" value="1"/>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="QueenSCBWEnsnare">
+    <CAbilEffectTarget id="QueenSCBWParasite@Hardcore" parent="QueenSCBWParasite">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWEnsnare" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
         <Effect index="0" value="QueenSCBWEnsnare@LM"/>
         <Cost>
@@ -1194,16 +1213,15 @@
         </Cost>
         <Range value="9"/>
         <CursorEffect value="QueenSCBWEnsnare@Search"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="QueenSCBWEnsnare" Requirements="QueenSCBWEnsnare">
-            <Flags index="UseDefaultButton" value="1"/>
-            <Flags index="CreateDefaultButton" value="1"/>
-        </CmdButtonArray>
         <CastIntroTime value="0.5"/>
         <UninterruptibleArray index="Cast" value="1"/>
         <UninterruptibleArray index="Channel" value="1"/>
         <UninterruptibleArray index="Finish" value="1"/>
     </CAbilEffectTarget>
-    <CAbilEffectTarget id="QueenSCBWSpawnBroodlings">
+    <CAbilEffectTarget id="QueenSCBWEnsnare@Hardcore" parent="QueenSCBWEnsnare">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWSpawnBroodlings" parent="SCBW_AbilTarget">
         <EditorCategories value="AbilityorEffectType:Units,Race:Zerg"/>
         <Effect index="0" value="QueenSCBWSpawnBroodlings@LM"/>
         <Cost>
@@ -1211,15 +1229,14 @@
         </Cost>
         <TargetFilters value="-;Air,Robotic,Psionic,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="9"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="QueenSCBWSpawnBroodlings" Requirements="QueenSCBWSpawnBroodlings">
-            <Flags index="UseDefaultButton" value="1"/>
-            <Flags index="CreateDefaultButton" value="1"/>
-        </CmdButtonArray>
         <CastIntroTime value="0.5"/>
         <UninterruptibleArray index="Cast" value="1"/>
         <UninterruptibleArray index="Channel" value="1"/>
         <UninterruptibleArray index="Finish" value="1"/>
         <RangeSlop value="2"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWSpawnBroodlings@Hardcore" parent="QueenSCBWSpawnBroodlings">
+        <Flags index="BestUnit" value="0"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="QueenSCBWInfestCommandCenter">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
@@ -1250,13 +1267,25 @@
         <TrackingArc value="0.9997"/>
         <CancelableArray index="Channel" value="1"/>
     </CAbilEffectTarget>
+    <CValidatorCondition id="DevourerSCBWWeapon@CloakedIsDetected">
+        <IfArray Test="SCBW_TargetIsCloakedOrBurrowed" Return="IsDetected"/>
+    </CValidatorCondition>
+    <CValidatorLocationCompareRange id="DevourerSCBWWeapon@DamageMaxRange">
+        <WhichLocation Value="TargetUnit"/>
+        <Compare value="LE"/>
+        <Range value="18"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorCombine id="InfestedTerranSCBWWeapon@Splash" parent="SCBW_Effect">
+        <CombineArray value="noMarkers"/>
+        <CombineArray value="SCBW_NotBurrowed"/>
+    </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@NotUnloader">
         <CombineArray value="QueenSCBWEnsnare@IsUnloader"/>
         <Negate value="1"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@IsUnloader">
-        <CombineArray value="IsReaverSCBW"/>
-        <CombineArray value="IsCarrierSCBW"/>
+        <CombineArray value="ReaverSCBW@Is"/>
+        <CombineArray value="CarrierSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@AttackSlowCaster">
         <CombineArray value="QueenSCBWEnsnare@Caster"/>
@@ -1304,8 +1333,8 @@
         <Negate value="1"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@IsTurretUser">
-        <CombineArray value="IsSiegeTankSCBW"/>
-        <CombineArray value="IsGoliathSCBW"/>
+        <CombineArray value="SiegeTankSCBW@IsAlias"/>
+        <CombineArray value="GoliathSCBW@Is"/>
         <CombineArray value="StingerSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="QueenSCBWParasite@Have">
@@ -1326,7 +1355,8 @@
         <Behavior value="QueenSCBWEnsnare@Movement"/>
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_Stimpack">
-        <CombineArray value="QueenSCBWEnsnare@AttackStimpackBW"/>
+        <CombineArray value="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <CombineArray value="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
         <CombineArray value="IsMarineStimmed"/>
         <CombineArray value="IsMarauderStimmed"/>
     </CValidatorCombine>
@@ -1398,15 +1428,28 @@
         <Compare value="GT"/>
         <Range value="1"/>
     </CValidatorLocationCompareRange>
-    <CValidatorCombine id="QueenSCBWEnsnare@AttackAdrenalValidate">
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_AdrenalBW">
+        <Type value="And"/>
+        <CombineArray value="ZerglingSCBW@IsAlias"/>
+        <CombineArray value="ZerglingSCBWAttackSpeedUpgrade"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_Adrenal">
         <Type value="And"/>
         <CombineArray value="IsZergling"/>
         <CombineArray value="SCBW_HaveAdrenalGlands"/>
     </CValidatorCombine>
-    <CValidatorCombine id="QueenSCBWEnsnare@AttackAdeptGlaives">
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_AdeptGlaives">
         <Type value="And"/>
         <CombineArray value="SCBW_IsAdept"/>
         <CombineArray value="SCBW_HaveAdeptPiercingAttack"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack">
+        <CombineArray value="MarineSCBWStimpack@TestBuff"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack">
+        <CombineArray value="FirebatSCBWStimpack@TestBuff"/>
+        <Negate value="1"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare">
         <Compare value="GT"/>
@@ -1417,16 +1460,6 @@
     <CValidatorPlayerRequirement id="ZerglingSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="ZerglingSCBWSpeedUpgrade@Count"/>
     <CValidatorPlayerRequirement id="OverlordSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="OverlordSCBWSpeedUpgrade@Count"/>
     <CValidatorPlayerRequirement id="UltraliskSCBWSpeedUpgrade" parent="SCBW_PlayerRequirement_Target" x="UltraliskSCBWSpeedUpgrade@Count"/>
-    <CValidatorCombine id="QueenSCBWEnsnare@AttackAdrenalBWValidate">
-        <Type value="And"/>
-        <CombineArray value="IsZerglingSCBW"/>
-        <CombineArray value="ZerglingSCBWAttackSpeedUpgrade"/>
-    </CValidatorCombine>
-    <CValidatorCombine id="QueenSCBWEnsnare@AttackStimpackBW">
-        <CombineArray value="MarineSCBWStimpack@TestBuff"/>
-        <CombineArray value="FirebatSCBWStimpack@TestBuff"/>
-        <Negate value="1"/>
-    </CValidatorCombine>
     <CValidatorEffectTreeUserData id="MutaliskSCBWWeapon@BounceCount0">
         <Key value="HitCount"/>
         <Value value="1"/>
@@ -1465,7 +1498,7 @@
         <CombineArray value="IsZergSCBW"/>
         <CombineArray value="DefilerSCBWConsume@NotBehavior"/>
         <CombineArray value="NotLarva"/>
-        <CombineArray value="NotLarvaSCBW"/>
+        <CombineArray value="LarvaSCBW@Not"/>
         <ResultFailed value="CantTargetThatUnit"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="DefilerSCBWConsume@NotBehavior">
@@ -1489,57 +1522,57 @@
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWInfestCommandCenter@IsCommandCenter">
-        <CombineArray value="CommandCenterSCBW"/>
-        <CombineArray value="CommandCenterSCBW@Flying"/>
-        <CombineArray value="CommandCenter"/>
-        <CombineArray value="CommandCenterFlying"/>
+        <ResultFailed value="MustTargetStructures,Validator/Error/QueenSCBWInfestCommandCenter@IsCommandCenter"/>
+        <CombineArray value="CommandCenterSCBW@Is"/>
+        <CombineArray value="CommandCenterSCBW@Flying@Is"/>
+        <CombineArray value="IsCommandCenter"/>
+        <CombineArray value="IsCommandCenterFlying"/>
         <CombineArray value="IsOrbitalCommand"/>
         <CombineArray value="IsOrbitalCommandFlying"/>
         <CombineArray value="IsPlanetaryFortress"/>
-        <ResultFailed value="MustTargetStructures,Validator/Error/QueenSCBWInfestCommandCenter@IsCommandCenter"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW">
-        <CombineArray value="IsHydraliskSCBW"/>
+        <CombineArray value="HydraliskSCBW@IsAlias"/>
         <CombineArray value="HydraliskSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ObserverSCBW">
-        <CombineArray value="IsObserverSCBW"/>
+        <CombineArray value="ObserverSCBW@Is"/>
         <CombineArray value="ObserverSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_OverlordSCBW">
-        <CombineArray value="IsOverlordSCBW"/>
+        <CombineArray value="OverlordSCBW@Is"/>
         <CombineArray value="OverlordSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ScoutSCBW">
-        <CombineArray value="IsScoutSCBW"/>
+        <CombineArray value="ScoutSCBW@Is"/>
         <CombineArray value="ScoutSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW">
-        <CombineArray value="IsShuttleSCBW"/>
+        <CombineArray value="ShuttleSCBW@Is"/>
         <CombineArray value="ShuttleSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW">
-        <CombineArray value="IsUltraliskSCBW"/>
+        <CombineArray value="UltraliskSCBW@IsAlias"/>
         <CombineArray value="UltraliskSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_VultureSCBW">
-        <CombineArray value="IsVultureSCBW"/>
+        <CombineArray value="VultureSCBW@Is"/>
         <CombineArray value="VultureSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ZealotSCBW">
-        <CombineArray value="IsZealotSCBW"/>
+        <CombineArray value="ZealotSCBW@Is"/>
         <CombineArray value="ZealotSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
     <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW">
-        <CombineArray value="IsZerglingSCBW"/>
+        <CombineArray value="ZerglingSCBW@IsAlias"/>
         <CombineArray value="ZerglingSCBWSpeedUpgrade"/>
         <Type value="And"/>
     </CValidatorCombine>
@@ -2192,13 +2225,13 @@
     </CRequirementAnd>
     <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Count" parent="SCBW_UpgradeCount" x="ZergFlyerAttacksSCBW"/>
     <CRequirementAnd id="ZergFlyerAttacksSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergFlyerAttacksSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergFlyerAttacksSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergFlyerAttacksSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl1QoB">
         <OperandArray index="0" value="ZergFlyerAttacksSCBW@Lvl1QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerAttacksSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerAttacksSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergFlyerAttacksSCBW@Lvl1Show">
@@ -2208,13 +2241,13 @@
         <OperandArray value="ZergFlyerAttacksSCBW@Lvl1Count"/>
         <OperandArray value="LairSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergFlyerAttacksSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergFlyerAttacksSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergFlyerAttacksSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl2QoB">
         <OperandArray index="0" value="ZergFlyerAttacksSCBW@Lvl2QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerAttacksSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerAttacksSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergFlyerAttacksSCBW@Lvl2Show">
@@ -2225,13 +2258,13 @@
         <OperandArray value="ZergFlyerAttacksSCBW@Lvl2Count"/>
         <OperandArray value="HiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergFlyerAttacksSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergFlyerAttacksSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergFlyerAttacksSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl3QoB">
         <OperandArray index="0" value="ZergFlyerAttacksSCBW@Lvl3QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerAttacksSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergFlyerAttacksSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerAttacksSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergFlyerAttacksSCBW@Lvl3Show">
@@ -2245,13 +2278,13 @@
     </CRequirementEq>
     <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Count" parent="SCBW_UpgradeCount" x="ZergFlyerCarapaceSCBW"/>
     <CRequirementAnd id="ZergFlyerCarapaceSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergFlyerCarapaceSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergFlyerCarapaceSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergFlyerCarapaceSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl1QoB">
         <OperandArray index="0" value="ZergFlyerCarapaceSCBW@Lvl1QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerCarapaceSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerCarapaceSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergFlyerCarapaceSCBW@Lvl1Show">
@@ -2261,13 +2294,13 @@
         <OperandArray value="ZergFlyerCarapaceSCBW@Lvl1Count"/>
         <OperandArray value="LairSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergFlyerCarapaceSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergFlyerCarapaceSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergFlyerCarapaceSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl2QoB">
         <OperandArray index="0" value="ZergFlyerCarapaceSCBW@Lvl2QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerCarapaceSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerCarapaceSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergFlyerCarapaceSCBW@Lvl2Show">
@@ -2278,13 +2311,13 @@
         <OperandArray value="ZergFlyerCarapaceSCBW@Lvl2Count"/>
         <OperandArray value="HiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergFlyerCarapaceSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergFlyerCarapaceSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergFlyerCarapaceSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl3QoB">
         <OperandArray index="0" value="ZergFlyerCarapaceSCBW@Lvl3QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerCarapaceSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergFlyerCarapaceSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergFlyerCarapaceSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergFlyerCarapaceSCBW@Lvl3Show">
@@ -2298,13 +2331,13 @@
     </CRequirementEq>
     <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Count" parent="SCBW_UpgradeCount" x="ZergGroundCarapaceSCBW"/>
     <CRequirementAnd id="ZergGroundCarapaceSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergGroundCarapaceSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergGroundCarapaceSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergGroundCarapaceSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl1QoB">
         <OperandArray index="0" value="ZergGroundCarapaceSCBW@Lvl1QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergGroundCarapaceSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergGroundCarapaceSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergGroundCarapaceSCBW@Lvl1Show">
@@ -2314,13 +2347,13 @@
         <OperandArray value="ZergGroundCarapaceSCBW@Lvl1Count"/>
         <OperandArray value="LairSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergGroundCarapaceSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergGroundCarapaceSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergGroundCarapaceSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl2QoB">
         <OperandArray index="0" value="ZergGroundCarapaceSCBW@Lvl2QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergGroundCarapaceSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergGroundCarapaceSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergGroundCarapaceSCBW@Lvl2Show">
@@ -2331,13 +2364,13 @@
         <OperandArray value="ZergGroundCarapaceSCBW@Lvl2Count"/>
         <OperandArray value="HiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergGroundCarapaceSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergGroundCarapaceSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergGroundCarapaceSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl3QoB">
         <OperandArray index="0" value="ZergGroundCarapaceSCBW@Lvl3QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergGroundCarapaceSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergGroundCarapaceSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergGroundCarapaceSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergGroundCarapaceSCBW@Lvl3Show">
@@ -2351,13 +2384,13 @@
     </CRequirementEq>
     <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Count" parent="SCBW_UpgradeCount" x="ZergMeleeAttacksSCBW"/>
     <CRequirementAnd id="ZergMeleeAttacksSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergMeleeAttacksSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergMeleeAttacksSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergMeleeAttacksSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl1QoB">
         <OperandArray index="0" value="ZergMeleeAttacksSCBW@Lvl1QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergMeleeAttacksSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergMeleeAttacksSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergMeleeAttacksSCBW@Lvl1Show">
@@ -2367,13 +2400,13 @@
         <OperandArray value="ZergMeleeAttacksSCBW@Lvl1Count"/>
         <OperandArray value="LairSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergMeleeAttacksSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergMeleeAttacksSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergMeleeAttacksSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl2QoB">
         <OperandArray index="0" value="ZergMeleeAttacksSCBW@Lvl2QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergMeleeAttacksSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergMeleeAttacksSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergMeleeAttacksSCBW@Lvl2Show">
@@ -2384,13 +2417,13 @@
         <OperandArray value="ZergMeleeAttacksSCBW@Lvl2Count"/>
         <OperandArray value="HiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergMeleeAttacksSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergMeleeAttacksSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergMeleeAttacksSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl3QoB">
         <OperandArray index="0" value="ZergMeleeAttacksSCBW@Lvl3QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergMeleeAttacksSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergMeleeAttacksSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergMeleeAttacksSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergMeleeAttacksSCBW@Lvl3Show">
@@ -2404,13 +2437,13 @@
     </CRequirementEq>
     <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Count" parent="SCBW_UpgradeCount" x="ZergMissileAttacksSCBW"/>
     <CRequirementAnd id="ZergMissileAttacksSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergMissileAttacksSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ZergMissileAttacksSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergMissileAttacksSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl1QoB">
         <OperandArray index="0" value="ZergMissileAttacksSCBW@Lvl1QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergMissileAttacksSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ZergMissileAttacksSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergMissileAttacksSCBW@Lvl1Show">
@@ -2420,13 +2453,13 @@
         <OperandArray value="ZergMissileAttacksSCBW@Lvl1Count"/>
         <OperandArray value="LairSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergMissileAttacksSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ZergMissileAttacksSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergMissileAttacksSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl2QoB">
         <OperandArray index="0" value="ZergMissileAttacksSCBW@Lvl2QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergMissileAttacksSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ZergMissileAttacksSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergMissileAttacksSCBW@Lvl2Show">
@@ -2437,13 +2470,13 @@
         <OperandArray value="ZergMissileAttacksSCBW@Lvl2Count"/>
         <OperandArray value="HiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergMissileAttacksSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ZergMissileAttacksSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementNot id="ZergMissileAttacksSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl3QoB">
         <OperandArray index="0" value="ZergMissileAttacksSCBW@Lvl3QoB"/>
     </CRequirementNot>
-    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergMissileAttacksSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ZergMissileAttacksSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ZergMissileAttacksSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ZergMissileAttacksSCBW@Lvl3Show">
@@ -2500,6 +2533,19 @@
     <CRequirementAnd id="QueenSCBWSpawnBroodlings">
         <OperandArray value="QueenSCBWSpawnBroodlingsResearch@Count"/>
     </CRequirementAnd>
+    <CActorSound id="DevourerSCBWWeapon@Launch" parent="SoundOneShot"/>
+    <CActorAction id="DevourerSCBWWeapon@ShieldHitter" parent="AoEAttackShieldHitter" effectHit="DevourerSCBWWeapon@Set"/>
+    <CActorModel id="InfestedTerranSCBWWeapon@DamageModel" parent="GenericAttackDamageModel">
+        <Supporter Subject="_Unit"/>
+        <On Terms="SupporterDestruction" Send="AnimBracketStop BSD"/>
+        <Host Subject="_Unit"/>
+    </CActorModel>
+    <CActorUnit id="DefilerSCBWDarkSwarm@Unit" parent="GenericUnitMinimal" unitName="DefilerSCBWDarkSwarm@Unit">
+        <Aliases index="1" removed="1"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+        <VisibilityShape Shape="DefilerSCBWDarkSwarm@Visibility"/>
+        <On Terms="Effect.DefilerSCBWDarkSwarm@DummyLocation.Start" Send="Create DefilerSCBWDarkSwarm@DarkSwarm"/>
+    </CActorUnit>
     <CActorModel id="SunkenColonySCBWWeapon@StabImpact" parent="ModelAnimationStyleOneShot">
         <On Terms="Effect.SunkenColonySCBWWeapon@DamageAccum.Start; At Target" Send="Create"/>
         <HostSiteOps Ops="SOpShadow"/>
@@ -2681,6 +2727,10 @@
         <AcquisitionPitchHalfArc value="1.000000"/>
         <AccuracyHalfArc value="1.000000"/>
         <On index="5" Terms="Effect.InfestedTerranSCBWWeapon@Impact.Start; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+        <DamageSiteOps Ops="SOpAttachHarness"/>
+        <DamageMap index="None" Model="InfestedTerranSCBWWeapon@Damage"/>
+        <DamageModel value="InfestedTerranSCBWWeapon@DamageModel"/>
+        <ShieldFlashType value="Full"/>
     </CActorAction>
     <CActorModel id="LurkerSCBWWeapon@DamageModelReaction" parent="ModelAnimationStyleOneShotNoOrphan">
         <Terms value="!Option Model Low"/>
@@ -2770,6 +2820,13 @@
     <CActorSound id="SunkenColonySCBWWeapon@LaunchSound" parent="SoundOneShot">
         <Sound value="SunkenColonySCBWWeapon@Launch"/>
     </CActorSound>
+    <CActorAction id="DevourerSCBWWeapon@Action" parent="GenericAttack" effectImpact="DevourerSCBWWeapon@Search" effectLaunch="DevourerSCBWWeapon@LM">
+        <Missile value="DevourerSCBWWeapon@Missile"/>
+        <ImpactMap index="None" Model="DevourerSCBWWeapon@Impact" Sound="DevourerSCBWWeapon@Impact"/>
+        <ImpactModel value="GenericAttackImpactModelInheritOnce"/>
+        <ImpactPhysics Name="AcidSpewImpact" MatchKeys="Basic" Physics="SporeCrawlerAttackForce"/>
+        <ShieldFlashType value="None"/>
+    </CActorAction>
     <CActorAction id="SunkenColonySCBWWeapon@Action" parent="GenericAttackWhiff" effectAttack="SunkenColonySCBWWeapon@Impact">
         <ImpactSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
         <ImpactMap index="None" Model="SunkenColonySCBWWeapon@Impact" Sound="SunkenColonySCBWWeapon@Impact"/>
@@ -2821,13 +2878,6 @@
         <ImpactPhysics Name="AcidSpewImpact" MatchKeys="Basic" Physics="SporeCrawlerAttackForce"/>
     </CActorAction>
     <CActorMissile id="SporeColonySCBWWeapon@Missile" parent="GenericAttackMissile" unitName="SporeColonySCBWWeapon@Missile"/>
-    <CActorAction id="DevourerSCBWWeapon@Action" parent="GenericAttack" effectImpact="DevourerSCBWWeapon@Set" effectLaunch="DevourerSCBWWeapon@LM">
-        <LaunchAssets Sound="DevourerSCBWWeapon@Launch"/>
-        <Missile value="DevourerSCBWWeapon@Missile"/>
-        <ImpactMap index="None" Model="DevourerSCBWWeapon@Impact" Sound="DevourerSCBWWeapon@Impact"/>
-        <ImpactModel value="GenericAttackImpactModelInheritOnce"/>
-        <ImpactPhysics Name="AcidSpewImpact" MatchKeys="Basic" Physics="SporeCrawlerAttackForce"/>
-    </CActorAction>
     <CActorMissile id="DevourerSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DevourerSCBWWeapon@Missile"/>
     <CActorAction id="GuardianSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="GuardianSCBWWeapon@Damage" effectLaunch="GuardianSCBWWeapon@LM">
         <LaunchAttachQuery Methods="AMFilterWeaponLeft"/>
@@ -3001,9 +3051,9 @@
     </CActorModel>
     <CActorModel id="DefilerSCBWDarkSwarm@Splat" parent="ModelAnimationStyleContinuous">
         <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Start" Send="Create"/>
-        <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Stop" Send="AnimBracketStop BSD"/>
+        <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Stop; FromEffectTreeDescendant" Send="AnimBracketStop BSD"/>
         <On Terms="Effect.DefilerSCBWDarkSwarm@DummyLocation.Start; FromEffectTreeDescendant; At Effect" Send="Create DefilerSCBWDarkSwarm@DarkSwarm"/>
-        <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Stop" Target="::ScopeContents" Send="AnimBracketStop BSD"/>
+        <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Stop; FromEffectTreeDescendant" Target="::ScopeContents" Send="AnimBracketStop BSD"/>
         <ModelFlags index="AllowHitTest" value="0"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
         <VisibilityShape Shape="DefilerSCBWDarkSwarm@Visibility"/>
@@ -3018,6 +3068,7 @@
     </CActorModelMaterial>
     <CActorSound id="DefilerSCBWDarkSwarm@MissileLaunchSound" parent="SoundOneShot">
         <On Terms="Abil.DefilerSCBWDarkSwarm.SourceCastStart" Send="Create"/>
+        <On Terms="Abil.DefilerSCBWDarkSwarm@Hardcore.SourceCastStart" Send="Create"/>
         <Sound value="DefilerSCBWDarkSwarm@MissileLaunch"/>
     </CActorSound>
     <CActorModelMaterial id="QueenSCBWEnsnare@Glaze" parent="BehaviorGlaze" buff="QueenSCBWEnsnare">
@@ -3048,6 +3099,7 @@
     </CActorSound>
     <CActorSound id="DefilerSCBWConsume@LaunchSound" parent="SoundOneShot">
         <On Terms="Abil.DefilerSCBWConsume.SourcePrepStart" Send="Create"/>
+        <On Terms="Abil.DefilerSCBWConsume@Hardcore.SourcePrepStart" Send="Create"/>
         <Sound value="DefilerSCBWConsume@Launch"/>
     </CActorSound>
     <CActorSound id="DefilerSCBWConsume@ConsumeSound" parent="SoundOneShot">
@@ -3062,6 +3114,7 @@
         <Inherits index="Visibility" value="1"/>
         <HostForProps Subject="::Creator"/>
         <Host Subject="::Creator"/>
+        <Terms value="Cap 7"/>
     </CActorModel>
     <CActorAction id="DefilerSCBWDarkSwarm@Action" parent="GenericAttack" effectImpact="DefilerSCBWDarkSwarm@CP" effectLaunch="DefilerSCBWDarkSwarm@LM">
         <LaunchAssets Sound=""/>
@@ -3071,20 +3124,25 @@
     <CActorMissile id="DefilerSCBWDarkSwarm@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="DefilerSCBWDarkSwarm@Missile">
         <On index="1" Terms="UnitBirth" Send="AnimBracketStart BSD Birth Stand IGNORE"/>
     </CActorMissile>
-    <CActorSplat id="DefilerSCBWDarkSwarm@CursorSplat" parent="ZergCursorSplat" abil="DefilerSCBWDarkSwarm"/>
-    <CActorRange id="DefilerSCBWDarkSwarm@Range" parent="RangeAbil" abil="DefilerSCBWDarkSwarm">
+    <CActorSplat id="DefilerSCBWDarkSwarm@CursorSplat" parent="ZergCursorSplat" abil="DefilerSCBWDarkSwarm">
+        <On Terms="Abil.DefilerSCBWDarkSwarm@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
+    <CActorRange id="DefilerSCBWDarkSwarm@Range" parent="SCBW_RangeAbilMultiple" abil2="DefilerSCBWDarkSwarm@Hardcore" abil="DefilerSCBWDarkSwarm">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
     <CActorSound id="DefilerSCBWDarkSwarm@LaunchSound" parent="SoundOneShot">
         <On Terms="Effect.DefilerSCBWDarkSwarm@CP.Start" Send="Create"/>
+        <On Terms="Effect.DefilerSCBWDarkSwarm@CPInfinite.Start" Send="Create"/>
         <Sound value="DefilerSCBWDarkSwarm@Launch"/>
     </CActorSound>
     <CActorModel id="DefilerSCBWPlague@ImpactModel" parent="ModelAnimationStyleOneShot">
         <On Terms="Effect.DefilerSCBWPlague@Search.Start" Send="Create"/>
         <Model value="DefilerSCBWPlague@Impact"/>
     </CActorModel>
-    <CActorSplat id="DefilerSCBWPlague@CursorSplat" parent="ZergCursorSplat" abil="DefilerSCBWPlague"/>
+    <CActorSplat id="DefilerSCBWPlague@CursorSplat" parent="ZergCursorSplat" abil="DefilerSCBWPlague">
+        <On Terms="Abil.DefilerSCBWPlague@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
     <CActorModelMaterial id="DefilerSCBWPlague@Glaze" parent="BehaviorGlaze" buff="DefilerSCBWPlague">
         <On Terms="AnimDone; AnimName Death" Send="ModelMaterialRemoveFrom ::Main"/>
         <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
@@ -3094,7 +3152,7 @@
         <On Terms="Effect.DefilerSCBWPlague@Search.Start" Send="Create"/>
         <Sound value="DefilerSCBWPlague@Impact"/>
     </CActorSound>
-    <CActorRange id="DefilerSCBWPlague@Range" parent="RangeAbil" abil="DefilerSCBWPlague">
+    <CActorRange id="DefilerSCBWPlague@Range" parent="SCBW_RangeAbilMultiple" abil2="DefilerSCBWPlague@Hardcore" abil="DefilerSCBWPlague">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
@@ -3147,16 +3205,15 @@
             <Aspects Person="Observer" ObservingPoV="Everyone" Model="QueenSCBWParasite@Parasite"/>
         </ModelAspectSets>
     </CActorModel>
-    <CActorMissile id="QueenSCBWParasite@Missile" parent="GenericAttackMissile" unitName="QueenSCBWParasite@Missile"/>
     <CActorAction id="QueenSCBWParasite@Action" parent="GenericAttack" effectImpact="QueenSCBWParasite@AB" effectLaunch="QueenSCBWParasite@LM">
-        <EditorCategories value=""/>
         <LaunchAssets Sound="QueenSCBWParasite@Launch"/>
         <Missile value="QueenSCBWParasite@Missile"/>
         <ImpactSiteOps Ops="SOpAttachCenter"/>
         <ImpactMap index="None" Sound="QueenSCBWParasite@Impact"/>
         <ShieldFlashType value="None"/>
     </CActorAction>
-    <CActorRange id="QueenSCBWParasite@Range" parent="RangeAbil" abil="QueenSCBWParasite">
+    <CActorMissile id="QueenSCBWParasite@Missile" parent="GenericAttackMissile" unitName="QueenSCBWParasite@Missile"/>
+    <CActorRange id="QueenSCBWParasite@Range" parent="SCBW_RangeAbilMultiple" abil2="QueenSCBWParasite@Hardcore" abil="QueenSCBWParasite">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
@@ -3165,7 +3222,9 @@
         <Missile value="QueenSCBWEnsnare@Missile"/>
         <ShieldFlashType value="None"/>
     </CActorAction>
-    <CActorSplat id="QueenSCBWEnsnare@CursorSplat" parent="ZergCursorSplat" abil="QueenSCBWEnsnare"/>
+    <CActorSplat id="QueenSCBWEnsnare@CursorSplat" parent="ZergCursorSplat" abil="QueenSCBWEnsnare">
+        <On Terms="Abil.QueenSCBWEnsnare@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
     <CActorModel id="QueenSCBWEnsnare@Impact" parent="ModelAnimationStyleOneShot">
         <On Terms="Effect.QueenSCBWEnsnare@Search.Start" Send="Create"/>
     </CActorModel>
@@ -3176,7 +3235,7 @@
     <CActorMissile id="QueenSCBWEnsnare@Missile" parent="GenericUnitMinimal" unitName="QueenSCBWEnsnare@Missile">
         <PreHost value="_ActorAction"/>
     </CActorMissile>
-    <CActorRange id="QueenSCBWEnsnare@Range" parent="RangeAbil" abil="QueenSCBWEnsnare">
+    <CActorRange id="QueenSCBWEnsnare@Range" parent="SCBW_RangeAbilMultiple" abil2="QueenSCBWEnsnare@Hardcore" abil="QueenSCBWEnsnare">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
@@ -3218,7 +3277,7 @@
         <LaunchAttachQuery Methods="Weapon"/>
         <ImpactSiteOps Ops="SOpAttachCenter"/>
     </CActorAction>
-    <CActorRange id="QueenSCBWSpawnBroodlings@Range" parent="RangeAbil" abil="QueenSCBWSpawnBroodlings">
+    <CActorRange id="QueenSCBWSpawnBroodlings@Range" parent="SCBW_RangeAbilMultiple" abil2="QueenSCBWSpawnBroodlings@Hardcore" abil="QueenSCBWSpawnBroodlings">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
@@ -3277,6 +3336,17 @@
         <WhichUnit Value="Target"/>
         <Validator value="NotUnderDarkSwarmCombine"/>
     </CTargetSortValidator>
+    <CModel id="InfestedTerranSCBWWeapon@Damage" parent="ImpactFX">
+        <Model value="Assets\Effects\Zerg\RoachMissileImpact\RoachMissileImpact.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CModel>
+    <CModel id="DefilerSCBWDarkSwarm@Unit" parent="Unit">
+        <Model value="Assets\Effects\Zerg\DefilerDarkSwarmSCBW@Splat\DefilerDarkSwarmSCBW@Splat.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Flags index="FreezeParticlesAndRibbonsOnAnimPause" value="1"/>
+        <ScaleMax value="0.950000,0.950000,0.950000"/>
+        <ScaleMin value="0.950000,0.950000,0.950000"/>
+    </CModel>
     <CModel id="SunkenColonySCBWWeapon@StabImpact" parent="ImpactFX">
         <Model value="Assets\Effects\Zerg\LurkerMissile_Impact_EX2\LurkerMissile_Impact_EX2.m3"/>
         <EditorCategories value="Race:Zerg"/>
@@ -3662,6 +3732,8 @@
         <AllowedMovement value="Slowing"/>
         <Range value="6"/>
         <Tip value="Weapon/Tip/ExplosiveWeapon"/>
+        <RangeSlop value="2"/>
+        <DamagePoint value="0.9375"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="MutaliskSCBWWeapon">
         <EditorCategories value="Race:Zerg"/>
@@ -3745,7 +3817,7 @@
         <DisplayEffect value="ZerglingSCBWWeapon@Damage"/>
         <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="0.4687"/>
-        <Period value="0.4375"/>
+        <Period value="0.4665"/>
         <Effect value="ZerglingSCBWWeapon@Damage"/>
         <RangeSlop value="1.4"/>
     </CWeaponLegacy>
@@ -3794,7 +3866,9 @@
         <MotionPhases>
             <Driver value="Guidance"/>
             <Acceleration value="3200"/>
-            <MaxSpeed value="20"/>
+            <Speed value="18"/>
+            <MaxSpeed value="18"/>
+            <ArrivalTestType value="2D"/>
             <YawPitchRoll value="MAX"/>
         </MotionPhases>
     </CMoverMissile>
@@ -3921,9 +3995,6 @@
         </Parameters>
         <Operation value="Divide"/>
     </CAccumulatorArithmetic>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackSpeedFactor">
-        <Amount value="0.8"/>
-    </CAccumulatorConstant>
     <CAccumulatorBehavior id="DevourerSCBWWeapon@AcidSporesCaster">
         <Behavior value="DevourerSCBWWeapon"/>
     </CAccumulatorBehavior>
@@ -3966,35 +4037,42 @@
         <MaxAccumulation value="3"/>
         <Key value="HitCount"/>
     </CAccumulatorUserData>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackSpeedFactor">
+        <Amount value="0.8"/>
+    </CAccumulatorConstant>
     <CAccumulatorSwitch id="QueenSCBWEnsnare@AttackAccum">
-        <CaseArray Validator="QueenSCBWEnsnare@AttackStimpackBW" Accumulator="QueenSCBWEnsnare@AttackStimpackBW"/>
-        <CaseArray Validator="QueenSCBWEnsnare@AttackAdrenalBWValidate" Accumulator="QueenSCBWEnsnare@AttackAdrenalBW"/>
-        <CaseArray Validator="IsMarineStimmed" Accumulator="QueenSCBWEnsnare@AttackStimpack"/>
-        <CaseArray Validator="IsMarauderStimmed" Accumulator="QueenSCBWEnsnare@AttackStimpackMarauder"/>
-        <CaseArray Validator="QueenSCBWEnsnare@AttackAdrenalValidate" Accumulator="QueenSCBWEnsnare@AttackAdrenal"/>
-        <CaseArray Validator="QueenSCBWEnsnare@AttackAdeptGlaives" Accumulator="QueenSCBWEnsnare@AttackAdeptGlaives"/>
-        <CaseDefault value="QueenSCBWEnsnare@AttackDefault"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack" Accumulator="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack" Accumulator="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_AdrenalBW" Accumulator="QueenSCBWEnsnare@AttackFactor_AdrenalBW"/>
+        <CaseArray Validator="IsMarineStimmed" Accumulator="QueenSCBWEnsnare@AttackFactor_Stimpack"/>
+        <CaseArray Validator="IsMarauderStimmed" Accumulator="QueenSCBWEnsnare@AttackFactor_MarauderStimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_Adrenal" Accumulator="QueenSCBWEnsnare@AttackFactor_Adrenal"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_AdeptGlaives" Accumulator="QueenSCBWEnsnare@AttackFactor_AdeptGlaives"/>
+        <CaseDefault value="QueenSCBWEnsnare@AttackFactor_Default"/>
     </CAccumulatorSwitch>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackAdrenal">
-        <Amount value="-0.275"/>
-    </CAccumulatorConstant>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackDefault">
-        <Amount value="-0.2"/>
-    </CAccumulatorConstant>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackAdeptGlaives">
-        <Amount value="-0.31"/>
-    </CAccumulatorConstant>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackStimpackMarauder">
-        <Amount value="-0.333"/>
-    </CAccumulatorConstant>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackStimpackBW">
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack">
         <Amount value="-0.5"/>
     </CAccumulatorConstant>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackStimpack">
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack">
+        <Amount value="-0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_AdrenalBW">
         <Amount value="-0.375"/>
     </CAccumulatorConstant>
-    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackAdrenalBW">
-        <Amount value="-0.3"/>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_Stimpack">
+        <Amount value="-0.333"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_MarauderStimpack">
+        <Amount value="-0.333"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_Adrenal">
+        <Amount value="-0.286"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_AdeptGlaives">
+        <Amount value="-0.31"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_Default">
+        <Amount value="-0.2"/>
     </CAccumulatorConstant>
     <CAccumulatorConstant id="SunkenColonySCBWWeapon@Damage">
         <Amount value="40"/>
@@ -4011,39 +4089,46 @@
     <CAccumulatorConstant id="HydraliskSCBWWeapon@Damage">
         <Amount value="10"/>
     </CAccumulatorConstant>
+    <CSound id="QueenSCBWSpawnBroodlings@ActionShieldImpactShield" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Shields\Protoss_ShieldImpact0.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Shields\Protoss_ShieldImpact1.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Shields\Protoss_ShieldImpact2.wav"/>
+        <Volume value="-6.000000,-4.000000"/>
+    </CSound>
     <CSound id="DefilerSCBWConsume@Explode" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffectsSCBW\ZergBuildingSCBW@Death00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffectsSCBW\ZergBuildingSCBW@Death00.ogg"/>
         <Pitch value="5.000000,5.000000"/>
         <Volume value="-5.000000,-4.000000"/>
     </CSound>
     <CSound id="QueenSCBWSpawnBroodlings@MissileDeath" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\SunkenColonySCBW\SunkenColonySCBWWeapon@Impact00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\SunkenColonySCBW\SunkenColonySCBWWeapon@Impact00.ogg"/>
         <Pitch value="3.000000,3.000000"/>
         <Volume value="3.000000,3.000000"/>
     </CSound>
     <CSound id="QueenSCBWInfestCommandCenter@InfestStart" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact2.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact2.wav"/>
         <Pitch value="-5.000000,-3.000000"/>
         <NonLocalVolumeAdjustment value="6.000000,6.000000"/>
     </CSound>
     <CSound id="QueenSCBWInfestCommandCenter@InfestEnd" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch2.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch2.wav"/>
         <Pitch value="-5.000000,-4.000000"/>
         <Volume value="-6.000000,-4.000000"/>
         <NonLocalVolumeAdjustment value="5.000000,5.000000"/>
     </CSound>
     <CSound id="QueenSCBWInfestCommandCenter@LaunchSound" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Start01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Start02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Start01.wav"/>
+        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Start02.wav"/>
         <Pitch value="5.000000,5.000000"/>
         <Volume value="-6.000000,-6.000000"/>
         <DupeDestroyCount value="6"/>
@@ -4053,7 +4138,7 @@
     </CSound>
     <CSound id="QueenSCBWInfestCommandCenter@LoopSound" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Loop01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Loop01.wav"/>
         <DupeMuteCount value="4"/>
         <LoopCount value="-1"/>
         <Pitch value="0.000000,3.000000"/>
@@ -4131,7 +4216,7 @@
     </CSound>
     <CSound id="LurkerSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\LurkerSCBW\LurkerSCBWWeapon@Impact00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\LurkerSCBW\LurkerSCBWWeapon@Impact00.ogg"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="4"/>
         <DupeThresholdPoints/>
@@ -4145,7 +4230,7 @@
     </CSound>
     <CSound id="LurkerSCBWWeapon@LaunchInitial" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\LurkerSCBW\LurkerSCBWWeapon@Launch00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\LurkerSCBW\LurkerSCBWWeapon@Launch00.ogg"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="4"/>
         <DupeThresholdPoints/>
@@ -4185,7 +4270,7 @@
     </CSound>
     <CSound id="ScourgeSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBWWeapon@Impact00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBWWeapon@Impact00.ogg"/>
     </CSound>
     <CSound id="SporeColonySCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
@@ -4197,14 +4282,14 @@
     </CSound>
     <CSound id="SporeColonySCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\SunkenColonySCBW\SunkenColonySCBWWeapon@Launch00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\SunkenColonySCBW\SunkenColonySCBWWeapon@Launch00.ogg"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="5"/>
         <Volume value="3.000000,3.000000"/>
     </CSound>
     <!--CSound id="HydraliskSCBW@Help" parent="AlertZergSCBW" Folder="HydraliskSCBW">-->
-    <!--        <AssetArray TemplateParam="HydraliskSCBW@Help00" FacialGroup=""/>-->
+    <!--        <AssetArray TemplateParam="HydraliskSCBW@Help00"/>-->
     <!--        <Mode value="3DWorld"/>-->
     <!--    </CSound-->
     <CSound id="HydraliskSCBWWeapon@Impact" parent="Combat">
@@ -4271,14 +4356,14 @@
     <CSound id="UltraliskSCBWWeapon@Cleave" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
         <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_Cleave_02.wav" Pitch="-5.000000,-5.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_Cleave_06.wav" Pitch="-5.000000,-5.000000" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_Cleave_06.wav" Pitch="-5.000000,-5.000000"/>
         <DupeDestroyCount value="4"/>
         <VariationMinimum value="8"/>
         <Volume value="-12.559999,-12.559999"/>
     </CSound>
     <CSound id="SunkenColonySCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\SunkenColonySCBW\SunkenColonySCBWWeapon@Launch00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\SunkenColonySCBW\SunkenColonySCBWWeapon@Launch00.ogg"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="5"/>
@@ -4286,9 +4371,9 @@
     </CSound>
     <CSound id="DefilerSCBWDarkSwarm@MissileLaunch" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch2.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch2.wav"/>
         <Pitch value="3.000000,5.000000"/>
         <Volume value="-8.000000,-6.500000"/>
     </CSound>
@@ -4302,30 +4387,30 @@
     </CSound>
     <CSound id="DefilerSCBWConsume@Consume" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\DefilerSCBW\DefilerSCBWConsume@Launch00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\DefilerSCBW\DefilerSCBWConsume@Launch00.ogg"/>
     </CSound>
     <CSound id="DefilerSCBWConsume@Impact" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration2.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration3.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration4.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration2.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration3.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Queen\Queen_Regeneration4.wav"/>
         <Pitch value="-2.000000,-2.000000"/>
         <Volume value="-5.000000,-2.000000"/>
     </CSound>
     <CSound id="DefilerSCBWConsume@Launch" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing2.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing3.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing2.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Attacks\Zerg_AttackLaunchSmallSwing3.wav"/>
         <Pitch value="-5.000000,-5.000000"/>
         <Volume value="-4.000000,-4.000000"/>
     </CSound>
     <CSound id="DefilerSCBWDarkSwarm@Launch" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\DefilerSCBW\DefilerSCBWDarkSwarm@Launch00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\DefilerSCBW\DefilerSCBWDarkSwarm@Launch00.ogg"/>
     </CSound>
     <CSound id="DefilerSCBWPlague@Impact" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
@@ -4333,28 +4418,28 @@
     </CSound>
     <CSound id="QueenSCBWParasite@Impact" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWParasite@Impact00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWParasite@Impact00.ogg"/>
     </CSound>
     <CSound id="QueenSCBWParasite@Launch" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch2.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch2.wav"/>
         <Volume value="-8.000000,-8.000000"/>
     </CSound>
     <CSound id="QueenSCBWEnsnare@Impact" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWEnsnare@Impact00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWEnsnare@Impact00.ogg"/>
         <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="QueenSCBWEnsnare@Launch" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch2.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch3.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch4.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch5.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch2.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch3.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch4.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch5.wav"/>
         <Volume value="-4.000000,-4.000000"/>
     </CSound>
     <CSound id="QueenSCBWSpawnBroodlings@Impact" parent="Spell">
@@ -4366,7 +4451,7 @@
     </CSound>
     <CSound id="QueenSCBWSpawnBroodlings@Launch" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWSpawnBroodlings@Launch00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWSpawnBroodlings@Launch00.ogg"/>
         <Volume value="3.000000,3.000000"/>
         <LocalVolumeAdjustment value="3.000000,3.000000"/>
     </CSound>
@@ -4623,9 +4708,9 @@
         <DataRecord Entry="RequirementNode,ZergFlyerAttacksSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ZergFlyerAttacksSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ZergFlyerAttacksSCBW@QoB"/>
-        <DataRecord Entry="Upgrade,ZergFlyerAttacksSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ZergFlyerAttacksSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ZergFlyerAttacksSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ZergFlyerAttacksSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ZergFlyerAttacksSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ZergFlyerAttacksSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ZergFlyerCarapaceSCBW" parent="ZergUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ZergFlyerCarapaceSCBW"/>
@@ -4655,9 +4740,9 @@
         <DataRecord Entry="RequirementNode,ZergFlyerCarapaceSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ZergFlyerCarapaceSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ZergFlyerCarapaceSCBW@QoB2"/>
-        <DataRecord Entry="Upgrade,ZergFlyerCarapaceSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ZergFlyerCarapaceSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ZergFlyerCarapaceSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ZergFlyerCarapaceSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ZergFlyerCarapaceSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ZergFlyerCarapaceSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ZergGroundCarapaceSCBW" parent="ZergUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ZergGroundCarapaceSCBW"/>
@@ -4687,9 +4772,9 @@
         <DataRecord Entry="RequirementNode,ZergGroundCarapaceSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ZergGroundCarapaceSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ZergGroundCarapaceSCBW@QoB2"/>
-        <DataRecord Entry="Upgrade,ZergGroundCarapaceSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ZergGroundCarapaceSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ZergGroundCarapaceSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ZergGroundCarapaceSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ZergGroundCarapaceSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ZergGroundCarapaceSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ZergMeleeAttacksSCBW" parent="ZergUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ZergMeleeAttacksSCBW"/>
@@ -4719,9 +4804,9 @@
         <DataRecord Entry="RequirementNode,ZergMeleeAttacksSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ZergMeleeAttacksSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ZergMeleeAttacksSCBW@QoB"/>
-        <DataRecord Entry="Upgrade,ZergMeleeAttacksSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ZergMeleeAttacksSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ZergMeleeAttacksSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ZergMeleeAttacksSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ZergMeleeAttacksSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ZergMeleeAttacksSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ZergMissileAttacksSCBW" parent="ZergUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ZergMissileAttacksSCBW"/>
@@ -4751,9 +4836,9 @@
         <DataRecord Entry="RequirementNode,ZergMissileAttacksSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ZergMissileAttacksSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ZergMissileAttacksSCBW@QoB"/>
-        <DataRecord Entry="Upgrade,ZergMissileAttacksSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ZergMissileAttacksSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ZergMissileAttacksSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ZergMissileAttacksSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ZergMissileAttacksSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ZergMissileAttacksSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ZergSCBWBurrowResearch" parent="ZergUpgradeSCBW">
         <DataRecord Entry="Abil,ZergSCBWBurrowResearch"/>
@@ -4805,6 +4890,7 @@
     </CDataCollectionUpgrade>
     <CDataCollectionAbil id="QueenSCBWEnsnare" parent="ZergAbilSCBW">
         <DataRecord Entry="Abil,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Abil,QueenSCBWEnsnare@Hardcore"/>
         <DataRecord Entry="Actor,QueenSCBWEnsnare@CreepDummy"/>
         <DataRecord Entry="Actor,QueenSCBWEnsnare@Glaze"/>
         <DataRecord Entry="Actor,QueenSCBWEnsnare@Action"/>
@@ -4860,10 +4946,11 @@
         <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackNot"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@MovementNot"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_Stimpack"/>
-        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackStimpackBW"/>
-        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackAdrenalValidate"/>
-        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackAdeptGlaives"/>
-        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackAdrenalBWValidate"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_AdrenalBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_Adrenal"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_AdeptGlaives"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_HydraliskSCBW"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
         <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_OverlordSCBW"/>
@@ -4888,13 +4975,14 @@
         <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
         <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ScoutSCBW"/>
         <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackAccum"/>
-        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackStimpackBW"/>
-        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackAdrenalBW"/>
-        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackStimpack"/>
-        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackStimpackMarauder"/>
-        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackAdrenal"/>
-        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackAdeptGlaives"/>
-        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackDefault"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_AdrenalBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_Stimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_MarauderStimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_Adrenal"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_AdeptGlaives"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_Default"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="QueenSCBWInfestCommandCenter" parent="ZergAbilSCBW">
         <DataRecord Entry="Abil,QueenSCBWInfestCommandCenter"/>
@@ -4953,6 +5041,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="QueenSCBWParasite" parent="ZergAbilSCBW">
         <DataRecord Entry="Abil,QueenSCBWParasite"/>
+        <DataRecord Entry="Abil,QueenSCBWParasite@Hardcore"/>
         <DataRecord Entry="Actor,QueenSCBWParasite@DeathSound"/>
         <DataRecord Entry="Actor,QueenSCBWParasite@Parasite"/>
         <DataRecord Entry="Actor,QueenSCBWParasite@Missile"/>
@@ -4974,6 +5063,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="QueenSCBWSpawnBroodlings" parent="ZergAbilSCBW">
         <DataRecord Entry="Abil,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Abil,QueenSCBWSpawnBroodlings@Hardcore"/>
         <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@ActionShieldModelReaction"/>
         <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@ActionShield"/>
         <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@Missile"/>
@@ -5001,6 +5091,7 @@
         <DataRecord Entry="Mover,QueenSCBWSpawnBroodlings@Missile"/>
         <DataRecord Entry="Requirement,QueenSCBWSpawnBroodlings"/>
         <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@ActionShieldImpactShield"/>
         <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@MissileDeath"/>
         <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@Launch"/>
         <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@Impact"/>
@@ -5012,6 +5103,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DefilerSCBWConsume" parent="ZergAbilSCBW">
         <DataRecord Entry="Abil,DefilerSCBWConsume"/>
+        <DataRecord Entry="Abil,DefilerSCBWConsume@Hardcore"/>
         <DataRecord Entry="Actor,DefilerSCBWConsume@Explode"/>
         <DataRecord Entry="Actor,DefilerSCBWConsume@Consume"/>
         <DataRecord Entry="Actor,DefilerSCBWConsume@Impact"/>
@@ -5037,6 +5129,8 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DefilerSCBWDarkSwarm" parent="ZergAbilSCBW">
         <DataRecord Entry="Abil,DefilerSCBWDarkSwarm"/>
+        <DataRecord Entry="Abil,DefilerSCBWDarkSwarm@Hardcore"/>
+        <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@Unit"/>
         <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@HeightVariancer"/>
         <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@Persistent"/>
         <DataRecord Entry="Actor,DefilerSCBWDarkSwarm@Splat"/>
@@ -5053,12 +5147,15 @@
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@DummyPersistent"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@CP"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@DummyLocation"/>
+        <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@DummyPersistentInfinite"/>
+        <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@CPInfinite"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@ABSpell"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@Set"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@AB"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@DamageDummy"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@Search"/>
         <DataRecord Entry="Effect,DefilerSCBWDarkSwarm@LM"/>
+        <DataRecord Entry="Model,DefilerSCBWDarkSwarm@Unit"/>
         <DataRecord Entry="Model,DefilerSCBWDarkSwarm@PersistentSmall"/>
         <DataRecord Entry="Model,DefilerSCBWDarkSwarm@Persistent"/>
         <DataRecord Entry="Model,DefilerSCBWDarkSwarm@PersistentBurrowed"/>
@@ -5074,9 +5171,11 @@
         <DataRecord Entry="TargetSort,DefilerSCBWDarkSwarm"/>
         <DataRecord Entry="TargetSort,DefilerSCBWDarkSwarm@Not"/>
         <DataRecord Entry="Unit,DefilerSCBWDarkSwarm@Missile"/>
+        <DataRecord Entry="Unit,DefilerSCBWDarkSwarm@Unit"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DefilerSCBWPlague" parent="ZergAbilSCBW">
         <DataRecord Entry="Abil,DefilerSCBWPlague"/>
+        <DataRecord Entry="Abil,DefilerSCBWPlague@Hardcore"/>
         <DataRecord Entry="Actor,DefilerSCBWPlague@TargetModelMassive"/>
         <DataRecord Entry="Actor,DefilerSCBWPlague@CreepGlaze"/>
         <DataRecord Entry="Actor,DefilerSCBWPlague@ImpactModel"/>
@@ -5135,6 +5234,7 @@
         <DataRecord Entry="Weapon,UltraliskSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="SunkenColonySCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Actor,SunkenColonySCBWWeapon@StabImpact"/>
         <DataRecord Entry="Actor,SunkenColonySCBWWeapon@LaunchSound"/>
         <DataRecord Entry="Actor,SunkenColonySCBWWeapon@Action"/>
         <DataRecord Entry="Actor,SunkenColonySCBWWeapon@StabUpForce"/>
@@ -5145,6 +5245,7 @@
         <DataRecord Entry="Effect,SunkenColonySCBWWeapon@Impact"/>
         <DataRecord Entry="Effect,SunkenColonySCBWWeapon@DamageApply"/>
         <DataRecord Entry="Effect,SunkenColonySCBWWeapon@Damage"/>
+        <DataRecord Entry="Model,SunkenColonySCBWWeapon@StabImpact"/>
         <DataRecord Entry="Model,SunkenColonySCBWWeapon@Impact"/>
         <DataRecord Entry="Model,SunkenColonySCBWWeapon@ActionDamageReaction"/>
         <DataRecord Entry="Model,SunkenColonySCBWWeapon@ActionDamageReactionFlesh"/>
@@ -5180,11 +5281,13 @@
         <DataRecord Entry="Weapon,GuardianSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DevourerSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Actor,DevourerSCBWWeapon@ShieldHitter"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@SporesModelSmall"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@SporesModelMedium"/>
-        <DataRecord Entry="Actor,DevourerSCBWWeapon@SporesModel"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,DevourerSCBWWeapon@SporesModel"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@Missile"/>
+        <DataRecord Entry="Actor,DevourerSCBWWeapon@Launch"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore1"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore2"/>
@@ -5197,6 +5300,10 @@
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore9"/>
         <DataRecord Entry="Button,DevourerSCBWWeapon@Info"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageAccum"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@ImpactRedirect"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@LM"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Set"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@RBSpores"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore1"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore2"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore3"/>
@@ -5207,22 +5314,21 @@
         <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore8"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@Spore9"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@SporesCP"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@Search"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageApply"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@AB"/>
-        <DataRecord Entry="Effect,DevourerSCBWWeapon@LM"/>
-        <DataRecord Entry="Effect,DevourerSCBWWeapon@Set"/>
-        <DataRecord Entry="Effect,DevourerSCBWWeapon@Search"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageExpl"/>
         <DataRecord Entry="Model,DevourerSCBWWeapon@SporesModelSmall"/>
         <DataRecord Entry="Model,DevourerSCBWWeapon@SporesModelMedium"/>
-        <DataRecord Entry="Model,DevourerSCBWWeapon@SporesModel"/>
         <DataRecord Entry="Model,DevourerSCBWWeapon@Impact"/>
+        <DataRecord Entry="Model,DevourerSCBWWeapon@SporesModel"/>
         <DataRecord Entry="Model,DevourerSCBWWeapon@Missile"/>
         <DataRecord Entry="Mover,DevourerSCBWWeapon@Missile"/>
         <DataRecord Entry="Sound,DevourerSCBWWeapon@Launch"/>
         <DataRecord Entry="Sound,DevourerSCBWWeapon@Impact"/>
         <DataRecord Entry="Unit,DevourerSCBWWeapon@Missile"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon@Caster"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@DamageMaxRange"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore1"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore2"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore3"/>
@@ -5232,6 +5338,7 @@
         <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore7"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore8"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon@Spore9"/>
+        <DataRecord Entry="Validator,DevourerSCBWWeapon@CloakedIsDetected"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon@ABTargetFilters"/>
         <DataRecord Entry="Validator,DevourerSCBWWeapon"/>
         <DataRecord Entry="Weapon,DevourerSCBWWeapon"/>
@@ -5297,6 +5404,7 @@
         <DataRecord Entry="Weapon,BroodlingSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="InfestedTerranSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Actor,InfestedTerranSCBWWeapon@DamageModel"/>
         <DataRecord Entry="Actor,InfestedTerranSCBWWeapon@Explode"/>
         <DataRecord Entry="Actor,InfestedTerranSCBWWeapon@Impact"/>
         <DataRecord Entry="Actor,InfestedTerranSCBWWeapon@Force"/>
@@ -5315,6 +5423,7 @@
         <DataRecord Entry="Effect,InfestedTerranSCBWWeapon@SuicideRemove"/>
         <DataRecord Entry="Effect,InfestedTerranSCBWWeapon@DamageExpl"/>
         <DataRecord Entry="Model,InfestedTerranSCBWWeapon@Impact"/>
+        <DataRecord Entry="Model,InfestedTerranSCBWWeapon@Damage"/>
         <DataRecord Entry="Validator,InfestedTerranSCBWWeapon@Splash"/>
         <DataRecord Entry="Weapon,InfestedTerranSCBWWeapon"/>
         <DataRecord Entry="Accumulator,InfestedTerranSCBWWeapon@Damage"/>
@@ -5341,6 +5450,7 @@
         <DataRecord Entry="Weapon,ZerglingSCBWWeapon"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="LurkerSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Actor,LurkerSCBWWeapon@SpikeImpact"/>
         <DataRecord Entry="Actor,LurkerSCBWWeapon@DamageModelReaction"/>
         <DataRecord Entry="Actor,LurkerSCBWWeapon@Action"/>
         <DataRecord Entry="Actor,LurkerSCBWWeapon@LaunchSoundInitial"/>
@@ -5348,7 +5458,6 @@
         <DataRecord Entry="Actor,LurkerSCBWWeapon@ImpactModel"/>
         <DataRecord Entry="Actor,LurkerSCBWWeapon@LaunchSound"/>
         <DataRecord Entry="Actor,LurkerSCBWWeapon@StabForce"/>
-        <DataRecord Entry="Actor,LurkerSCBWWeapon@SpikeImpact"/>
         <DataRecord Entry="Effect,LurkerSCBWWeapon@Damage"/>
         <DataRecord Entry="Effect,LurkerSCBWWeapon@CP"/>
         <DataRecord Entry="Effect,LurkerSCBWWeapon@CU"/>
@@ -5356,10 +5465,10 @@
         <DataRecord Entry="Effect,LurkerSCBWWeapon@SearchSet"/>
         <DataRecord Entry="Effect,LurkerSCBWWeapon@DP"/>
         <DataRecord Entry="Effect,LurkerSCBWWeapon@WeaponRangeSwitch"/>
+        <DataRecord Entry="Model,LurkerSCBWWeapon@SpikeImpact"/>
         <DataRecord Entry="Model,LurkerSCBWWeapon@DeathBloodGeyser"/>
         <DataRecord Entry="Model,LurkerSCBWWeapon@Spike"/>
         <DataRecord Entry="Model,LurkerSCBWWeapon@Impact"/>
-        <DataRecord Entry="Model,LurkerSCBWWeapon@SpikeImpact"/>
         <DataRecord Entry="Shape,LurkerSCBWWeapon@Visibility"/>
         <DataRecord Entry="Sound,LurkerSCBWWeapon@LaunchInitial"/>
         <DataRecord Entry="Sound,LurkerSCBWWeapon@LaunchSecondary"/>
@@ -5398,6 +5507,18 @@
         <DataRecord Entry="Effect,HydraliskSCBWWeaponAlt@Impact"/>
         <DataRecord Entry="Weapon,HydraliskSCBWWeaponAlt"/>
     </CDataCollectionAbil>
+    <CUnit id="DefilerSCBWDarkSwarm@Unit" parent="SCBW_InvulnerableDummy">
+        <Name value="Unit/Name/DefilerSCBWDarkSwarm@Unit"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="Movable" value="0"/>
+        <FlagArray index="Uncloakable" value="1"/>
+        <FlagArray index="PlayerRevivable" value="0"/>
+        <EditorFlags index="NoPalettes" value="0"/>
+        <EditorFlags index="BlockStructures" value="0"/>
+        <EditorFlags index="NeutralDefault" value="1"/>
+        <EffectArray index="Create" value="DefilerSCBWDarkSwarm@CPInfinite"/>
+        <EditorCategories value="ObjectFamily:Melee,ObjectType:Spell"/>
+    </CUnit>
     <CUnit id="QueenSCBWInfestCommandCenter@Missile" parent="MISSILE_INVULNERABLE">
         <Race value="Zerg"/>
     </CUnit>
@@ -5469,7 +5590,8 @@
         <RemoveValidatorArray value="DevourerSCBWWeapon"/>
         <RemoveValidatorArray value="##id##"/>
         <RemoveValidatorArray value="QueenSCBWEnsnare@NotUnloader"/>
-        <InfoFlags index="Hidden" value="1"/>
+        <Tooltip value="Behavior/Tooltip/DevourerSCBWWeapon"/>
+        <StackAlias value="AcidSpore"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="QueenSCBWSpawnBroodlings@Missile">
         <InfoFlags index="Hidden" value="1"/>
@@ -5562,7 +5684,7 @@
         <TechAliasArray value="_Transfer"/>
         <BuffFlags index="RefreshStack" value="1"/>
         <MaxStackCount value="9"/>
-        <Duration value="75"/>
+        <Duration value="70"/>
         <InitialEffect value="DevourerSCBWWeapon@SporesCP"/>
         <RefreshEffect value="DevourerSCBWWeapon@SporesCP"/>
         <FinalEffect value="DevourerSCBWWeapon@SporesCP"/>
@@ -5576,6 +5698,8 @@
             <DamageType index="Enhanced" value="0"/>
             <DamageType index="Demolition" value="0"/>
         </DamageResponse>
+        <InfoFlags index="Hidden" value="1"/>
+        <InfoFlags index="AlwaysUseGameText" value="1"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="DefilerSCBWDarkSwarm@Spell">
         <Alignment value="Positive"/>
@@ -5611,7 +5735,7 @@
         <BehaviorCategories index="Restorable" value="1"/>
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
         <TechAliasArray value="_Transfer"/>
-        <Duration value="37.5"/>
+        <Duration value="35"/>
         <Modification AccelerationMultiplier="0.75">
             <ModifyFlags index="Detected" value="1"/>
             <StateFlags index="SuppressCloak" value="1"/>
@@ -5657,8 +5781,8 @@
         <Alignment value="Negative"/>
         <InfoIcon value="Assets\Textures\ClassicIcons\SC1_ZergPlague.dds"/>
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
-        <Duration value="37.5"/>
-        <Period value="0.5"/>
+        <Duration value="35"/>
+        <Period value="0.4665"/>
         <PeriodicEffect value="DefilerSCBWPlague@Damage"/>
         <Modification>
             <ModifyFlags index="Detected" value="1"/>
@@ -5671,7 +5795,7 @@
     <CBehaviorBuff id="QueenSCBWSpawnBroodlings@BroodlingFate" parent="TimedLife">
         <InfoIcon value="Assets\Textures\btn-ability-zerg-explode.dds"/>
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
-        <Duration value="112.5"/>
+        <Duration value="105"/>
         <KillCredit Value="Unknown"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="QueenSCBWParasite">
@@ -5844,58 +5968,58 @@
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Zerg,UpgradeType:Talents"/>
     </CUpgrade>
-    <CUpgrade id="ZergFlyerAttacksSCBW@Lvl1" parent="ZergFlyerAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-airattacks-level1.dds">
+    <CUpgrade id="ZergFlyerAttacksSCBW_Lvl1" parent="ZergFlyerAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-airattacks-level1.dds">
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ZergFlyerAttacksSCBW@Lvl2" parent="ZergFlyerAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-airattacks-level2.dds">
+    <CUpgrade id="ZergFlyerAttacksSCBW_Lvl2" parent="ZergFlyerAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-airattacks-level2.dds">
         <ScoreAmount value="350"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ZergFlyerAttacksSCBW@Lvl3" parent="ZergFlyerAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-airattacks-level3.dds">
+    <CUpgrade id="ZergFlyerAttacksSCBW_Lvl3" parent="ZergFlyerAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-airattacks-level3.dds">
         <ScoreAmount value="500"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ZergFlyerCarapaceSCBW@Lvl1" parent="ZergFlyerCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-flyercarapace-level1.dds">
+    <CUpgrade id="ZergFlyerCarapaceSCBW_Lvl1" parent="ZergFlyerCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-flyercarapace-level1.dds">
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ZergFlyerCarapaceSCBW@Lvl2" parent="ZergFlyerCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-flyercarapace-level2.dds">
+    <CUpgrade id="ZergFlyerCarapaceSCBW_Lvl2" parent="ZergFlyerCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-flyercarapace-level2.dds">
         <ScoreAmount value="450"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ZergFlyerCarapaceSCBW@Lvl3" parent="ZergFlyerCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-flyercarapace-level3.dds">
+    <CUpgrade id="ZergFlyerCarapaceSCBW_Lvl3" parent="ZergFlyerCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-flyercarapace-level3.dds">
         <ScoreAmount value="600"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ZergGroundCarapaceSCBW@Lvl1" parent="ZergGroundCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-groundcarapace-level1.dds">
+    <CUpgrade id="ZergGroundCarapaceSCBW_Lvl1" parent="ZergGroundCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-groundcarapace-level1.dds">
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ZergGroundCarapaceSCBW@Lvl2" parent="ZergGroundCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-groundcarapace-level2.dds">
+    <CUpgrade id="ZergGroundCarapaceSCBW_Lvl2" parent="ZergGroundCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-groundcarapace-level2.dds">
         <ScoreAmount value="450"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ZergGroundCarapaceSCBW@Lvl3" parent="ZergGroundCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-groundcarapace-level3.dds">
+    <CUpgrade id="ZergGroundCarapaceSCBW_Lvl3" parent="ZergGroundCarapaceSCBW" icon="Assets\Textures\btn-upgrade-zerg-groundcarapace-level3.dds">
         <ScoreAmount value="600"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ZergMeleeAttacksSCBW@Lvl1" parent="ZergMeleeAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-meleeattacks-level1.dds">
+    <CUpgrade id="ZergMeleeAttacksSCBW_Lvl1" parent="ZergMeleeAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-meleeattacks-level1.dds">
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ZergMeleeAttacksSCBW@Lvl2" parent="ZergMeleeAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-meleeattacks-level2.dds">
+    <CUpgrade id="ZergMeleeAttacksSCBW_Lvl2" parent="ZergMeleeAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-meleeattacks-level2.dds">
         <ScoreAmount value="300"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ZergMeleeAttacksSCBW@Lvl3" parent="ZergMeleeAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-meleeattacks-level3.dds">
+    <CUpgrade id="ZergMeleeAttacksSCBW_Lvl3" parent="ZergMeleeAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-meleeattacks-level3.dds">
         <ScoreAmount value="400"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ZergMissileAttacksSCBW@Lvl1" parent="ZergMissileAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-missileattacks-level1.dds">
+    <CUpgrade id="ZergMissileAttacksSCBW_Lvl1" parent="ZergMissileAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-missileattacks-level1.dds">
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ZergMissileAttacksSCBW@Lvl2" parent="ZergMissileAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-missileattacks-level2.dds">
+    <CUpgrade id="ZergMissileAttacksSCBW_Lvl2" parent="ZergMissileAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-missileattacks-level2.dds">
         <ScoreAmount value="300"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ZergMissileAttacksSCBW@Lvl3" parent="ZergMissileAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-missileattacks-level3.dds">
+    <CUpgrade id="ZergMissileAttacksSCBW_Lvl3" parent="ZergMissileAttacksSCBW" icon="Assets\Textures\btn-upgrade-zerg-missileattacks-level3.dds">
         <ScoreAmount value="400"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
@@ -5914,7 +6038,7 @@
     </CUpgrade>
     <CUpgrade id="ZerglingSCBWAttackSpeedUpgrade" parent="SCBW_Research">
         <Icon value="Assets\Textures\btn-upgrade-zerg-adrenalglands@scbw.dds"/>
-        <EffectArrayTemplate Reference="Weapon,^ParamId^Weapon,RateMultiplier" Value="0.33"/>
+        <EffectArrayTemplate Reference="Weapon,^ParamId^Weapon,RateMultiplier" Value="0.6"/>
         <AffectedUnitArray value="ZerglingSCBW"/>
         <AffectedUnitArray value="ZerglingSCBW@Burrowed"/>
         <InfoTooltipPriority value="1"/>

@@ -1,0 +1,74 @@
+bool SCBW_UnitGroupsEqual(unitgroup a, unitgroup b){
+    int count;
+    int i;
+    if (a == b) {
+        return true;
+    }
+    count = UnitGroupCount(a, c_unitCountAll);
+    if (count != UnitGroupCount(b, c_unitCountAll)) {
+        return false;
+    }
+
+    for (i = 1; i <= count; i += 1) {
+        if (UnitGroupUnit(a, i) != UnitGroupUnit(b, i)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+unitgroup SCBW_MergeUnitGroups(unitgroup baseGroup, unitgroup newGroup, bool append){
+    unitgroup baseCopy = UnitGroupCopy(baseGroup);
+    unitgroup newCopy  = UnitGroupCopy(newGroup);
+
+    if (append) {
+        UnitGroupRemoveUnitGroup(newCopy, baseCopy);
+        UnitGroupAddUnitGroup(baseCopy, newCopy);
+        return baseCopy;
+    } else {
+        UnitGroupRemoveUnitGroup(baseCopy, newCopy);
+        UnitGroupAddUnitGroup(newCopy, baseCopy);
+        return baseCopy;
+    }
+}
+
+unitgroup SCBW_PruneUnitSelectionGroup(unitgroup group, int unitLimit, int structureLimit, bool forward){
+    int count = UnitGroupCount(group, c_unitCountAlive);
+    unit first; string firstType;
+    bool wantStructures;
+    int limit;
+    unitgroup result;
+    int added;
+    int i;
+    int index;
+    unit u;
+    if (count <= 0) {
+        return UnitGroupEmpty();
+    }
+
+    first = UnitGroupUnit(group, 1);
+    firstType = UnitGetType(first);
+
+    wantStructures = UnitTypeTestAttribute(firstType, c_unitAttributeStructure) && !UnitTypeTestFlag(firstType, c_unitFlagTreatStructureAsUnitForSelection);
+
+    if(wantStructures){ limit = structureLimit; }
+    else { limit = unitLimit; }
+
+    result = UnitGroupEmpty();
+    added = 0;
+
+    for (i = 0; i < count && added < limit; i += 1) {
+
+        if(forward){ index = i + 1; }
+        else{ index = count - i; }
+
+        u = UnitGroupUnit(group, index);
+
+        if (UnitTypeTestAttribute(UnitGetType(u), c_unitAttributeStructure) == wantStructures) {
+            UnitGroupAdd(result, u);
+            added += 1;
+        }
+    }
+    return result;
+}

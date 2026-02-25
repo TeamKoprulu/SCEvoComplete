@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectRemoveTrackedUnit id="LegacySelection@PlayerUnitsClear">
+        <BehaviorLink value="LegacySelection@PlayerUnits"/>
+        <TrackerUnit Value="Unknown"/>
+        <TrackedUnit Value="Target"/>
+    </CEffectRemoveTrackedUnit>
+    <CEffectEnumTrackedUnits id="LegacySelection@SelectedUnits1Enum">
+        <Effect value="LegacySelection@SelectedUnits1Clear"/>
+    </CEffectEnumTrackedUnits>
+    <CEffectRemoveTrackedUnit id="LegacySelection@UnitHighlightedClear">
+        <BehaviorLink value="LegacySelection@UnitHighlighted"/>
+        <TrackerUnit Value="Unknown"/>
+        <TrackedUnit Value="Target"/>
+    </CEffectRemoveTrackedUnit>
+    <CEffectRemoveTrackedUnit id="LegacySelection@SelectedUnits1Clear">
+        <BehaviorLink value="LegacySelection@SelectedUnits1"/>
+        <TrackerUnit Value="Unknown"/>
+        <TrackedUnit Value="Target"/>
+    </CEffectRemoveTrackedUnit>
+    <CEffectRemoveTrackedUnit id="LegacySelection@StructureSelectedClear">
+        <BehaviorLink value="LegacySelection@StructureSelected"/>
+        <TrackerUnit Value="Unknown"/>
+        <TrackedUnit Value="Target"/>
+    </CEffectRemoveTrackedUnit>
+    <CValidatorCombine id="LegacySelection@NotSelected">
+        <Type value="And"/>
+        <CombineArray value="LegacySelection@SelectedUnits1"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorIsUnitTracked id="LegacySelection@StructureHighlighted">
+        <Find value="1"/>
+        <BehaviorLink value="LegacySelection@UnitHighlighted"/>
+        <TrackerUnit Value="Unknown"/>
+        <TrackedUnit Value="Target"/>
+    </CValidatorIsUnitTracked>
+    <CValidatorIsUnitTracked id="LegacySelection@SelectedUnits1">
+        <Find value="1"/>
+        <BehaviorLink value="LegacySelection@SelectedUnits1"/>
+        <TrackerUnit Value="Unknown"/>
+        <TrackedUnit Value="Target"/>
+    </CValidatorIsUnitTracked>
+    <CValidatorCombine id="LegacySelection@UnselectableValidator">
+        <Type value="And"/>
+        <CombineArray value="LegacySelection@StructureSelected"/>
+        <CombineArray value="LegacySelection@StructureHighlighted"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorIsUnitTracked id="LegacySelection@StructureSelected">
+        <Find value="1"/>
+        <BehaviorLink value="LegacySelection@StructureSelected"/>
+        <TrackerUnit Value="Unknown"/>
+        <TrackedUnit Value="Target"/>
+    </CValidatorIsUnitTracked>
+    <CValidatorCombine id="LegacySelection@UncommandableValidator">
+        <Type value="And"/>
+        <CombineArray value="LegacySelection@StructureSelected"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorUnitState id="LegacySelection@MovingImpossible">
+        <Enabled value="1"/>
+        <State value="MovingImpossible"/>
+    </CValidatorUnitState>
+    <CActorSimple id="LegacySelection@SelectedUnits">
+        <On Terms="BehaviorStackAlias.LegacySelection.On" Send="Create"/>
+        <On Terms="SupporterDestruction" Send="Destroy"/>
+        <On Terms="SelectionLocalUpdate.*.Start; Selected; ValidateUnit LegacySelection@NotSelected" Send="Signal LegacySelectionHide"/>
+        <On Terms="Signal.*.LegacySelectionHide; ScopeContains GroundLocalSelection" Target="GroundLocalSelection" Send="SetVisibility"/>
+        <On Terms="Signal.*.LegacySelectionHide" Send="TimerSet 0.010000 LegacySelectionUpdate"/>
+        <On Terms="TimerExpired; TimerName LegacySelectionUpdate" Send="Signal LegacySelectionUpdate"/>
+        <On Terms="Signal.*.LegacySelectionUpdate; ScopeContains GroundLocalSelection; ValidateUnit LegacySelection@NotSelected" Target="GroundLocalSelection" Send="SetVisibility"/>
+        <On Terms="Signal.*.LegacySelectionUpdate; ScopeContains GroundLocalSelection; !ValidateUnit LegacySelection@NotSelected" Target="GroundLocalSelection" Send="SetVisibility 1"/>
+        <On Terms="Signal.*.LegacySelectionUpdate; Selected; ValidateUnit LegacySelection@NotSelected" Send="TimerSet 0.010000 LegacySelectionUpdate"/>
+        <Supporter Subject="_Unit"/>
+        <Terms value="Cap 1"/>
+    </CActorSimple>
+    <CDataCollection id="LegacySelection">
+        <EditorCategories value="Race:Neutral"/>
+        <DataRecord Entry="Actor,LegacySelection@SelectedUnits"/>
+        <DataRecord Entry="Behavior,LegacySelection@StructureSelected"/>
+        <DataRecord Entry="Behavior,LegacySelection@SelectedUnits1"/>
+        <DataRecord Entry="Behavior,LegacySelection@HideWaypoints"/>
+        <DataRecord Entry="Behavior,LegacySelection@Uncommandable"/>
+        <DataRecord Entry="Behavior,LegacySelection@Unselectable"/>
+        <DataRecord Entry="Behavior,LegacySelection@PlayerUnits"/>
+        <DataRecord Entry="Behavior,LegacySelection@UnitHighlighted"/>
+        <DataRecord Entry="Effect,LegacySelection@SelectedUnits1Enum"/>
+        <DataRecord Entry="Effect,LegacySelection@SelectedUnits1Clear"/>
+        <DataRecord Entry="Effect,LegacySelection@UnitHighlightedClear"/>
+        <DataRecord Entry="Effect,LegacySelection@StructureSelectedClear"/>
+        <DataRecord Entry="Validator,LegacySelection@NotSelected"/>
+        <DataRecord Entry="Validator,LegacySelection@SelectedUnits1"/>
+        <DataRecord Entry="Validator,LegacySelection@StructureHighlighted"/>
+        <DataRecord Entry="Validator,LegacySelection@UnselectableValidator"/>
+        <DataRecord Entry="Validator,LegacySelection@StructureSelected"/>
+        <DataRecord Entry="Validator,LegacySelection@UncommandableValidator"/>
+        <DataRecord Entry="Validator,LegacySelection@MovingImpossible"/>
+    </CDataCollection>
+    <CBehaviorUnitTracker default="1" id="LegacySelection@SelectedUnitsBase">
+        <BehaviorFlags index="Permanent" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Neutral"/>
+        <MaxTrackedUnits value="12"/>
+        <UnitAddedAtMaxRule value="ReplaceOldest"/>
+        <UnitTrackerFlags index="UseSharedList" value="1"/>
+        <UnitTrackerFlags index="SharedListPersistsForever" value="1"/>
+    </CBehaviorUnitTracker>
+    <CBehaviorBuff id="LegacySelection@HideWaypoints">
+        <DisableValidatorArray value="LegacySelection@NotSelected"/>
+        <Modification>
+            <ModifyFlags index="HideChangeUI" value="1"/>
+            <StateFlags index="HideWaypoints" value="1"/>
+        </Modification>
+        <StackAlias value="LegacySelection"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorUnitTracker id="LegacySelection@StructureSelected">
+        <BehaviorFlags index="Permanent" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Neutral"/>
+        <MaxTrackedUnits value="1"/>
+        <UnitAddedAtMaxRule value="ReplaceOldest"/>
+        <UnitTrackerFlags index="UseSharedList" value="1"/>
+        <UnitTrackerFlags index="SharedListPersistsForever" value="1"/>
+    </CBehaviorUnitTracker>
+    <CBehaviorUnitTracker id="LegacySelection@UnitHighlighted">
+        <BehaviorFlags index="Permanent" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Neutral"/>
+        <MaxTrackedUnits value="1"/>
+        <UnitAddedAtMaxRule value="ReplaceOldest"/>
+        <UnitTrackerFlags index="UseSharedList" value="1"/>
+        <UnitTrackerFlags index="SharedListPersistsForever" value="1"/>
+    </CBehaviorUnitTracker>
+    <CBehaviorUnitTracker id="LegacySelection@SelectedUnits1" parent="LegacySelection@SelectedUnitsBase"/>
+    <CBehaviorBuff id="LegacySelection@Uncommandable">
+        <DisableValidatorArray value="LegacySelection@UncommandableValidator"/>
+        <DisableValidatorArray value="LegacySelection@MovingImpossible"/>
+        <Modification>
+            <ModifyFlags index="HideChangeUI" value="1"/>
+            <StateFlags index="HideWaypoints" value="1"/>
+        </Modification>
+        <StackAlias value="LegacySelection"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="LegacySelection@Unselectable">
+        <DisableValidatorArray value="LegacySelection@UnselectableValidator"/>
+        <DisableValidatorArray value="LegacySelection@MovingImpossible"/>
+        <Duration value="0.0625"/>
+        <Modification>
+            <ModifyFlags index="HideChangeUI" value="1"/>
+            <StateFlags index="HideWaypoints" value="1"/>
+            <StateFlags index="Unselectable" value="1"/>
+        </Modification>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorUnitTracker id="LegacySelection@PlayerUnits">
+        <BehaviorFlags index="Permanent" value="1"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Neutral"/>
+        <UnitTrackerFlags index="UseSharedList" value="1"/>
+        <UnitTrackerFlags index="SharedListPersistsForever" value="1"/>
+    </CBehaviorUnitTracker>
+</Catalog>

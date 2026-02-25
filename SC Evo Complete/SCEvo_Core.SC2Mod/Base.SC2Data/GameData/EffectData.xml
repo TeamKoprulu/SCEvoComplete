@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
     <CEffectAddTrackedUnit default="1"/>
+    <CEffectEnumTrackedUnits default="1"/>
+    <CEffectRemoveTrackedUnit default="1"/>
     <CEffectMorph default="1"/>
     <CEffectDamage default="1" id="SCBW_WeaponDamage" parent="DU_WEAP">
         <Flags index="Notification" value="0"/>
@@ -134,6 +136,13 @@
         <Operation value="Set"/>
         <Chance value="0.4687"/>
     </CEffectUserData>
+    <CEffectUserData id="SCBW_LimitedRally@TeleportTest">
+        <ValidatorArray value="SCBW_LimitedRally@TeleportValidator"/>
+        <Key value="LimitedRally"/>
+        <SourceKey value="LimitedRally"/>
+        <ValidateMax value="1"/>
+        <EffectSuccess value="SCBW_LimitedRally@Teleport"/>
+    </CEffectUserData>
     <CEffectRemoveBehavior id="SCBW_CategoryRemoveTeleportRemoveCaster">
         <BehaviorCategories index="TeleportRemove" value="1"/>
         <BehaviorLink value=""/>
@@ -251,6 +260,65 @@
         <BehaviorCategories index="TeleportRemove" value="1"/>
         <BehaviorLink value=""/>
     </CEffectRemoveBehavior>
+    <CEffectSet id="SCBW_TrainFinish">
+        <EffectArray value="SCBW_LimitedRally@TrainFinish"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="SCBW_LimitedRally@TrainFinish">
+        <ValidatorArray value="AnyRallyPointIsSetCaster"/>
+        <Chance value="0"/>
+        <WhichLocation Value="SourcePoint"/>
+        <OffsetVectorStartLocation Value="SourcePoint"/>
+        <OffsetVectorEndLocation Value="SourcePoint"/>
+        <OffsetFacingFallback Value="Unknown"/>
+        <Flags index="EffectSuccess" value="1"/>
+        <PeriodCount value="26"/>
+        <PeriodicEffectArray value="SCBW_LimitedRally@TeleportTest"/>
+        <PeriodicOffsetArray value="0,-0.5,0"/>
+        <PeriodicOffsetArray value="0,-1,0"/>
+        <PeriodicOffsetArray value="0,-1.5,0"/>
+        <PeriodicOffsetArray value="0,-2,0"/>
+        <PeriodicOffsetArray value="0,-2.5,0"/>
+        <PeriodicOffsetArray value="0,-2.6,0"/>
+        <PeriodicOffsetArray value="0.5,-2.6,0"/>
+        <PeriodicOffsetArray value="-0.5,-2.6,0"/>
+        <PeriodicOffsetArray value="-1,-2.6,0"/>
+        <PeriodicOffsetArray value="1,-2.6,0"/>
+        <PeriodicOffsetArray value="-1.5,-2.6,0"/>
+        <PeriodicOffsetArray value="1.5,-2.6,0"/>
+        <PeriodicOffsetArray value="-2,-2.6,0"/>
+        <PeriodicOffsetArray value="2,-2.6,0"/>
+        <PeriodicOffsetArray value="-2.5,-2.6,0"/>
+        <PeriodicOffsetArray value="2.5,-2.6,0"/>
+        <PeriodicOffsetArray value="-0.5,0,0"/>
+        <PeriodicOffsetArray value="-1,0,0"/>
+        <PeriodicOffsetArray value="-1.5,0,0"/>
+        <PeriodicOffsetArray value="-2,0,0"/>
+        <PeriodicOffsetArray value="-2.5,0,0"/>
+        <PeriodicOffsetArray value="0.5,0,0"/>
+        <PeriodicOffsetArray value="1,0,0"/>
+        <PeriodicOffsetArray value="1.5,0,0"/>
+        <PeriodicOffsetArray value="2,0,0"/>
+        <PeriodicOffsetArray value="2.5,0,0"/>
+        <PeriodicPeriodArray value="0"/>
+    </CEffectCreatePersistent>
+    <CEffectApplyBehavior id="SCBW_WorkerDropOffStun">
+        <ValidatorArray index="0" value="NotDead"/>
+        <ValidatorArray value="SCBW_Harvesting"/>
+    </CEffectApplyBehavior>
+    <CEffectTeleport id="SCBW_LimitedRally@Teleport">
+        <WhichUnit Effect="SCBW_LimitedRally@TrainFinish"/>
+        <ClearQueuedOrders value="0"/>
+        <PlacementArc value="360"/>
+        <PlacementRange value="4"/>
+        <Range value="4"/>
+        <SourceLocation Effect="SCBW_LimitedRally@TrainFinish" Value="TargetUnitOrPoint"/>
+        <TargetLocation Value="TargetPoint"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+        <ValidatorArray value="SCBW_LimitedRally@TeleportValidator"/>
+    </CEffectTeleport>
+    <CEffectApplyBehavior id="ZergBuildingSCBW@MorphSuppressRegen"/>
     <CEffectRemoveBehavior id="SCBW_UnderConstructionRB">
         <BehaviorLink value="UnderConstruction"/>
     </CEffectRemoveBehavior>
@@ -261,7 +329,7 @@
     </CEffectDamage>
     <CEffectModifyPlayer id="DummyResourceSpend"/>
     <CEffectCreatePersistent id="SCBW_CarrierRecall">
-        <ValidatorArray value="IsCarrierSCBW"/>
+        <ValidatorArray value="CarrierSCBW@Is"/>
         <WhichLocation Value="SourceUnit"/>
         <InitialEffect value="SCBW_CarrierRecallCancelAttack"/>
         <ExpireDelay value="0.01"/>
@@ -300,4 +368,8 @@
         <Abil value="ZerglingSCBW@BurrowDown"/>
         <AbilCmdIndex value="1"/>
     </CEffectIssueOrder>
+    <CEffectSet id="ZergBuildingSCBW@MorphStart">
+        <EffectArray value="ZergBuildingSCBW@MorphSuppressRegen"/>
+        <EffectArray value="SCBW_DamageFormula@FractionalArmorUpdate"/>
+    </CEffectSet>
 </Catalog>

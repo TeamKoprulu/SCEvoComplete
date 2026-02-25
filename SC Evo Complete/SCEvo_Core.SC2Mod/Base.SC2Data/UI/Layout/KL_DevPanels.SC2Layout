@@ -96,7 +96,7 @@
         <Frame type="Frame" name="ContainerFrame">
             <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
             <!-- Modify Anchor to last button in the list -->
-            <Anchor side="Bottom" relative="$this/TabButton2" pos="Max" offset="0"/>
+            <Anchor side="Bottom" relative="$this/TabButton3" pos="Max" offset="0"/>
             <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
             <Anchor side="Right" relative="$parent" pos="Max" offset="0"/>
 
@@ -127,40 +127,20 @@
                     <Text val="@UI/SCEvo/Category1TabLabel"/>
                 </Frame>
 
+                <!--
+                Arrow animation state needs to be added manually here.
+                -->
+
                 <StateGroup name="ExpansionState">
 
                     <State name="Expanded">
                         <Action type="SetProperty" frame="$parent/SubtabGroup1" visible="True"/>
-                    </State>
-
-                    <!--State name="Expanded">
-                        <When type="Property" frame="$this" operator="Equal" Toggled="True"/>
-
-                        <Action type="SetProperty" frame="$this" AcceptsMouse="False"/>
-                        <Action type="SetProperty" frame="$parent/SubtabGroup1" visible="True"/>
-                        <Action type="SetProperty" frame="Arrow" visible="True"/>
-                        <Action type="SetProperty" frame="Arrow" rotation="270"/>
-                        <Action type="SetProperty" frame="$this/UntoggleButton" visible="True"/>
+                        <Action type="SetProperty" frame="$this/Arrow" rotation="270"/>
                     </State>
 
                     <State name="Collapsed">
-                        <When type="Property" frame="$this" operator="Equal" Toggled="False"/>
-
-                        <Action type="SetProperty" frame="$this" AcceptsMouse="True"/>
-                        <Action type="SetProperty" frame="$parent/SubtabGroup1" visible="False"/>
-                        <Action type="SetProperty" frame="Arrow" visible="True"/>
-                        <Action type="SetProperty" frame="Arrow" rotation="180"/>
-                        <Action type="SetProperty" frame="$this/UntoggleButton" visible="False"/>
+                        <Action type="SetProperty" frame="$this/Arrow" rotation="180"/>
                     </State>
-
-                    <State name="ToggledCollapsed">
-
-                        <Action type="SetProperty" frame="$this" AcceptsMouse="True"/>
-                        <Action type="SetProperty" frame="$parent/SubtabGroup1" visible="True"/>
-                        <Action type="SetProperty" frame="Arrow" visible="True"/>
-                        <Action type="SetProperty" frame="Arrow" rotation="270"/>
-                        <Action type="SetProperty" frame="$this/UntoggleButton" visible="False"/>
-                    </State-->
                 </StateGroup>
             </Frame>
 
@@ -292,17 +272,18 @@
                 </Frame>
             </Frame>
 
-            <!--Frame type="Button" name="TabButton3" template="KL_UserProfileTemplates/VerticalTabButtonTemplate">
+            <Frame type="Button" name="TabButton3" template="KL_UserProfileTemplates/VerticalTabButtonTemplate">
                 <Anchor side="Top" relative="$sibling-1" pos="Max" offset="0"/>
                 <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
                 <Anchor side="Right" relative="$parent/$parent/ScrollBarBackground" pos="Min" offset="-5"/>
+                <Visible val="True"/>
 
                 <Handle val="Tab03"/>
 
                 <Frame type="Label" name="Label">
                     <Text val="@UI/SCEvo/Category7TabLabel"/>
                 </Frame>
-            </Frame-->
+            </Frame>
 
             <!--Frame type="Button" name="TabButton4" template="KL_UserProfileTemplates/VerticalTabButtonTemplate">
                 <Anchor side="Top" relative="$sibling-1" pos="Max" offset="0"/>
@@ -315,6 +296,29 @@
                     <Text val="EmptyTab"/>
                 </Frame>
             </Frame-->
+
+            <!--
+                Switched to a simpler TabControl frame instead of the old animation method
+                All new tabs and their corresponding panels should be added here
+            -->
+
+            <Frame type="TabControl" name="ListTabControl">
+                <!-- Summary Tab - Do not Modify -->
+                <TabListItem val="$parent/TabButton0"/>
+
+                <TabListItem val="$parent/TabButton1"/>
+                <TabListItem val="$parent/SubtabGroup1/SubTabButton0"/>
+                <TabListItem val="$parent/TabButton2"/>
+                <TabListItem val="$parent/TabButton3"/>
+
+                <!-- Dummy Panel for Summary - Do not Modify -->
+                <PanelListItem val="$parent/$parent/$parent/CampaignPanel"/>
+
+                <PanelListItem val="$Listbox01"/>
+                <PanelListItem val="$Listbox02"/>
+                <PanelListItem val="$Listbox03"/>
+                <PanelListItem val="$Listbox04"/>
+            </Frame>
         </Frame>
 
         <!--
@@ -326,10 +330,17 @@
         -->
 
         <StateGroup name="TabToggles">
-            <DefaultState val="Summary"/>
+            <DefaultState val="NormalTab"/>
+
+            <State name="NormalTab">
+                <Action type="SetProperty" frame="$parent/$parent/RecentAchievementsListBox" Visible="False"/>
+                <Action type="SetProperty" frame="$parent/$parent/AchievementProgressPanel" Visible="False"/>
+                <Action type="SetProperty" frame="$parent/$parent/CampaignPanel" Visible="False"/>
+            </State>
         
             <State name="Summary">
-                <Action type="SetProperty" frame="$SummaryTab" Toggled="True"/>
+                <When type="Property" frame="$SummaryTab" Toggled="True"/>
+
                 <Action type="SetProperty" frame="$parent/$parent/RecentAchievementsListBox" Visible="True"/>
                 <Action type="SetProperty" frame="$parent/$parent/AchievementProgressPanel" Visible="True"/>
                 <Action type="SetProperty" frame="$parent/$parent/CampaignPanel" Visible="True"/>
@@ -338,14 +349,10 @@
                     
                     DEVELOPERS ONLY
 
-                    Disabled Unused Frames
+                    Collapse any tab groups added here
                 
                 -->
-                <!--Action type="SetProperty" frame="$parent/$parent/LastMatchPanel" Visible="True"/>
-                <Action type="SetProperty" frame="$parent/$parent/MatchStoryPanel" Visible="True"/-->
-
-                <!-- Any Parents of Subtabs should be toggled Off when pressing the Summary Button -->
-                <Action type="SetProperty" frame="$Tab01" Toggled="False"/>
+                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Collapsed"/>
             </State>
 
             <!--
@@ -353,226 +360,23 @@
             Collapsible Tab States Template
             ============================
             
-            Each Collapsible Tab requires a pair of states 
-            one for the On State and one for an Off State
+            Collapsible tabs and their subtab items require a state
+            to handle the expansion state of the entire group
 
             Modify Copy paste and modify the frames it's pointing at
             -->
 
             <State name="Tab01">
-                <Action type="SetProperty" frame="$Tab01" Toggled="True"/>
+                <When type="Property" frame="$Tab01" Toggled="True"/>
+
                 <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$Listbox01" Visible="True"/>
             </State>
 
-            <State name="Tab01Off">
-                <Action type="SetProperty" frame="$Tab01" Toggled="True"/>
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Collapsed"/>
-                <Action type="SetProperty" frame="$Listbox01" Visible="True"/>
-            </State>
+            <State name="SubTab01">
+                <When type="Property" frame="$SubTab00" Toggled="True"/>
 
-            <State name="Sub01Tab00">
                 <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab00" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox02" Visible="True"/>
             </State>
-
-            <!--State name="Sub01Tab01">
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab01" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox03" Visible="True"/>
-            </State>
-
-            <State name="Sub01Tab02">
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab02" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox04" Visible="True"/>
-            </State>
-
-            <State name="Sub01Tab03">
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab03" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox05" Visible="True"/>
-            </State>
-
-            <State name="Sub01Tab04">
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab04" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox06" Visible="True"/>
-            </State>
-
-            <State name="Sub01Tab05">
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab05" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox07" Visible="True"/>
-            </State>
-
-            <State name="Sub01Tab06">
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab06" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox08" Visible="True"/>
-            </State>
-
-            <State name="Sub01Tab07">
-                <Action type="SetState" frame="$Tab01" group="ExpansionState" state="Expanded"/>
-                <Action type="SetProperty" frame="$SubTab07" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox09" Visible="True"/>
-            </State-->
-
-            <!--
-            ============================
-            Regular Tab States Template
-            ============================
-            
-            Regular Tabs do not require On and Off States
-
-            Modify Copy paste and modify the frames it's pointing at
-            -->
-
-            <State name="Tab02">
-                <Action type="SetProperty" frame="$Tab02" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox05" Visible="True"/>
-            </State>
-
-            <!--State name="Tab03">
-                <Action type="SetProperty" frame="$Tab03" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox06" Visible="True"/>
-            </State>
-
-            <State name="Tab04">
-                <Action type="SetProperty" frame="$Tab03" Toggled="True"/>
-                <Action type="SetProperty" frame="$Listbox07" Visible="True"/>
-            </State-->
         </StateGroup>
-
-        <!--
-        ============================
-        Tab Animation States
-        ============================
-        
-        Controls the behavior of each tab using animations
-        -->
-
-        <!--
-        ============================
-        Sub Tab Animation State
-        ============================
-        
-        Sub Tabs Require an On and an Off State
-        Replace the Name and Frame it's pointed at
-        -->
-
-        <Animation name="Tab01Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$Tab01"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Tab01"/>
-            </Controller>
-        </Animation>
-    
-        <Animation name="Tab01ToggleOff">
-            <Event event="OnClick" action="Reset,Play" frame="$Tab01/UntoggleButton"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Tab01Off"/>
-            </Controller>
-        </Animation>
-    
-        <Animation name="Sub01Tab00Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab00"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab00"/>
-            </Controller>
-        </Animation>
-    
-        <!--Animation name="Sub01Tab01Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab01"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab01"/>
-            </Controller>
-        </Animation>
-    
-        <Animation name="Sub01Tab02Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab02"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab02"/>
-            </Controller>
-        </Animation>
-    
-        <Animation name="Sub01Tab03Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab03"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab03"/>
-            </Controller>
-        </Animation>
-
-        <Animation name="Sub01Tab04Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab04"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab04"/>
-            </Controller>
-        </Animation>
-
-        <Animation name="Sub01Tab05Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab05"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab05"/>
-            </Controller>
-        </Animation>
-
-        <Animation name="Sub01Tab06Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab06"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab06"/>
-            </Controller>
-        </Animation>
-
-        <Animation name="Sub01Tab07Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$SubTab07"/>
-    
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Sub01Tab07"/>
-            </Controller>
-        </Animation-->
-
-        <!--
-        ============================
-        Regular Tab Animation State
-        ============================
-        
-        Regular Tabs do not require On and Off states
-        Replace the Name and Frame it's pointed at
-        -->
-
-        <Animation name="Tab02Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$Tab02"/>
-        
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Tab02"/>
-            </Controller>
-        </Animation>
-    
-        <!--Animation name="Tab03Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$Tab03"/>
-        
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Tab03"/>
-            </Controller>
-        </Animation>
-
-        <Animation name="Tab04Toggle">
-            <Event event="OnClick" action="Reset,Play" frame="$Tab03"/>
-        
-            <Controller type="State" end="Pause" frame="$this" stateGroup="TabToggles">
-                <Key type="Identifier" time="0.0" value="Tab04"/>
-            </Controller>
-        </Animation-->
     </Frame>
 </Desc>

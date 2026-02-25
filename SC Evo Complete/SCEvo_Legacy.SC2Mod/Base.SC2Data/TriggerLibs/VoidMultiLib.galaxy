@@ -1,0 +1,290 @@
+include "TriggerLibs/NativeLib"
+include "TriggerLibs/LibertyLib"
+
+include "TriggerLibs/VoidMultiLib_h"
+
+//--------------------------------------------------------------------------------------------------
+// Library: Void Multi Performance Fix
+//--------------------------------------------------------------------------------------------------
+// External Library Initialization
+void libVdMp_InitLibraries () {
+    libNtve_InitVariables();
+    libLbty_InitVariables();
+}
+
+// Functions
+// Triggers
+//--------------------------------------------------------------------------------------------------
+// Trigger: Battlecruiser Execute Attack Abil
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_gt_BattlecruiserExecuteAttackAbil_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+    order lv_order;
+    unit lv_target;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_target = EventUnitTargetUnit();
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsAlive(lv_target) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_caster = EventUnit();
+    lv_order = UnitOrder(lv_caster, 0);
+    if ((lv_order != null) && (OrderGetFlag(lv_order, c_cmdUser) == true) && (OrderGetAbilityCommand(lv_order) == AbilityCommand("BattlecruiserAttack", 0))) {
+        UnitCreateEffectUnit(lv_caster, "BattlecruiserAttackTrackerUnitSet", lv_target);
+    }
+    else {
+        return false;
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libVdMp_gt_BattlecruiserExecuteAttackAbil_Init () {
+    libVdMp_gt_BattlecruiserExecuteAttackAbil = TriggerCreate("libVdMp_gt_BattlecruiserExecuteAttackAbil_Func");
+    TriggerAddEventUnitAbility(libVdMp_gt_BattlecruiserExecuteAttackAbil, null, AbilityCommand("BattlecruiserAttack", 0), c_unitAbilStageExecute, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Battlecruiser Patrol Order Issued
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_gt_BattlecruiserPatrolOrderIssued_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+    order lv_order;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_order = EventUnitOrder();
+
+    // Conditions
+    if (testConds) {
+        if (!(((OrderGetFlag(lv_order, c_cmdQueued) == false) && (OrderGetFlag(lv_order, c_cmdUser) == true)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_caster = EventUnit();
+    if ((UnitIsAlive(OrderGetTargetUnit(lv_order)) == false)) {
+        UnitCreateEffectUnit(lv_caster, "BattlecruiserAttackTrackerDP", lv_caster);
+    }
+
+    UnitCreateEffectUnit(lv_caster, "BattlecruiserChasingRB", lv_caster);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libVdMp_gt_BattlecruiserPatrolOrderIssued_Init () {
+    libVdMp_gt_BattlecruiserPatrolOrderIssued = TriggerCreate("libVdMp_gt_BattlecruiserPatrolOrderIssued_Func");
+    TriggerAddEventUnitOrder(libVdMp_gt_BattlecruiserPatrolOrderIssued, null, AbilityCommand("BattlecruiserMove", 1));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Battlecruiser Attack Order Issued
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_gt_BattlecruiserAttackOrderIssued_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+    unit lv_target;
+    bool lv_targetIsAlive;
+    order lv_triggeringOrder;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_triggeringOrder = EventUnitOrder();
+
+    // Conditions
+    if (testConds) {
+        if (!(((OrderGetFlag(lv_triggeringOrder, c_cmdQueued) == false) && (OrderGetFlag(lv_triggeringOrder, c_cmdUser) == true)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_caster = EventUnit();
+    lv_target = OrderGetTargetUnit(lv_triggeringOrder);
+    lv_targetIsAlive = UnitIsAlive(lv_target);
+    if ((lv_targetIsAlive == true)) {
+        UnitCreateEffectUnit(lv_caster, "BattlecruiserAttackTrackerUnitSet", lv_target);
+    }
+    else {
+        UnitCreateEffectUnit(lv_caster, "BattlecruiserAttackTrackerDP", lv_caster);
+        UnitCreateEffectUnit(lv_caster, "BattlecruiserChasingRB", lv_caster);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libVdMp_gt_BattlecruiserAttackOrderIssued_Init () {
+    libVdMp_gt_BattlecruiserAttackOrderIssued = TriggerCreate("libVdMp_gt_BattlecruiserAttackOrderIssued_Func");
+    TriggerAddEventUnitOrder(libVdMp_gt_BattlecruiserAttackOrderIssued, null, AbilityCommand("BattlecruiserAttack", 0));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Battlecruiser Stop Order Issued
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_gt_BattlecruiserStopOrderIssued_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+    order lv_order;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_order = EventUnitOrder();
+
+    // Conditions
+    if (testConds) {
+        if (!(((OrderGetFlag(lv_order, c_cmdQueued) == false) && (OrderGetFlag(lv_order, c_cmdUser) == true)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_caster = EventUnit();
+    UnitCreateEffectUnit(lv_caster, "BattlecruiserAttackTrackerDP", lv_caster);
+    UnitCreateEffectUnit(lv_caster, "BattlecruiserChasingRB", lv_caster);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libVdMp_gt_BattlecruiserStopOrderIssued_Init () {
+    libVdMp_gt_BattlecruiserStopOrderIssued = TriggerCreate("libVdMp_gt_BattlecruiserStopOrderIssued_Func");
+    TriggerAddEventUnitOrder(libVdMp_gt_BattlecruiserStopOrderIssued, null, AbilityCommand("BattlecruiserStop", 0));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Battlecruiser Patrol Yamato HyperJump Ability Used
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_caster = EventUnit();
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitCreateEffectUnit(lv_caster, "BattlecruiserAttackTrackerDP", lv_caster);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed_Init () {
+    libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed = TriggerCreate("libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed_Func");
+    TriggerAddEventUnitAbility(libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed, null, AbilityCommand("BattlecruiserMove", 1), c_unitAbilStageExecute, false);
+    TriggerAddEventUnitAbility(libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed, null, AbilityCommand("Yamato", 0), c_unitAbilStageExecute, false);
+    TriggerAddEventUnitAbility(libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed, null, AbilityCommand("Hyperjump", 0), c_unitAbilStageExecute, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Battlecruiser Attack Chase Interrupted
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_gt_BattlecruiserAttackChaseInterrupted_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unit lv_caster;
+    order lv_order;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_order = EventUnitOrder();
+
+    // Conditions
+    if (testConds) {
+        if (!(((OrderGetFlag(lv_order, c_cmdQueued) == false) && (OrderGetFlag(lv_order, c_cmdUser) == true) && ((OrderGetAbilityCommand(lv_order) != AbilityCommand("BattlecruiserAttack", 0)) || (UnitIsAlive(OrderGetTargetUnit(lv_order)) == false))))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_caster = EventUnit();
+    UnitCreateEffectUnit(lv_caster, "BattlecruiserChasingRB", lv_caster);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libVdMp_gt_BattlecruiserAttackChaseInterrupted_Init () {
+    libVdMp_gt_BattlecruiserAttackChaseInterrupted = TriggerCreate("libVdMp_gt_BattlecruiserAttackChaseInterrupted_Func");
+    TriggerAddEventUnitOrder(libVdMp_gt_BattlecruiserAttackChaseInterrupted, null, AbilityCommand("BattlecruiserMove", 2));
+    TriggerAddEventUnitOrder(libVdMp_gt_BattlecruiserAttackChaseInterrupted, null, AbilityCommand("BattlecruiserMove", 0));
+    TriggerAddEventUnitOrder(libVdMp_gt_BattlecruiserAttackChaseInterrupted, null, AbilityCommand("Hyperjump", 0));
+    TriggerAddEventUnitOrder(libVdMp_gt_BattlecruiserAttackChaseInterrupted, null, AbilityCommand("Yamato", 0));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: PingPanelInitialize
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_gt_PingPanelInitialize_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libLbty_gf_EnableDisablePingPanel(true, PlayerGroupAll());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libVdMp_gt_PingPanelInitialize_Init () {
+    libVdMp_gt_PingPanelInitialize = TriggerCreate("libVdMp_gt_PingPanelInitialize_Func");
+    TriggerAddEventMapInit(libVdMp_gt_PingPanelInitialize);
+}
+
+void libVdMp_InitTriggers () {
+    libVdMp_gt_BattlecruiserExecuteAttackAbil_Init();
+    libVdMp_gt_BattlecruiserPatrolOrderIssued_Init();
+    libVdMp_gt_BattlecruiserAttackOrderIssued_Init();
+    libVdMp_gt_BattlecruiserStopOrderIssued_Init();
+    libVdMp_gt_BattlecruiserPatrolYamatoHyperJumpAbilityUsed_Init();
+    libVdMp_gt_BattlecruiserAttackChaseInterrupted_Init();
+    libVdMp_gt_PingPanelInitialize_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+bool libVdMp_InitLib_completed = false;
+
+void libVdMp_InitLib () {
+    if (libVdMp_InitLib_completed) {
+        return;
+    }
+
+    libVdMp_InitLib_completed = true;
+
+    libVdMp_InitLibraries();
+    libVdMp_InitTriggers();
+}
+

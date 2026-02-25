@@ -166,17 +166,17 @@
     </CAbilMorph>
     <CAbilRedirectInstant id="ShuttleSCBW@RedirectScarab">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
-        <Abil value="ReaverSCBWHangar"/>
         <Flags index="IncludeSelf" value="0"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="ShuttleSCBW@RedirectScarab">
+        <CmdButtonArray index="Execute" DefaultButtonFace="ShuttleSCBW@RedirectScarab" State="Restricted" Requirements="ShuttleSCBW@RedirectScarabAllowed">
             <Flags index="ToSelection" value="1"/>
         </CmdButtonArray>
+        <Abil value="ReaverSCBWHangar"/>
     </CAbilRedirectInstant>
     <CAbilRedirectInstant id="ShuttleSCBW@RedirectScarabCancel">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Abil value="HangarQueue5"/>
         <Flags index="IncludeSelf" value="0"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="Cancel">
+        <CmdButtonArray index="Execute" DefaultButtonFace="Cancel" State="Restricted" Requirements="ShuttleSCBW@RedirectScarabCancelAllowed">
             <Flags index="ToSelection" value="1"/>
         </CmdButtonArray>
     </CAbilRedirectInstant>
@@ -321,8 +321,6 @@
     <CValidatorUnitCompareOrderCount id="CarrierSCBW@HangarQueueEmpty">
         <AbilLink value="CarrierSCBWHangar"/>
     </CValidatorUnitCompareOrderCount>
-    <CValidatorUnitType id="ArbiterSCBW" parent="SCBW_Unit"/>
-    <CValidatorCombine id="ArbiterSCBW@Not" parent="SCBW_Not" x="ArbiterSCBW"/>
     <CValidatorUnitCompareBehaviorCount id="DragoonSCBW@NoCoverAnim">
         <Behavior value="DragoonSCBW@CoverAnim"/>
     </CValidatorUnitCompareBehaviorCount>
@@ -390,6 +388,12 @@
     <CTacticalOrder id="ScoutSCBW"/>
     <CTacticalOrder id="ShuttleSCBW"/>
     <CTacticalOrder id="ZealotSCBW"/>
+    <CRequirement id="ShuttleSCBW@RedirectScarabAllowed" parent="SCBW_AbilReq" Race="Protoss">
+        <NodeArray index="Show" Link="ShuttleSCBW@RedirectScarabAllowed"/>
+    </CRequirement>
+    <CRequirement id="ShuttleSCBW@RedirectScarabCancelAllowed" parent="SCBW_AbilReq" Race="Protoss">
+        <NodeArray index="Show" Link="ShuttleSCBW@RedirectScarabCancelAllowed"/>
+    </CRequirement>
     <CRequirement id="ShuttleSCBW" parent="SCBW_UnitReqNoUse" Race="Protoss"/>
     <CRequirement id="InterceptorSCBW" parent="SCBW_UnitReq" Race="Protoss"/>
     <CRequirement id="CarrierSCBW" parent="SCBW_UnitReq" Race="Protoss"/>
@@ -594,6 +598,12 @@
         <DefaultButtonLayout Row="1" Column="1"/>
         <EditorCategories value="Race:Protoss"/>
     </CButton>
+    <CRequirementAllowAbil id="ShuttleSCBW@RedirectScarabAllowed">
+        <Link value="ShuttleSCBW@RedirectScarab"/>
+    </CRequirementAllowAbil>
+    <CRequirementAllowAbil id="ShuttleSCBW@RedirectScarabCancelAllowed">
+        <Link value="ShuttleSCBW@RedirectScarabCancel"/>
+    </CRequirementAllowAbil>
     <CRequirementAllowUnit id="ArbiterSCBW@AllowUnit" parent="SCBW_AllowUnit" x="ArbiterSCBW"/>
     <CRequirementAnd id="ArbiterSCBW@Show">
         <OperandArray value="ArbiterSCBW@AllowUnit"/>
@@ -1134,6 +1144,14 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
     </CLight>
+    <CActorSound id="ArchonSCBW@Death" parent="SoundOneShot">
+        <Aliases value="_DeathVoice"/>
+        <On Terms="UnitDeath.ArchonSCBW; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="DarkArchonSCBW@Death" parent="SoundOneShot">
+        <Aliases value="_DeathVoice"/>
+        <On Terms="UnitDeath.DarkArchonSCBW; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+    </CActorSound>
     <CActorSiteOpBankerUnit id="InterceptorSCBW@Banker">
         <RollMax value="50.000000"/>
         <RollInActivationAngle value="15.000000"/>
@@ -1494,7 +1512,7 @@
         <On Terms="Abil.ArchonSCBWMerge.Start" Send="AnimBracketStart Merging Stand,Work,Start Stand,Work"/>
         <On Terms="Abil.ArchonSCBWMerge.Stop" Send="AnimBracketStop Merging"/>
         <On Terms="UnitBirth.*.Normal" Send="AnimPlay Birth Stand,Work,End 0 0.000000"/>
-        <On Terms="UnitMovementUpdate.*.Walk" Target="ArchonAttackBeam" Send="Destroy"/>
+        <On Terms="UnitMovementUpdate.*.Walk" Target="ArchonSCBWWeapon@Beam" Send="Destroy"/>
         <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth"/>
         <On Terms="Abil.attack.ReadyStop" Target="ArchonSCBWWeapon@Beam" Send="Destroy"/>
         <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
@@ -1511,6 +1529,8 @@
         <On Terms="ProgressLevel.ProtossWarpIn.Start" Send="$Birth 0 0.000000 0.000000 5.000000 AsDuration"/>
         <On Terms="Behavior.PowerUserWarpable.Off" Send="ModelSwap ArchonSCBW"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="Abil.ArchonSCBWMerge@Hardcore.Start" Send="AnimBracketStart Merging Stand,Work,Start Stand,Work"/>
+        <On Terms="Abil.ArchonSCBWMerge@Hardcore.Stop" Send="AnimBracketStop Merging"/>
         <DeathCustoms index="1" ModelLink="ProtossLargeUnitDeathLow" Name="AntiGravProtoss"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
@@ -1557,6 +1577,7 @@
         <On Terms="UnitHeightUpdate.*.Land" Send="Create CorsairSCBW@Land"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="Abil.CorsairSCBWDisruptionWeb.SourceCastStart" Send="AnimPlay Attack Attack NonLooping"/>
+        <On Terms="Abil.CorsairSCBWDisruptionWeb@Hardcore.SourceCastStart" Send="AnimPlay Attack Attack NonLooping"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <BuildModel value="CorsairSCBW@WarpIn"/>
@@ -1595,13 +1616,14 @@
     <CActorUnit id="DarkArchonSCBW" parent="GenericUnitBase" unitName="DarkArchonSCBW">
         <Aliases value="_UnitLarge"/>
         <Aliases value="_ShieldRed"/>
+        <Macros value="DarkArchonSCBW@HardcoreMacro"/>
         <On Terms="Behavior.Hallucination.On" Send="Create HallucinationBirthSoundLarge"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucination" Send="DeathCustomize Hallucination"/>
         <On Terms="Abil.DarkArchonSCBWMerge.Start" Send="AnimBracketStart Merging Stand,Work,Start Stand,Work"/>
         <On Terms="Abil.DarkArchonSCBWMerge.Stop" Send="AnimBracketStop Merging"/>
-        <On Terms="UnitMovementUpdate.*.Walk" Target="ArchonAttackBeam" Send="Destroy"/>
+        <On Terms="UnitMovementUpdate.*.Walk" Target="DarkArchonSCBWWeapon@Beam" Send="Destroy"/>
         <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth"/>
-        <On Terms="Abil.attack.ReadyStop" Target="ArchonAttackBeam" Send="Destroy"/>
+        <On Terms="Abil.attack.ReadyStop" Target="DarkArchonSCBWWeapon@Beam" Send="Destroy"/>
         <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
         <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
         <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
@@ -1621,7 +1643,7 @@
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <!--<BuildModel value="DarkArchonSCBWWarpIn"/>-->
-        <DeathArray index="Normal" ModelLink="DarkArchonSCBW@Death" SoundLink="DarkArchonSCBW@Death"/>
+        <DeathArray index="Normal" ModelLink="DarkArchonSCBW@Death" SoundLink="ArchonSCBW@Explode"/>
         <DeathArray index="UnderConstruction" ModelLink="ProtossMediumUnitDeath" SoundLink="ArchonSCBW@Explode"/>
         <PlacementModel value="DarkArchonSCBW@Placement"/>
         <PortraitModel value="DarkArchonSCBW@Portrait"/>
@@ -1657,14 +1679,24 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive2"/>
         </TerrainSquibs>
     </CActorUnit>
+    <CActorEventMacro id="DarkArchonSCBW@HardcoreMacro">
+        <On Terms="Abil.DarkArchonSCBWFeedback@Hardcore.SourceCastStart" Send="AnimPlay Confusion Attack,02"/>
+        <On Terms="Abil.DarkArchonSCBWFeedback@Hardcore.SourceCastStart" Send="Create DarkArchonSCBWMaelstrom@CastModel"/>
+        <On Terms="Abil.DarkArchonSCBWMaelstrom@Hardcore.SourceCastStart" Send="AnimPlay Confusion Attack,02"/>
+        <On Terms="Abil.DarkArchonSCBWMaelstrom@Hardcore.SourceCastStart" Send="Create DarkArchonSCBWMaelstrom@CastModel"/>
+        <On Terms="Abil.DarkArchonSCBWMindControl@Hardcore.SourceCastStart" Send="AnimPlay Confusion Attack,01"/>
+        <On Terms="Abil.DarkArchonSCBWMerge@Hardcore.Start" Send="AnimBracketStart Merging Stand,Work,Start Stand,Work"/>
+        <On Terms="Abil.DarkArchonSCBWMerge@Hardcore.Stop" Send="AnimBracketStop Merging"/>
+    </CActorEventMacro>
     <CActorUnit id="HighTemplarSCBW" parent="GenericUnitStandard" unitName="HighTemplarSCBW">
         <Aliases value="_UnitSmall"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <Macros value="HighTemplarSCBWPsiStorm@CastMacro"/>
+        <Macros value="HighTemplarSCBW@HardcoreMacro"/>
         <On Terms="WeaponStart.HighTemplarSCBWWeapon.AttackStart" Send="$Spell,A"/>
-        <On Terms="Abil.HighTemplarSCBWPsiStorm.SourceCastStart" Send="$Spell,A 0 -1.000000 -1.000000 1.550000 AsTimeScale"/>
+        <On Terms="Abil.HighTemplarSCBWPsiStorm.SourceCastStart" Send="$Spell,A 0 0.125000 -1.000000 1.500000 AsTimeScale"/>
         <On Terms="Abil.HighTemplarSCBWHallucination.SourceCastStart" Send="$Spell,B 0 -1.000000 -1.000000 1.550000 AsTimeScale"/>
         <On Terms="Behavior.Hallucination.On" Send="Create HallucinationBirthSoundSmall"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucination" Send="DeathCustomize Hallucination"/>
@@ -1751,6 +1783,10 @@
             <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMedium"/>
         </TerrainSquibs>
     </CActorUnit>
+    <CActorEventMacro id="HighTemplarSCBW@HardcoreMacro">
+        <On Terms="Abil.HighTemplarSCBWPsiStorm@Hardcore.SourceCastStart" Send="$Spell,A 0 0.125000 -1.000000 1.500000 AsTimeScale"/>
+        <On Terms="Abil.HighTemplarSCBWHallucination@Hardcore.SourceCastStart" Send="$Spell,B 0 -1.000000 -1.000000 1.550000 AsTimeScale"/>
+    </CActorEventMacro>
     <CActorUnit id="ObserverSCBW" parent="GenericUnitStandard" unitName="ObserverSCBW">
         <Aliases value="_UnitMedium"/>
         <Macros value="PhysicsDeathsSwarmAir"/>
@@ -2001,8 +2037,8 @@
     <CActorUnit id="ReaverSCBW" parent="GenericUnitBase" unitName="ReaverSCBW">
         <Aliases value="_UnitLarge"/>
         <Macros value="TerrainSquibAnimations"/>
-        <Macros value="PhysicsDeathsSwarmGround"/>
-        <Macros value="PhysicsDeathsVoidGround"/>
+        <!--Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="PhysicsDeathsVoidGround"/-->
         <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="AnimPlay Attack Attack NonLooping"/>
         <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="AnimBracketStart Cover Cover,Start Cover Cover,End"/>
         <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="TimerKill CoverDelay"/>
@@ -2012,8 +2048,8 @@
         <On Terms="TimerExpired; TimerName CoverDelay" Send="AnimBracketStop Cover"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
-        <DeathCustoms ModelLink="ProtossLargeUnitDeathLow" Name="AntiGravProtoss"/>
-        <DeathCustoms ModelLink="ReaverSCBW@DeathRagdoll" Name="RagdollBasic">
+        <DeathCustoms ActorModel="ReaverSCBW@DeathAir" ModelLink="ReaverSCBW@Death" Name="AntiGravProtoss"/>
+        <!--DeathCustoms ModelLink="ReaverSCBW@DeathRagdoll" Name="RagdollBasic">
             <BodySquibs Name="Basic" Model="ProtossRobotSquibDeathRagdoll"/>
             <BodySquibs Name="BloodReduced" Model="ProtossRobotBloodSquibDeathRagdoll"/>
         </DeathCustoms>
@@ -2033,7 +2069,7 @@
         <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/-->
         <ModelFlags index="OutlineEmitter" value="1"/>
         <BuildModel value="ReaverSCBW@WarpIn"/>
         <DeathArray index="Normal" ModelLink="ReaverSCBW@Death" SoundLink="ReaverSCBW@Death"/>
@@ -2071,6 +2107,10 @@
             <Image value="Assets\Textures\wireframe-protoss-reaver-shield03@scbw.dds"/>
         </WireframeShield>
     </CActorUnit>
+    <CActorModel id="ReaverSCBW@DeathAir" parent="UnitDeathModel">
+        <On Terms="ActorCreation" Send="TimerSet 1.000000,1.000000 Destroy"/>
+        <On Terms="TimerExpired; TimerName Destroy" Send="AnimClear Death"/>
+    </CActorModel>
     <CActorUnit id="ScoutSCBW" parent="GenericUnitStandard" unitName="ScoutSCBW">
         <Aliases value="_UnitLarge"/>
         <On Terms="Behavior.WarpInEffect.On" Send="ModelSwap ScoutSCBW@WarpInStargate"/>
@@ -2229,7 +2269,9 @@
         <On Terms="AnimDone; AnimName Birth" Send="AnimClear Birth"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
         <On Terms="Abil.ArbiterSCBWRecall.SourceCastStart" Send="$Spell"/>
+        <On Terms="Abil.ArbiterSCBWRecall@Hardcore.SourceCastStart" Send="$Spell"/>
         <On Terms="Abil.ArbiterSCBWStasisField.SourceCastStart" Send="AnimPlay Attack Attack"/>
+        <On Terms="Abil.ArbiterSCBWStasisField@Hardcore.SourceCastStart" Send="AnimPlay Attack Attack"/>
         <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <BuildModel value="ArbiterSCBW@WarpIn"/>
@@ -3020,6 +3062,7 @@
         <Slot value="main.specular"/>
         <File value="Assets\Textures\CarrierSCBW@Diff.dds"/>
     </CTexture>
+    <CSound id="DarkArchonSCBW@Explode" parent="Protoss_ExplosionSmall"/>
     <CSound id="ShuttleSCBW@TransportLoad" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\SharedEffectsSCBW\ProtossTransportSCBW@Load00.ogg"/>
@@ -3041,21 +3084,21 @@
         <Volume value="-8.000000,-8.000000"/>
     </CSound>
     <CSound id="ObserverSCBWSieged@MorphStart" parent="Spell">
-        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Start_01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Start_01.wav"/>
         <Pitch value="-4.000000,-2.000000"/>
         <Volume value="-3.000000,-3.000000"/>
     </CSound>
     <CSound id="ObserverSCBWSieged@MorphEnd" parent="Spell">
-        <AssetArray File="Assets\Sounds\Observer_Stationary_Off_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Observer_Stationary_On_02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Observer_Stationary_Off_02.wav"/>
+        <AssetArray File="Assets\Sounds\Observer_Stationary_On_02.wav"/>
         <Volume value="-10.000000,-10.000000"/>
         <Pitch value="-2.000000,-2.000000"/>
     </CSound>
     <CSound id="ObserverSCBWSieged@Loop" parent="Spell">
-        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_01.wav" LoopCount="-1" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_02.wav" LoopCount="-1" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_03.wav" LoopCount="-1" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_04.wav" LoopCount="-1" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_01.wav" LoopCount="-1"/>
+        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_02.wav" LoopCount="-1"/>
+        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_03.wav" LoopCount="-1"/>
+        <AssetArray File="Assets\Sounds\Observer_Stationary_Scan_Lp_04.wav" LoopCount="-1"/>
         <Volume value="-14.000000,-14.000000"/>
         <VolumeRolloffPoints Distance="10.000000"/>
         <VolumeRolloffPoints Distance="15.000000" Volume="-96.000000"/>
@@ -3063,24 +3106,24 @@
     </CSound>
     <CSound id="ArbiterSCBW@LandSoundSweetener" parent="Land">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\ArbiterMP_LandSweetener00.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\ArbiterMP_LandSweetener00.wav"/>
         <Pitch value="-1.000000,1.000000"/>
     </CSound>
     <CSound id="ArchonSCBW@LandSweetener" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav"/>
         <Category value="Combat"/>
         <Pitch value="-2.000000,1.000000"/>
         <Volume value="-6.000000,-5.000000"/>
     </CSound>
     <CSound id="HighTemplarSCBW@LandSweetener" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav"/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <Pitch value="-2.000000,0.000000"/>
@@ -3088,182 +3131,182 @@
     </CSound>
     <CSound id="ArbiterSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav"/>
         <Pitch value="-2.000000,1.000000"/>
         <Volume value="-1.000000,1.000000"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@LandSweetener" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav"/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <Pitch value="-2.000000,0.000000"/>
         <Volume value="-14.000000,-12.000000"/>
     </CSound>
     <CSound id="ArbiterSCBW@Attack" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
-        <AssetArray TemplateParam="ArbiterSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes02"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes03"/>
         <Volume value="-5.000000,-5.000000"/>
     </CSound>
     <CSound id="ArbiterSCBW@Death" parent="ProtossDeathSCBW" Folder="ArbiterSCBW">
-        <AssetArray TemplateParam="ArbiterSCBW@Death00" FacialGroup=""/>
+        <AssetArray TemplateParam="ArbiterSCBW@Death00"/>
     </CSound>
     <CSound id="ArbiterSCBW@Help" parent="AlertProtossSCBW" Folder="ArbiterSCBW">
-        <AssetArray TemplateParam="ArbiterSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="ArbiterSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="ArbiterSCBW@Pissed" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
-        <AssetArray TemplateParam="ArbiterSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Pissed03" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Pissed04" FacialGroup=""/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed02"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed03"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed04"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
         <Volume value="-5.000000,-5.000000"/>
     </CSound>
     <CSound id="ArbiterSCBW@Ready" parent="ProtossReadySCBW" Folder="ArbiterSCBW">
-        <AssetArray TemplateParam="ArbiterSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="ArbiterSCBW@Ready00"/>
         <Volume value="-5.000000,-5.000000"/>
     </CSound>
     <CSound id="ArbiterSCBW@What" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
-        <AssetArray TemplateParam="ArbiterSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="ArbiterSCBW@What00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@What01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@What02"/>
+        <AssetArray TemplateParam="ArbiterSCBW@What03"/>
         <Volume value="-5.000000,-5.000000"/>
     </CSound>
     <CSound id="ArbiterSCBW@Yes" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
-        <AssetArray TemplateParam="ArbiterSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArbiterSCBW@Yes02" FacialGroup=""/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes02"/>
         <Volume value="-5.000000,-5.000000"/>
     </CSound>
     <CSound id="ArchonSCBW@Attack" parent="ProtossAckSCBW" Folder="ArchonSCBW">
-        <AssetArray TemplateParam="ArchonSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes02"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes03"/>
     </CSound>
     <CSound id="ArchonSCBW@Death" parent="ProtossDeathSCBW" Folder="ArchonSCBW">
-        <AssetArray TemplateParam="ArchonSCBW@Death00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Death01" FacialGroup=""/>
+        <AssetArray TemplateParam="ArchonSCBW@Death00"/>
+        <Volume value="5.000000,5.000000"/>
     </CSound>
     <CSound id="ArchonSCBW@Help" parent="AlertProtossSCBW" Folder="ArchonSCBW">
-        <AssetArray TemplateParam="ArchonSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="ArchonSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="ArchonSCBW@Pissed" parent="ProtossAckSCBW" Folder="ArchonSCBW">
-        <AssetArray TemplateParam="ArchonSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Pissed03" FacialGroup=""/>
+        <AssetArray TemplateParam="ArchonSCBW@Pissed00"/>
+        <AssetArray TemplateParam="ArchonSCBW@Pissed01"/>
+        <AssetArray TemplateParam="ArchonSCBW@Pissed02"/>
+        <AssetArray TemplateParam="ArchonSCBW@Pissed03"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="ArchonSCBW@Ready" parent="ProtossReadySCBW" Folder="ArchonSCBW">
-        <AssetArray TemplateParam="ArchonSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="ArchonSCBW@Ready00"/>
     </CSound>
     <CSound id="ArchonSCBW@What" parent="ProtossAckSCBW" Folder="ArchonSCBW">
-        <AssetArray TemplateParam="ArchonSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="ArchonSCBW@What00"/>
+        <AssetArray TemplateParam="ArchonSCBW@What01"/>
+        <AssetArray TemplateParam="ArchonSCBW@What02"/>
+        <AssetArray TemplateParam="ArchonSCBW@What03"/>
     </CSound>
     <CSound id="ArchonSCBW@Yes" parent="ProtossAckSCBW" Folder="ArchonSCBW">
-        <AssetArray TemplateParam="ArchonSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="ArchonSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes02"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes03"/>
     </CSound>
     <CSound id="CarrierSCBW@Attack" parent="ProtossAckSCBW" Folder="CarrierSCBW">
-        <AssetArray TemplateParam="CarrierSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes00"/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes01"/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes02"/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes03"/>
     </CSound>
     <CSound id="CarrierSCBW@Death" parent="ProtossDeathSCBW" Folder="CarrierSCBW">
-        <AssetArray TemplateParam="CarrierSCBW@Death00" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Death01" FacialGroup=""/>
+        <AssetArray TemplateParam="CarrierSCBW@Death00"/>
+        <AssetArray TemplateParam="CarrierSCBW@Death01"/>
     </CSound>
     <CSound id="CarrierSCBW@Help" parent="AlertProtossSCBW" Folder="CarrierSCBW">
-        <AssetArray TemplateParam="CarrierSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="CarrierSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="CarrierSCBW@Pissed" parent="ProtossAckSCBW" Folder="CarrierSCBW">
-        <AssetArray TemplateParam="CarrierSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Pissed03" FacialGroup=""/>
+        <AssetArray TemplateParam="CarrierSCBW@Pissed00"/>
+        <AssetArray TemplateParam="CarrierSCBW@Pissed01"/>
+        <AssetArray TemplateParam="CarrierSCBW@Pissed02"/>
+        <AssetArray TemplateParam="CarrierSCBW@Pissed03"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="CarrierSCBW@Ready" parent="ProtossReadySCBW" Folder="CarrierSCBW">
-        <AssetArray TemplateParam="CarrierSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="CarrierSCBW@Ready00"/>
     </CSound>
     <CSound id="CarrierSCBW@What" parent="ProtossAckSCBW" Folder="CarrierSCBW">
-        <AssetArray TemplateParam="CarrierSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="CarrierSCBW@What00"/>
+        <AssetArray TemplateParam="CarrierSCBW@What01"/>
+        <AssetArray TemplateParam="CarrierSCBW@What02"/>
+        <AssetArray TemplateParam="CarrierSCBW@What03"/>
     </CSound>
     <CSound id="CarrierSCBW@Yes" parent="ProtossAckSCBW" Folder="CarrierSCBW">
-        <AssetArray TemplateParam="CarrierSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="CarrierSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes00"/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes01"/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes02"/>
+        <AssetArray TemplateParam="CarrierSCBW@Yes03"/>
     </CSound>
     <CSound id="CorsairSCBW@Attack" parent="ProtossAckSCBW" Folder="CorsairSCBW">
-        <AssetArray TemplateParam="CorsairSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes00"/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes01"/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes02"/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes03"/>
     </CSound>
     <CSound id="CorsairSCBW@Death" parent="ProtossDeathSCBW" Folder="CorsairSCBW">
-        <AssetArray TemplateParam="CorsairSCBW@Death00" FacialGroup=""/>
+        <AssetArray TemplateParam="CorsairSCBW@Death00"/>
     </CSound>
     <CSound id="CorsairSCBW@Help" parent="AlertProtossSCBW" Folder="CorsairSCBW">
-        <AssetArray TemplateParam="CorsairSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="CorsairSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="CorsairSCBW@Pissed" parent="ProtossAckSCBW" Folder="CorsairSCBW">
-        <AssetArray TemplateParam="CorsairSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Pissed03" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Pissed04" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Pissed05" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Pissed06" FacialGroup=""/>
+        <AssetArray TemplateParam="CorsairSCBW@Pissed00"/>
+        <AssetArray TemplateParam="CorsairSCBW@Pissed01"/>
+        <AssetArray TemplateParam="CorsairSCBW@Pissed02"/>
+        <AssetArray TemplateParam="CorsairSCBW@Pissed03"/>
+        <AssetArray TemplateParam="CorsairSCBW@Pissed04"/>
+        <AssetArray TemplateParam="CorsairSCBW@Pissed05"/>
+        <AssetArray TemplateParam="CorsairSCBW@Pissed06"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="CorsairSCBW@Ready" parent="ProtossReadySCBW" Folder="CorsairSCBW">
-        <AssetArray TemplateParam="CorsairSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="CorsairSCBW@Ready00"/>
     </CSound>
     <CSound id="CorsairSCBW@What" parent="ProtossAckSCBW" Folder="CorsairSCBW">
-        <AssetArray TemplateParam="CorsairSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="CorsairSCBW@What00"/>
+        <AssetArray TemplateParam="CorsairSCBW@What01"/>
+        <AssetArray TemplateParam="CorsairSCBW@What02"/>
+        <AssetArray TemplateParam="CorsairSCBW@What03"/>
     </CSound>
     <CSound id="CorsairSCBW@Yes" parent="ProtossAckSCBW" Folder="CorsairSCBW">
-        <AssetArray TemplateParam="CorsairSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="CorsairSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes00"/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes01"/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes02"/>
+        <AssetArray TemplateParam="CorsairSCBW@Yes03"/>
     </CSound>
     <CSound id="CorsairSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Corsair_MoveStart01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Corsair_MoveStart02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Corsair_MoveStart03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Corsair_MoveStart01.wav"/>
+        <AssetArray File="Assets\Sounds\Corsair_MoveStart02.wav"/>
+        <AssetArray File="Assets\Sounds\Corsair_MoveStart03.wav"/>
         <DupeMuteCount value="4"/>
         <DupeThresholdPoints/>
         <DupeThresholdPoints Count="3" Volume="-3.000000"/>
@@ -3271,165 +3314,166 @@
         <Volume value="-12.000000,-11.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBW@Attack" parent="ProtossAckSCBW" Folder="DarkArchonSCBW">
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes00"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes01"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes02"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes03"/>
         <Volume value="-5.000000,-5.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBW@Death" parent="ProtossDeathSCBW" Folder="DarkArchonSCBW">
-        <AssetArray TemplateParam="DarkArchonSCBW@Death00" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Death00"/>
+        <Volume value="5.000000,5.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBW@Help" parent="AlertProtossSCBW" Folder="DarkArchonSCBW">
-        <AssetArray TemplateParam="DarkArchonSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Help00"/>
         <Mode value="3DWorld"/>
         <Volume value="-5.000000,-5.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBW@Pissed" parent="ProtossAckSCBW" Folder="DarkArchonSCBW">
-        <AssetArray TemplateParam="DarkArchonSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Pissed03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Pissed00"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Pissed01"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Pissed02"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Pissed03"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
         <Volume value="-4.000000,-4.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBW@Ready" parent="ProtossReadySCBW" Folder="DarkArchonSCBW">
-        <AssetArray TemplateParam="DarkArchonSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Ready00"/>
         <Volume value="-4.000000,-4.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBW@What" parent="ProtossAckSCBW" Folder="DarkArchonSCBW">
-        <AssetArray TemplateParam="DarkArchonSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkArchonSCBW@What00"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@What01"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@What02"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@What03"/>
         <Volume value="-4.000000,-4.000000"/>
     </CSound>
     <CSound id="DarkArchonSCBW@Yes" parent="ProtossAckSCBW" Folder="DarkArchonSCBW">
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkArchonSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes00"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes01"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes02"/>
+        <AssetArray TemplateParam="DarkArchonSCBW@Yes03"/>
         <Volume value="-4.000000,-4.000000"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@Attack" parent="ProtossAckSCBW" Folder="DarkTemplarSCBW">
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes00"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes01"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes02"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes03"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@Death" parent="ProtossDeathSCBW" Folder="DarkTemplarSCBW">
-        <AssetArray TemplateParam="DarkTemplarSCBW@Death00" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Death00"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@Help" parent="AlertProtossSCBW" Folder="DarkTemplarSCBW">
-        <AssetArray TemplateParam="DarkTemplarSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@Pissed" parent="ProtossAckSCBW" Folder="DarkTemplarSCBW">
-        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed00"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed01"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed02"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Pissed03"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@Ready" parent="ProtossReadySCBW" Folder="DarkTemplarSCBW">
-        <AssetArray TemplateParam="DarkTemplarSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Ready00"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@What" parent="ProtossAckSCBW" Folder="DarkTemplarSCBW">
-        <AssetArray TemplateParam="DarkTemplarSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@What00"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@What01"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@What02"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@What03"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@Yes" parent="ProtossAckSCBW" Folder="DarkTemplarSCBW">
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="DarkTemplarSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes00"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes01"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes02"/>
+        <AssetArray TemplateParam="DarkTemplarSCBW@Yes03"/>
     </CSound>
     <CSound id="DragoonSCBW@Attack" parent="ProtossAckSCBW" Folder="DragoonSCBW">
-        <AssetArray TemplateParam="DragoonSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes03" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes04" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes05" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes06" FacialGroup=""/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes00"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes01"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes02"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes03"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes04"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes05"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes06"/>
     </CSound>
     <CSound id="DragoonSCBW@Death" parent="ProtossDeathSCBW" Folder="DragoonSCBW">
-        <AssetArray TemplateParam="DragoonSCBW@Death00" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Death01" FacialGroup=""/>
+        <AssetArray TemplateParam="DragoonSCBW@Death00"/>
+        <AssetArray TemplateParam="DragoonSCBW@Death01"/>
     </CSound>
     <CSound id="DragoonSCBW@Help" parent="AlertProtossSCBW" Folder="DragoonSCBW">
-        <AssetArray TemplateParam="DragoonSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="DragoonSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="DragoonSCBW@Pissed" parent="ProtossAckSCBW" Folder="DragoonSCBW">
-        <AssetArray TemplateParam="DragoonSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Pissed03" FacialGroup=""/>
+        <AssetArray TemplateParam="DragoonSCBW@Pissed00"/>
+        <AssetArray TemplateParam="DragoonSCBW@Pissed01"/>
+        <AssetArray TemplateParam="DragoonSCBW@Pissed02"/>
+        <AssetArray TemplateParam="DragoonSCBW@Pissed03"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="DragoonSCBW@Ready" parent="ProtossReadySCBW" Folder="DragoonSCBW">
-        <AssetArray TemplateParam="DragoonSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="DragoonSCBW@Ready00"/>
     </CSound>
     <CSound id="DragoonSCBW@What" parent="ProtossAckSCBW" Folder="DragoonSCBW">
-        <AssetArray TemplateParam="DragoonSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@What03" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@What04" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@What05" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@What06" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@What07" FacialGroup=""/>
+        <AssetArray TemplateParam="DragoonSCBW@What00"/>
+        <AssetArray TemplateParam="DragoonSCBW@What01"/>
+        <AssetArray TemplateParam="DragoonSCBW@What02"/>
+        <AssetArray TemplateParam="DragoonSCBW@What03"/>
+        <AssetArray TemplateParam="DragoonSCBW@What04"/>
+        <AssetArray TemplateParam="DragoonSCBW@What05"/>
+        <AssetArray TemplateParam="DragoonSCBW@What06"/>
+        <AssetArray TemplateParam="DragoonSCBW@What07"/>
     </CSound>
     <CSound id="DragoonSCBW@Yes" parent="ProtossAckSCBW" Folder="DragoonSCBW">
-        <AssetArray TemplateParam="DragoonSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes03" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes04" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes05" FacialGroup=""/>
-        <AssetArray TemplateParam="DragoonSCBW@Yes06" FacialGroup=""/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes00"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes01"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes02"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes03"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes04"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes05"/>
+        <AssetArray TemplateParam="DragoonSCBW@Yes06"/>
     </CSound>
     <CSound id="HighTemplarSCBW@Attack" parent="ProtossAckSCBW" Folder="HighTemplarSCBW">
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes00"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes01"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes02"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes03"/>
     </CSound>
     <CSound id="HighTemplarSCBW@Death" parent="ProtossDeathSCBW" Folder="HighTemplarSCBW">
-        <AssetArray TemplateParam="HighTemplarSCBW@Death00" FacialGroup=""/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Death00"/>
     </CSound>
     <!--CSound id="HighTemplarSCBW@Help" parent="AlertProtossSCBW" Folder="HighTemplarSCBW">
-        <AssetArray TemplateParam="HighTemplarSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound-->
     <CSound id="HighTemplarSCBW@Pissed" parent="ProtossAckSCBW" Folder="HighTemplarSCBW">
-        <AssetArray TemplateParam="HighTemplarSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Pissed03" FacialGroup=""/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Pissed00"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Pissed01"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Pissed02"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Pissed03"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="HighTemplarSCBW@Ready" parent="ProtossReadySCBW" Folder="HighTemplarSCBW">
-        <AssetArray TemplateParam="HighTemplarSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Ready00"/>
     </CSound>
     <CSound id="HighTemplarSCBW@What" parent="ProtossAckSCBW" Folder="HighTemplarSCBW">
-        <AssetArray TemplateParam="HighTemplarSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="HighTemplarSCBW@What00"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@What01"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@What02"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@What03"/>
     </CSound>
     <CSound id="HighTemplarSCBW@Yes" parent="ProtossAckSCBW" Folder="HighTemplarSCBW">
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="HighTemplarSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes00"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes01"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes02"/>
+        <AssetArray TemplateParam="HighTemplarSCBW@Yes03"/>
     </CSound>
     <CSound id="ObserverSCBW@Attack" parent="ProtossAckSCBW" Folder="ObserverSCBW">
         <AssetArray File="Assets\Sounds\Protoss\ObserverSCBW\ObserverSCBW@Yes00.ogg"/>
@@ -3444,11 +3488,11 @@
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="ObserverSCBW@Pissed" parent="ProtossAckSCBW" Folder="ObserverSCBW">
-        <AssetArray TemplateParam="ObserverSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="ObserverSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="ObserverSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="ObserverSCBW@Pissed03" FacialGroup=""/>
-        <AssetArray TemplateParam="ObserverSCBW@Pissed04" FacialGroup=""/>
+        <AssetArray TemplateParam="ObserverSCBW@Pissed00"/>
+        <AssetArray TemplateParam="ObserverSCBW@Pissed01"/>
+        <AssetArray TemplateParam="ObserverSCBW@Pissed02"/>
+        <AssetArray TemplateParam="ObserverSCBW@Pissed03"/>
+        <AssetArray TemplateParam="ObserverSCBW@Pissed04"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
@@ -3535,48 +3579,49 @@
         <AssetArray File="Assets\Sounds\Protoss\ReaverSCBW\ReaverSCBW@Yes03.ogg"/>
     </CSound>
     <CSound id="ScoutSCBW@Attack" parent="ProtossAckSCBW" Folder="ScoutSCBW">
-        <AssetArray TemplateParam="ScoutSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes00"/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes01"/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes02"/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes03"/>
     </CSound>
     <CSound id="ScoutSCBW@Death" parent="ProtossDeathSCBW" Folder="ScoutSCBW">
-        <AssetArray TemplateParam="ScoutSCBW@Death00" FacialGroup=""/>
+        <AssetArray TemplateParam="ScoutSCBW@Death00"/>
+        <Volume value="3.000000,3.000000"/>
     </CSound>
     <CSound id="ScoutSCBW@Help" parent="AlertProtossSCBW" Folder="ScoutSCBW">
-        <AssetArray TemplateParam="ScoutSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="ScoutSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="ScoutSCBW@Pissed" parent="ProtossAckSCBW" Folder="ScoutSCBW">
-        <AssetArray TemplateParam="ScoutSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Pissed02" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Pissed03" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Pissed04" FacialGroup=""/>
+        <AssetArray TemplateParam="ScoutSCBW@Pissed00"/>
+        <AssetArray TemplateParam="ScoutSCBW@Pissed01"/>
+        <AssetArray TemplateParam="ScoutSCBW@Pissed02"/>
+        <AssetArray TemplateParam="ScoutSCBW@Pissed03"/>
+        <AssetArray TemplateParam="ScoutSCBW@Pissed04"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="ScoutSCBW@Ready" parent="ProtossReadySCBW" Folder="ScoutSCBW">
-        <AssetArray TemplateParam="ScoutSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="ScoutSCBW@Ready00"/>
     </CSound>
     <CSound id="ScoutSCBW@What" parent="ProtossAckSCBW" Folder="ScoutSCBW">
-        <AssetArray TemplateParam="ScoutSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="ScoutSCBW@What00"/>
+        <AssetArray TemplateParam="ScoutSCBW@What01"/>
+        <AssetArray TemplateParam="ScoutSCBW@What02"/>
+        <AssetArray TemplateParam="ScoutSCBW@What03"/>
     </CSound>
     <CSound id="ScoutSCBW@Yes" parent="ProtossAckSCBW" Folder="ScoutSCBW">
-        <AssetArray TemplateParam="ScoutSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="ScoutSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes00"/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes01"/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes02"/>
+        <AssetArray TemplateParam="ScoutSCBW@Yes03"/>
     </CSound>
     <CSound id="ScoutSCBW@Movement" parent="Movement">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement0.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement2.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement3.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement0.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement1.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement2.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\Scout\Scout_Movement3.wav"/>
         <DupeMuteCount value="4"/>
         <DupeThresholdPoints/>
         <DupeThresholdPoints Count="3" Volume="-3.000000"/>
@@ -3622,9 +3667,9 @@
     </CSound>
     <CSound id="ReaverSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Reaver_Land00.wav" Volume="-3.000000,-3.000000" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_Land02.wav" Volume="-1.000000,-1.000000" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaver_Land00.wav" Volume="-3.000000,-3.000000"/>
+        <AssetArray File="Assets\Sounds\Reaver_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_Land02.wav" Volume="-1.000000,-1.000000"/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <Pitch value="-2.000000,0.000000"/>
@@ -3632,34 +3677,34 @@
     </CSound>
     <CSound id="ArchonSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Observer_Land_02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Observer_Land_02.wav"/>
         <Category value="Combat"/>
         <Pitch value="-9.000000,-8.000000"/>
         <Volume value="-5.000000,-4.000000"/>
     </CSound>
     <CSound id="CarrierSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav"/>
         <Pitch value="-4.000000,-3.000000"/>
         <Volume value="2.000000,3.000000"/>
     </CSound>
     <CSound id="CorsairSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Phoenix_Land_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Phoenix_Land_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Phoenix_Land_03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Phoenix_Land_04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Phoenix_Land_01.wav"/>
+        <AssetArray File="Assets\Sounds\Phoenix_Land_02.wav"/>
+        <AssetArray File="Assets\Sounds\Phoenix_Land_03.wav"/>
+        <AssetArray File="Assets\Sounds\Phoenix_Land_04.wav"/>
         <Pitch value="2.000000,-3.000000"/>
         <Volume value="-7.000000,-6.000000"/>
     </CSound>
     <CSound id="DarkTemplarSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Zealot_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zealot_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zealot_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zealot_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Zealot_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Zealot_Land02.wav"/>
         <Flags index="VariationFallback" value="0"/>
         <Category value="Combat"/>
         <Pitch value="-3.000000,-1.000000"/>
@@ -3667,9 +3712,9 @@
     </CSound>
     <CSound id="DragoonSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Dragoon_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Dragoon_Land02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Dragoon_Land03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Dragoon_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Dragoon_Land02.wav"/>
+        <AssetArray File="Assets\Sounds\Dragoon_Land03.wav"/>
         <Category value="Combat"/>
         <DupeMuteCount value="6"/>
         <Pitch value="-5.000000,-3.000000"/>
@@ -3677,19 +3722,19 @@
     </CSound>
     <CSound id="HighTemplarSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Zealot_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zealot_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zealot_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zealot_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Zealot_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Zealot_Land02.wav"/>
         <Category value="Combat"/>
         <Pitch value="1.000000,3.000000"/>
         <Volume value="-9.000000,-7.000000"/>
     </CSound>
     <CSound id="InterceptorSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_01.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_02.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_03.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_04.wav"/>
         <Pitch value="9.000000,11.000000"/>
         <Volume value="-10.000000,-9.000000"/>
     </CSound>
@@ -3705,71 +3750,61 @@
     </CSound>
     <CSound id="ProbeSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_01.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_02.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_03.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss_FlyingUnit_Medium_Land_04.wav"/>
         <Pitch value="9.000000,11.000000"/>
         <Volume value="-10.000000,-9.000000"/>
     </CSound>
     <CSound id="ZealotSCBW@Attack" parent="ProtossAckSCBW" Folder="ZealotSCBW">
-        <AssetArray TemplateParam="ZealotSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes00"/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes01"/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes02"/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes03"/>
     </CSound>
     <CSound id="ZealotSCBW@Death" parent="ProtossDeathSCBW" Folder="ZealotSCBW">
-        <AssetArray TemplateParam="ZealotSCBW@Death00" FacialGroup=""/>
+        <AssetArray TemplateParam="ZealotSCBW@Death00"/>
     </CSound>
     <CSound id="ZealotSCBW@Help" parent="AlertProtossSCBW" Folder="ZealotSCBW">
-        <AssetArray TemplateParam="ZealotSCBW@Help00" FacialGroup=""/>
+        <AssetArray TemplateParam="ZealotSCBW@Help00"/>
         <Mode value="3DWorld"/>
     </CSound>
     <CSound id="ZealotSCBW@Pissed" parent="ProtossAckSCBW" Folder="ZealotSCBW">
-        <AssetArray TemplateParam="ZealotSCBW@Pissed00" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Pissed01" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Pissed02" FacialGroup=""/>
+        <AssetArray TemplateParam="ZealotSCBW@Pissed00"/>
+        <AssetArray TemplateParam="ZealotSCBW@Pissed01"/>
+        <AssetArray TemplateParam="ZealotSCBW@Pissed02"/>
         <Flags index="Download" value="0"/>
         <Select value="Sequential"/>
     </CSound>
     <CSound id="ZealotSCBW@Ready" parent="ProtossReadySCBW" Folder="ZealotSCBW">
-        <AssetArray TemplateParam="ZealotSCBW@Ready00" FacialGroup=""/>
+        <AssetArray TemplateParam="ZealotSCBW@Ready00"/>
     </CSound>
     <CSound id="ZealotSCBW@What" parent="ProtossAckSCBW" Folder="ZealotSCBW">
-        <AssetArray TemplateParam="ZealotSCBW@What00" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@What01" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@What02" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@What03" FacialGroup=""/>
+        <AssetArray TemplateParam="ZealotSCBW@What00"/>
+        <AssetArray TemplateParam="ZealotSCBW@What01"/>
+        <AssetArray TemplateParam="ZealotSCBW@What02"/>
+        <AssetArray TemplateParam="ZealotSCBW@What03"/>
     </CSound>
     <CSound id="ZealotSCBW@Yes" parent="ProtossAckSCBW" Folder="ZealotSCBW">
-        <AssetArray TemplateParam="ZealotSCBW@Yes00" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Yes01" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Yes02" FacialGroup=""/>
-        <AssetArray TemplateParam="ZealotSCBW@Yes03" FacialGroup=""/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes00"/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes01"/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes02"/>
+        <AssetArray TemplateParam="ZealotSCBW@Yes03"/>
     </CSound>
     <CSound id="ZealotSCBW@DeathFX" parent="Protoss_DeathFX">
-        <AssetArray index="0" File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp00.ogg" Weight="12" FacialGroup=""/>
-        <AssetArray index="1" File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp01.ogg" Weight="12" FacialGroup=""/>
-        <AssetArray index="2" File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp02.ogg" Weight="12" FacialGroup=""/>
-        <AssetArray>
-            <File value="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp03.ogg"/>
-            <Volume value="-3.000000,-3.000000"/>
-            <Weight value="50"/>
-            <FacialGroup value=""/>
-        </AssetArray>
-        <AssetArray>
-            <File value="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp04.ogg"/>
-            <Volume value="-3.000000,-3.000000"/>
-            <Weight value="50"/>
-            <FacialGroup value=""/>
-        </AssetArray>
+        <AssetArray index="0" File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp00.ogg" Weight="12"/>
+        <AssetArray index="1" File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp01.ogg" Weight="12"/>
+        <AssetArray index="2" File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp02.ogg" Weight="12"/>
+        <AssetArray File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp03.ogg" Volume="-3.000000,-3.000000" Weight="50"/>
+        <AssetArray File="Assets\Sounds\Protoss\ZealotSCBW\ZealotSCBW@DeathFlameWisp04.ogg" Volume="-3.000000,-3.000000" Weight="50"/>
         <Pitch value="-0.500000,0.500000"/>
     </CSound>
     <CSound id="ZealotSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Zealot_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zealot_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Zealot_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zealot_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Zealot_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Zealot_Land02.wav"/>
         <Category value="Combat"/>
         <Pitch value="-1.000000,1.000000"/>
         <Volume value="-7.000000,-5.000000"/>
@@ -3782,22 +3817,8 @@
         <Pitch value="-1.000000,1.000000"/>
         <Volume value="-8.000000,-7.000000"/>
     </CSound>
+    <CSound id="ArchonSCBW@Explode" parent="Protoss_ExplosionSmall"/>
     <CSound id="InterceptorSCBW@Death" parent="Combat">
-        <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall0.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall1.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall2.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall3.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall4.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall5.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall6.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall7.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall8.wav" Pitch="-3.000000,3.000000"/>
-        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall9.wav" Pitch="-3.000000,3.000000"/>
-        <Pitch value="-1.000000,1.000000"/>
-        <Volume value="-1.000000,0.000000"/>
-    </CSound>
-    <CSound id="ArchonSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
         <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall0.wav" Pitch="-3.000000,3.000000"/>
         <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionSmall1.wav" Pitch="-3.000000,3.000000"/>
@@ -3822,9 +3843,9 @@
     </CSound>
     <CSound id="DragoonSCBW@MoveStart" parent="Movement">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Dragoon_MoveStart01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Dragoon_MoveStart02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Dragoon_MoveStart03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Dragoon_MoveStart01.wav"/>
+        <AssetArray File="Assets\Sounds\Dragoon_MoveStart02.wav"/>
+        <AssetArray File="Assets\Sounds\Dragoon_MoveStart03.wav"/>
         <Chance value="0"/>
         <DupeMuteCount value="1"/>
         <Pitch value="-1.000000,1.000000"/>
@@ -3874,8 +3895,8 @@
         <DataRecord Entry="Sound,ArbiterSCBW@Attack"/>
         <DataRecord Entry="Sound,ArbiterSCBW@Pissed"/>
         <DataRecord Entry="Tactical,ArbiterSCBW"/>
+        <DataRecord Entry="Validator,ArbiterSCBW@Is"/>
         <DataRecord Entry="Validator,ArbiterSCBW@Not"/>
-        <DataRecord Entry="Validator,ArbiterSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="CarrierSCBW" parent="ProtossAirUnitSCBW">
         <TechInfoUpgradeUsed value="CarrierSCBWHangarIncreaseUpgrade"/>
@@ -3975,6 +3996,10 @@
         <DataRecord Entry="Model,ShuttleSCBW@TransportUnloadFX"/>
         <DataRecord Entry="Model,ShuttleSCBW@WarpIn"/>
         <DataRecord Entry="Model,ShuttleSCBW@DeathRagdoll"/>
+        <DataRecord Entry="Requirement,ShuttleSCBW@RedirectScarabAllowed"/>
+        <DataRecord Entry="Requirement,ShuttleSCBW@RedirectScarabCancelAllowed"/>
+        <DataRecord Entry="RequirementNode,ShuttleSCBW@RedirectScarabAllowed"/>
+        <DataRecord Entry="RequirementNode,ShuttleSCBW@RedirectScarabCancelAllowed"/>
         <DataRecord Entry="RequirementNode,ShuttleSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ShuttleSCBW@AllowUnit"/>
         <DataRecord Entry="RequirementNode,ShuttleSCBW@Count"/>
@@ -4094,6 +4119,7 @@
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ArchonSCBW" parent="ProtossGroundUnitSCBW">
         <DataRecord Entry="Abil,ArchonSCBW@Mergeable"/>
+        <DataRecord Entry="Actor,ArchonSCBW@Death"/>
         <DataRecord Entry="Actor,ArchonSCBW@LandSweetener"/>
         <DataRecord Entry="Actor,ArchonSCBW@Land"/>
         <DataRecord Entry="RequirementNode,ArchonSCBW@Show"/>
@@ -4103,6 +4129,7 @@
         <DataRecord Entry="RequirementNode,ArchonSCBW@QoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ArchonSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ArchonSCBW@NotQoB"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Death"/>
         <DataRecord Entry="Sound,ArchonSCBW@LandSweetener"/>
         <DataRecord Entry="Sound,ArchonSCBW@Land"/>
         <DataRecord Entry="Sound,ArchonSCBW@Explode"/>
@@ -4110,13 +4137,14 @@
         <DataRecord Entry="Sound,ArchonSCBW@Yes"/>
         <DataRecord Entry="Sound,ArchonSCBW@Attack"/>
         <DataRecord Entry="Sound,ArchonSCBW@Pissed"/>
-        <DataRecord Entry="Sound,ArchonSCBW@Death"/>
         <DataRecord Entry="Tactical,ArchonSCBW"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="DarkArchonSCBW" parent="ProtossGroundUnitSCBW">
         <TechInfoUpgradeUsed value="DarkArchonSCBWEnergyUpgrade"/>
         <DataRecord Entry="Abil,DarkArchonSCBW@Mergeable"/>
+        <DataRecord Entry="Actor,DarkArchonSCBW@Death"/>
+        <DataRecord Entry="Actor,DarkArchonSCBW@HardcoreMacro"/>
         <DataRecord Entry="Model,DarkArchonSCBW@DeathLow"/>
         <DataRecord Entry="Model,DarkArchonSCBW@Placement"/>
         <DataRecord Entry="Model,DarkArchonSCBW@WarpIn"/>
@@ -4132,6 +4160,7 @@
         <DataRecord Entry="Sound,DarkArchonSCBW@Yes"/>
         <DataRecord Entry="Sound,DarkArchonSCBW@Attack"/>
         <DataRecord Entry="Sound,DarkArchonSCBW@Pissed"/>
+        <DataRecord Entry="Sound,DarkArchonSCBW@Explode"/>
         <DataRecord Entry="Tactical,DarkArchonSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="HighTemplarSCBW" parent="ProtossGroundUnitSCBW">
@@ -4139,6 +4168,7 @@
         <DataRecord Entry="Actor,HighTemplarSCBW@LandSweetener"/>
         <DataRecord Entry="Actor,HighTemplarSCBW@Shadow"/>
         <DataRecord Entry="Actor,HighTemplarSCBW@Land"/>
+        <DataRecord Entry="Actor,HighTemplarSCBW@HardcoreMacro"/>
         <DataRecord Entry="Button,HighTemplarSCBW@Passive"/>
         <DataRecord Entry="Model,HighTemplarSCBW@Shadow"/>
         <DataRecord Entry="Model,HighTemplarSCBW@DeathRagdoll"/>
@@ -4229,11 +4259,12 @@
         <TechInfoUpgradeUsed value="ScarabSCBWWeaponDamageUpgrade"/>
         <TechInfoUpgradeUsed value="ReaverSCBWHangarIncreaseUpgrade"/>
         <DataRecord Entry="Actor,ReaverSCBW@Land"/>
+        <DataRecord Entry="Actor,ReaverSCBW@DeathAir"/>
         <DataRecord Entry="Button,ReaverSCBW@OpticsRecalibration"/>
         <DataRecord Entry="Button,ReaverSCBW@Passive"/>
-        <DataRecord Entry="Model,ReaverSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,ReaverSCBW@WarpIn"/>
         <DataRecord Entry="Model,ReaverSCBW@Placement"/>
+        <DataRecord Entry="Model,ReaverSCBW@DeathRagdoll"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@Show"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@AllowUnit"/>
         <DataRecord Entry="RequirementNode,ReaverSCBW@Count"/>
@@ -4312,24 +4343,6 @@
         <YawRate value="1080"/>
         <YawIdleRate value="360"/>
     </CTurret>
-    <CUnit id="ScarabSCBW@Dummy" parent="MISSILE_INVULNERABLE">
-        <Name value="Unit/Name/ScarabSCBW"/>
-        <Race value="BWPr"/>
-        <FlagArray index="Movable" value="0"/>
-        <FlagArray index="NoDraw" value="1"/>
-        <FlagArray index="Missile" value="0"/>
-        <FlagArray index="ClearRallyOnTargetLost" value="0"/>
-        <FlagArray index="IgnoreAttackAlert" value="1"/>
-        <FlagArray index="PlayerRevivable" value="0"/>
-        <EditorFlags index="NoPalettes" value="1"/>
-        <CostCategory value="Army"/>
-        <CostResource index="Minerals" value="15"/>
-        <ScoreMake value="15"/>
-        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
-        <LeaderAlias value="ScarabSCBW"/>
-        <AIEvaluateAlias value="ScarabSCBW"/>
-        <SubgroupPriority value="73"/>
-    </CUnit>
     <CUnit id="ObserverSCBWSieged" parent="ProtossUnitSCBW">
         <Name value="Unit/Name/ObserverSCBW"/>
         <Description value="Button/Tooltip/ObserverSCBW"/>
@@ -4358,7 +4371,7 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="25"/>
         <CostResource index="Vespene" value="75"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <RepairTime value="40"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
@@ -4471,7 +4484,7 @@
         <Mass value="0.2"/>
         <GlossaryPriority value="180"/>
         <CostResource index="Minerals" value="15"/>
-        <BuildTime value="6.5625"/>
+        <BuildTime value="6"/>
         <GlossaryCategory value=""/>
         <HotkeyCategory value=""/>
         <Sight value="5"/>
@@ -4483,6 +4496,24 @@
         <InnerRadius value="0.1875"/>
         <Response value="Nothing"/>
         <RankDisplay value="Never"/>
+        <RepairTime value="7.25"/>
+    </CUnit>
+    <CUnit id="ScarabSCBW@Dummy" parent="MISSILE_INVULNERABLE">
+        <Name value="Unit/Name/ScarabSCBW"/>
+        <Race value="BWPr"/>
+        <FlagArray index="Movable" value="0"/>
+        <FlagArray index="NoDraw" value="1"/>
+        <FlagArray index="Missile" value="0"/>
+        <FlagArray index="ClearRallyOnTargetLost" value="0"/>
+        <FlagArray index="IgnoreAttackAlert" value="1"/>
+        <FlagArray index="PlayerRevivable" value="0"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="15"/>
+        <ScoreMake value="15"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+        <LeaderAlias value="ScarabSCBW"/>
+        <AIEvaluateAlias value="ScarabSCBW"/>
+        <SubgroupPriority value="73"/>
     </CUnit>
     <CUnit id="ShuttleSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -4509,14 +4540,16 @@
         <Food value="-2"/>
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="200"/>
-        <BuildTime value="56.25"/>
-        <RepairTime value="50"/>
+        <BuildTime value="53"/>
+        <RepairTime value="60.9375"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
         <AbilArray Link="ShuttleSCBW@Transport"/>
         <AbilArray Link="Warpable"/>
         <AbilArray Link="ProgressRally"/>
+        <AbilArray Link="ShuttleSCBW@RedirectScarab"/>
+        <AbilArray Link="ShuttleSCBW@RedirectScarabCancel"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
             <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
@@ -4534,6 +4567,22 @@
                 <ShowInGlossary value="0"/>
                 <Row value="2"/>
                 <Column value="1"/>
+            </LayoutButtons>
+            <LayoutButtons>
+                <Face value="ScarabSCBW"/>
+                <Type value="AbilCmd"/>
+                <AbilCmd value="ShuttleSCBW@RedirectScarab,Execute"/>
+                <ShowInGlossary value="0"/>
+                <Row value="2"/>
+                <Column value="0"/>
+            </LayoutButtons>
+            <LayoutButtons>
+                <Face value="Cancel"/>
+                <Type value="AbilCmd"/>
+                <AbilCmd value="ShuttleSCBW@RedirectScarabCancel,Execute"/>
+                <ShowInGlossary value="0"/>
+                <Row value="2"/>
+                <Column value="4"/>
             </LayoutButtons>
         </CardLayouts>
         <Radius value="0.5625"/>
@@ -4599,8 +4648,9 @@
         <Mass value="0.2"/>
         <GlossaryPriority value="165"/>
         <CostResource index="Minerals" value="25"/>
-        <BuildTime value="18.75"/>
+        <BuildTime value="18"/>
         <SubgroupPriority value="52"/>
+        <RepairTime value="20.625"/>
     </CUnit>
     <CUnit id="CarrierSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -4630,8 +4680,8 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="350"/>
         <CostResource index="Vespene" value="250"/>
-        <BuildTime value="131.25"/>
-        <RepairTime value="120"/>
+        <BuildTime value="123"/>
+        <RepairTime value="145.4375"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -4668,7 +4718,6 @@
         <ScoreResult value="BuildOrder"/>
         <SubgroupPriority value="51"/>
         <MinimapRadius value="1.25"/>
-        <TacticalAI value="Carrier"/>
         <Mass value="0.6"/>
         <EquipmentArray Weapon="CarrierSCBWWeapon@Dummy"/>
         <GlossaryPriority value="160"/>
@@ -4707,7 +4756,7 @@
         <Sight value="8"/>
         <Food value="-4"/>
         <CostCategory value="Army"/>
-        <BuildTime value="18.75"/>
+        <BuildTime value="18"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -4739,7 +4788,7 @@
         <GlossaryWeakArray value="ScienceVesselSCBW"/>
         <GlossaryWeakArray value="UltraliskSCBW"/>
         <GlossaryWeakArray value="DragoonSCBW"/>
-        <TacticalAIThink value="AIThinkArchonSCBW"/>
+        <RepairTime value="20"/>
     </CUnit>
     <CUnit id="CorsairSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -4770,7 +4819,7 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -4810,6 +4859,7 @@
         <ScoreMake value="250"/>
         <ScoreKill value="250"/>
         <ScoreResult value="BuildOrder"/>
+        <RepairTime value="41"/>
     </CUnit>
     <CUnit id="DarkArchonSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -4818,6 +4868,7 @@
         <FlagArray index="AIThreatAir" value="1"/>
         <FlagArray index="AIHighPrioTarget" value="1"/>
         <FlagArray index="AICaster" value="1"/>
+        <FlagArray index="AISupport" value="1"/>
         <FlagArray index="AIPressForwardDisabled" value="1"/>
         <FlagArray index="ArmySelect" value="1"/>
         <PlaneArray index="Ground" value="1"/>
@@ -4844,7 +4895,7 @@
         <Sight value="10"/>
         <Food value="-4"/>
         <CostCategory value="Army"/>
-        <BuildTime value="18.75"/>
+        <BuildTime value="18"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
@@ -4882,6 +4933,7 @@
         <ScoreResult value="BuildOrder"/>
         <SubgroupPriority value="87"/>
         <MinimapRadius value="1"/>
+        <TacticalAIThink value="AIThinkDarkArchonSCBW"/>
         <GlossaryPriority value="100"/>
         <GlossaryStrongArray value="ScienceVesselSCBW"/>
         <GlossaryStrongArray value="DefilerSCBW"/>
@@ -4889,7 +4941,6 @@
         <GlossaryWeakArray value="ScienceVesselSCBW"/>
         <GlossaryWeakArray value="ZerglingSCBW"/>
         <GlossaryWeakArray value="DarkArchonSCBW"/>
-        <TacticalAIThink value="AIThinkDarkArchonSCBW"/>
     </CUnit>
     <CUnit id="HighTemplarSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -4927,7 +4978,7 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="50"/>
         <CostResource index="Vespene" value="150"/>
-        <BuildTime value="46.875"/>
+        <BuildTime value="44"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
@@ -4977,8 +5028,6 @@
         <GlossaryWeakArray value="ReaverSCBW"/>
         <KillDisplay value="Always"/>
         <RankDisplay value="Always"/>
-        <TauntDuration index="Cheer" value="5"/>
-        <TauntDuration index="Dance" value="5"/>
     </CUnit>
     <CUnit id="ObserverSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -5006,7 +5055,7 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="25"/>
         <CostResource index="Vespene" value="75"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <RepairTime value="40"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
@@ -5044,7 +5093,7 @@
         <ScoreMake value="100"/>
         <ScoreKill value="100"/>
         <ScoreResult value="BuildOrder"/>
-        <SubgroupPriority value="4"/>
+        <SubgroupPriority value="36"/>
         <AIEvalFactor value="0"/>
         <GlossaryPriority value="120"/>
         <GlossaryStrongArray value="WraithSCBW"/>
@@ -5053,7 +5102,6 @@
         <GlossaryWeakArray value="MissileTurretSCBW"/>
         <GlossaryWeakArray value="SporeColonySCBW"/>
         <GlossaryWeakArray value="PhotonCannonSCBW"/>
-        <TacticalAIThink value="AIThinkObserverSCBW"/>
     </CUnit>
     <CUnit id="ReaverSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -5068,7 +5116,6 @@
         <Attributes index="Armored" value="1"/>
         <Attributes index="Mechanical" value="1"/>
         <Attributes index="Robotic" value="1"/>
-        <Attributes index="Massive" value="1"/>
         <LifeStart value="100"/>
         <LifeMax value="100"/>
         <LifeArmorName value="Unit/LifeArmorName/ProtossPlating"/>
@@ -5083,8 +5130,8 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="200"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="65.625"/>
-        <RepairTime value="60"/>
+        <BuildTime value="61"/>
+        <RepairTime value="72.6875"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="ReaverSCBWWeapon@Attack"/>
@@ -5184,7 +5231,7 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="275"/>
         <CostResource index="Vespene" value="125"/>
-        <BuildTime value="75"/>
+        <BuildTime value="70"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5218,7 +5265,7 @@
             <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
         </CardLayouts>
         <SeparationRadius value="0.75"/>
-        <SubgroupPriority value="78"/>
+        <SubgroupPriority value="67"/>
         <MinimapRadius value="0.75"/>
         <GlossaryPriority value="140"/>
         <GlossaryStrongArray value="BattlecruiserSCBW"/>
@@ -5227,10 +5274,10 @@
         <GlossaryWeakArray value="ValkyrieSCBW"/>
         <GlossaryWeakArray value="DevourerSCBW"/>
         <GlossaryWeakArray value="CorsairSCBW"/>
-        <TacticalAIThink value="AIThinkScoutSCBW"/>
         <ScoreMake value="400"/>
         <ScoreKill value="400"/>
         <ScoreResult value="BuildOrder"/>
+        <RepairTime value="82.75"/>
     </CUnit>
     <CUnit id="ZealotSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -5257,7 +5304,7 @@
         <Food value="-2"/>
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="100"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5287,7 +5334,7 @@
         <ScoreMake value="100"/>
         <ScoreKill value="100"/>
         <ScoreResult value="BuildOrder"/>
-        <SubgroupPriority value="5"/>
+        <SubgroupPriority value="38"/>
         <MinimapRadius value="0.375"/>
         <GlossaryPriority value="20"/>
         <GlossaryStrongArray value="MarineSCBW"/>
@@ -5303,7 +5350,6 @@
         </Fidget>
         <TauntDuration index="Cheer" value="5"/>
         <TauntDuration index="Dance" value="5"/>
-        <TacticalAIThink value="AIThinkZealotSCBW"/>
     </CUnit>
     <CUnit id="ProbeSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="Worker" value="1"/>
@@ -5333,7 +5379,7 @@
         <Food value="-1"/>
         <CostCategory value="Economy"/>
         <CostResource index="Minerals" value="50"/>
-        <BuildTime value="18.75"/>
+        <BuildTime value="18"/>
         <AttackTargetPriority value="20"/>
         <AIOverideTargetPriority value="10"/>
         <AbilArray Link="stop"/>
@@ -5351,8 +5397,22 @@
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
             <LayoutButtons Face="ProbeSCBW@Harvest" Type="AbilCmd" AbilCmd="ProbeSCBW@Harvest,Gather" Row="1" Column="0"/>
             <LayoutButtons Face="ProbeSCBW@ReturnCargo" Type="AbilCmd" AbilCmd="ProbeSCBW@Harvest,Return" Row="1" Column="1"/>
-            <LayoutButtons Face="ProbeSCBW@Build" Type="Submenu" SubmenuCardId="Bld1" Row="2" Column="0"/>
-            <LayoutButtons Face="ProbeSCBW@BuildAdv" Type="Submenu" SubmenuCardId="Bld2" Row="2" Column="1"/>
+            <LayoutButtons>
+                <Face value="ProbeSCBW@Build"/>
+                <Type value="Submenu"/>
+                <Requirements value="SCBW_MultipleUnitsSelected@Not"/>
+                <SubmenuCardId value="Bld1"/>
+                <Row value="2"/>
+                <Column value="0"/>
+            </LayoutButtons>
+            <LayoutButtons>
+                <Face value="ProbeSCBW@BuildAdv"/>
+                <Type value="Submenu"/>
+                <Requirements value="SCBW_MultipleUnitsSelected@Not"/>
+                <SubmenuCardId value="Bld2"/>
+                <Row value="2"/>
+                <Column value="1"/>
+            </LayoutButtons>
         </CardLayouts>
         <CardLayouts CardId="Bld1">
             <LayoutButtons Face="Cancel" Type="CancelSubmenu" Row="2" Column="4"/>
@@ -5370,6 +5430,8 @@
         <SubgroupPriority value="33"/>
         <MinimapRadius value="0.375"/>
         <GlossaryPriority value="10"/>
+        <RepairTime value="20"/>
+        <BehaviorArray Link="LegacyMovement@WorkerIsMining"/>
     </CUnit>
     <CUnit id="DragoonSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="Turnable" value="0"/>
@@ -5394,8 +5456,8 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="125"/>
         <CostResource index="Vespene" value="50"/>
-        <BuildTime value="46.875"/>
-        <RepairTime value="50"/>
+        <BuildTime value="44"/>
+        <RepairTime value="51.5625"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5427,9 +5489,8 @@
         <ScoreMake value="175"/>
         <ScoreKill value="175"/>
         <ScoreResult value="BuildOrder"/>
-        <SubgroupPriority value="60"/>
+        <SubgroupPriority value="50"/>
         <MinimapRadius value="0.625"/>
-        <TacticalAIThink value="AIThinkDragoonSCBW"/>
         <GlossaryPriority value="50"/>
         <GlossaryStrongArray value="SiegeTankSCBWSieged"/>
         <GlossaryStrongArray value="MutaliskSCBW"/>
@@ -5473,7 +5534,7 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="100"/>
         <CostResource index="Vespene" value="350"/>
-        <BuildTime value="150"/>
+        <BuildTime value="140"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5518,6 +5579,7 @@
         <ScoreMake value="450"/>
         <ScoreKill value="450"/>
         <ScoreResult value="BuildOrder"/>
+        <RepairTime value="160"/>
     </CUnit>
     <CUnit id="DarkTemplarSCBW" parent="ProtossUnitSCBW">
         <FlagArray index="PreventDestroy" value="1"/>
@@ -5546,7 +5608,7 @@
         <CostCategory value="Army"/>
         <CostResource index="Minerals" value="125"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="46.875"/>
+        <BuildTime value="44"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5572,7 +5634,7 @@
         <ScoreMake value="225"/>
         <ScoreKill value="225"/>
         <ScoreResult value="BuildOrder"/>
-        <SubgroupPriority value="56"/>
+        <SubgroupPriority value="40"/>
         <MinimapRadius value="0.375"/>
         <GlossaryPriority value="80"/>
         <GlossaryStrongArray value="SCVSCBW"/>
@@ -5620,6 +5682,7 @@
         <GlossaryWeakArray index="1" removed="1"/>
         <GlossaryWeakArray index="2" removed="1"/>
         <HotkeyCategory value=""/>
+        <SubgroupPriority value="5"/>
     </CUnit>
     <CBehaviorBuff id="ScarabSCBW@Height">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>

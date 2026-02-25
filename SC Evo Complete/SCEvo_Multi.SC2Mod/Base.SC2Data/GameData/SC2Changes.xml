@@ -216,20 +216,20 @@
     </CEffectCreatePersistent>
     <CEffectSet id="MothershipStrategicRecallWarpOutSet">
         <ValidatorArray value="LarvaSCBW@Not"/>
-        <ValidatorArray value="NotEggSCBW"/>
+        <ValidatorArray value="EggSCBW@Not"/>
         <ValidatorArray value="SCBW_NoMassTransport"/>
         <ValidatorArray value="ArbiterSCBWRecall@SharedControl"/>
     </CEffectSet>
     <CEffectSet id="NexusMassRecallWarpOutSet">
         <ValidatorArray value="LarvaSCBW@Not"/>
-        <ValidatorArray value="NotEggSCBW"/>
+        <ValidatorArray value="EggSCBW@Not"/>
         <ValidatorArray value="SCBW_NoMassTransport"/>
     </CEffectSet>
     <CEffectCreateHealer id="ShieldBatteryRechargeEx5">
-        <ValidatorArray value="NotInterceptorSCBW"/>
+        <ValidatorArray value="InterceptorSCBW@Not"/>
     </CEffectCreateHealer>
     <CEffectApplyBehavior id="InstantMorphUnburrowAB">
-        <ValidatorArray value="NotSiegeTankSCBW"/>
+        <ValidatorArray value="SiegeTankSCBW@NotAlias"/>
     </CEffectApplyBehavior>
     <CEffectTeleport id="MothershipStrategicRecallTeleport">
         <TeleportEffect value="SCBW_CategoryRemoveTeleportRemove"/>
@@ -265,7 +265,7 @@
         <EffectArray value="WorkerRemoveGatherOrderGeneric"/>
     </CEffectSet>
     <CEffectSet id="WidowMineAttack">
-        <ValidatorArray value="NotLarvaSCBW"/>
+        <ValidatorArray value="LarvaSCBW@Not"/>
     </CEffectSet>
     <CEffectSet id="PunisherGrenadesSet">
         <ValidatorArray value="SCBW_MissChance@WeaponNotMissed"/>
@@ -415,9 +415,9 @@
         <EffectArray index="0" value="CycloneWeapon@MissCheckRight"/>
     </CEffectSet-->
     <CEffectApplyBehavior id="OracleStasisTrapActivateAB">
-        <ValidatorArray value="NotLarvaSCBW"/>
-        <ValidatorArray value="NotEggSCBW"/>
-        <ValidatorArray value="NotLurkerSCBWEgg"/>
+        <ValidatorArray value="LarvaSCBW@Not"/>
+        <ValidatorArray value="EggSCBW@Not"/>
+        <ValidatorArray value="LurkerSCBWEgg@Not"/>
     </CEffectApplyBehavior>
     <CEffectSet id="OracleStasisTrapSearchSet">
         <EffectArray index="1" value="ArbiterSCBWStasisField@HaltIssueOrder"/>
@@ -426,7 +426,7 @@
         <CaseArray index="0" Validator="IsCarrierOrCarrierSCBW"/>
     </CEffectSwitch>
     <CEffectApplyBehavior id="YoinkImpactSpiderMine">
-        <ValidatorArray index="0" value="IsSpiderMineSCBW"/>
+        <ValidatorArray index="0" value="SpiderMineSCBW@IsAlias"/>
         <ValidatorArray value="EnemyTarget"/>
         <KillHallucination value="1"/>
     </CEffectApplyBehavior>
@@ -442,7 +442,7 @@
         <SearchFilters value="Ground;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
     </CEffectDamage>
     <CEffectCreateUnit id="YoinkStartCreatePlaceholder">
-        <ValidatorArray value="NotLarvaSCBW"/>
+        <ValidatorArray value="LarvaSCBW@Not"/>
     </CEffectCreateUnit>
     <CEffectSet id="InstantUnburrow">
         <EffectArray value="InstantUnburrowMore"/>
@@ -461,7 +461,7 @@
     </CEffectSet>
     <CEffectLaunchMissile id="ParasiticBombLM">
         <ValidatorArray value="IsNotInterceptor"/>
-        <ValidatorArray value="NotInterceptorSCBW"/>
+        <ValidatorArray value="InterceptorSCBW@Not"/>
     </CEffectLaunchMissile>
     <CEffectTeleport id="DarkTemplarBlink">
         <TeleportEffect value="BlinkBehaviors"/>
@@ -493,30 +493,47 @@
         <EffectArray value="BroodlingEscort"/>
     </CEffectSet>
     <CEffectSet id="ArchonWeapon@InitialSet">
-        <EditorCategories value="Race:Terran"/>
+        <EditorCategories value="Race:Protoss"/>
         <EffectArray value="SCBW_MissChance@Check"/>
         <EffectArray value="ArchonWeapon@MissSwitch"/>
     </CEffectSet>
     <CEffectCreatePersistent id="ArchonWeapon@Miss">
-        <EditorCategories value="Race:Terran"/>
+        <EditorCategories value="Race:Protoss"/>
         <WhichLocation Effect="ArchonWeapon@InitialSet"/>
         <OffsetVectorStartLocation Effect="ArchonWeapon@InitialSet" Value="TargetPoint"/>
         <OffsetVectorEndLocation Value="CasterUnitOrPoint"/>
         <InitialEffect value="ArchonWeapon@MissDummy"/>
-        <InitialOffset value="0,-1.1,0"/>
+        <InitialOffset value="0,-1.2,0"/>
         <FinalEffect value="PsionicShockwaveDamage"/>
-        <FinalOffset value="0,-1.1,0"/>
+        <FinalOffset value="0,-1.2,0"/>
     </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ArchonWeapon@MissMedium" parent="ArchonWeapon@Miss">
+        <Name value="Effect/Name/ArchonWeapon@MissMedium"/>
+        <InitialOffset value="0,-1.5,0"/>
+        <FinalOffset value="0,-1.5,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ArchonWeapon@MissLarge" parent="ArchonWeapon@Miss">
+        <Name value="Effect/Name/ArchonWeapon@MissLarge"/>
+        <InitialOffset value="0,-1.7,0"/>
+        <FinalOffset value="0,-1.7,0"/>
+    </CEffectCreatePersistent>
+    <CEffectSwitch id="ArchonWeapon@MissOffsetSwitch">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="SiegeTankSCBWSiegedWeapon@RadiusLarge" Effect="ArchonWeapon@MissLarge"/>
+        <CaseArray Validator="SiegeTankSCBWSiegedWeapon@RadiusMedium" Effect="ArchonWeapon@MissMedium"/>
+        <CaseDefault value="ArchonWeapon@Miss"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSwitch>
     <CEffectDamage id="ArchonWeapon@MissDummy">
-        <EditorCategories value="Race:Terran"/>
+        <EditorCategories value="Race:Protoss"/>
         <ImpactLocation Value="TargetPoint"/>
         <AreaArray/>
         <SearchFlags index="OffsetAreaByAngle" value="1"/>
     </CEffectDamage>
     <CEffectSwitch id="ArchonWeapon@MissSwitch">
-        <EditorCategories value="Race:Terran"/>
-        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="ArchonWeapon@Miss"/>
-        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="ArchonWeapon@Miss"/>
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="ArchonWeapon@MissOffsetSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="ArchonWeapon@MissOffsetSwitch"/>
         <CaseDefault value="PsionicShockwaveDamage"/>
         <TargetLocationType value="UnitOrPoint"/>
     </CEffectSwitch>
@@ -616,6 +633,12 @@
         <ValidatorArray value="IsNotRecallingNexus"/>
         <ValidatorArray value="IsStrategicWarpOut"/>
     </CEffectCreateUnit>
+    <CAbilEffectTarget id="PsiStorm">
+        <AbilSetId value="Storm"/>
+        <CmdButtonArray index="Execute">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+    </CAbilEffectTarget>
     <CAbilMerge id="ArchonWarp">
         <Effect value="SCBW_MergeBegin"/>
     </CAbilMerge>
@@ -670,9 +693,9 @@
         </RefundFraction>
     </CAbilMorph>
     <CAbilEffectTarget id="LockOn">
-        <AutoCastValidatorArray value="NotLarvaSCBW"/>
-        <AutoCastValidatorArray value="NotEggSCBW"/>
-        <AutoCastValidatorArray value="NotInterceptorSCBW"/>
+        <AutoCastValidatorArray value="LarvaSCBW@Not"/>
+        <AutoCastValidatorArray value="EggSCBW@Not"/>
+        <AutoCastValidatorArray value="InterceptorSCBW@Not"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="TacNukeStrike">
         <Effect index="0" value="GhostSCBWNuclearStrike@CalldownDummy"/>
@@ -685,7 +708,7 @@
     </CAbilMorph>
     <CAbilEffectTarget id="WidowMineAttack">
         <TechAliasArray value="_Disruptable"/>
-        <AutoCastValidatorArray value="NotEggSCBW"/>
+        <AutoCastValidatorArray value="EggSCBW@Not"/>
     </CAbilEffectTarget>
     <CValidatorUnitCompareBehaviorCount id="MothershipWeapon@BeamMissed">
         <Compare value="GT"/>
@@ -719,11 +742,11 @@
         <Value value="1"/>
     </CValidatorUnitCompareOrderCount>
     <CValidatorCombine id="ActivateStasisWardValidators">
-        <CombineArray value="NotLarvaSCBW"/>
-        <CombineArray value="NotEggSCBW"/>
-        <CombineArray value="NotLurkerSCBWEgg"/>
+        <CombineArray value="LarvaSCBW@Not"/>
+        <CombineArray value="EggSCBW@Not"/>
+        <CombineArray value="LurkerSCBWEgg@Not"/>
         <CombineArray value="SCBW_NoMassTransport"/>
-        <CombineArray value="NotScarabSCBW"/>
+        <CombineArray value="ScarabSCBW@Not"/>
     </CValidatorCombine>
     <CValidatorCombine id="IsNotRecallingCombine">
         <CombineArray value="SCBW_NoMassTransport"/>
@@ -739,7 +762,7 @@
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="IsCarrierOrCarrierSCBW" unitName="Carrier">
         <CombineArray value="IsCarrier"/>
-        <CombineArray value="IsCarrierSCBW"/>
+        <CombineArray value="CarrierSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="IsHallucination">
         <Behavior value=""/>
@@ -761,11 +784,22 @@
         <CombineArray value="WorkerChannelNoQueuedOrders"/>
     </CValidatorCombine>
     <CValidatorCombine id="YoinkCancelOrder">
-        <CombineArray value="NotSiegeTankSCBW"/>
+        <CombineArray value="SiegeTankSCBW@NotAlias"/>
     </CValidatorCombine>
+    <CRequirement id="WarpPrismPowerSourceFastRequirement">
+        <NodeArray index="Use" Link="WarpPrismPowerSourceFastRequirement"/>
+    </CRequirement>
     <CButton id="CaduceusReactor">
         <HotkeyAlias value=""/>
     </CButton>
+    <CRequirementNot id="WarpPrismPowerSourceFastRequirement">
+        <OperandArray index="0" value="SCBW_HaveAbilityDisablerBehavior"/>
+    </CRequirementNot>
+    <CActorSound id="ActorSound_ParasiticBombLaunch">
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <InheritType value="OneShot"/>
+        <On Terms="SoundDone; SoundIsFinalSound" Send="Destroy"/>
+    </CActorSound>
     <CActorAction id="MothershipAttack">
         <ImpactSite value="MothershipAttackImpactSite"/>
         <DamageSite value="MothershipAttackDamageSite"/>
@@ -821,9 +855,9 @@
     <CActorModel id="SiegeTankedSiegedAttackImpactFix">
         <On Terms="Effect.SiegeTankSiegedWeapon@DamageCliff.Start; At Effect" Send="Create"/>
     </CActorModel>
-    <CActorAction id="SiegeTankSiegedAttack" effectAttack="SiegeTankSiegedWeapon@InitialSet">
-        <On Terms="Effect.SiegeTankSiegedWeapon@InitialSet.Start; At Caster" Send="Create"/>
-        <Remove Terms="Effect.CrucioShockCannonBlast.Start; At Caster" Send="Create"/>
+    <CActorAction id="SiegeTankSiegedAttack">
+        <On Terms="Effect.SiegeTankSiegedWeapon@DamageCliff.Stop; FromEffectTreeDescendant" Send="ActionImpactPhysics"/>
+        <On Terms="Effect.SiegeTankSiegedWeapon@DamageCliff.Start; At Caster" Send="Create"/>
     </CActorAction>
     <CActorDoodad id="AgriaCurtain">
         <ShadowWhenTransparent value="1"/>
@@ -1509,6 +1543,11 @@
         <DataRecord Entry="Effect,HellionWeapon@MissOffsetSwitch"/>
         <DataRecord Entry="Validator,HellionWeapon@RadiusNormal"/>
     </CDataCollection>
+    <CUnit id="WarpPrismPhasing">
+        <CardLayouts index="0">
+            <LayoutButtons index="9" Requirements="WarpPrismPowerSourceFastRequirement"/>
+        </CardLayouts>
+    </CUnit>
     <CUnit id="GhostAlternate">
         <Food value="-2"/>
     </CUnit>
@@ -1625,6 +1664,9 @@
     <CUnit id="WidowMineBurrowed">
         <Attributes index="Robotic" value="1"/>
     </CUnit>
+    <CBehaviorPowerSource id="WarpPrismPowerSourceFast">
+        <Requirements value="WarpPrismPowerSourceFastRequirement"/>
+    </CBehaviorPowerSource>
     <CBehaviorBuff id="BanelingExplode">
         <DisableValidatorArray value="NotHallucinationTarget"/>
     </CBehaviorBuff>
@@ -1741,6 +1783,7 @@
     </CBehaviorBuff>
     <CBehaviorBuff id="OracleStasisTrapTarget">
         <BehaviorCategories index="Magic" value="1"/>
+        <TechAliasArray value="_AbilityDisable"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ParasiticBomb">
         <BehaviorCategories index="Restorable" value="1"/>
@@ -1760,6 +1803,7 @@
             <WeaponDisableArray value="CarrierSCBWWeapon"/>
         </Modification>
         <RemoveValidatorArray value="SCBW_NoStasisCategory"/>
+        <TechAliasArray value="_AbilityDisable"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="RavenScramblerMissileCarrier">
         <BehaviorCategories index="Restorable" value="1"/>
@@ -1768,6 +1812,7 @@
             <WeaponDisableArray value="CarrierSCBWWeapon"/>
         </Modification>
         <RemoveValidatorArray value="SCBW_NoStasisCategory"/>
+        <TechAliasArray value="_AbilityDisable"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="RavenShredderMissileArmorReduction">
         <BehaviorCategories index="Restorable" value="1"/>

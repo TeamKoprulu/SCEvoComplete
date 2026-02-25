@@ -4,6 +4,12 @@
         <Macros value="GlobalLoopMacro"/>
         <Model value="ProtossAOECursorSplatSCBW"/>
     </CActorSplat>
+    <CActorSplat default="1" id="TerranCursorSplatSCBW" parent="CursorSplat">
+        <Model value="TerranAOECursorSplat"/>
+    </CActorSplat>
+    <CActorSplat default="1" id="ZergCursorSplatSCBW" parent="CursorSplat">
+        <Model value="ZergAOECursorSplat"/>
+    </CActorSplat>
     <CActorModel default="1" id="SCBW_InfestationBaseModel">
         <Aliases value="_Snapshot"/>
         <Inherits index="CloakEffect" value="1"/>
@@ -176,6 +182,13 @@
         <AttachQuery Methods="$BuildingDamageTransition"/>
         <SpawnTarget value="ProtossBuildingSCBW@##type##"/>
     </CActorSetQueried>
+    <CActorRange default="1" id="SCBW_RangeAbilMultiple" parent="RangeAbil">
+        <?token id="abil2" type="CAbilLink"?>
+        <On Terms="Abil.##abil2##.TargetOn" Send="Create"/>
+        <On Terms="Abil.##abil2##.TargetOff" Send="Destroy"/>
+        <On Terms="Abil.##abil2##.ButtonHoverOn" Send="Create"/>
+        <On Terms="Abil.##abil2##.ButtonHoverOff" Send="Destroy"/>
+    </CActorRange>
     <CActorModel default="1" id="TerranBuildingSCBW@BuildBasis" parent="TerranModelConstruction">
         <Aliases value="_TerranBuildModel"/>
         <On Terms="ActorCreation" Send="Create TerranConstructionSCBW@Attached"/>
@@ -404,6 +417,13 @@
     <CActorSound id="GenericAttackImpactSoundNoVisibilityInherit" parent="GenericAttackSound">
         <Inherits index="Visibility" value="0"/>
     </CActorSound>
+    <CActorEventMacro id="HideWorkerCount">
+        <On Terms="Upgrade.SCEV_HideWorkerCount.Add" Send="HideWorkerCount 1"/>
+        <On Terms="ActorCreation; ValidateUnit SCEV_HideWorkerCount" Send="HideWorkerCount 1"/>
+    </CActorEventMacro>
+    <CActorModel id="ModelPretargetGroundCustom" parent="ModelPretarget">
+        <Model value="AOEPreTargetGroundUnitProtoss"/>
+    </CActorModel>
     <CActorEventMacro id="SCBW_ObserverWhatMacro">
         <On Terms="SelectionLocalUpdate.*.Start; IsLocalParticipantType Observer; IsStatus ObserverWhat 0" Send="TimerSet 10.000000 ObserverClickCooldown"/>
         <On Terms="SelectionLocalUpdate.*.Start; IsLocalParticipantType Observer; IsStatus ObserverWhat 0" Send="PlayUnitSound What"/>
@@ -472,6 +492,7 @@
         <On Terms="Effect.ArbiterSCBWRecall@Teleport.Start; At Target" Send="Create"/>
         <On Terms="Effect.ArbiterSCBWRecall@TeleportAir.Start; At Target" Send="Create"/>
         <On Terms="Effect.NydusCanalSCBW@TransportCargoLoad.Start; At Target" Send="Create"/>
+        <On Terms="Effect.NydusCanalSCBW@TeleporterSet.Start; At Target" Send="Create"/>
     </CActorSimple>
     <CActorUnit id="MineralField">
         <On Terms="Abil.SCVSCBW@Harvest.Start" Send="StatusIncrement Harvest"/>
@@ -583,6 +604,13 @@
     <CActorSplat id="UnpoweredVisual">
         <HostSiteOps Ops="SOpShadow SOpMoveUpBy7"/>
     </CActorSplat>
+    <CActorSiteOpIncoming id="WhiffOffsetMissileSequence">
+        <HostImpact Subject="_ImpactGuide"/>
+        <HostIncoming Subject="::Main" Scope="Missile" Actor="Find"/>
+        <Type value="Missile"/>
+        <PullBack value="0.500000"/>
+        <FreezePositionAtImpact value="1"/>
+    </CActorSiteOpIncoming>
     <CActorSound id="ZergUnitSCBW@Burrow" parent="SoundOneShot"/>
     <CActorEventMacro id="CarryAnim">
         <On Terms="Effect.CarryHarvestableVespeneGeyserGasSetPalletSize.Start; At Source" Target="_VespenePallet" Send="SetScale 0.680000"/>
@@ -808,8 +836,8 @@
         <On Terms="ActorCreation; ScopeContains _Missed" Target="::Creator" Send="Signal ResetTimer"/>
         <On Terms="Signal.*.IsSequence" Send="StatusSet InSequence 1"/>
         <On Terms="Signal.*.IsSequence" Send="StatusSet Missed 1"/>
-        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide SOpShadow} 1 1"/>
-        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissile SOpForwardLaunchGuide} 1 1"/>
+        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit NotInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissileSequence SOpForwardLaunchGuide SOpShadow} 1 1"/>
+        <On Terms="Signal.*.IsSequence; HasStatus Missed; ValidateUnit IsInAir" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetMissileSequence SOpForwardLaunchGuide} 1 1"/>
         <On Terms="Signal.*.Impact; HasStatus InSequence" Target="::Creator" Send="Signal ResetSequence"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Send="TimerSet 1.000000 A"/>
@@ -864,7 +892,6 @@
     </CActorEventMacro>
     <CActorModel id="UnloadFX">
         <On Terms="AbilTransport.DropshipSCBW@Transport.CargoUnload" Send="Create"/>
-        <On Terms="AbilTransport.ShuttleSCBW@Transport.CargoUnload" Send="Create"/>
         <On Terms="AbilTransport.OverlordSCBW@Transport.CargoUnload" Send="Create"/>
     </CActorModel>
     <CActorEventMacro id="UnloadDropAnim">
