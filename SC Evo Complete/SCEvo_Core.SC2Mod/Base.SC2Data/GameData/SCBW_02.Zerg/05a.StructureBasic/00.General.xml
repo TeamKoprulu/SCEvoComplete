@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectApplyBehavior id="ZergBuildingSCBW@MorphSuppressRegen"/>
+    <CEffectSet id="ZergBuildingSCBW@MorphStart">
+        <EffectArray value="ZergBuildingSCBW@MorphSuppressRegen"/>
+        <EffectArray value="SCBW_DamageFormula@FractionalArmorUpdate"/>
+    </CEffectSet>
+    <CValidatorCombine id="ZergBuildingSCBW@InfestedStructuresNormal">
+        <CombineArray value="LifeGETwoThird"/>
+        <CombineArray value="BurnDownValid"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ZergBuildingSCBW@InfestedStructuresLightSmoke">
+        <Type value="And"/>
+        <CombineArray value="LifeLTTwoThird"/>
+        <CombineArray value="LifeGEHalf"/>
+        <CombineArray value="BurnDownValid"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ZergBuildingSCBW@InfestedStructuresHeavySmoke">
+        <Type value="And"/>
+        <CombineArray value="LifeLTHalf"/>
+        <CombineArray value="BurnDownValid"/>
+    </CValidatorCombine>
+    <CActorSound id="ZergBuildingSCBW@StopSound" parent="SoundOneShot">
+        <On Terms="Abil.HatcheryBuild.BuiltStop" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo LairSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo HiveSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo GreaterSpireSCBW" Send="Create"/>
+        <Sound value="ZergBuildingSCBW@Ready"/>
+    </CActorSound>
+    <CActorSiteOpRotationExplicit id="ZergBuildingSCBW@Facing">
+        <Forward value="-1.000000,-7.000000,0.000000"/>
+    </CActorSiteOpRotationExplicit>
+    <CActorSound id="ZergBuildingSCBW@MorphCancel" parent="SoundOneShot">
+        <On Terms="AbilMorph.*.Cancel; MorphTo LairSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo HiveSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo GreaterSpireSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SporeColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Cancel; MorphTo SunkenColonySCBW" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="ZergBuildingSCBW@ConstructionSoundLevel2" parent="ProgressSound">
+        <On Terms="ProgressLevel.ZergBuildingSCBW@ConstructionAttached.Start; Level 2" Send="Create"/>
+        <Sound value="Zerg_BuildingMorphStages"/>
+    </CActorSound>
+    <CActorSound id="ZergBuildingSCBW@ConstructionSoundLevel4" parent="ProgressSound">
+        <On Terms="ProgressLevel.ZergBuildingSCBW@ConstructionAttached.Start; Level 4" Send="Create"/>
+        <Sound value="Zerg_BuildingMorphStages"/>
+    </CActorSound>
+    <CActorSound id="ZergBuildingSCBW@MorphEnd" parent="ProgressSound">
+        <On Terms="ProgressLevel.ZergBuildingSCBW@ConstructionAttached.Start; Level 6" Send="Create"/>
+        <On Terms="ProgressLevel.LairSCBW@MorphProgress.Start; Level 2" Send="Create"/>
+        <On Terms="ProgressLevel.HiveSCBW@MorphProgress.Start; Level 2" Send="Create"/>
+    </CActorSound>
+    <CActorStateMonitor id="ZergBuildingSCBW@InfestedStructuresSmokeLarge">
+        <On Terms="UnitCreation.InfestedCommandCenterSCBW" Send="Create"/>
+        <On Terms="UnitCreation.InfestedCommandCenterSCBW@Flying" Send="Create"/>
+        <On Terms="UnitCreation.InfestedCommandCenterSC2" Send="Create"/>
+        <On Terms="UnitCreation.InfestedCommandCenterSC2@Flying" Send="Create"/>
+        <On Terms="UnitCreation.InfestedOrbitalCommandSCBW" Send="Create"/>
+        <On Terms="UnitCreation.InfestedOrbitalCommandSCBW@Flying" Send="Create"/>
+        <On Terms="UnitCreation.InfestedPlanetaryFortressSCBW" Send="Create"/>
+        <On Terms="StateChange; StateValid LightSmoke; StateChanged Normal" Send="Create TerranFlameSetLightSmoke"/>
+        <On Terms="StateChange; StateValid HeavySmoke; StateChanged Normal" Send="Create TerranFlameSetHeavySmoke"/>
+        <On Terms="StateChange; StateValid LightSmoke; !StateChanged Normal" Send="Create TerranFlameSetLightSmokeTransition"/>
+        <On Terms="StateChange; StateValid HeavySmoke; !StateChanged Normal" Send="Create TerranFlameSetHeavySmokeTransition"/>
+        <On Terms="StateChange; !StateValid LightSmoke" Target="TerranFlameSetLightSmoke" Send="Destroy"/>
+        <On Terms="StateChange; !StateValid HeavySmoke" Target="TerranFlameSetHeavySmoke" Send="Destroy"/>
+        <On Terms="StateChange; !StateValid LightSmoke" Target="TerranFlameSetLightSmokeTransition" Send="Destroy"/>
+        <On Terms="StateChange; !StateValid HeavySmoke" Target="TerranFlameSetHeavySmokeTransition" Send="Destroy"/>
+        <StateArray Name="Normal" Terms="ValidateUnit ZergBuildingSCBW@InfestedStructuresNormal"/>
+        <StateArray Name="LightSmoke" Terms="ValidateUnit ZergBuildingSCBW@InfestedStructuresLightSmoke"/>
+        <StateArray Name="HeavySmoke" Terms="ValidateUnit ZergBuildingSCBW@InfestedStructuresHeavySmoke"/>
+        <StateThinkInterval value="0.5"/>
+    </CActorStateMonitor>
+    <CActorStateMonitor id="ZergBuildingSCBW@BloodLarge" parent="ZergBlood">
+        <On Terms="UnitCreation.HatcherySCBW" Send="Create"/>
+        <On Terms="UnitCreation.LairSCBW" Send="Create"/>
+        <On Terms="UnitCreation.HiveSCBW" Send="Create"/>
+        <On Terms="StateChange; StateValid ZergBleedLight; StateChanged ZergNormal" Send="Create ZergBloodSetBleedSmall"/>
+        <On Terms="StateChange; StateValid ZergBleedHeavy; StateChanged ZergNormal" Send="Create ZergBloodSetBleedHeavy"/>
+        <On Terms="StateChange; StateValid ZergBleedProfusely; StateChanged ZergNormal" Send="Create ZergBloodSetBleedProfusely"/>
+        <On Terms="StateChange; StateValid ZergBleedLight; !StateChanged ZergNormal" Send="Create ZergBloodSetBleedSmall"/>
+        <On Terms="StateChange; StateValid ZergBleedHeavy; !StateChanged ZergNormal" Send="Create ZergBloodSetBleedHeavy"/>
+        <On Terms="StateChange; StateValid ZergBleedProfusely; !StateChanged ZergNormal" Send="Create ZergBloodSetBleedProfusely"/>
+        <On Terms="StateChange; StateValid ZergNormal; StateChanged ZergBleedLight" Target="ZergBloodSetBleedSmall" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergBleedLight; StateChanged ZergBleedHeavy" Target="ZergBloodSetBleedHeavy" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergBleedHeavy; StateChanged ZergBleedProfusely" Target="ZergBloodSetBleedProfusely" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergNormal" Target="ZergBloodSetBleedSmall" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergNormal" Target="ZergBloodSetBleedHeavy" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergNormal" Target="ZergBloodSetBleedProfusely" Send="Destroy"/>
+    </CActorStateMonitor>
+    <CActorStateMonitor id="ZergBuildingSCBW@BloodMedium" parent="ZergBlood">
+        <On Terms="UnitCreation.HydraliskDenSCBW" Send="Create"/>
+        <On Terms="UnitCreation.ExtractorSCBW" Send="Create"/>
+        <On Terms="UnitCreation.ExtractorSCBW@Rich" Send="Create"/>
+        <On Terms="UnitCreation.SpawningPoolSCBW" Send="Create"/>
+        <On Terms="UnitCreation.EvolutionChamberSCBW" Send="Create"/>
+        <On Terms="UnitCreation.UltraliskCavernSCBW" Send="Create"/>
+        <On Terms="UnitCreation.QueensNestSCBW" Send="Create"/>
+        <On Terms="UnitCreation.DefilerMoundSCBW" Send="Create"/>
+    </CActorStateMonitor>
+    <CActorStateMonitor id="ZergBuildingSCBW@BloodSmall">
+        <On Terms="UnitCreation.SpireSCBW" Send="Create"/>
+        <On Terms="UnitCreation.GreaterSpireSCBW" Send="Create"/>
+        <On Terms="UnitCreation.CreepColonySCBW" Send="Create"/>
+        <On Terms="UnitCreation.SunkenColonySCBW" Send="Create"/>
+        <On Terms="UnitCreation.SporeColonySCBW" Send="Create"/>
+        <On Terms="UnitCreation.NydusCanalSCBW" Send="Create"/>
+        <On Terms="StateChange; StateValid ZergBleedLight; StateChanged ZergNormal" Send="Create ZergBloodSetBleedSmall"/>
+        <On Terms="StateChange; StateValid ZergBleedHeavy; StateChanged ZergNormal" Send="Create ZergBloodSetBleedHeavy"/>
+        <On Terms="StateChange; StateValid ZergBleedProfusely; StateChanged ZergNormal" Send="Create ZergBloodSetBleedProfusely"/>
+        <!-- Transition -->
+        <On Terms="StateChange; StateValid ZergBleedLight; !StateChanged ZergNormal" Send="Create ZergBloodSetBleedSmall"/>
+        <On Terms="StateChange; StateValid ZergBleedHeavy; !StateChanged ZergNormal" Send="Create ZergBloodSetBleedHeavy"/>
+        <On Terms="StateChange; StateValid ZergBleedProfusely; !StateChanged ZergNormal" Send="Create ZergBloodSetBleedProfusely"/>
+        <!-- Destruction -->
+        <On Terms="StateChange; StateValid ZergNormal; StateChanged ZergBleedLight" Target="ZergBloodSetBleedSmall" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergBleedLight; StateChanged ZergBleedHeavy" Target="ZergBloodSetBleedHeavy" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergBleedHeavy; StateChanged ZergBleedProfusely" Target="ZergBloodSetBleedProfusely" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergNormal" Target="ZergBloodSetBleedSmall" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergNormal" Target="ZergBloodSetBleedHeavy" Send="Destroy"/>
+        <On Terms="StateChange; StateValid ZergNormal" Target="ZergBloodSetBleedProfusely" Send="Destroy"/>
+        <StateThinkInterval value="0.5"/>
+        <StateArray Name="ZergNormal" Terms="ValidateUnit ZergBleedNormal"/>
+        <StateArray Name="ZergBleedLight" Terms="ValidateUnit ZergBleedLight"/>
+        <StateArray Name="ZergBleedHeavy" Terms="ValidateUnit ZergBleedHeavy"/>
+        <StateArray Name="ZergBleedProfusely" Terms="ValidateUnit ZergBleedProfusely"/>
+    </CActorStateMonitor>
+    <CActorProgress id="ZergBuildingSCBW@Construction">
+        <On Terms="Abil.DroneSCBW@Build.BuiltStart" Send="Create"/>
+        <On Terms="Abil.DroneSCBW@BuildAdv.BuiltStart" Send="Create"/>
+        <On Terms="Abil.NydusCanalSCBW@Build.BuiltStart" Send="Create"/>
+        <On Terms="ProgressLevel.ZergBuildingSCBW@Construction.Start; Level 0" Send="SetTransferOverrideAnim Build,A,Stand"/>
+        <On Terms="ProgressLevel.ZergBuildingSCBW@Construction.Stop; Level 0" Send="SetTransferOverrideAnim"/>
+        <!--On Terms="AbilMorph.SunkenColonySCBW@Morph.Start" Send="Create"/>
+        <On Terms="AbilMorph.SunkenColonySCBW@Morph.Cancel" Send="Destroy"/>
+        <On Terms="AbilMorph.SporeColonySCBW@Morph.Start" Send="Create"/>
+        <On Terms="AbilMorph.SporeColonySCBW@Morph.Cancel" Send="Destroy"/-->
+        <StageArray AnimProps="Build,A,Start" BlendTime="0.000000"/>
+        <StageArray AnimProps="Build,A,Stand"/>
+        <StageArray AnimProps="Build,B,Start"/>
+        <StageArray AnimProps="Build,B,Stand"/>
+        <StageArray AnimProps="Build,C,Start"/>
+        <StageArray AnimProps="Build,C,Stand"/>
+        <StageArray AnimProps="Build,D"/>
+    </CActorProgress>
+    <CActorSound id="ZergBuildingSCBW@MorphStart" parent="SoundOneShot">
+        <On Terms="Abil.DroneSCBW@Build.BuiltStart" Send="Create"/>
+        <On Terms="Abil.DroneSCBW@BuildAdv.BuiltStart" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphTo GreaterSpireSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SporeColonySCBW" Send="Create"/>
+        <On Terms="ProgressLevel.LairSCBW@MorphProgress.Start; Level 0" Send="Create"/>
+        <On Terms="ProgressLevel.HiveSCBW@MorphProgress.Start; Level 0" Send="Create"/>
+    </CActorSound>
+    <CActorProgress id="ZergBuildingSCBW@ConstructionAttached">
+        <Supporter Subject="_ZergBuildModel"/>
+        <On Terms="AbilMorph.*.Cancel" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish" Send="Destroy"/>
+        <StageArray AnimProps="Build,A,Start" BlendTime="0.000000"/>
+        <StageArray AnimProps="Build,A,Stand"/>
+        <StageArray AnimProps="Build,B,Start"/>
+        <StageArray AnimProps="Build,B,Stand"/>
+        <StageArray AnimProps="Build,C,Start"/>
+        <StageArray AnimProps="Build,C,Stand"/>
+        <StageArray AnimProps="Build,D"/>
+    </CActorProgress>
+    <CFootprint id="ZergBuildingSCBW@CreepGrowthSmallGrown">
+        <Layers index="Check" Area="-4,-4,4,4">
+            <Sets Character="o">
+                <Negative index="NoCreep" value="1"/>
+            </Sets>
+            <Rows value="..oooo.."/>
+            <Rows value=".oooooo."/>
+            <Rows value="oooooooo"/>
+            <Rows value="oooooooo"/>
+            <Rows value="oooooooo"/>
+            <Rows value="oooooooo"/>
+            <Rows value=".oooooo."/>
+            <Rows value="..oooo.."/>
+        </Layers>
+        <Layers index="Place" Area="-4,-4,4,4">
+            <Sets Character="o">
+                <Positive index="Creep" value="1"/>
+            </Sets>
+            <Rows value="........"/>
+            <Rows value="........"/>
+            <Rows value="...oo..."/>
+            <Rows value="..oooo.."/>
+            <Rows value="..oooo.."/>
+            <Rows value="...oo..."/>
+            <Rows value="........"/>
+            <Rows value="........"/>
+        </Layers>
+    </CFootprint>
+    <CFootprint id="ZergBuildingSCBW@CreepGrowthSmallStart">
+        <Layers index="Check">
+            <Sets Character="c">
+                <Negative index="NoCreep" value="1"/>
+            </Sets>
+            <Rows value="cc"/>
+            <Rows value="cc"/>
+        </Layers>
+        <Layers index="Place">
+            <Sets Character="c">
+                <Positive index="Creep" value="1"/>
+            </Sets>
+            <Rows value="cc"/>
+            <Rows value="cc"/>
+        </Layers>
+        <Shape Radius="1.4143"/>
+    </CFootprint>
+    <CFootprint id="ZergBuildingSCBW@CreepFoundation3x3">
+        <Layers index="Check" Area="-1,-1,2,2">
+            <Sets Character="c">
+                <Negative index="NoCreep" value="1"/>
+            </Sets>
+            <Rows value="ccc"/>
+            <Rows value="ccc"/>
+            <Rows value="ccc"/>
+        </Layers>
+        <Layers index="Place" Area="-1,-1,2,2">
+            <Sets Character="c">
+                <Positive index="Creep" value="1"/>
+            </Sets>
+            <Rows value="ccc"/>
+            <Rows value="ccc"/>
+            <Rows value="ccc"/>
+        </Layers>
+    </CFootprint>
+    <CFootprint id="ZergBuildingSCBW@CreepFoundation2x2">
+        <Layers index="Check">
+            <Sets Character="c">
+                <Negative index="NoCreep" value="1"/>
+            </Sets>
+            <Rows value="cc"/>
+            <Rows value="cc"/>
+        </Layers>
+        <Layers index="Place">
+            <Sets Character="c">
+                <Positive index="Creep" value="1"/>
+            </Sets>
+            <Rows value="cc"/>
+            <Rows value="cc"/>
+        </Layers>
+    </CFootprint>
+    <CSound id="ZergBuildingSCBW@MorphEnd" parent="Build">
+        <EditorCategories value="Race:Zerg"/>
+        <!--<AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphEnd0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphEnd1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphEnd2.wav"/>
+        -->
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffectsSCBW\ZergBuildingSCBW@Ready00.ogg"/>
+        <!--<Pitch value="-1.000000,2.000000"/>-->
+    </CSound>
+    <CSound id="ZergBuildingSCBW@MorphStart" parent="Build">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg_BuildingMorphStart0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg_BuildingMorphStart1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg_BuildingMorphStart2.wav"/>
+        <Pitch value="-3.000000,3.000000"/>
+        <Volume value="-1.500000,0.000000"/>
+    </CSound>
+    <CSound id="ZergBuildingSCBW@MorphWhat" parent="Voice">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphWhat0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphWhat1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphWhat2.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphWhat3.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphWhat4.wav"/>
+        <Flags index="Stream" value="0"/>
+        <DupeDestroyCount value="1"/>
+        <DupeMaximumMethod value="Replace"/>
+        <DupeMuteCount value="1"/>
+        <Volume value="-2.000000,-2.000000"/>
+    </CSound>
+    <CSound id="ZergBuildingSCBW@Placement" parent="UI">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffectsSCBW\ZergBuildingSCBW@Placement00.ogg" Volume="3.000000,3.000000"/>
+        <Mode value="3DWorld"/>
+        <Pitch value="-1.000000,3.000000"/>
+        <Volume value="-1.500000,0.000000"/>
+        <VolumeRolloffPoints Distance="100.000000"/>
+        <VolumeRolloffPoints Distance="1000.000000" Volume="-96.000000"/>
+    </CSound>
+    <CSound id="ZergBuildingSCBW@PlacementSmall" parent="UI">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffectsSCBW\ZergBuildingSCBW@Placement00.ogg" Volume="3.000000,3.000000"/>
+        <Flags index="Purgable" value="1"/>
+        <Category value="Build"/>
+        <Mode value="3DWorld"/>
+        <Pitch value="2.000000,3.000000"/>
+        <ReverbBalance Room="0"/>
+        <Volume value="-1.000000,0.000000"/>
+    </CSound>
+    <CSound id="ZergBuildingSCBW@MorphCancel" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge4.wav" Pitch="-3.000000,3.000000"/>
+    </CSound>
+    <CSound id="ZergBuildingSCBW@Ready" parent="Build">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphEnd0.wav"/>
+    </CSound>
+    <CBehaviorBuff id="ZergBuildingSCBW@MorphSuppressRegen">
+        <InfoFlags index="Hidden" value="1"/>
+        <RemoveValidatorArray value="SCBW_IsMorphing"/>
+        <Modification>
+            <StateFlags index="SuppressLifeRegen" value="1"/>
+            <StateFlags index="SuppressShieldsRegen" value="1"/>
+            <StateFlags index="SuppressEnergyRegen" value="1"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorCreepSource id="ZergBuildingSCBW@CreepGrowthSmall">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <Period value="0.75"/>
+        <Start value="ZergBuildingSCBW@CreepGrowthSmallGrown"/>
+        <Birth value="ZergBuildingSCBW@CreepGrowthSmallStart"/>
+        <Grown value="ZergBuildingSCBW@CreepGrowthSmallGrown"/>
+    </CBehaviorCreepSource>
+    <CBehaviorCreepSource id="ZergBuildingSCBW@CreepGrowthLarge">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <Period value="0.75"/>
+        <Start value="Footprint8x6CreepSourceGrown"/>
+        <Birth value="Footprint8x6CreepSourceStart"/>
+        <Grown value="Footprint8x6CreepSourceGrown"/>
+    </CBehaviorCreepSource>
+    <CBehaviorCreepSource id="ZergBuildingSCBW@CreepGrowthMedium">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <Period value="0.75"/>
+        <Start value="Footprint4x4CreepSourceGrown"/>
+        <Birth value="Footprint4x4CreepSourceStart"/>
+        <Grown value="Footprint4x4CreepSourceGrown"/>
+    </CBehaviorCreepSource>
+    <CBehaviorCreepSource id="ZergBuildingSCBW@CreepFoundation3x3">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <Delay value="1"/>
+        <Period value="1"/>
+        <Start value="ZergBuildingSCBW@CreepFoundation3x3"/>
+        <Birth value="ZergBuildingSCBW@CreepFoundation3x3"/>
+        <Grown value="ZergBuildingSCBW@CreepFoundation3x3"/>
+    </CBehaviorCreepSource>
+    <CBehaviorCreepSource id="ZergBuildingSCBW@CreepFoundation2x2">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <Delay value="1"/>
+        <Period value="1"/>
+        <Start value="ZergBuildingSCBW@CreepFoundation2x2"/>
+        <Birth value="ZergBuildingSCBW@CreepFoundation2x2"/>
+        <Grown value="ZergBuildingSCBW@CreepFoundation2x2"/>
+    </CBehaviorCreepSource>
+</Catalog>

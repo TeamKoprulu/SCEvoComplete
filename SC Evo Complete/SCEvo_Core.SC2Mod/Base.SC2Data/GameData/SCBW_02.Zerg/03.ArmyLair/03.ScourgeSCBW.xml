@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectDamage id="ScourgeSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="110"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectSet id="ScourgeSCBWWeapon@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="ScourgeSCBWWeapon@Damage"/>
+        <EffectArray value="ScourgeSCBWWeapon@RemoveSource"/>
+    </CEffectSet>
+    <CEffectDamage id="ScourgeSCBWWeapon@RemoveSource">
+        <ImpactLocation Value="SourceUnit"/>
+        <Flags index="Kill" value="1"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CEffectDamage>
+    <CValidatorUnitType id="ScourgeSCBW@Is" parent="SCBW_Unit" x="ScourgeSCBW"/>
+    <CValidatorUnitType id="ScourgeSCBW@Not" parent="SCBW_UnitNot" x="ScourgeSCBW"/>
+    <CRequirement id="ScourgeSCBW" parent="SCBW_UnitReq" Race="Zerg"/>
+    <CButton id="ScourgeSCBW">
+        <Icon value="Assets\Textures\btn-unit-zerg-scourge.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-zerg-scourge.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Row="1" Column="2"/>
+    </CButton>
+    <CButton id="ScourgeSCBW@Passive" parent="SCBW_UnitPassive" x="ScourgeSCBW">
+        <Icon value="Assets\Textures\btn-unit-zerg-scourge.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-zerg-scourge.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
+    <CRequirementOr id="ScourgeSCBW">
+        <OperandArray value="SpireSCBW@Count"/>
+        <OperandArray value="GreaterSpireSCBW@Count"/>
+    </CRequirementOr>
+    <CRequirementAllowUnit id="ScourgeSCBW@AllowUnit" parent="SCBW_AllowUnit" x="ScourgeSCBW"/>
+    <CRequirementCountUnit id="ScourgeSCBW@Count" parent="SCBW_UnitCount" x="ScourgeSCBW"/>
+    <CRequirementCountUnit id="ScourgeSCBW@CountAtUnit" parent="SCBW_UnitCountAtUnit" x="ScourgeSCBW"/>
+    <CRequirementNot id="ScourgeSCBW@NotCount" parent="SCBW_Not" x="ScourgeSCBW@Count"/>
+    <CRequirementNot id="ScourgeSCBW@NotCountAtUnit" parent="SCBW_Not" x="ScourgeSCBW@CountAtUnit"/>
+    <CRequirementNot id="ScourgeSCBW@NotQoB" parent="SCBW_Not" x="ScourgeSCBW@QoB"/>
+    <CRequirementNot id="ScourgeSCBW@NotQoBAtUnit" parent="SCBW_Not" x="ScourgeSCBW@QoBAtUnit"/>
+    <CRequirementCountUnit id="ScourgeSCBW@QoB" parent="SCBW_UnitQoB" x="ScourgeSCBW"/>
+    <CRequirementCountUnit id="ScourgeSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="ScourgeSCBW"/>
+    <CRequirementAnd id="ScourgeSCBW@Show">
+        <OperandArray value="ScourgeSCBW@AllowUnit"/>
+    </CRequirementAnd>
+    <CLight id="ScourgeSCBW@Portrait" parent="default">
+        <EditorCategories value="LightGroup:PortraitsUnitsZerg"/>
+    </CLight>
+    <CActorForceSphere id="ScourgeSCBWWeapon@DeathForce">
+        <HostSiteOps Ops="SOpRandomPointInCircleDot25"/>
+        <Duration value="0.300000"/>
+        <Magnitude value="16.000000,8.000000"/>
+        <Radius value="2.100000,0.300000"/>
+    </CActorForceSphere>
+    <CActorSound id="ScourgeSCBWWeapon@LaunchSound" parent="SoundOneShot">
+        <On Terms="WeaponStart.ScourgeSCBWWeapon.AttackStart" Send="Create"/>
+        <Sound value="ScourgeSCBWWeapon@Launch"/>
+    </CActorSound>
+    <CActorAction id="ScourgeSCBWWeapon@Action" parent="GenericAttack" effectAttack="ScourgeSCBWWeapon@Set">
+        <ImpactMap index="None" Model="ScourgeSCBWWeapon@Impact" Sound="ScourgeSCBWWeapon@Impact"/>
+        <AcquisitionYawHalfArc value="1.000000"/>
+        <AcquisitionPitchHalfArc value="1.000000"/>
+        <AccuracyHalfArc value="1.000000"/>
+        <On index="5" Terms="Effect.ScourgeSCBWWeapon@Set.Start; At Caster; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+        <ImpactPhysics Name="ScourgeSCBWWeapon" MatchKeys="Acid,BasicAir" Physics="ScourgeSCBWWeapon@DeathForce"/>
+    </CActorAction>
+    <CActorUnit id="ScourgeSCBW" parent="GenericUnitStandard" unitName="ScourgeSCBW">
+        <Aliases value="_UnitSmall"/>
+        <On Terms="WeaponStart.ScourgeSCBWWeapon.AttackStart" Send="StatusSet DeathSuicide 1"/>
+        <On Terms="UnitDeathCustomize; IsStatus DeathSuicide 1" Send="DeathCustomize Variation0"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="ScourgeSCBW@Death" SoundLink="ScourgeSCBW@Death"/>
+        <PortraitModel value="ScourgeSCBW@Portrait"/>
+        <BarOffset value="30"/>
+        <BarWidth value="36"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-zerg-scourge.dds"/>
+        </GroupIcon>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-flyercarapace-level0.dds"/>
+        <SoundArray index="Ready" value="ScourgeSCBW@Ready"/>
+        <SoundArray index="Help" value="ScourgeSCBW@Help"/>
+        <SoundArray index="What" value="ScourgeSCBW@What"/>
+        <SoundArray index="Yes" value="ScourgeSCBW@Yes"/>
+        <SoundArray index="Attack" value="ScourgeSCBW@Attack"/>
+        <SoundArray index="Pissed" value="ScourgeSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-scourge.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-zerg-scourge.dds"/>
+        </Wireframe>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-scourge.dds"/>
+        <DeathCustoms ModelLink="Invisible" SoundLink="SCBW_Silent" Name="Variation0"/>
+    </CActorUnit>
+    <CModel id="ScourgeSCBWWeapon@Impact" parent="ImpactFX">
+        <Model value="Assets\Units\Zerg\SplitterlingDeath\SplitterlingDeath.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ScaleMax value="0.500000,0.500000,0.500000"/>
+        <ScaleMin value="0.500000,0.500000,0.500000"/>
+        <Flags index="TeenSafe" value="1"/>
+    </CModel>
+    <CModel id="ScourgeSCBW" parent="Unit" Race="Zerg">
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraMid03"/>
+        <Radius value="0.375000"/>
+        <SelectionRadius value="0.375000"/>
+        <ShadowRadius value="0.375000"/>
+        <TechPurchaseCamera value="Star2CameraMid03"/>
+        <Tipability value="0.750000"/>
+        <UnitGlossaryCamera value="Star2CameraMid03"/>
+        <SquibTypeDefault value="Flesh"/>
+        <AttachProps Id="Ref_Target" RadiusTarget="0.150000"/>
+    </CModel>
+    <CModel id="ScourgeSCBW@Death" parent="UnitDeath" Race="Zerg">
+        <Model value="Assets\Units\Zerg\ScourgeDeath\ScourgeDeath.m3"/>
+        <LowQualityModel value="ZergSmallUnitDeathLow"/>
+    </CModel>
+    <CModel id="ScourgeSCBW@Portrait" parent="Portrait" Race="Zerg">
+        <Model value="Assets\Portraits\Zerg\ScourgePortrait\ScourgePortrait.m3"/>
+    </CModel>
+    <CWeaponLegacy id="ScourgeSCBWWeapon">
+        <EditorCategories value="Race:Zerg"/>
+        <Icon value="Assets\Textures\btn-upgrade-zerg-airattacks-level0.dds"/>
+        <DisplayEffect value="ScourgeSCBWWeapon@Damage"/>
+        <TargetFilters value="Air,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="0.1"/>
+        <DamagePoint value="0.0625"/>
+        <Effect value="ScourgeSCBWWeapon@Set"/>
+        <LegacyOptions index="NoDeceleration" value="1"/>
+        <AllowedMovement value="Moving"/>
+        <AcquireFilters value="Air,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="0.0625"/>
+    </CWeaponLegacy>
+    <CSound id="ScourgeSCBWWeapon@Impact" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBWWeapon@Impact00.ogg"/>
+    </CSound>
+    <CSound id="ScourgeSCBWWeapon@Launch" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBWWeapon@Launch00.ogg"/>
+        <DupeDestroyCount value="3"/>
+        <DupeMaximumMethod value="Replace"/>
+    </CSound>
+    <CSound id="ScourgeSCBW@Attack" parent="ZergAckSCBW" Folder="ScourgeSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Yes01.ogg"/>
+    </CSound>
+    <CSound id="ScourgeSCBW@Death" parent="ZergDeathSCBW" Folder="ScourgeSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Death00.ogg"/>
+    </CSound>
+    <!--CSound id="ScourgeSCBW@Help" parent="AlertZergSCBW" Folder="ScourgeSCBW">-->
+    <!--        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Help00.ogg"/>-->
+    <!--        <Mode value="3DWorld"/>-->
+    <!--    </CSound-->
+    <CSound id="ScourgeSCBW@Pissed" parent="ZergAckSCBW" Folder="ScourgeSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Pissed00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Pissed01.ogg"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+    </CSound>
+    <CSound id="ScourgeSCBW@Ready" parent="ZergReadySCBW" Folder="ScourgeSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Ready00.ogg"/>
+    </CSound>
+    <CSound id="ScourgeSCBW@What" parent="ZergAckSCBW" Folder="ScourgeSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@What00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@What01.ogg"/>
+    </CSound>
+    <CSound id="ScourgeSCBW@Yes" parent="ZergAckSCBW" Folder="ScourgeSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\ScourgeSCBW\ScourgeSCBW@Yes01.ogg"/>
+    </CSound>
+    <CDataCollectionAbil id="ScourgeSCBWWeapon" parent="ZergWeaponSCBW">
+        <DataRecord Entry="Actor,ScourgeSCBWWeapon@DeathForce"/>
+        <DataRecord Entry="Actor,ScourgeSCBWWeapon@LaunchSound"/>
+        <DataRecord Entry="Actor,ScourgeSCBWWeapon@Action"/>
+        <DataRecord Entry="Effect,ScourgeSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,ScourgeSCBWWeapon@Set"/>
+        <DataRecord Entry="Effect,ScourgeSCBWWeapon@RemoveSource"/>
+        <DataRecord Entry="Model,ScourgeSCBWWeapon@Impact"/>
+        <DataRecord Entry="Sound,ScourgeSCBWWeapon@Launch"/>
+        <DataRecord Entry="Sound,ScourgeSCBWWeapon@Impact"/>
+        <DataRecord Entry="Weapon,ScourgeSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="ScourgeSCBW" parent="ZergFlyerUnitSCBW">
+        <DataRecord Entry="Button,ScourgeSCBW@Passive"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@NotCount"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@NotCountAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@NotQoB"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScourgeSCBW@QoBAtUnit"/>
+        <DataRecord Entry="Sound,ScourgeSCBW@Death"/>
+        <DataRecord Entry="Sound,ScourgeSCBW@Yes"/>
+        <DataRecord Entry="Sound,ScourgeSCBW@Attack"/>
+        <DataRecord Entry="Sound,ScourgeSCBW@Pissed"/>
+        <DataRecord Entry="Validator,ScourgeSCBW@Is"/>
+        <DataRecord Entry="Validator,ScourgeSCBW@Not"/>
+        <UpgradeInfoWeapon index="0" DamagePerDice="0"/>
+        <TechInfoUpgradeUsed index="3" removed="1"/>
+        <TechInfoUpgradeUsed index="4" removed="1"/>
+        <TechInfoUpgradeUsed index="5" removed="1"/>
+    </CDataCollectionUnit>
+    <CUnit id="ScourgeSCBW" parent="ZergUnitSCBW">
+        <DeathRevealRadius value="3"/>
+        <Mob value="Campaign"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="AIThreatGround" value="1"/>
+        <FlagArray index="AIThreatAir" value="1"/>
+        <FlagArray index="AISplash" value="1"/>
+        <FlagArray index="AIHighPrioTarget" value="1"/>
+        <FlagArray index="AIFleeDamageDisabled" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Air" value="1"/>
+        <Collide index="Flying" value="1"/>
+        <Attributes index="Light" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <LifeStart value="25"/>
+        <LifeMax value="25"/>
+        <LifeArmorName value="Unit/LifeArmorName/ZergAirArmor"/>
+        <Mover value="Fly"/>
+        <Speed value="3.75"/>
+        <Acceleration value="6.6875"/>
+        <StationaryTurningRate value="1499.9414"/>
+        <TurningRate value="1499.9414"/>
+        <Sight value="5"/>
+        <Height value="4"/>
+        <VisionHeight value="4"/>
+        <Food value="-0.5"/>
+        <CostResource index="Minerals" value="12"/>
+        <CostResource index="Vespene" value="37"/>
+        <AttackTargetPriority value="20"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="stop"/>
+        <WeaponArray Link="ScourgeSCBWWeapon"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+        </CardLayouts>
+        <Radius value="0.375"/>
+        <SeparationRadius value="0.375"/>
+        <SubgroupPriority value="64"/>
+        <MinimapRadius value="0.375"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <TacticalAI value=""/>
+        <GlossaryPriority value="80"/>
+        <GlossaryStrongArray value="BattlecruiserSCBW"/>
+        <GlossaryStrongArray value="GuardianSCBW"/>
+        <GlossaryStrongArray value="CarrierSCBW"/>
+        <GlossaryWeakArray value="MarineSCBW"/>
+        <GlossaryWeakArray value="HydraliskSCBW"/>
+        <GlossaryWeakArray value="DragoonSCBW"/>
+        <KillDisplay value="Never"/>
+        <RankDisplay value="Never"/>
+        <AIEvaluateAlias value=""/>
+        <BuildTime value="13"/>
+        <CostCategory value="Army"/>
+        <ScoreMake value="50"/>
+        <ScoreKill value="50"/>
+        <ScoreResult value="BuildOrder"/>
+    </CUnit>
+</Catalog>

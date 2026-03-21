@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectSet id="MissileTurretSCBWWeapon@Impact" parent="SCBW_WeaponImpactExplBase" Race="Terran" x="MissileTurretSCBWWeapon"/>
+    <CEffectUserData id="MissileTurretSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Terran" x="MissileTurretSCBWWeapon"/>
+    <CEffectCreatePersistent id="MissileTurretSCBWWeapon@CP">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Value="TargetUnit"/>
+        <TimeScaleSource Value="Caster"/>
+        <Flags index="Channeled" value="1"/>
+        <PeriodCount value="1"/>
+        <PeriodicEffectArray value="MissileTurretSCBWWeapon@LM"/>
+        <PeriodicPeriodArray value="0"/>
+        <PeriodicPeriodArray value="0.1"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="MissileTurretSCBWWeapon@LM">
+        <ValidatorArray index="0" value="MissileTurretSCBWWeapon@LM"/>
+        <EditorCategories value="Race:Terran"/>
+        <ImpactEffect value="MissileTurretSCBWWeapon@Impact"/>
+        <AmmoUnit value="MissileTurretSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="MissileTurretSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Terran">
+        <Kind value="Ranged"/>
+    </CEffectDamage>
+    <CEffectDamage id="MissileTurretSCBWWeapon@Damage" parent="ExplosiveDamageUISCBW" Race="Terran">
+        <Kind value="Ranged"/>
+        <Amount value="15"/>
+    </CEffectDamage>
+    <CValidatorUnitType id="MissileTurretSCBW@Is" parent="SCBW_Unit" x="MissileTurretSCBW"/>
+    <CValidatorUnitType id="MissileTurretSCBW@Not" parent="SCBW_UnitNot" x="MissileTurretSCBW"/>
+    <CValidatorCombine id="MissileTurretSCBWWeapon@LM" parent="SCBW_Effect">
+        <CombineArray value="RangeCheckLE15"/>
+    </CValidatorCombine>
+    <CRequirement id="MissileTurretSCBW" parent="SCBW_UnitReq"/>
+    <CButton id="MissileTurretSCBW@Passive" parent="SCBW_UnitPassive" x="MissileTurretSCBW">
+        <Icon value="Assets\Textures\btn-building-terran-missileturret@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-terran-missileturret@scbw.dds"/>
+        <EditorCategories value="Race:Terran"/>
+    </CButton>
+    <CButton id="MissileTurretSCBW">
+        <Icon value="Assets\Textures\btn-building-terran-missileturret@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-terran-missileturret@scbw.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <DefaultButtonLayout Column="3" CardId="Bld1"/>
+    </CButton>
+    <CRequirementAllowUnit id="MissileTurretSCBW@AllowUnit" parent="SCBW_AllowUnit" x="MissileTurretSCBW"/>
+    <CRequirementAnd id="MissileTurretSCBW@Show" parent="SCBW_BuildingShow" x="MissileTurretSCBW"/>
+    <CRequirementAnd id="MissileTurretSCBW">
+        <OperandArray value="EngineeringBaySCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementCountUnit id="MissileTurretSCBW@Count" parent="SCBW_UnitCount" x="MissileTurretSCBW"/>
+    <CActorForceSphere id="MissileTurretSCBWWeapon@Force">
+        <Host Subject="_ImpactGuide"/>
+        <HostSiteOps Ops="SOpRandomPointInSphereDot25"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="23.000000,12.000000"/>
+        <Radius value="1.400000,0.250000"/>
+    </CActorForceSphere>
+    <CActorAction id="MissileTurretSCBWWeapon@Action" parent="GenericAttack" effectImpact="MissileTurretSCBWWeapon@Impact" effectLaunch="MissileTurretSCBWWeapon@LM">
+        <LaunchAttachQuery Methods="MissileTurretSCBWWeapon@AMPattern"/>
+        <LaunchAssets Model="MissileTurretSCBWWeapon@LaunchFX" Sound="MissileTurretSCBWWeapon@Launch"/>
+        <Missile value="MissileTurretSCBWWeapon@Missile"/>
+        <ImpactAttachQuery Methods="AMFilterTarget AMRandomUniform"/>
+        <ImpactMap index="None" Model="MissileTurretSCBWWeapon@Impact" Sound="MissileTurretSCBWWeapon@Impact"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactPhysics Name="MissileTurretSCBWWeapon@Impact" MatchKeys="BasicAir" Physics="MissileTurretSCBWWeapon@Force"/>
+    </CActorAction>
+    <CActorMissile id="MissileTurretSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="MissileTurretSCBWWeapon@Missile">
+        <On Terms="ActorCreation" Send="AnimPlay Phase1 Stand PlayForever"/>
+        <On Terms="MotionPhaseStart; MotionPhase 1" Send="AnimPlay Phase2 Turbo PlayForever"/>
+    </CActorMissile>
+    <CActorTurret id="MissileTurretSCBW@TurretIdle">
+        <On Terms="TurretEnable.MissileTurretSCBW@Idle; ValidateUnit IsConstructing" Send="Create"/>
+    </CActorTurret>
+    <CActorModel id="MissileTurretSCBW@SkinnablePlacementModel" parent="PlacementModel">
+        <On Terms="ActorDestruction" Target="MissileTurretProtectRange" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="Create MissileTurretSCBW@ProtectRange"/>
+    </CActorModel>
+    <CActorRange id="MissileTurretSCBW@ProtectRange" parent="RangeWeapon" weapon="MissileTurretSCBWWeapon">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorTurret id="MissileTurretSCBW@Turret">
+        <On Terms="TurretEnable.MissileTurretSCBW" Send="Create"/>
+        <On Terms="TurretEnable.MissileTurretSCBW" Target="MissileTurretSCBW@TurretIdle" Send="Destroy"/>
+    </CActorTurret>
+    <CActorModel id="MissileTurretSCBW@Build" parent="TerranBuildingSCBW@BuildSmall"/>
+    <CActorUnit id="MissileTurretSCBW" parent="TerranBuildingSCBW" unitName="MissileTurretSCBW">
+        <Aliases value="_UnitHuge"/>
+        <CreepHeightClass value="Small"/>
+        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="MissileTurretSCBW@Explode"/>
+        <PlacementSound value="TerranBuildingSCBW@PlacementSmall"/>
+        <!--<PlacementActorModel value="MissileTurretSkinnablePlacementModel"/>-->
+        <BarOffset value="90"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-terran-missileturret@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-missileturret@scbw.dds"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+        <UnitIcon value="Assets\Textures\btn-building-terran-missileturret@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-missileturret@scbw.dds"/>
+        </Wireframe>
+        <PlacementActorModel value="MissileTurretSCBW@SkinnablePlacementModel"/>
+    </CActorUnit>
+    <CActorSplat id="MissileTurretSCBW@Splat" parent="GenericUnitSplat" unitName="MissileTurretSCBW"/>
+    <CModel id="MissileTurretSCBWWeapon@LaunchFX" parent="LaunchFX">
+        <Model value="Assets\Effects\Terran\Cyclone_Missile_Launch\Cyclone_Missile_Launch.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
+    <CModel id="MissileTurretSCBWWeapon@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Terran\MissileTurretMissile\MissileTurretMissile.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
+    <CModel id="MissileTurretSCBWWeapon@Impact" parent="ImpactFX">
+        <Model value="Assets\Effects\Terran\MissileTurretMissileImpact\MissileTurretMissileImpact.m3"/>
+        <EditorCategories value="Race:Terran"/>
+    </CModel>
+    <CModel id="MissileTurretSCBW@Build" parent="MissileTurretBuildBase"/>
+    <CModel id="MissileTurretSCBW" parent="MissileTurretBase">
+        <AttachProps index="3" Id="Ref_Weapon 03">
+            <Keys index="SetA" value="3"/>
+        </AttachProps>
+        <AttachProps index="4" Id="Ref_Weapon 04">
+            <Keys index="SetA" value="2"/>
+        </AttachProps>
+        <AttachProps Id="Ref_Weapon Left">
+            <Keys index="SetA" value="4"/>
+        </AttachProps>
+        <AttachProps Id="Ref_Weapon Right">
+            <Keys index="SetA" value="5"/>
+        </AttachProps>
+    </CModel>
+    <CModel id="MissileTurretSCBW@Death" parent="MissileTurretDeathBase">
+        <Model value="Assets\Buildings\Terran\MissileTurretSCBW\MissileTurretSCBW@Death.m3"/>
+    </CModel>
+    <CModel id="MissileTurretSCBW@Placement" parent="MissileTurretPlacementBase" low="MissileTurretSCBW">
+        <Model value="Assets\Buildings\Terran\MissileTurretSCBW\MissileTurretSCBW@Placement.m3"/>
+    </CModel>
+    <CModel id="MissileTurretSCBW@Portrait" parent="TerranAdvisorSCBW@PortraitBase"/>
+    <CModel id="MissileTurretSCBW@Splat" parent="Splat">
+        <Model value="Assets\Splats\Splat_MissileTurretSCBW\Splat_MissileTurretSCBW.m3"/>
+        <EditorCategories value="Race:Terran"/>
+        <ScaleMax value="0.410000,0.410000,0.410000"/>
+        <ScaleMin value="0.410000,0.410000,0.410000"/>
+    </CModel>
+    <CWeaponLegacy id="MissileTurretSCBWWeapon">
+        <EditorCategories value="Race:Terran"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-hisecautotracking.dds"/>
+        <DisplayEffect value="MissileTurretSCBWWeapon@Damage"/>
+        <TargetFilters value="Air,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="7"/>
+        <RangeSlop value="0"/>
+        <Period value="0.875"/>
+        <Effect value="MissileTurretSCBWWeapon@CP"/>
+        <RandomDelayMax value="0.0625"/>
+    </CWeaponLegacy>
+    <CMoverMissile id="MissileTurretSCBWWeapon@Mover">
+        <MotionPhases>
+            <Driver value="Guidance"/>
+            <Speed value="10"/>
+            <MaxSpeed value="10"/>
+            <ActorTracking value="Actual"/>
+            <Outro value="-4"/>
+            <YawPitchRoll value="MAX"/>
+        </MotionPhases>
+        <MotionPhases Acceleration="200" MaxSpeed="20"/>
+    </CMoverMissile>
+    <CAccumulatorConstant id="MissileTurretSCBWWeapon@Damage">
+        <Amount value="20"/>
+    </CAccumulatorConstant>
+    <CSound id="MissileTurretSCBWWeapon@Impact" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\GoliathSCBW\GoliathSCBWWeaponAir@Impact00.ogg"/>
+        <Volume value="-5.000000,-5.000000"/>
+    </CSound>
+    <CSound id="MissileTurretSCBWWeapon@Launch" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\GoliathSCBW\GoliathSCBWWeaponAir@Launch00.ogg"/>
+        <Volume value="-8.000000,-8.000000"/>
+    </CSound>
+    <CSound id="MissileTurretSCBW@Explode" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium4.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium5.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium6.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium7.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium8.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium9.wav" Pitch="-3.000000,3.000000"/>
+        <DupeDestroyCount value="5"/>
+    </CSound>
+    <CSound id="MissileTurretSCBW@Ready" parent="Ready">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\MissileTurretSCBW\MissileTurretSCBW@What00.ogg"/>
+    </CSound>
+    <CSound id="MissileTurretSCBW@What" parent="Voice">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\MissileTurretSCBW\MissileTurretSCBW@What00.ogg"/>
+    </CSound>
+    <CDataCollectionAbil id="MissileTurretSCBWWeapon" parent="TerranVehicleWeaponSCBW">
+        <DataRecord Entry="Actor,MissileTurretSCBWWeapon@Force"/>
+        <DataRecord Entry="Actor,MissileTurretSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,MissileTurretSCBWWeapon@Missile"/>
+        <DataRecord Entry="AttachMethod,MissileTurretSCBWWeapon@AMPattern"/>
+        <DataRecord Entry="Effect,MissileTurretSCBWWeapon@Impact"/>
+        <DataRecord Entry="Effect,MissileTurretSCBWWeapon@DamageApply"/>
+        <DataRecord Entry="Effect,MissileTurretSCBWWeapon@DamageAccum"/>
+        <DataRecord Entry="Effect,MissileTurretSCBWWeapon@CP"/>
+        <DataRecord Entry="Effect,MissileTurretSCBWWeapon@LM"/>
+        <DataRecord Entry="Effect,MissileTurretSCBWWeapon@Damage"/>
+        <DataRecord Entry="Model,MissileTurretSCBWWeapon@LaunchFX"/>
+        <DataRecord Entry="Model,MissileTurretSCBWWeapon@Impact"/>
+        <DataRecord Entry="Model,MissileTurretSCBWWeapon@Missile"/>
+        <DataRecord Entry="Mover,MissileTurretSCBWWeapon@Mover"/>
+        <DataRecord Entry="Sound,MissileTurretSCBWWeapon@Launch"/>
+        <DataRecord Entry="Sound,MissileTurretSCBWWeapon@Impact"/>
+        <DataRecord Entry="Unit,MissileTurretSCBWWeapon@Missile"/>
+        <DataRecord Entry="Validator,MissileTurretSCBWWeapon@LM"/>
+        <DataRecord Entry="Weapon,MissileTurretSCBWWeapon"/>
+        <DataRecord Entry="Accumulator,MissileTurretSCBWWeapon@Damage"/>
+        <Pattern value="SCBW_Weapon_Accumulator"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="MissileTurretSCBW" parent="TerranBuildingSCBW">
+        <DataRecord Entry="Actor,MissileTurretSCBW@TurretIdle"/>
+        <DataRecord Entry="Actor,MissileTurretSCBW@SkinnablePlacementModel"/>
+        <DataRecord Entry="Actor,MissileTurretSCBW@ProtectRange"/>
+        <DataRecord Entry="Actor,MissileTurretSCBW@Turret"/>
+        <DataRecord Entry="Actor,MissileTurretSCBW@Build"/>
+        <DataRecord Entry="Actor,MissileTurretSCBW@Splat"/>
+        <DataRecord Entry="Behavior,MissileTurretSCBW@TurretDisable"/>
+        <DataRecord Entry="Button,MissileTurretSCBW@Passive"/>
+        <DataRecord Entry="Model,MissileTurretSCBW@Build"/>
+        <DataRecord Entry="Model,MissileTurretSCBW@Placement"/>
+        <DataRecord Entry="Model,MissileTurretSCBW@Splat"/>
+        <DataRecord Entry="RequirementNode,MissileTurretSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,MissileTurretSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,MissileTurretSCBW@Count"/>
+        <DataRecord Entry="Sound,MissileTurretSCBW@Explode"/>
+        <DataRecord Entry="Turret,MissileTurretSCBW"/>
+        <DataRecord Entry="Turret,MissileTurretSCBW@Idle"/>
+        <DataRecord Entry="Validator,MissileTurretSCBW@Is"/>
+        <DataRecord Entry="Validator,MissileTurretSCBW@Not"/>
+    </CDataCollectionUnit>
+    <CAttachMethodPattern id="MissileTurretSCBWWeapon@AMPattern">
+        <Keyword value="SetA"/>
+        <Base value="::RollingIndex"/>
+        <Driver value="MissileTurretSCBWWeapon@LM"/>
+    </CAttachMethodPattern>
+    <CTurret id="MissileTurretSCBW">
+        <Idle value="Spin"/>
+        <YawArc value="360"/>
+        <YawRate value="720"/>
+        <YawIdleRate value="-180"/>
+        <Fidget DelayMax="30" DelayMin="10"/>
+    </CTurret>
+    <CTurret id="MissileTurretSCBW@Idle" parent="MissileTurretSCBW">
+        <Idle value="Hold"/>
+        <Fidget>
+            <ChanceArray index="Anim" value="0"/>
+            <ChanceArray index="Idle" value="100"/>
+            <ChanceArray index="Turn" value="0"/>
+        </Fidget>
+    </CTurret>
+    <CUnit id="MissileTurretSCBWWeapon@Missile" parent="MISSILE_HALFLIFE">
+        <Race value="BWTe"/>
+        <Mover value="MissileTurretSCBWWeapon@Mover"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="MissileTurretSCBW" parent="TerranBuildingSCBW">
+        <FlagArray index="AIDefense" value="1"/>
+        <LifeStart value="200"/>
+        <LifeMax value="200"/>
+        <Sight value="11"/>
+        <CostResource index="Minerals" value="75"/>
+        <BuildTime value="26"/>
+        <RepairTime value="31.0625"/>
+        <AttackTargetPriority value="19"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="que1"/>
+        <BehaviorArray Link="Detector9"/>
+        <BehaviorArray Link="UnderConstruction"/>
+        <BehaviorArray Link="MissileTurretSCBW@TurretDisable"/>
+        <WeaponArray Link="MissileTurretSCBWWeapon" Turret="MissileTurretSCBW"/>
+        <WeaponArray Turret="MissileTurretSCBW@Idle"/>
+        <CardLayouts>
+            <LayoutButtons Face="Halt" Type="AbilCmd" AbilCmd="BuildInProgress,Halt" Row="2" Column="3"/>
+            <LayoutButtons Face="DetectorSCBW@Detector" Type="Passive" Requirements="SCBW_NotDetectionSuppressed" Row="2" Column="2"/>
+            <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="BuildInProgress,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="AttackBuilding" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="SelectBuilder" Type="SelectBuilder" Row="1" Column="3"/>
+        </CardLayouts>
+        <Radius value="0.75"/>
+        <SeparationRadius value="0.75"/>
+        <Footprint value="Footprint2x2Contour"/>
+        <PlacementFootprint value="Footprint2x2"/>
+        <ScoreMake value="75"/>
+        <ScoreKill value="75"/>
+        <SubgroupPriority value="1"/>
+        <MinimapRadius value="0.75"/>
+        <GlossaryCategory value="Unit/Category/TerranUnitsSCBW"/>
+        <GlossaryPriority value="310"/>
+        <GlossaryStrongArray value="WraithSCBW"/>
+        <GlossaryStrongArray value="MutaliskSCBW"/>
+        <GlossaryStrongArray value="ScoutSCBW"/>
+        <GlossaryWeakArray value="MarineSCBW"/>
+        <GlossaryWeakArray value="ZerglingSCBW"/>
+        <GlossaryWeakArray value="ZealotSCBW"/>
+        <HotkeyCategory value="Unit/Category/TerranUnitsSCBW"/>
+    </CUnit>
+    <CBehaviorBuff id="MissileTurretSCBW@TurretDisable">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="IsConstructing"/>
+        <Modification>
+            <TurretEnableArray value="MissileTurretSCBW@Idle"/>
+            <TurretDisableArray value="MissileTurretSCBW"/>
+        </Modification>
+    </CBehaviorBuff>
+</Catalog>
