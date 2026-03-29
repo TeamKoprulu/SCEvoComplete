@@ -1,5 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectSet id="NydusCanalSCBW@TeleporterSet">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="NydusCanalSCBW@TeleporterCopyRally"/>
+        <EffectArray value="SCBW_CategoryRemoveTeleportRemove"/>
+    </CEffectSet>
+    <CEffectModifyUnit id="NydusCanalSCBW@TeleporterCopyRally">
+        <EditorCategories value="Race:Zerg"/>
+        <LaunchUnit Effect="NydusCanalSCBW@TeleporterTP" Value="Target"/>
+        <CopyRallyCount value="1"/>
+        <RallyUnit Effect="NydusCanalSCBW@TeleporterTP" Value="Target"/>
+    </CEffectModifyUnit>
+    <CEffectTeleport id="NydusCanalSCBW@TeleporterTP">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichUnit Effect="NydusCanalSCBW@TeleporterEnum"/>
+        <MinDistance value="0"/>
+        <PlacementArc value="360"/>
+        <PlacementAround Value="TargetUnitOrPoint"/>
+        <PlacementRange value="5"/>
+        <SourceLocation Effect="NydusCanalSCBW@TeleporterEnum" Value="TargetUnitOrPoint"/>
+        <TargetLocation Value="TargetUnit"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestZone" value="1"/>
+        <TeleportEffect value="NydusCanalSCBW@TeleporterSet"/>
+    </CEffectTeleport>
+    <CEffectAddTrackedUnit id="NydusCanalSCBW@Build@TrackerTrack">
+        <EditorCategories value="Race:Zerg"/>
+        <BehaviorLink value="NydusCanalSCBW@Build@Used"/>
+        <TrackedUnit Value="Target"/>
+    </CEffectAddTrackedUnit>
+    <CEffectAddTrackedUnit id="NydusCanalSCBW@Build@TrackerTrackCaster">
+        <EditorCategories value="Race:Zerg"/>
+        <BehaviorLink value="NydusCanalSCBW@Build@Used"/>
+        <TrackerUnit Value="Target"/>
+    </CEffectAddTrackedUnit>
+    <CEffectEnumTrackedUnits id="NydusCanalSCBW@TeleporterEnum">
+        <ValidatorArray value="IsZergSCBW"/>
+        <ValidatorArray value="NotWidowMineTarget"/>
+        <ValidatorArray value="SCBW_IsTransportable"/>
+        <ValidatorArray value="LarvaSCBW@Not"/>
+        <ValidatorArray value="NotLarva"/>
+        <ValidatorArray value="IsNotEggUnit"/>
+        <EditorCategories value="Race:Zerg"/>
+        <BehaviorLink value="NydusCanalSCBW@Build@Used"/>
+        <Effect value="NydusCanalSCBW@TeleporterTP"/>
+    </CEffectEnumTrackedUnits>
+    <CEffectSet id="HatcherySCBW@BirthSet">
+        <EditorCategories value="Race:Zerg"/>
+    </CEffectSet>
+    <CEffectSet id="HatcherySCBW@CreateSet">
+        <EditorCategories value="Race:Zerg"/>
+    </CEffectSet>
     <CEffectApplyBehavior id="NydusCanalSCBW@TransportCargoBlocked">
         <EditorCategories value="Race:Zerg"/>
         <WhichUnit Value="Caster"/>
@@ -95,12 +146,27 @@
     <CEffectSet id="NydusCanalSCBW@Build">
         <EffectArray value="NydusCanalSCBW@Build@AB"/>
         <EffectArray value="NydusCanalSCBW@Build@ABCaster"/>
+        <EffectArray value="NydusCanalSCBW@Build@TrackerTrack"/>
+        <EffectArray value="NydusCanalSCBW@Build@TrackerTrackCaster"/>
         <EditorCategories value="Race:Zerg"/>
     </CEffectSet>
     <CEffectApplyBehavior id="NydusCanalSCBW@Build@AB">
         <EditorCategories value="Race:Zerg"/>
         <Behavior value="NydusCanalSCBW@Build@Used"/>
     </CEffectApplyBehavior>
+    <CAbilBattery id="NydusCanalSCBW@Teleporter">
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <AbilityCategories index="CanBeDisabled" value="1"/>
+        <AbilityCategories index="CanBeIllusionDisabled" value="1"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="NydusCanalSCBW@Load" Requirements="NydusCanalSCBW@Load">
+            <Flags index="AllowMinimap" value="0"/>
+        </CmdButtonArray>
+        <TargetFilters value="Ground,Visible;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,UnderConstruction,Dead,Hidden,Powerup"/>
+        <Range value="0"/>
+        <EnumRange value="0"/>
+        <Effect value="NydusCanalSCBW@TeleporterEnum"/>
+        <SmartPriority value="14"/>
+    </CAbilBattery>
     <CAbilBuildable id="NydusCanalSCBW@Mutate">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
         <Activity value="UI/Mutating"/>
@@ -122,7 +188,9 @@
             <Flags index="IgnoreUser" value="1"/>
             <Flags index="ToSelection" value="0"/>
         </CmdButtonArray>
-        <InfoArray index="0" AllowSetFilters="-;Self" SetFilters="-;Self"/>
+        <InfoArray index="0" AllowSetFilters="-;Self" SetFilters="-;Self">
+            <SetValidators value="NydusCanalSCBW@RallySet"/>
+        </InfoArray>
         <InfoArray>
             <AllowSetOnGround value="0"/>
             <SetOnGround value="0"/>
@@ -224,16 +292,6 @@
         </InfoArray>
         <TechAliasArray value="_InfestMorph"/>
     </CAbilMorph>
-    <CAbilBuild id="NydusCanalSCBW@Build">
-        <EditorCategories value="Race:Zerg,AbilityorEffectType:MorphsandBurrows"/>
-        <FlagArray index="Cancelable" value="0"/>
-        <InfoArray index="Build1" Unit="NydusCanalSCBW" Time="20">
-            <Button DefaultButtonFace="NydusCanalSCBW" Requirements="NydusCanalSCBW@Build"/>
-        </InfoArray>
-        <Range value="500"/>
-        <EffectArray index="Start" value="NydusCanalSCBW@AlertDummy"/>
-        <EffectArray index="Finish" value="NydusCanalSCBW@Build"/>
-    </CAbilBuild>
     <CAbilTransport id="NydusCanalSCBW@Transport">
         <AbilSetId value="ULdS"/>
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
@@ -256,15 +314,26 @@
         <MaxCargoCount value="255"/>
         <MaxCargoSize value="8"/>
         <TotalCargoSpace value="1020"/>
+        <LoadCargoEffect value="NydusCanalSCBW@TransportCargoLoad"/>
+        <UnloadCargoEffect value="NydusCanalSCBW@TransportCargoRB"/>
         <LoadPeriod value="0.5"/>
         <LoadValidatorArray value="NydusCanalSCBW@Transport@Load"/>
         <LoadValidatorArray value="NydusCanalSCBW@TransportNotBlocked"/>
-        <CargoFilter value="NydusCanalSCBW@Transport"/>
-        <LoadCargoEffect value="NydusCanalSCBW@TransportCargoLoad"/>
-        <UnloadCargoEffect value="NydusCanalSCBW@TransportCargoRB"/>
         <UnloadValidatorArray value="NydusCanalSCBW@TransportCargoUnit"/>
         <UnloadValidatorArray value="NydusCanalSCBW@TransportCorrectIdent"/>
+        <CargoFilter value="NydusCanalSCBW@Transport"/>
     </CAbilTransport>
+    <CAbilBuild id="NydusCanalSCBW@Build">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:MorphsandBurrows"/>
+        <FlagArray index="Cancelable" value="0"/>
+        <FlagArray index="IgnoreUnitBuildTime" value="0"/>
+        <InfoArray index="Build1" Unit="NydusCanalSCBW">
+            <Button DefaultButtonFace="NydusCanalSCBW" Requirements="NydusCanalSCBW@Build"/>
+        </InfoArray>
+        <Range value="500"/>
+        <EffectArray index="Start" value="NydusCanalSCBW@AlertDummy"/>
+        <EffectArray index="Finish" value="NydusCanalSCBW@Build"/>
+    </CAbilBuild>
     <CAbilMorph id="SporeColonySCBW@Morph">
         <EditorCategories value="Race:Zerg,AbilityorEffectType:MorphsandBurrows"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="SporeColonySCBW" Requirements="SporeColonySCBW">
@@ -285,9 +354,10 @@
             </SectionArray>
             <SectionArray index="Actor">
                 <UseBuildTimeArray index="Duration" value="1"/>
+                <EffectArray index="Start" value="ZergBuildingSCBW@MorphStart"/>
             </SectionArray>
             <SectionArray index="Facing">
-                <DurationArray index="Delay" value="16.75"/>
+                <DurationArray index="Delay" value="16"/>
             </SectionArray>
             <SectionArray index="Stats">
                 <UseBuildTimeArray index="Delay" value="1"/>
@@ -309,10 +379,12 @@
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
         <CmdButtonArray index="Rally2" DefaultButtonFace="RallyEgg"/>
         <InfoArray index="0">
+            <AllowSetValidators value="SCBW_DisableRallyGather@Condition"/>
             <SetValidators value="HatcherySCBW@Rally@Set@1"/>
-            <UseValidators value="HatcherySCBW@Rally@Use@1"/>
+            <UseValidators value="HatcherySCBW@Rally@Use@1Condition"/>
         </InfoArray>
         <InfoArray SetOnGround="0">
+            <AllowSetValidators value="SCBW_DisableRallyGather@Condition"/>
             <UseValidators value="HatcherySCBW@Rally@Use@2"/>
         </InfoArray>
         <InfoArray SetOnGround="0">
@@ -338,6 +410,7 @@
             </SectionArray>
             <SectionArray index="Actor">
                 <UseBuildTimeArray index="Duration" value="1"/>
+                <EffectArray index="Start" value="ZergBuildingSCBW@MorphStart"/>
             </SectionArray>
             <SectionArray index="Stats">
                 <UseBuildTimeArray index="Delay" value="1"/>
@@ -372,6 +445,7 @@
             </SectionArray>
             <SectionArray index="Actor">
                 <UseBuildTimeArray index="Duration" value="1"/>
+                <EffectArray index="Start" value="ZergBuildingSCBW@MorphStart"/>
             </SectionArray>
             <SectionArray index="Facing">
                 <DurationArray index="Delay" value="5"/>
@@ -408,6 +482,7 @@
             </SectionArray>
             <SectionArray index="Actor">
                 <UseBuildTimeArray index="Duration" value="1"/>
+                <EffectArray index="Start" value="ZergBuildingSCBW@MorphStart"/>
             </SectionArray>
             <SectionArray index="Stats">
                 <UseBuildTimeArray index="Delay" value="1"/>
@@ -442,9 +517,10 @@
             </SectionArray>
             <SectionArray index="Actor">
                 <UseBuildTimeArray index="Duration" value="1"/>
+                <EffectArray index="Start" value="ZergBuildingSCBW@MorphStart"/>
             </SectionArray>
             <SectionArray index="Facing">
-                <DurationArray index="Delay" value="16.75"/>
+                <DurationArray index="Delay" value="16"/>
             </SectionArray>
             <SectionArray index="Stats">
                 <UseBuildTimeArray index="Delay" value="1"/>
@@ -462,6 +538,14 @@
         <RefundFraction Cooldown="0"/>
         <Activity value="UI/Mutating"/>
     </CAbilMorph>
+    <CValidatorLocationType id="NydusCanalSCBW@RallySet">
+        <Unit value="NydusCanalSCBW@Not"/>
+    </CValidatorLocationType>
+    <CValidatorCondition id="HatcherySCBW@Rally@Use@1Condition">
+        <IfArray Test="SCBW_LimitedRally@Not" Return="HatcherySCBW@Rally@Use@1"/>
+    </CValidatorCondition>
+    <CValidatorUnitType id="ExtractorSCBW@IsAlias" parent="SCBW_UnitAlias" x="ExtractorSCBW"/>
+    <CValidatorUnitType id="ExtractorSCBW@NotAlias" parent="SCBW_UnitNotAlias" x="ExtractorSCBW"/>
     <CValidatorUnitCompareBehaviorCount id="NydusCanalSCBW@TransportNotBlocked">
         <WhichUnit Value="Source"/>
         <Behavior value="NydusCanalSCBW@TransportCargoBlocked"/>
@@ -497,12 +581,12 @@
         <CombineArray value="Failure"/>
     </CValidatorCombine>
     <CValidatorCombine id="HatcherySCBW@Rally@Use@1" parent="SCBW_Effect">
-        <CombineArray value="NotDroneAndNotOverlord"/>
         <CombineArray value="DroneSCBW@Not"/>
+        <CombineArray value="OverlordSCBW@Not"/>
     </CValidatorCombine>
     <CValidatorCombine id="HatcherySCBW@Rally@Use@2" parent="SCBW_Effect">
-        <CombineArray value="IsDroneOrOverlord"/>
-        <CombineArray value="DroneSCBW"/>
+        <CombineArray value="DroneSCBW@Is"/>
+        <CombineArray value="OverlordSCBW@Is"/>
         <Type value="Or"/>
     </CValidatorCombine>
     <CTacticalOrder id="HatcherySCBW@DefaultRally">
@@ -514,18 +598,14 @@
         <AbilCmdIndex value="1"/>
         <TargetFind value="WorkerRallyPointHatchery"/>
     </CTacticalOrder>
-    <CTacticalOrder id="InfestedCommandCenterSCBW"/>
-    <CTacticalOrder id="InfestedCommandCenterSCBW@Flying"/>
-    <CTacticalOrder id="CreepColonySCBW"/>
-    <CTacticalOrder id="DefilerMoundSCBW"/>
-    <CTacticalOrder id="EvolutionChamberSCBW"/>
-    <CTacticalOrder id="ExtractorSCBW"/>
-    <CTacticalOrder id="ExtractorSCBW@Rich"/>
+    <CTacticalOrder id="InfestedCommandCenterSCBW">
+        <Abil value="Rally"/>
+        <TargetFind value="DefaultRallyPoint"/>
+    </CTacticalOrder>
     <CTacticalSet id="HiveSCBW">
         <Array value="HatcherySCBW@DefaultRally"/>
         <Array value="HatcherySCBW@WorkerRally"/>
     </CTacticalSet>
-    <CTacticalOrder id="GreaterSpireSCBW"/>
     <CTacticalSet id="HatcherySCBW">
         <Array value="HatcherySCBW@DefaultRally"/>
         <Array value="HatcherySCBW@WorkerRally"/>
@@ -534,14 +614,6 @@
         <Array value="HatcherySCBW@DefaultRally"/>
         <Array value="HatcherySCBW@WorkerRally"/>
     </CTacticalSet>
-    <CTacticalOrder id="HydraliskDenSCBW"/>
-    <CTacticalOrder id="NydusCanalSCBW"/>
-    <CTacticalOrder id="QueensNestSCBW"/>
-    <CTacticalOrder id="SpawningPoolSCBW"/>
-    <CTacticalOrder id="SpireSCBW"/>
-    <CTacticalOrder id="SporeColonySCBW"/>
-    <CTacticalOrder id="SunkenColonySCBW"/>
-    <CTacticalOrder id="UltraliskCavernSCBW"/>
     <CRequirement id="NydusCanalSCBW@Load" parent="SCBW_AbilReqNoShow" Race="Zerg"/>
     <CRequirement id="InfestedCommandCenterSCBW" parent="SCBW_UnitReq" Race="Zerg"/>
     <CRequirement id="InfestedCommandCenterSCBW@Flying" parent="SCBW_UnitReqNoShow" Race="Zerg"/>
@@ -600,13 +672,13 @@
         <DefaultButtonLayout Row="2"/>
     </CButton>
     <CButton id="HiveSCBW">
-        <Icon value="Assets\Textures\btn-building-zerg-hive-remastered.dds"/>
-        <AlertIcon value="Assets\Textures\btn-building-zerg-hive-remastered.dds"/>
+        <Icon value="Assets\Textures\btn-building-zerg-hive@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-hive@scbw.dds"/>
         <EditorCategories value="Race:Zerg"/>
     </CButton>
     <CButton id="LairSCBW">
-        <Icon value="Assets\Textures\btn-building-zerg-lair-remastered.dds"/>
-        <AlertIcon value="Assets\Textures\btn-building-zerg-lair-remastered.dds"/>
+        <Icon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
         <EditorCategories value="Race:Zerg"/>
     </CButton>
     <CButton id="NydusCanalSCBW@Load">
@@ -644,8 +716,8 @@
         <DefaultButtonLayout Column="2"/>
     </CButton>
     <CButton id="HatcherySCBW">
-        <Icon value="Assets\Textures\btn-building-zerg-hatchery-remastered.dds"/>
-        <AlertIcon value="Assets\Textures\btn-building-zerg-hatchery-remastered.dds"/>
+        <Icon value="Assets\Textures\btn-building-zerg-hatchery@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-hatchery@scbw.dds"/>
         <EditorCategories value="Race:Zerg"/>
     </CButton>
     <CButton id="HydraliskDenSCBW">
@@ -710,6 +782,11 @@
         <EditorCategories value="Race:Zerg"/>
         <DefaultButtonLayout Row="2" Column="1"/>
     </CButton>
+    <CButton id="SunkenColonySCBW@Passive" parent="SCBW_UnitPassive" x="SunkenColonySCBW">
+        <Icon value="Assets\Textures\btn-building-zerg-sunkencolony@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-sunkencolony@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
     <CButton id="SpireSCBW">
         <Icon value="Assets\Textures\btn-building-zerg-spire.dds"/>
         <AlertIcon value="Assets\Textures\btn-building-zerg-spire.dds"/>
@@ -720,6 +797,11 @@
         <AlertIcon value="Assets\Textures\btn-building-zerg-sporecolony@scbw.dds"/>
         <EditorCategories value="Race:Zerg"/>
         <DefaultButtonLayout Row="2"/>
+    </CButton>
+    <CButton id="SporeColonySCBW@Passive" parent="SCBW_UnitPassive" x="SporeColonySCBW">
+        <Icon value="Assets\Textures\btn-building-zerg-sporecolony@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-sporecolony@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
     </CButton>
     <CButton id="UltraliskCavernSCBW">
         <Icon value="Assets\Textures\btn-building-zerg-ultraliskcavern.dds"/>
@@ -756,13 +838,9 @@
     </CRequirementCountBehavior>
     <CRequirementNot id="NydusCanalSCBW@Build@Used@NotCountAtUnit" parent="SCBW_Not" x="NydusCanalSCBW@Build@Used@CountAtUnit"/>
     <CRequirementAllowUnit id="CreepColonySCBW@AllowUnit" parent="SCBW_AllowUnit" x="CreepColonySCBW"/>
-    <CRequirementAnd id="CreepColonySCBW@Show">
-        <OperandArray value="CreepColonySCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="CreepColonySCBW@Show" parent="SCBW_BuildingShow" x="CreepColonySCBW"/>
     <CRequirementAllowUnit id="DefilerMoundSCBW@AllowUnit" parent="SCBW_AllowUnit" x="DefilerMoundSCBW"/>
-    <CRequirementAnd id="DefilerMoundSCBW@Show">
-        <OperandArray value="DefilerMoundSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="DefilerMoundSCBW@Show" parent="SCBW_BuildingShow" x="DefilerMoundSCBW"/>
     <CRequirementAnd id="CreepColonySCBW"/>
     <CRequirementCountUnit id="CreepColonySCBW@Count" parent="SCBW_UnitCount" x="CreepColonySCBW"/>
     <CRequirementCountUnit id="CreepColonySCBW@CountAtUnit" parent="SCBW_UnitCountAtUnit" x="CreepColonySCBW"/>
@@ -795,9 +873,7 @@
     <CRequirementNot id="EvolutionChamberSCBW@NotQoBAtUnit" parent="SCBW_Not" x="EvolutionChamberSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="EvolutionChamberSCBW@QoB" parent="SCBW_UnitQoB" x="EvolutionChamberSCBW"/>
     <CRequirementCountUnit id="EvolutionChamberSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="EvolutionChamberSCBW"/>
-    <CRequirementAnd id="EvolutionChamberSCBW@Show">
-        <OperandArray value="EvolutionChamberSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="EvolutionChamberSCBW@Show" parent="SCBW_BuildingShow" x="EvolutionChamberSCBW"/>
     <CRequirementAnd id="ExtractorSCBW"/>
     <CRequirementAllowUnit id="ExtractorSCBW@AllowUnit" parent="SCBW_AllowUnit" x="ExtractorSCBW"/>
     <CRequirementCountUnit id="ExtractorSCBW@Count" parent="SCBW_UnitCount" x="ExtractorSCBW"/>
@@ -808,9 +884,7 @@
     <CRequirementNot id="ExtractorSCBW@NotQoBAtUnit" parent="SCBW_Not" x="ExtractorSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="ExtractorSCBW@QoB" parent="SCBW_UnitQoB" x="ExtractorSCBW"/>
     <CRequirementCountUnit id="ExtractorSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="ExtractorSCBW"/>
-    <CRequirementAnd id="ExtractorSCBW@Show">
-        <OperandArray value="ExtractorSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="ExtractorSCBW@Show" parent="SCBW_BuildingShow" x="ExtractorSCBW"/>
     <CRequirementAnd id="GreaterSpireSCBW">
         <OperandArray value="HiveSCBW@Count"/>
     </CRequirementAnd>
@@ -843,9 +917,7 @@
         <Count Link="Alias_HatcherySCBW"/>
     </CRequirementCountUnit>
     <CRequirementCountUnit id="HatcherySCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="HatcherySCBW"/>
-    <CRequirementAnd id="HatcherySCBW@Show">
-        <OperandArray value="HatcherySCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="HatcherySCBW@Show" parent="SCBW_BuildingShow" x="HatcherySCBW"/>
     <CRequirementAnd id="HatcherySCBW@SpawnLarva">
         <OperandArray value="LarvaSCBW@CountAtUnitLT3"/>
         <OperandArray value="HatcherySCBW@SpawnLarvaDisableNot"/>
@@ -879,9 +951,7 @@
         <Count Link="Alias_HiveSCBW"/>
     </CRequirementCountUnit>
     <CRequirementCountUnit id="HiveSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="HiveSCBW"/>
-    <CRequirementAnd id="HiveSCBW@Show">
-        <OperandArray value="HiveSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="HiveSCBW@Show" parent="SCBW_BuildingShow" x="HiveSCBW"/>
     <CRequirementAnd id="HydraliskDenSCBW">
         <OperandArray value="SpawningPoolSCBW@Count"/>
     </CRequirementAnd>
@@ -894,9 +964,7 @@
     <CRequirementNot id="HydraliskDenSCBW@NotQoBAtUnit" parent="SCBW_Not" x="HydraliskDenSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="HydraliskDenSCBW@QoB" parent="SCBW_UnitQoB" x="HydraliskDenSCBW"/>
     <CRequirementCountUnit id="HydraliskDenSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="HydraliskDenSCBW"/>
-    <CRequirementAnd id="HydraliskDenSCBW@Show">
-        <OperandArray value="HydraliskDenSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="HydraliskDenSCBW@Show" parent="SCBW_BuildingShow" x="HydraliskDenSCBW"/>
     <CRequirementAnd id="LairSCBW">
         <OperandArray value="SpawningPoolSCBW@Count"/>
     </CRequirementAnd>
@@ -916,9 +984,7 @@
         <Count Link="Alias_LairSCBW"/>
     </CRequirementCountUnit>
     <CRequirementCountUnit id="LairSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="LairSCBW"/>
-    <CRequirementAnd id="LairSCBW@Show">
-        <OperandArray value="LairSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="LairSCBW@Show" parent="SCBW_BuildingShow" x="LairSCBW"/>
     <CRequirementAnd id="NydusCanalSCBW@Build@Show">
         <OperandArray value="NydusCanalSCBW@Build@Used@NotCountAtUnit"/>
     </CRequirementAnd>
@@ -934,9 +1000,7 @@
     <CRequirementNot id="NydusCanalSCBW@NotQoBAtUnit" parent="SCBW_Not" x="NydusCanalSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="NydusCanalSCBW@QoB" parent="SCBW_UnitQoB" x="NydusCanalSCBW"/>
     <CRequirementCountUnit id="NydusCanalSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="NydusCanalSCBW"/>
-    <CRequirementAnd id="NydusCanalSCBW@Show">
-        <OperandArray value="NydusCanalSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="NydusCanalSCBW@Show" parent="SCBW_BuildingShow" x="NydusCanalSCBW"/>
     <CRequirementOr id="NydusCanalSCBW">
         <OperandArray value="HiveSCBW@Count"/>
     </CRequirementOr>
@@ -952,9 +1016,7 @@
     <CRequirementNot id="QueensNestSCBW@NotQoBAtUnit" parent="SCBW_Not" x="QueensNestSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="QueensNestSCBW@QoB" parent="SCBW_UnitQoB" x="QueensNestSCBW"/>
     <CRequirementCountUnit id="QueensNestSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="QueensNestSCBW"/>
-    <CRequirementAnd id="QueensNestSCBW@Show">
-        <OperandArray value="QueensNestSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="QueensNestSCBW@Show" parent="SCBW_BuildingShow" x="QueensNestSCBW"/>
     <CRequirementAnd id="SpawningPoolSCBW">
         <OperandArray value="HatcherySCBW@Count"/>
     </CRequirementAnd>
@@ -967,9 +1029,7 @@
     <CRequirementNot id="SpawningPoolSCBW@NotQoBAtUnit" parent="SCBW_Not" x="SpawningPoolSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="SpawningPoolSCBW@QoB" parent="SCBW_UnitQoB" x="SpawningPoolSCBW"/>
     <CRequirementCountUnit id="SpawningPoolSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="SpawningPoolSCBW"/>
-    <CRequirementAnd id="SpawningPoolSCBW@Show">
-        <OperandArray value="SpawningPoolSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="SpawningPoolSCBW@Show" parent="SCBW_BuildingShow" x="SpawningPoolSCBW"/>
     <CRequirementAnd id="SpireSCBW">
         <OperandArray value="LairSCBW@Count"/>
     </CRequirementAnd>
@@ -982,9 +1042,7 @@
     <CRequirementNot id="SpireSCBW@NotQoBAtUnit" parent="SCBW_Not" x="SpireSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="SpireSCBW@QoB" parent="SCBW_UnitQoB" x="SpireSCBW"/>
     <CRequirementCountUnit id="SpireSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="SpireSCBW"/>
-    <CRequirementAnd id="SpireSCBW@Show">
-        <OperandArray value="SpireSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="SpireSCBW@Show" parent="SCBW_BuildingShow" x="SpireSCBW"/>
     <CRequirementAnd id="SporeColonySCBW">
         <OperandArray value="EvolutionChamberSCBW@Count"/>
     </CRequirementAnd>
@@ -1027,9 +1085,7 @@
     <CRequirementNot id="UltraliskCavernSCBW@NotQoBAtUnit" parent="SCBW_Not" x="UltraliskCavernSCBW@QoBAtUnit"/>
     <CRequirementCountUnit id="UltraliskCavernSCBW@QoB" parent="SCBW_UnitQoB" x="UltraliskCavernSCBW"/>
     <CRequirementCountUnit id="UltraliskCavernSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="UltraliskCavernSCBW"/>
-    <CRequirementAnd id="UltraliskCavernSCBW@Show">
-        <OperandArray value="UltraliskCavernSCBW@AllowUnit"/>
-    </CRequirementAnd>
+    <CRequirementAnd id="UltraliskCavernSCBW@Show" parent="SCBW_BuildingShow" x="UltraliskCavernSCBW"/>
     <CLight id="InfestedCommandCenterSCBW@Portrait" parent="default">
         <EditorCategories value="LightGroup:PortraitsBuildingsZerg"/>
     </CLight>
@@ -1262,12 +1318,14 @@
     </CActorProgress>
     <CActorSound id="NydusCanalSCBW@TransportLoadSound" parent="SoundOneShot">
         <On Terms="AbilTransport.NydusCanalSCBW@Transport.TransportLoad" Send="Create"/>
+        <On Terms="Effect.NydusCanalSCBW@TeleporterTP.Start; At Caster" Send="Create"/>
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary"/>
         <Sound value="NydusCanalSCBW@TransportLoad"/>
     </CActorSound>
     <CActorSound id="NydusCanalSCBW@TransportUnloadSound" parent="SoundOneShot">
         <On Terms="AbilTransport.NydusCanalSCBW@Transport.TransportUnload" Send="Create"/>
+        <On Terms="Effect.NydusCanalSCBW@TeleporterTP.Start; At Target" Send="Create"/>
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOriginStationary"/>
         <Sound value="NydusCanalSCBW@TransportUnload"/>
@@ -1279,6 +1337,7 @@
         <Aliases value="_UnitHuge"/>
         <Macros value="MacroTownhallDeco_Zerg"/>
         <Macros value="HiveSCBW@PlayerDecalMacro"/>
+        <Macros value="HideWorkerCount"/>
         <AcceptedHostedPropTransfers index="Decal" value="0"/>
         <On Terms="ActorCreation" Send="AnimGroupRemove B"/>
         <On Terms="ActorCreation" Send="AnimGroupApply C"/>
@@ -1294,10 +1353,10 @@
         <GroupIcon>
             <Image value="Assets\Textures\wireframe-zerg-hive@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-building-zerg-hive-remastered.dds"/>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-hive@scbw.dds"/>
         <NameOffset value="130"/>
         <StatusHarvesterData Text="UI/HarvesterCountMinerals" SearchFilters="HarvestableResource;Player,Ally,Enemy" SearchRadius="8"/>
-        <UnitIcon value="Assets\Textures\btn-building-zerg-hive-remastered.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-hive@scbw.dds"/>
         <Wireframe>
             <Image value="Assets\Textures\wireframe-zerg-hive@scbw.dds"/>
         </Wireframe>
@@ -1310,6 +1369,7 @@
         <Aliases value="_UnitHuge"/>
         <Macros value="ExtractAnim"/>
         <Macros value="GeyserExhausted"/>
+        <Macros value="HideWorkerCount"/>
         <On Terms="Behavior.HarvestableVespeneGeyserGasZerg.Deplete" Send="SetTintColor 255,170,170"/>
         <On Terms="Behavior.HarvestableVespeneGeyserGasZerg.Deplete" Send="AnimGroupRemove D"/>
         <On Terms="Behavior.HarvestableVespeneGeyserGasZerg.Deplete" Send="AnimGroupApply B"/>
@@ -1349,7 +1409,8 @@
         <Aliases value="_UnitHuge"/>
         <Macros value="ExtractAnim"/>
         <Macros value="GeyserExhausted"/>
-        <On Terms="UnitConstruction.ExtractorSCBW@Rich.Start" Send="Create ExtractorSCBW@RichBuild"/>
+        <Macros value="HideWorkerCount"/>
+        <On index="69" Terms="UnitConstruction.ExtractorSCBW@Rich.Start" Send="Create ExtractorSCBW@RichBuild"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasZerg.Deplete" Send="SetTintColor 255,170,170"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasZerg.Deplete" Send="AnimGroupRemove D"/>
         <On Terms="Behavior.HarvestableRichVespeneGeyserGasZerg.Deplete" Send="AnimGroupApply B"/>
@@ -1463,6 +1524,7 @@
         <Aliases value="_UnitHuge"/>
         <On Terms="AbilTransport.NydusCanalSCBW@Transport.TransportLoad" Send="$Spell"/>
         <On Terms="AbilTransport.NydusCanalSCBW@Transport.TransportUnload" Send="$Spell"/>
+        <On Terms="Effect.NydusCanalSCBW@TeleporterTP.Start" Send="$Spell"/>
         <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
         <On Terms="ActorCreation; !IsInEditor" Send="Create NydusCanalSCBW@Ping"/>
         <On Terms="Effect.NydusCanalSCBW@Dummy.Start; At Caster" Send="RefSetFromRequest ::actor.PeerNydus _Unit Target Find"/>
@@ -1555,6 +1617,7 @@
         <Aliases value="_UnitHuge"/>
         <Macros value="MacroTownhallDeco_Zerg"/>
         <Macros value="LairSCBW@PlayerDecalMacro"/>
+        <Macros value="HideWorkerCount"/>
         <AcceptedHostedPropTransfers index="Decal" value="0"/>
         <On Terms="ActorCreation" Send="AnimGroupApply B"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom HatcherySCBW; MorphTo LairSCBW" Send="Create"/>
@@ -1577,10 +1640,10 @@
         <GroupIcon>
             <Image value="Assets\Textures\wireframe-zerg-lair@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-building-zerg-lair-remastered.dds"/>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
         <NameOffset value="130"/>
         <StatusHarvesterData Text="UI/HarvesterCountMinerals" SearchFilters="HarvestableResource;Player,Ally,Enemy" SearchRadius="8"/>
-        <UnitIcon value="Assets\Textures\btn-building-zerg-lair-remastered.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
         <Wireframe>
             <Image value="Assets\Textures\wireframe-zerg-lair@scbw.dds"/>
         </Wireframe>
@@ -1830,6 +1893,7 @@
         <Macros value="MacroTownhallDeco_Zerg"/>
         <Macros value="HatcherySCBW@PlayerDecalMacro"/>
         <Macros value="SprayHelperMacro"/>
+        <Macros value="HideWorkerCount"/>
         <AcceptedHostedPropTransfers index="Decal" value="0"/>
         <On Terms="AbilMorph.*.Start; MorphFrom HatcherySCBW; MorphTo LairSCBW" Send="Create LairSCBW@MorphProgress"/>
         <On Terms="AbilMorph.*.Start; MorphFrom HatcherySCBW; MorphTo LairSCBW" Send="AnimGroupApply B"/>
@@ -1848,10 +1912,10 @@
         <GroupIcon>
             <Image value="Assets\Textures\wireframe-zerg-hatchery@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-building-zerg-hatchery-remastered.dds"/>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-hatchery@scbw.dds"/>
         <NameOffset value="130"/>
         <StatusHarvesterData Text="UI/HarvesterCountMinerals" SearchFilters="HarvestableResource;Player,Ally,Enemy" SearchRadius="8"/>
-        <UnitIcon value="Assets\Textures\btn-building-zerg-hatchery-remastered.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-hatchery@scbw.dds"/>
         <Wireframe>
             <Image value="Assets\Textures\wireframe-zerg-hatchery@scbw.dds"/>
         </Wireframe>
@@ -2255,6 +2319,10 @@
     </CModel>
     <CModel id="UltraliskCavernSCBW@Portrait" parent="ZergAdvisorSCBW@PortraitBase" Race="Zerg"/>
     <CModel id="SunkenColonySCBW@Portrait" parent="ZergAdvisorSCBW@PortraitBase" Race="Zerg"/>
+    <CSound id="ZergBuilding@Ready" parent="Ready">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffectsSCBW\ZergBuildingSCBW@Ready00.ogg"/>
+    </CSound>
     <CSound id="InfestedCommandCenterSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge0.wav" Pitch="-3.000000,3.000000"/>
@@ -2284,23 +2352,23 @@
     </CSound>
     <CSound id="InfestedCommandCenterSCBW@Ready" parent="Ready">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\SICommandCenter_What01.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\SICommandCenter_What01.ogg"/>
         <AssetArray File="Assets\Sounds\SICommandCenter_What02.ogg"/>
-        <AssetArray File="Assets\Sounds\SICommandCenter_What03.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\SICommandCenter_What03.ogg"/>
         <Volume value="-3.000000,-3.000000"/>
     </CSound>
     <CSound id="InfestedCommandCenterSCBW@What" parent="Voice">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="Assets\Sounds\SICommandCenter_What01.ogg"/>
-        <AssetArray File="Assets\Sounds\SICommandCenter_What02.ogg" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\SICommandCenter_What03.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\SICommandCenter_What02.ogg"/>
+        <AssetArray File="Assets\Sounds\SICommandCenter_What03.ogg"/>
         <Volume value="-3.000000,-3.000000"/>
     </CSound>
     <CSound id="InfestedCommandCenterSCBW@Land" parent="TerranBuildingSCBW@Land"/>
     <CSound id="InfestedCommandCenterSCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff"/>
     <CSound id="CreepColonySCBW@Hatch" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphEnd1.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphEnd1.wav"/>
     </CSound>
     <CSound id="ExtractorSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
@@ -2349,10 +2417,12 @@
     <CSound id="NydusCanalSCBW@TransportLoad" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
         <AssetArray File="Assets\Sounds\Zerg\NydusCanalSCBW\NydusCanalSCBW@Load00.ogg"/>
+        <OverlapTimeDelta value="50"/>
     </CSound>
     <CSound id="NydusCanalSCBW@TransportUnload" parent="Spell">
         <EditorCategories value="Race:Zerg"/>
         <AssetArray File="Assets\Sounds\Zerg\NydusCanalSCBW\NydusCanalSCBW@Load00.ogg"/>
+        <OverlapTimeDelta value="50"/>
     </CSound>
     <CSound id="NydusCanalSCBW@Explode" parent="Combat">
         <EditorCategories value="Race:Zerg"/>
@@ -2637,7 +2707,6 @@
         <DataRecord Entry="Sound,InfestedCommandCenterSCBW@Land"/>
         <DataRecord Entry="Sound,InfestedCommandCenterSCBW@LiftOff"/>
         <DataRecord Entry="Tactical,InfestedCommandCenterSCBW"/>
-        <DataRecord Entry="Tactical,InfestedCommandCenterSCBW@Flying"/>
         <DataRecord Entry="Unit,InfestedCommandCenterSCBW@Flying"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="GreaterSpireSCBW" parent="ZergBuildingSCBW">
@@ -2654,28 +2723,32 @@
         <DataRecord Entry="RequirementNode,GreaterSpireSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,GreaterSpireSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,GreaterSpireSCBW@Explode"/>
-        <DataRecord Entry="Tactical,GreaterSpireSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="NydusCanalSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Abil,NydusCanalSCBW@Build"/>
         <DataRecord Entry="Abil,NydusCanalSCBW@Transport"/>
         <DataRecord Entry="Abil,NydusCanalSCBW@Rally"/>
+        <DataRecord Entry="Abil,NydusCanalSCBW@Teleporter"/>
         <DataRecord Entry="Abil,NydusCanalSCBW@Mutate"/>
         <DataRecord Entry="Actor,NydusCanalSCBW@Ping"/>
         <DataRecord Entry="Actor,NydusCanalSCBW@TransportLoadSound"/>
         <DataRecord Entry="Actor,NydusCanalSCBW@TransportUnloadSound"/>
         <DataRecord Entry="Actor,NydusCanalSCBW@Build"/>
         <DataRecord Entry="Alert,NydusCanalSCBW@DetectObserver"/>
+        <DataRecord Entry="Behavior,NydusCanalSCBW@Build@Used"/>
         <DataRecord Entry="Behavior,NydusCanalSCBW@TransportCargoBlocked"/>
         <DataRecord Entry="Behavior,NydusCanalSCBW@TransportCargoIdent"/>
         <DataRecord Entry="Behavior,NydusCanalSCBW@TransportCargo"/>
         <DataRecord Entry="Behavior,NydusCanalSCBW@RallyTracker"/>
-        <DataRecord Entry="Behavior,NydusCanalSCBW@Build@Used"/>
         <DataRecord Entry="Button,NydusCanalSCBW@Load"/>
         <DataRecord Entry="Button,NydusCanalSCBW@UnloadAll"/>
         <DataRecord Entry="Button,NydusCanalSCBW@UnloadUnit"/>
         <DataRecord Entry="Button,NydusCanalSCBW@SetRallyPoint"/>
         <DataRecord Entry="Button,NydusCanalSCBW@Spawn"/>
+        <DataRecord Entry="Effect,NydusCanalSCBW@Build@TrackerTrack"/>
+        <DataRecord Entry="Effect,NydusCanalSCBW@Build@TrackerTrackCaster"/>
+        <DataRecord Entry="Effect,NydusCanalSCBW@TeleporterTP"/>
+        <DataRecord Entry="Effect,NydusCanalSCBW@TeleporterEnum"/>
         <DataRecord Entry="Effect,NydusCanalSCBW@TransportCargoBlocked"/>
         <DataRecord Entry="Effect,NydusCanalSCBW@TransportCargoBlockedSet"/>
         <DataRecord Entry="Effect,NydusCanalSCBW@TransportCargoForceUnload"/>
@@ -2690,12 +2763,13 @@
         <DataRecord Entry="Effect,NydusCanalSCBW@Build@ABCaster"/>
         <DataRecord Entry="Effect,NydusCanalSCBW@Build"/>
         <DataRecord Entry="Effect,NydusCanalSCBW@Build@AB"/>
+        <DataRecord Entry="Effect,NydusCanalSCBW@TeleporterCopyRally"/>
         <DataRecord Entry="Model,NydusCanalSCBW@Ping"/>
         <DataRecord Entry="Model,NydusCanalSCBW@DeathUnderConstruction"/>
         <DataRecord Entry="Model,NydusCanalSCBW@Placement"/>
         <DataRecord Entry="Model,NydusCanalSCBW@Build"/>
-        <DataRecord Entry="Requirement,NydusCanalSCBW@Build"/>
         <DataRecord Entry="Requirement,NydusCanalSCBW@Load"/>
+        <DataRecord Entry="Requirement,NydusCanalSCBW@Build"/>
         <DataRecord Entry="RequirementNode,NydusCanalSCBW@Load"/>
         <DataRecord Entry="RequirementNode,NydusCanalSCBW@Show"/>
         <DataRecord Entry="RequirementNode,NydusCanalSCBW@Build"/>
@@ -2714,12 +2788,14 @@
         <DataRecord Entry="Sound,NydusCanalSCBW@TransportLoad"/>
         <DataRecord Entry="Sound,NydusCanalSCBW@TransportUnload"/>
         <DataRecord Entry="Sound,NydusCanalSCBW@Explode"/>
-        <DataRecord Entry="Tactical,NydusCanalSCBW"/>
+        <DataRecord Entry="Validator,NydusCanalSCBW@Is"/>
+        <DataRecord Entry="Validator,NydusCanalSCBW@Not"/>
         <DataRecord Entry="Validator,NydusCanalSCBW@Transport@Load"/>
         <DataRecord Entry="Validator,NydusCanalSCBW@TransportNotBlocked"/>
         <DataRecord Entry="Validator,NydusCanalSCBW@TransportCargoUnit"/>
         <DataRecord Entry="Validator,NydusCanalSCBW@TransportCorrectIdent"/>
         <DataRecord Entry="Validator,NydusCanalSCBW@RallyTracker"/>
+        <DataRecord Entry="Validator,NydusCanalSCBW@RallySet"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="DefilerMoundSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Actor,DefilerMoundSCBW@Build"/>
@@ -2737,10 +2813,11 @@
         <DataRecord Entry="RequirementNode,DefilerMoundSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,DefilerMoundSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,DefilerMoundSCBW@Explode"/>
-        <DataRecord Entry="Tactical,DefilerMoundSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="SunkenColonySCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Abil,SunkenColonySCBW@Morph"/>
+        <DataRecord Entry="Actor,SunkenColonySCBW@MorphModel"/>
+        <DataRecord Entry="Actor,SunkenColonySCBW@MorphProgress"/>
         <DataRecord Entry="Actor,SunkenColonySCBW@LookAt"/>
         <DataRecord Entry="Actor,SunkenColonySCBW@ProtectRange"/>
         <DataRecord Entry="Actor,SunkenColonySCBW@PlacementModel"/>
@@ -2749,8 +2826,6 @@
         <DataRecord Entry="Actor,SunkenColonySCBW@BuildProgress"/>
         <DataRecord Entry="Actor,SunkenColonySCBW@Turret"/>
         <DataRecord Entry="Actor,SunkenColonySCBW@Build"/>
-        <DataRecord Entry="Actor,SunkenColonySCBW@MorphProgress"/>
-        <DataRecord Entry="Actor,SunkenColonySCBW@MorphModel"/>
         <DataRecord Entry="Model,SunkenColonySCBW@Build"/>
         <DataRecord Entry="RequirementNode,SunkenColonySCBW@Show"/>
         <DataRecord Entry="RequirementNode,SunkenColonySCBW@AllowUnit"/>
@@ -2763,7 +2838,6 @@
         <DataRecord Entry="RequirementNode,SunkenColonySCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,SunkenColonySCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,SunkenColonySCBW@Explode"/>
-        <DataRecord Entry="Tactical,SunkenColonySCBW"/>
         <DataRecord Entry="Turret,SunkenColonySCBW@Turret"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="QueensNestSCBW" parent="ZergBuildingSCBW">
@@ -2782,7 +2856,6 @@
         <DataRecord Entry="RequirementNode,QueensNestSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,QueensNestSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,QueensNestSCBW@Explode"/>
-        <DataRecord Entry="Tactical,QueensNestSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="ExtractorSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Actor,ExtractorSCBW@RichBuild"/>
@@ -2805,9 +2878,9 @@
         <DataRecord Entry="RequirementNode,ExtractorSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,ExtractorSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,ExtractorSCBW@Explode"/>
-        <DataRecord Entry="Tactical,ExtractorSCBW"/>
-        <DataRecord Entry="Tactical,ExtractorSCBW@Rich"/>
         <DataRecord Entry="Unit,ExtractorSCBW@Rich"/>
+        <DataRecord Entry="Validator,ExtractorSCBW@NotAlias"/>
+        <DataRecord Entry="Validator,ExtractorSCBW@IsAlias"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="CreepColonySCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Actor,CreepColonySCBW@SplatOffset"/>
@@ -2830,7 +2903,6 @@
         <DataRecord Entry="RequirementNode,CreepColonySCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,CreepColonySCBW@Explode"/>
         <DataRecord Entry="Sound,CreepColonySCBW@Hatch"/>
-        <DataRecord Entry="Tactical,CreepColonySCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="UltraliskCavernSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Actor,UltraliskCavernSCBW@Build"/>
@@ -2848,7 +2920,6 @@
         <DataRecord Entry="RequirementNode,UltraliskCavernSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,UltraliskCavernSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,UltraliskCavernSCBW@Explode"/>
-        <DataRecord Entry="Tactical,UltraliskCavernSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="HiveSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Abil,HiveSCBW@Morph"/>
@@ -2918,7 +2989,6 @@
         <DataRecord Entry="Sound,SporeColonySCBW@Explode"/>
         <DataRecord Entry="Sound,SporeColonySCBW@Yes"/>
         <DataRecord Entry="Sound,SporeColonySCBW@Death"/>
-        <DataRecord Entry="Tactical,SporeColonySCBW"/>
         <DataRecord Entry="Turret,SporeColonySCBW@Turret"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="SpireSCBW" parent="ZergBuildingSCBW">
@@ -2940,7 +3010,6 @@
         <DataRecord Entry="RequirementNode,SpireSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,SpireSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,SpireSCBW@Explode"/>
-        <DataRecord Entry="Tactical,SpireSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="EvolutionChamberSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Actor,EvolutionChamberSCBW@Build"/>
@@ -2958,7 +3027,6 @@
         <DataRecord Entry="RequirementNode,EvolutionChamberSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,EvolutionChamberSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,EvolutionChamberSCBW@Explode"/>
-        <DataRecord Entry="Tactical,EvolutionChamberSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="HydraliskDenSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Actor,HydraliskDenSCBW@Build"/>
@@ -2976,7 +3044,6 @@
         <DataRecord Entry="RequirementNode,HydraliskDenSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,HydraliskDenSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,HydraliskDenSCBW@Explode"/>
-        <DataRecord Entry="Tactical,HydraliskDenSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="SpawningPoolSCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Actor,SpawningPoolSCBW@WaterSplash"/>
@@ -2996,7 +3063,6 @@
         <DataRecord Entry="RequirementNode,SpawningPoolSCBW@NotQoBAtUnit"/>
         <DataRecord Entry="RequirementNode,SpawningPoolSCBW@QoBAtUnit"/>
         <DataRecord Entry="Sound,SpawningPoolSCBW@Explode"/>
-        <DataRecord Entry="Tactical,SpawningPoolSCBW"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="HatcherySCBW" parent="ZergBuildingSCBW">
         <DataRecord Entry="Abil,HatcherySCBW@Rally"/>
@@ -3007,6 +3073,8 @@
         <DataRecord Entry="Behavior,HatcherySCBW@SpawnLarvaConjoined"/>
         <DataRecord Entry="Button,HatcherySCBW@RallyPointWorker"/>
         <DataRecord Entry="Button,HatcherySCBW@RallyPoint"/>
+        <DataRecord Entry="Effect,HatcherySCBW@BirthSet"/>
+        <DataRecord Entry="Effect,HatcherySCBW@CreateSet"/>
         <DataRecord Entry="Effect,HatcherySCBW@SpawnLarvaDisableDelay"/>
         <DataRecord Entry="Effect,HatcherySCBW@SpawnLarvaDisable"/>
         <DataRecord Entry="Model,HatcherySCBW@Build"/>
@@ -3058,8 +3126,8 @@
         <LifeRegenRate value="0.25"/>
         <Sight value="10"/>
         <CostResource index="Minerals" value="400"/>
-        <BuildTime value="112.5"/>
-        <RepairTime value="112.5"/>
+        <BuildTime value="105"/>
+        <RepairTime value="125"/>
         <AbilArray index="0" Link="que5CancelToSelection"/>
         <AbilArray Link="InfestedCommandCenterSCBW@Train"/>
         <AbilArray Link="InfestedCommandCenterSCBW@Rally"/>
@@ -3092,7 +3160,7 @@
         <Sight value="10"/>
         <VisionHeight value="4"/>
         <CostResource index="Minerals" value="400"/>
-        <RepairTime value="112.5"/>
+        <RepairTime value="125"/>
         <AbilArray Link="InfestedCommandCenterSCBW@Land"/>
         <BehaviorArray index="0" removed="1"/>
         <CardLayouts>
@@ -3121,7 +3189,6 @@
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="TownCamera" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <ResourceDropOff index="Minerals" value="1"/>
         <ResourceDropOff index="Vespene" value="1"/>
         <ResourceDropOff index="Terrazine" value="1"/>
@@ -3149,7 +3216,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="700"/>
         <CostResource index="Vespene" value="250"/>
-        <BuildTime value="112.5"/>
+        <BuildTime value="105"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5CancelToSelection"/>
@@ -3196,7 +3263,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <ResourceState value="Harvestable"/>
         <ResourceType value="Vespene"/>
         <FogVisibility value="Snapshot"/>
@@ -3220,7 +3286,7 @@
         <Sight value="7"/>
         <CostCategory value="Economy"/>
         <CostResource index="Minerals" value="100"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <BehaviorArray Link="HarvestableVespeneGeyserGasZerg"/>
@@ -3259,7 +3325,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <ResourceState value="Harvestable"/>
         <ResourceType value="Vespene"/>
         <FogVisibility value="Snapshot"/>
@@ -3307,7 +3372,7 @@
         <GlossaryCategory value=""/>
         <GlossaryPriority value="10"/>
         <GlossaryAlias value="ExtractorSCBW"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <EffectArray index="Create" value="GeyserExhaustedCheck"/>
         <LeaderAlias value="ExtractorSCBW"/>
     </CUnit>
@@ -3322,7 +3387,6 @@
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="AIDefense" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -3343,19 +3407,19 @@
         <TurningRate value="719.4726"/>
         <Sight value="8"/>
         <CostCategory value="Technology"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="NydusCanalSCBW@Rally"/>
         <AbilArray Link="NydusCanalSCBW@Mutate"/>
-        <AbilArray Link="NydusCanalSCBW@Transport"/>
         <AbilArray Link="NydusCanalSCBW@Build"/>
+        <AbilArray Link="NydusCanalSCBW@Teleporter"/>
         <BehaviorArray Link="OnCreep"/>
         <BehaviorArray Link="UnderConstruction"/>
         <BehaviorArray Link="ZergBuildingSCBW@CreepFoundation2x2"/>
         <CardLayouts>
             <LayoutButtons Face="NydusCanalSCBW@SetRallyPoint" Type="AbilCmd" AbilCmd="NydusCanalSCBW@Rally,Rally1" Row="1" Column="4"/>
-            <LayoutButtons Face="NydusCanalSCBW@Load" Type="AbilCmd" AbilCmd="NydusCanalSCBW@Transport,Load" Row="2" Column="0"/>
+            <LayoutButtons Face="NydusCanalSCBW@Load" Type="AbilCmd" AbilCmd="NydusCanalSCBW@Teleporter,Execute" Row="2" Column="0"/>
             <LayoutButtons Face="NydusCanalSCBW@Spawn" Type="AbilCmd" AbilCmd="NydusCanalSCBW@Build,Build1" Row="1" Column="0"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="NydusCanalSCBW@Mutate,Cancel" Row="2" Column="4"/>
         </CardLayouts>
@@ -3379,7 +3443,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -3402,7 +3465,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="200"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="56.25"/>
+        <BuildTime value="53"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5"/>
@@ -3463,7 +3526,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -3486,7 +3548,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="350"/>
         <CostResource index="Vespene" value="300"/>
-        <BuildTime value="112.5"/>
+        <BuildTime value="105"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="ZergFlyerAttacksSCBW"/>
@@ -3556,7 +3618,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -3579,7 +3640,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="56.25"/>
+        <BuildTime value="53"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5"/>
@@ -3639,7 +3700,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -3661,7 +3721,7 @@
         <Sight value="8"/>
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="125"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5"/>
@@ -3673,6 +3733,14 @@
         <CardLayouts>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
             <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
+            <LayoutButtons>
+                <Face value="SporeColonySCBW@Passive"/>
+                <Type value="Passive"/>
+                <Requirements value="SporeColonySCBW"/>
+                <ShowInGlossary value="0"/>
+                <Row value="2"/>
+                <Column value="0"/>
+            </LayoutButtons>
         </CardLayouts>
         <Radius value="1.5"/>
         <SeparationRadius value="1.5"/>
@@ -3686,7 +3754,6 @@
         <EditorCategories value="ObjectType:Structure,ObjectFamily:Melee"/>
         <GlossaryCategory value=""/>
         <GlossaryPriority value="29"/>
-        <TacticalAIThink value="AIThinkEvolutionChamberSCBW"/>
     </CUnit>
     <CUnit id="HydraliskDenSCBW" parent="ZergUnitSCBW">
         <DeathRevealRadius value="3"/>
@@ -3697,7 +3764,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -3720,7 +3786,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="50"/>
-        <BuildTime value="37.5"/>
+        <BuildTime value="35"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5"/>
@@ -3774,7 +3840,6 @@
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="TownCamera" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <ResourceDropOff index="Minerals" value="1"/>
         <ResourceDropOff index="Vespene" value="1"/>
         <ResourceDropOff index="Terrazine" value="1"/>
@@ -3802,7 +3867,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="500"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="93.75"/>
+        <BuildTime value="88"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="HiveSCBW@Morph"/>
         <AbilArray Link="MutateInProgressSCBW"/>
@@ -3860,7 +3925,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -3882,7 +3946,7 @@
         <Sight value="8"/>
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="250"/>
-        <BuildTime value="75"/>
+        <BuildTime value="70"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5"/>
@@ -3902,6 +3966,14 @@
                 <ShowInGlossary value="0"/>
                 <Row value="2"/>
                 <Column value="0"/>
+            </LayoutButtons>
+            <LayoutButtons>
+                <Face value="SunkenColonySCBW@Passive"/>
+                <Type value="Passive"/>
+                <Requirements value="SunkenColonySCBW"/>
+                <ShowInGlossary value="0"/>
+                <Row value="2"/>
+                <Column value="1"/>
             </LayoutButtons>
         </CardLayouts>
         <Radius value="1.5"/>
@@ -3927,7 +3999,6 @@
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="TownCamera" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <ResourceDropOff index="Minerals" value="1"/>
         <ResourceDropOff index="Vespene" value="1"/>
         <ResourceDropOff index="Terrazine" value="1"/>
@@ -3954,7 +4025,7 @@
         <Food value="2"/>
         <CostCategory value="Economy"/>
         <CostResource index="Minerals" value="350"/>
-        <BuildTime value="112.5"/>
+        <BuildTime value="105"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5CancelToSelection"/>
@@ -3963,8 +4034,8 @@
         <AbilArray Link="ZergSCBWBurrowResearch"/>
         <BehaviorArray Link="ZergBuildingSCBW@CreepGrowthLarge"/>
         <BehaviorArray Link="HatcherySCBW@SpawnLarva"/>
-        <EffectArray index="Create" value="HatcheryCreateSet"/>
-        <EffectArray index="Birth" value="HatcheryBirthSet"/>
+        <EffectArray index="Create" value="HatcherySCBW@CreateSet"/>
+        <EffectArray index="Birth" value="HatcherySCBW@BirthSet"/>
         <CardLayouts>
             <LayoutButtons Face="LarvaSCBW" Type="SelectLarva" Row="0" Column="0"/>
             <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5CancelToSelection,CancelLast" Row="2" Column="4"/>
@@ -4004,7 +4075,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -4027,7 +4097,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="250"/>
         <CostResource index="Vespene" value="150"/>
-        <BuildTime value="112.5"/>
+        <BuildTime value="105"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5CancelToSelection"/>
@@ -4072,7 +4142,6 @@
         <GlossaryPriority value="241"/>
         <TechTreeUnlockedUnitArray value="ScourgeSCBW"/>
         <TechTreeUnlockedUnitArray value="MutaliskSCBW"/>
-        <TacticalAIThink value="AIThinkSpireSCBW"/>
     </CUnit>
     <CUnit id="SporeColonySCBW" parent="ZergUnitSCBW">
         <DeathRevealRadius value="3"/>
@@ -4084,7 +4153,6 @@
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="AIThreatAir" value="1"/>
         <FlagArray index="AIDefense" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FlagArray index="AIPressForwardDisabled" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
@@ -4106,7 +4174,7 @@
         <Sight value="10"/>
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="175"/>
-        <BuildTime value="18.75"/>
+        <BuildTime value="18"/>
         <AttackTargetPriority value="19"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="stop"/>
@@ -4155,7 +4223,6 @@
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="AIThreatAir" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FlagArray index="AIPressForwardDisabled" value="1"/>
         <FlagArray index="AIAllowSuicideOverride" value="1"/>
         <FogVisibility value="Snapshot"/>
@@ -4178,7 +4245,7 @@
         <Sight value="10"/>
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="125"/>
-        <BuildTime value="18.75"/>
+        <BuildTime value="18"/>
         <AttackTargetPriority value="19"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="SunkenColonySCBW@Morph"/>
@@ -4218,7 +4285,6 @@
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="AIThreatAir" value="1"/>
         <FlagArray index="AIDefense" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FlagArray index="AIPressForwardDisabled" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
@@ -4241,7 +4307,7 @@
         <Sight value="10"/>
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="175"/>
-        <BuildTime value="18.75"/>
+        <BuildTime value="18"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="stop"/>
@@ -4286,7 +4352,6 @@
         <FlagArray index="PenaltyRevealed" value="1"/>
         <FlagArray index="TownAlert" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <FogVisibility value="Snapshot"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
@@ -4309,7 +4374,7 @@
         <CostCategory value="Technology"/>
         <CostResource index="Minerals" value="200"/>
         <CostResource index="Vespene" value="200"/>
-        <BuildTime value="75"/>
+        <BuildTime value="70"/>
         <AttackTargetPriority value="11"/>
         <AbilArray Link="MutateInProgressSCBW"/>
         <AbilArray Link="que5"/>
@@ -4370,11 +4435,6 @@
         <Requirements value="LarvaSCBW@CountAtUnitLT3"/>
         <DurationRandomMax value="2.75"/>
     </CBehaviorBuff>
-    <CBehaviorBuff id="InfestedCommandCenterSCBW@Queue">
-        <InfoFlags index="Hidden" value="1"/>
-        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
-        <Modification QueueCount="1" QueueSize="3"/>
-    </CBehaviorBuff>
     <CBehaviorBuff id="InfestedCommandCenterSCBW@TransportDummy">
         <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
@@ -4387,13 +4447,13 @@
         <PeriodicEffect value="NydusCanalSCBW@RallyLink"/>
         <InfoFlags index="Hidden" value="1"/>
     </CBehaviorBuff>
-    <CBehaviorBuff id="NydusCanalSCBW@Build@Used">
+    <CBehaviorUnitTracker id="NydusCanalSCBW@Build@Used">
         <BehaviorFlags index="Permanent" value="1"/>
-        <EditorCategories value="AbilityorEffectType:Units"/>
-        <InfoIcon value="Assets\Textures\btn-building-zerg-nydusnetwork.dds"/>
         <InfoFlags index="Hidden" value="1"/>
         <InfoFlags index="AlwaysUseGameText" value="1"/>
-    </CBehaviorBuff>
+        <InfoIcon value="Assets\Textures\btn-building-zerg-nydusnetwork.dds"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+    </CBehaviorUnitTracker>
     <CBehaviorSpawn id="HatcherySCBW@SpawnLarva">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>

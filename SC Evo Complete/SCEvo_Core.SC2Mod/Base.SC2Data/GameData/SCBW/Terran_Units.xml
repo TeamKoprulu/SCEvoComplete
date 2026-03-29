@@ -20,13 +20,13 @@
     </CEffectIssueOrder>
     <CEffectCreateHealer id="SCVSCBW@Repair">
         <ValidatorArray value="NotWarpingIn"/>
-        <ValidatorArray value="IsTerranSCBW"/>
+        <ValidatorArray value="IsTerranSCBWCondition"/>
         <ValidatorArray value="SCVSCBW@Repair"/>
         <EditorCategories value="Race:Terran"/>
-        <DrainResourceCostFactor index="Minerals" value="0.25"/>
-        <DrainResourceCostFactor index="Vespene" value="0.25"/>
-        <DrainResourceCostFactor index="Terrazine" value="0.25"/>
-        <DrainResourceCostFactor index="Custom" value="0.25"/>
+        <DrainResourceCostFactor index="Minerals" value="0.32"/>
+        <DrainResourceCostFactor index="Vespene" value="0.32"/>
+        <DrainResourceCostFactor index="Terrazine" value="0.32"/>
+        <DrainResourceCostFactor index="Custom" value="0.32"/>
         <RechargeVitalRate value="1"/>
         <TimeFactor value="1"/>
     </CEffectCreateHealer>
@@ -165,6 +165,8 @@
         <DefaultError value="RequiresRepairTarget"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="SCVSCBW@Repair">
             <Flags index="ToSelection" value="1"/>
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
     </CAbilEffectTarget>
     <CAbilHarvest id="SCVSCBW@Harvest">
@@ -181,6 +183,9 @@
         <CancelableArray index="ApproachResource" value="1"/>
         <CancelableArray index="WaitAtResource" value="1"/>
     </CAbilHarvest>
+    <CAbilEffectTarget id="SCVSCBW@RepairHardcore" parent="SCVSCBW@Repair">
+        <Flags index="AutoCast" value="0"/>
+    </CAbilEffectTarget>
     <CAbilHarvest id="SCVSCBW@HarvestNoQue" parent="SCVSCBW@Harvest">
         <FlagArray index="BypassResourceQueue" value="1"/>
     </CAbilHarvest>
@@ -276,6 +281,14 @@
         <ConstructionMover value="Construction"/>
         <TechAliasArray value="_SCVBuild"/>
     </CAbilBuild>
+    <CValidatorUnitOrderQueue default="1" id="SCVSCBW@BuildBase">
+        <WhichUnit Value="Target"/>
+        <AbilLink value="SCVSCBW@Build"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue default="1" id="SCVSCBW@BuildAdvBase">
+        <WhichUnit Value="Target"/>
+        <AbilLink value="SCVSCBW@BuildAdv"/>
+    </CValidatorUnitOrderQueue>
     <CValidatorUnitFilters id="FirebatSCBW@DamageFilters">
         <Filters value="-;Player"/>
     </CValidatorUnitFilters>
@@ -316,9 +329,6 @@
         <CombineArray value="AICasterInCombat"/>
         <CombineArray value="SiegeTankSCBW@HostileSearch"/>
     </CValidatorCombine>
-    <CValidatorUnitType id="MedicSCBW@IsMedic">
-        <Value value="MedicSCBW"/>
-    </CValidatorUnitType>
     <CValidatorLocationEnumArea id="MedicSCBW@MedicNearbyWillHeal">
         <AreaArray Radius="5" Validator="MedicSCBW@MedivacWillHeal"/>
         <Compare value="GE"/>
@@ -330,7 +340,7 @@
         <Type value="And"/>
         <CombineArray value="TargetIsScanning"/>
         <CombineArray value="MedicSCBW@MedicHasEnergy"/>
-        <CombineArray value="MedicSCBW@IsMedic"/>
+        <CombineArray value="MedicSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorUnitCompareVital id="MedicSCBW@MedicHasEnergy">
         <Compare value="GE"/>
@@ -343,7 +353,7 @@
         <CombineArray value="HiddenCompareAB"/>
         <CombineArray value="NotVortexd"/>
         <CombineArray value="NotStasis"/>
-        <CombineArray value="IsTerranSCBW"/>
+        <CombineArray value="IsTerranSCBWCondition"/>
     </CValidatorCombine>
     <CValidatorLocationEnumArea id="SiegeTankSCBW@HostileSearch" parent="HostileSearch">
         <AreaArray Radius="2"/>
@@ -400,9 +410,7 @@
         <Count value="3"/>
         <SearchFlags index="ExtendByUnitRadius" value="1"/>
     </CValidatorLocationEnumArea>
-    <CValidatorUnitCompareAttackPriority id="GhostSCBW@UnitThreatensGhost" parent="UnitThreatens" unitLink="Ghost">
-        <AttackerAlternateType value="GhostSCBW"/>
-    </CValidatorUnitCompareAttackPriority>
+    <CValidatorUnitCompareAttackPriority id="GhostSCBW@UnitThreatensGhost" parent="UnitThreatens" unitLink="GhostSCBW"/>
     <CValidatorLocationCompareRange id="SpiderMineSCBW@ChaseRange">
         <Compare value="LE"/>
         <Range value="9"/>
@@ -422,7 +430,7 @@
         <CombineArray value="SpiderMineSCBWWeapon@TargetMarker"/>
         <CombineArray value="SpiderMineSCBW@ChaseRange"/>
         <CombineArray value="SpiderMineSCBWWeapon@NoMimicDisable"/>
-        <CombineArray value="NotSpiderMineSCBW"/>
+        <CombineArray value="SpiderMineSCBW@NotAlias"/>
         <CombineArray value="SCBW_NotWidowMineBurrowed"/>
         <CombineArray value="SCBW_CasterNotStasisNotStunned"/>
     </CValidatorCombine>
@@ -436,13 +444,66 @@
         <CombineArray value="SpiderMineSCBW@RangeCondition"/>
         <CombineArray value="SCBW_AttackNotSuppressed"/>
         <CombineArray value="SpiderMineSCBWWeapon@NoMimicDisable"/>
-        <CombineArray value="NotSpiderMineSCBW"/>
+        <CombineArray value="SpiderMineSCBW@NotAlias"/>
         <CombineArray value="SCBW_NotWidowMineBurrowed"/>
         <CombineArray value="SCBW_CasterNotStasisNotStunned"/>
+        <CombineArray value="IsNotNeuralParasited"/>
     </CValidatorCombine>
     <CValidatorCombine id="NukeSCBW">
         <Type value="And"/>
         <CombineArray value="FoodAvailableEightSCBW"/>
+    </CValidatorCombine>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_CommandCenterSCBW" parent="SCVSCBW@BuildBase"/>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_SupplyDepotSCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="1"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_RefinerySCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="2"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_BarracksSCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="3"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_EngineeringBaySCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="4"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_MissileTurretSCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="5"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_BunkerSCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="6"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_RefineryRichSCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="7"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@Build_AcademySCBW" parent="SCVSCBW@BuildBase">
+        <AbilCmdIndex value="8"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@BuildAdv_FactorySCBW" parent="SCVSCBW@BuildAdvBase">
+        <AbilCmdIndex value="10"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@BuildAdv_StarportSCBW" parent="SCVSCBW@BuildAdvBase">
+        <AbilCmdIndex value="11"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@BuildAdv_ScienceFacilitySCBW" parent="SCVSCBW@BuildAdvBase">
+        <AbilCmdIndex value="12"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorUnitOrderQueue id="SCVSCBW@BuildAdv_ArmorySCBW" parent="SCVSCBW@BuildAdvBase">
+        <AbilCmdIndex value="13"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorCombine id="SCVSCBW@Building">
+        <CombineArray value="SCVSCBW@Build_CommandCenterSCBW"/>
+        <CombineArray value="SCVSCBW@Build_SupplyDepotSCBW"/>
+        <CombineArray value="SCVSCBW@Build_RefinerySCBW"/>
+        <CombineArray value="SCVSCBW@Build_BarracksSCBW"/>
+        <CombineArray value="SCVSCBW@Build_EngineeringBaySCBW"/>
+        <CombineArray value="SCVSCBW@Build_MissileTurretSCBW"/>
+        <CombineArray value="SCVSCBW@Build_BunkerSCBW"/>
+        <CombineArray value="SCVSCBW@Build_RefineryRichSCBW"/>
+        <CombineArray value="SCVSCBW@Build_AcademySCBW"/>
+        <CombineArray value="SCVSCBW@BuildAdv_FactorySCBW"/>
+        <CombineArray value="SCVSCBW@BuildAdv_StarportSCBW"/>
+        <CombineArray value="SCVSCBW@BuildAdv_ScienceFacilitySCBW"/>
+        <CombineArray value="SCVSCBW@BuildAdv_ArmorySCBW"/>
     </CValidatorCombine>
     <CTacticalOrder id="ScienceVesselSCBW@DefensiveMatrix">
         <Abil value="DefensiveMatrix"/>
@@ -483,8 +544,7 @@
         <Validator value="SiegeTankSCBWSieged@TacticalUnsiege"/>
     </CTacticalOrder>
     <CTacticalOrder id="WraithSCBW"/>
-    <CRequirement id="MarineSCBW" parent="SCBW_UnitReqNoUse"/>
-    <CRequirement id="KerriganSCBW" parent="SCBW_UnitReq"/>
+    <CRequirement id="MarineSCBW" parent="SCBW_UnitReq"/>
     <CRequirement id="NukeSCBW" parent="SCBW_UnitReq"/>
     <CRequirement id="SpiderMineSCBW@Burrowed" parent="SCBW_UnitReq"/>
     <CRequirement id="SpiderMineSCBW" parent="SCBW_UnitReq"/>
@@ -499,7 +559,7 @@
     <CRequirement id="GoliathSCBW" parent="SCBW_UnitReq"/>
     <CRequirement id="MedicSCBW" parent="SCBW_UnitReq"/>
     <CRequirement id="ScienceVesselSCBW" parent="SCBW_UnitReq"/>
-    <CRequirement id="SCVSCBW" parent="SCBW_UnitReqNoUse"/>
+    <CRequirement id="SCVSCBW" parent="SCBW_UnitReq"/>
     <CRequirement id="ScienceVesselSCBW@Passive" parent="ScienceVesselSCBW">
         <NodeArray index="Use" Link=""/>
     </CRequirement>
@@ -509,8 +569,8 @@
     <CRequirement id="ValkyrieSCBW@Passive" parent="ValkyrieSCBW">
         <NodeArray index="Use" Link=""/>
     </CRequirement>
-    <CRequirement id="VultureSCBW" parent="SCBW_UnitReqNoUse"/>
-    <CRequirement id="WraithSCBW" parent="SCBW_UnitReqNoUse"/>
+    <CRequirement id="VultureSCBW" parent="SCBW_UnitReq"/>
+    <CRequirement id="WraithSCBW" parent="SCBW_UnitReq"/>
     <CRequirement id="FirebatSCBW@Have">
         <EditorCategories value="Race:Terran,TechType:Unit"/>
         <CanBeSuppressed index="Use" value="0"/>
@@ -555,8 +615,8 @@
         <EditorCategories value="Race:Terran"/>
     </CButton>
     <CButton id="SpiderMineSCBW">
-        <Icon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
-        <AlertIcon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
+        <Icon value="Assets\Textures\btn-unit-terran-spidermine@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-terran-spidermine@scbw.dds"/>
         <EditorCategories value="Race:Terran"/>
     </CButton>
     <CButton id="SCVSCBW">
@@ -624,6 +684,7 @@
         <TintRacially value="1"/>
         <Universal value="1"/>
         <HidesForSimpleText value="0"/>
+        <DefaultButtonLayout Row="2" Column="2"/>
     </CButton>
     <CButton id="SCVSCBW@ReturnCargo" parent="ReturnCargoSCBW">
         <DefaultButtonLayout Row="1" Column="1"/>
@@ -692,12 +753,6 @@
         <AlertIcon value="Assets\Textures\btn-unit-terran-vulture@scbw.dds"/>
         <EditorCategories value="Race:Terran"/>
     </CButton>
-    <CButton id="KerriganSCBW">
-        <Icon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
-        <AlertIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
-        <EditorCategories value="Race:Terran"/>
-        <DefaultButtonLayout Column="2"/>
-    </CButton>
     <CButton id="GhostSCBW">
         <Icon value="Assets\Textures\btn-unit-terran-ghost@scbw.dds"/>
         <AlertIcon value="Assets\Textures\btn-unit-terran-ghost@scbw.dds"/>
@@ -736,9 +791,6 @@
     <CRequirementAnd id="GoliathSCBW@Show">
         <OperandArray value="GoliathSCBW@AllowUnit"/>
     </CRequirementAnd>
-    <CRequirementAnd id="KerriganSCBW@Show">
-        <OperandArray value="KerriganSCBW@AllowUnit"/>
-    </CRequirementAnd>
     <CRequirementAnd id="MarineSCBW@Show">
         <OperandArray value="MarineSCBW@AllowUnit"/>
     </CRequirementAnd>
@@ -776,15 +828,6 @@
     <CRequirementAnd id="MarineSCBW" parent="SCBW_UnitReq">
         <OperandArray index="0" removed="1"/>
     </CRequirementAnd>
-    <CRequirementAnd id="KerriganSCBW"/>
-    <CRequirementCountUnit id="KerriganSCBW@Count" parent="SCBW_UnitCount" x="KerriganSCBW"/>
-    <CRequirementCountUnit id="KerriganSCBW@QoB" parent="SCBW_UnitQoB" x="KerriganSCBW"/>
-    <CRequirementCountUnit id="KerriganSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="KerriganSCBW"/>
-    <CRequirementNot id="KerriganSCBW@NotQoBAtUnit" parent="SCBW_Not" x="KerriganSCBW@QoBAtUnit"/>
-    <CRequirementNot id="KerriganSCBW@NotQoB" parent="SCBW_Not" x="KerriganSCBW@QoB"/>
-    <CRequirementAllowUnit id="KerriganSCBW@AllowUnit">
-        <Link value="MedicSCBW"/>
-    </CRequirementAllowUnit>
     <CRequirementAllowUnit id="MarineSCBW@AllowUnit" parent="SCBW_AllowUnit" x="MarineSCBW"/>
     <CRequirementAllowUnit id="NukeSCBW@AllowUnit" parent="SCBW_AllowUnit" x="NukeSCBW"/>
     <CRequirementAnd id="NukeSCBW@Show">
@@ -1037,20 +1080,6 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
-    <CLight id="KerriganSCBW@Portrait" parent="default">
-        <ToDInfoArray index="0" AmbientColor="0.000000,0.000000,0.000000" OperatorHDR="3">
-            <Param index="HDRExposure" value="1.475000"/>
-            <DirectionalLight index="Key">
-                <Color value="0.713726,0.062745,0.062745"/>
-                <ColorMultiplier value="0.733000"/>
-                <SpecColorMultiplier value="1.000000"/>
-                <Direction value="0.339453,0.158434,-0.927184"/>
-            </DirectionalLight>
-            <DirectionalLight index="Fill" Color="0.937255,0.054902,0.054902" ColorMultiplier="0.537000" Direction="0.787751,-0.488998,-0.374607"/>
-            <DirectionalLight index="Back" Color="0.313726,0.874510,0.992157" ColorMultiplier="0.832000" Direction="-0.851308,0.505872,0.139173"/>
-        </ToDInfoArray>
-        <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
-    </CLight>
     <CLight id="GhostSCBW@Portrait" parent="GhostPortrait">
         <ToDInfoArray index="0" Id="GhostSCBW@Portrait" AmbientColor="0.031373,0.180392,0.000000" OperatorHDR="3">
             <Param index="HDRExposure" value="1.500000"/>
@@ -1139,6 +1168,20 @@
         </ToDInfoArray>
         <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
     </CLight>
+    <CActorSplat id="SpiderMineSCBW@BurrowedSplat" parent="GenericUnitSplat" unitName="SpiderMineSCBW@Burrowed">
+        <Aliases index="0" removed="1"/>
+        <Inherits index="BaseModelScale" value="1"/>
+        <Inherits index="CloakEffect" value="0"/>
+        <Inherits index="Decal" value="0"/>
+        <Inherits index="Scale" value="1"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom SpiderMineSCBW@Burrowed" Send="RefClear ::Host"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom SpiderMineSCBW@Burrowed" Send="TimerSet 0.500000,1.000000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <HostSiteOps Ops="SOpAttachCenter"/>
+        <FadeIn value="1.000000"/>
+        <FadeOut value="2.000000"/>
+    </CActorSplat>
     <CActorEventMacro id="DropshipSCBW@UnloadDropAnim">
         <On Terms="AbilTransport.DropshipSCBW@Transport.CargoLoad" Send="AnimBracketStart Unload IGNORE Unload Unload,End DontResetOnUnhide"/>
         <On Terms="AbilTransport.DropshipSCBW@Transport.CargoUnload" Send="AnimBracketStop Unload"/>
@@ -1194,22 +1237,27 @@
         <On index="69" Terms="AbilMorph.SpiderMineSCBW@Unburrow.Finish; MorphTo SpiderMineSCBW" Send="Create"/>
         <On index="70" Terms="AbilMorph.SpiderMineSCBW@Unburrow.Start; MorphFrom SpiderMineSCBW@Burrowed" Send="Destroy"/>
         <On Terms="UnitBirth.SpiderMineSCBW@Burrowed" Send="Create"/>
-        <On Terms="UnitBirth.SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping"/>
+        <On Terms="UnitBirth.SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping -1.000000 -1.000000 0.375000 AsDuration"/>
+        <On Terms="UnitBirth.SpiderMineSCBW@Burrowed" Send="AnimGroupApply Burrow"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="AnimPlay Burrow Burrow PlayForever,NonLooping -1.000000 -1.000000 0.375000 AsDuration"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW@Burrowed" Send="AnimClear Unburrow"/>
         <On Terms="AbilMorph.*.Cancel; MorphTo SpiderMineSCBW@Burrowed" Send="AnimClear Burrow"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SpiderMineSCBW@Burrowed" Send="AnimGroupApply Burrow"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SpiderMineSCBW" Send="AnimGroupRemove Burrow"/>
         <!--On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimClear Burrow"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimPlay Unburrow Unburrow"/-->
         <On Terms="AbilMorph.SpiderMineSCBW@Burrow.Start" Send="Create SpiderMineSCBW@BurrowSound"/>
         <On Terms="UnitMovementUpdate.*.Walk" Send="Create SpiderMineSCBW@SeekSound"/>
         <On Terms="UnitMovementUpdate.*.Stand" Target="SpiderMineSCBW@SeekSound" Send="Destroy"/>
         <On Terms="UnitBirth.SpiderMineSCBW@Placement" Send="Create"/>
-        <On Terms="UnitDeathCustomize; KilledByEffect Suicide" Send="DeathCustomize Variation0"/>
+        <On Terms="UnitDeathCustomize; ValidateUnitType SpiderMineSCBW@Burrowed@Is" Send="DeathCustomize Variation0"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect Suicide" Send="Create SpiderMineSCBW@Explosion"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <!--<On Terms="Abil.attack.ReadyStart" Send="Create SpiderMineSCBW@SeekSound"/>-->
-        <DeathArray index="Normal" ModelLink="SpiderMineSCBW@Explosion" SoundLink="SpiderMineSCBW@Explosion"/>
-        <DeathCustoms index="2" ModelLink="SpiderMineSCBW@Explosion"/>
-        <DeathCustoms ModelLink="Invisible" Name="Variation0"/>
+        <DeathArray index="Normal" ModelLink="SpiderMineSCBW@Death" SoundLink="SpiderMineSCBW@Explosion"/>
+        <DeathCustoms index="2" ModelLink="SpiderMineSCBW@Death"/>
+        <DeathCustoms ModelLink="SpiderMineSCBW@BurrowedDeath" Name="Variation0"/>
+        <DeathCustoms ModelLink="Invisible" Name="Variation1"/>
         <PlacementModel value="SpiderMineSCBW@Placement"/>
         <PortraitModel value="SpiderMineSCBW@Portrait"/>
         <BarOffset value="10"/>
@@ -1217,11 +1265,11 @@
         <GroupIcon>
             <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-spidermine@scbw.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel0.dds"/>
         <NameOffset value="10"/>
         <UnitFlags index="StandAnimBirthVariation" value="1"/>
-        <UnitIcon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-spidermine@scbw.dds"/>
         <Wireframe>
             <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
         </Wireframe>
@@ -1230,15 +1278,17 @@
         <Aliases value="_UnitSmall"/>
         <AcceptedHostedPropTransfers index="Visibility" value="0"/>
         <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="Create"/>
-        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimPlay Unburrow Unburrow"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SpiderMineSCBW" Send="AnimPlay Unburrow Unburrow 0 -1.000000 -1.000000 0.875000 AsDuration"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom SpiderMineSCBW" Send="Destroy"/>
         <On Terms="AbilMorph.*.Finish; MorphFrom SpiderMineSCBW@Burrowed" Send="Destroy"/>
-        <On Terms="UnitDeathCustomize; KilledByEffect Suicide" Send="DeathCustomize Variation0"/>
+        <On Terms="UnitDeathCustomize; ValidateUnitType SpiderMineSCBW@Burrowed@Is" Send="DeathCustomize Variation0"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect Suicide" Send="Create SpiderMineSCBW@Explosion"/>
         <Model value="SpiderMineSCBW"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="SpiderMineSCBW@Explosion" SoundLink="SpiderMineSCBW@Explosion"/>
-        <DeathCustoms index="2" ModelLink="SpiderMineSCBW@Explosion" Name="AntiGravTerran"/>
-        <DeathCustoms ModelLink="Invisible" Name="Variation0"/>
+        <DeathArray index="Normal" ModelLink="SpiderMineSCBW@Death" SoundLink="SpiderMineSCBW@Explosion" VoiceLink="SpiderMineSCBWDeathVoice"/>
+        <DeathCustoms index="2" ModelLink="SpiderMineSCBW@Death" Name="AntiGravTerran"/>
+        <DeathCustoms ModelLink="SpiderMineSCBW@BurrowedDeath" Name="Variation0"/>
+        <DeathCustoms ModelLink="Invisible" Name="Variation1"/>
         <PlacementModel value="SpiderMineSCBW@Placement"/>
         <PortraitModel value="SpiderMineSCBW@Portrait"/>
         <BarOffset value="10"/>
@@ -1246,14 +1296,15 @@
         <GroupIcon>
             <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
         </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
+        <HeroIcon value="Assets\Textures\btn-unit-terran-spidermine@scbw.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel0.dds"/>
         <NameOffset value="10"/>
-        <UnitIcon value="Assets\Textures\btn-unit-terran-spidermineSCBW.dds"/>
+        <UnitIcon value="Assets\Textures\btn-unit-terran-spidermine@scbw.dds"/>
         <Wireframe>
             <Image value="Assets\Textures\wireframe-terran-spidermine@scbw.dds"/>
         </Wireframe>
     </CActorUnit>
+    <CActorModel id="SpiderMineSCBW@Explosion" parent="ModelAnimationStyleOneShotNoOrphan"/>
     <CActorModel id="VultureSCBW@DeathLight" parent="UnitDeathModel">
         <CopySource value="::Creator"/>
         <Aliases index="0" value="_DeathModel"/>
@@ -1270,6 +1321,11 @@
         <ModelFlags index="AllowHitTest" value="0"/>
     </CActorModel>
     <CActorModel id="VultureSCBW@DeathModel" parent="UnitDeathModelWithDeathMotionGround">
+        <On Terms="DeathModelInitializeDone" Send="Create VultureSCBW@DeathLight"/>
+        <On Terms="ActorCreation; ModelName StingerSCBW@Death" Send="HostSiteOpsSet ::Host"/>
+        <Model value="VultureSCBW@Death"/>
+    </CActorModel>
+    <CActorModel id="VultureSCBW@DeathRagdollModel" parent="UnitDeathRagdoll">
         <On Terms="DeathModelInitializeDone" Send="Create VultureSCBW@DeathLight"/>
         <On Terms="ActorCreation; ModelName StingerSCBW@Death" Send="HostSiteOpsSet ::Host"/>
         <Model value="VultureSCBW@Death"/>
@@ -1353,23 +1409,25 @@
         <RollOutDuration value="1.100000,0.400000"/>
     </CActorSiteOpBankerUnit>
     <CActorSound id="BattlecruiserSCBW@Land" parent="SoundOneShot"/>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt00" parent="BattlecruiserSCBW@LookAtATS"/>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt01" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_01"/>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt02" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_02"/>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt03" parent="BattlecruiserSCBW@LookAtATA" TurretGroup="Turret_03"/>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt04" parent="BattlecruiserSCBW@LookAtATA" TurretGroup="Turret_04"/>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt05" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_05"/>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt06" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_06"/>
     <CActorUnit id="BattlecruiserSCBW" parent="GenericUnitStandard" unitName="BattlecruiserSCBW">
         <Aliases value="_UnitHuge"/>
         <Macros value="TerrainSquibAnimations"/>
         <Macros value="PhysicsDeathsSwarmAir"/>
         <Macros value="PhysicsDeathsVoidAir"/>
+        <Macros value="BattlecruiserSCBW@HardcoreMacro"/>
         <On Terms="UnitDeathCustomize; ValidateUnit BattlecruiserUpgraded" Send="DeathCustomize Upgrade"/>
-        <On Terms="Abil.BattlecruiserSCBWYamato.SourcePrepStart" Send="$Spell 0 -1.000000 -1.000000 3.500000 AsDuration"/>
+        <On Terms="Abil.BattlecruiserSCBWYamato.SourcePrepStart" Send="$Spell 0 -1.000000 -1.000000 3.000000 AsDuration"/>
         <On Terms="Abil.BattlecruiserSCBWYamato.SourcePrepStop" Send="AnimClear Spell"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create BattlecruiserSCBW@Land"/>
-        <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt00"/>
+        <!--CActorLookAt id="BattlecruiserSCBW@LookAt00" parent="BattlecruiserSCBW@LookAtATS"/>
+        <CActorLookAt id="BattlecruiserSCBW@LookAt01" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_01"/>
+        <CActorLookAt id="BattlecruiserSCBW@LookAt02" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_02"/>
+        <CActorLookAt id="BattlecruiserSCBW@LookAt03" parent="BattlecruiserSCBW@LookAtATA" TurretGroup="Turret_03"/>
+        <CActorLookAt id="BattlecruiserSCBW@LookAt04" parent="BattlecruiserSCBW@LookAtATA" TurretGroup="Turret_04"/>
+        <CActorLookAt id="BattlecruiserSCBW@LookAt05" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_05"/>
+        <CActorLookAt id="BattlecruiserSCBW@LookAt06" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_06"/>
+        <CActorLookAt id="BattlecruiserSCBW@LookAt07" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_07"/-->
+        <!--On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt00"/>
         <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt01"/>
         <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt02"/>
         <On Terms="ActorCreation" Send="Create BattlecruiserSCBW@LookAt03"/>
@@ -1380,7 +1438,7 @@
         <On Terms="WeaponStart.ATSLaserBattery.AttackStart" Target="_BattlecruiserTurretATS" Send="LookAtEngage Continue"/>
         <On Terms="WeaponStart.ATALaserBattery.AttackStart" Target="_BattlecruiserTurretATA" Send="LookAtEngage Continue"/>
         <On Terms="Abil.attack.ReadyStop" Target="_BattlecruiserTurretATS" Send="LookAtDisengage"/>
-        <On Terms="Abil.attack.ReadyStop" Target="_BattlecruiserTurretATA" Send="LookAtDisengage"/>
+        <On Terms="Abil.attack.ReadyStop" Target="_BattlecruiserTurretATA" Send="LookAtDisengage"/-->
         <DeathCustoms ModelLink="BattlecruiserSCBW@DeathA" Name="Upgrade"/>
         <DeathCustoms>
             <ActorModel value="BattlecruiserSCBW@DeathRagdoll"/>
@@ -1443,7 +1501,19 @@
         <UnitKillRank Text="UnitKillRank/TerranRank14"/>
         <UnitKillRank MinKills="20" Text="UnitKillRank/TerranRank17"/>
     </CActorUnit>
-    <CActorLookAt id="BattlecruiserSCBW@LookAt07" parent="BattlecruiserSCBW@LookAtATS" TurretGroup="Turret_07"/>
+    <CActorEventMacro id="BattlecruiserSCBW@HardcoreMacro">
+        <On Terms="Abil.BattlecruiserSCBWYamato@Hardcore.SourceChannelStart" Send="StatusSet YamatoFired 0"/>
+        <On Terms="Abil.BattlecruiserSCBWYamato@Hardcore.SourceChannelStart" Send="StatusSet YamatoChannel 1"/>
+        <On Terms="Abil.BattlecruiserSCBWYamato@Hardcore.SourceChannelStart" Send="$Spell 0 -1.000000 -1.000000 3.000000 AsDuration"/>
+        <On Terms="Abil.BattlecruiserSCBWYamato@Hardcore.SourceChannelStart" Send="TimerSet 2.562500 YamatoChannel"/>
+        <On Terms="TimerExpired; TimerName YamatoChannel" Send="AnimSetPaused Spell"/>
+        <On Terms="TimerExpired; TimerName YamatoChannel" Send="AnimSetTime Spell 3.400000"/>
+        <On Terms="Effect.BattlecruiserSCBWYamato@LM.Start; HasStatus YamatoChannel" Send="StatusSet YamatoFired 1"/>
+        <On Terms="Effect.BattlecruiserSCBWYamato@LM.Start; HasStatus YamatoChannel" Send="AnimClear Spell"/>
+        <On Terms="Effect.BattlecruiserSCBWYamato@LM.Start; HasStatus YamatoChannel" Send="StatusSet YamatoChannel 0"/>
+        <On Terms="Abil.BattlecruiserSCBWYamato@Hardcore.SourceChannelStop; IsStatus YamatoFired 0" Send="AnimClear Spell 0.000000"/>
+        <On Terms="Abil.BattlecruiserSCBWYamato@Hardcore.SourceChannelStop" Send="TimerKill YamatoChannel"/>
+    </CActorEventMacro>
     <CActorSiteOpForward id="ScienceVesselSCBW@SOpDeath">
         <HostForward Subject="ScienceVesselSCBW@Turret" Actor="Find"/>
     </CActorSiteOpForward>
@@ -1451,6 +1521,8 @@
         <Aliases value="_UnitHuge"/>
         <On Terms="Abil.ScienceVesselSCBWIrradiate.SourceCastStart" Send="$Spell"/>
         <On Terms="Abil.ScienceVesselSCBWDefensiveMatrix.SourceCastStart" Send="$Spell"/>
+        <On Terms="Abil.ScienceVesselSCBWIrradiate@Hardcore.SourceCastStart" Send="$Spell"/>
+        <On Terms="Abil.ScienceVesselSCBWDefensiveMatrix@Hardcore.SourceCastStart" Send="$Spell"/>
         <DeathArray index="Normal" ModelLink="ScienceVesselSCBW@Death" SoundLink="ScienceVesselSCBW@Death"/>
         <DeathActorModel value="ScienceVesselSCBW@DeathModel"/>
         <PortraitModel value="ScienceVesselSCBW@Portrait"/>
@@ -1583,6 +1655,8 @@
         <!--<Macros value="DropshipSCBW@UnloadDropAnim"/>-->
         <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="PhysicsDeathsVoidGround"/>
         <On Terms="WeaponStart.GoliathSCBWWeaponGround.AttackStart" Send="AnimBracketStart Attack Attack"/>
         <On Terms="WeaponStop.GoliathSCBWWeaponGround.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="WeaponStart.GoliathSCBWWeaponAir.AttackStart" Send="AnimBracketStart Spell Spell"/>
@@ -1594,6 +1668,26 @@
             <VoiceLink value="ShadowUnit_DeathVox"/>
             <Name value="Shadow"/>
         </DeathCustoms>
+        <DeathCustoms ModelLink="GoliathSCBW@DeathRagdoll" Name="RagdollBasic">
+            <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="GoliathSCBW@Death" SoundLink="GoliathSCBW@Explode"/>
         <DeathActorModel value="GoliathSCBW@Death"/>
@@ -1638,6 +1732,17 @@
         <UnitKillRank MinKills="35" Text="UnitKillRank/TerranRank10"/>
         <UnitKillRank MinKills="50" Text="UnitKillRank/TerranRank13"/>
         <UnitKillRank MinKills="70" Text="UnitKillRank/TerranRank15"/>
+        <DeathCustomData index="0" Name="RagdollBasic" SyncPassChance="15"/>
+        <DeathCustomData index="1" Name="RagdollBasicAndGibNoBlood" Members="RagdollBasicNoBlood;RagdollGibNoBlood" SyncPassChance="15"/>
+        <DeathCustomData index="2" Name="RagdollBaneling" Supersedes="RagdollBasic" SyncPassChance="15"/>
+        <DeathCustomData index="3" Name="RagdollSiegeTank" Supersedes="RagdollBasic" SyncPassChance="35"/>
+        <DeathCustomData index="6" Name="RagdollSpineCrawlerHurl" SyncPassChance="15"/>
+        <DeathCustomData index="7" Name="RagdollOverkillDPRH" SyncPassChance="15"/>
+        <DeathCustomData index="8" Name="RagdollOverkillDOI" SyncPassChance="25"/>
+        <DeathCustomData index="9" Name="RagdollFire" Supersedes="RagdollBasic,RagdollOverkillDOI,RagdollOverkillDPRH" SyncPassChance="15"/>
+        <DeathCustomData index="10" Name="RagdollAcid" Supersedes="RagdollBasic,RagdollOverkillDOI,RagdollOverkillDPRH" SyncPassChance="15"/>
+        <DeathCustomData index="12" Name="RagdollUpgraded" Supersedes="RagdollBasic,RagdollOverkillDOI,RagdollOverkillDPRH" SyncPassChance="45"/>
+        <DeathCustomData index="14" Name="RagdollAoE" SyncPassChance="50"/>
     </CActorUnit>
     <CActorSound id="DropshipSCBW@Land" parent="SoundOneShot"/>
     <CActorSound id="DropshipSCBW@LoadSound" parent="SoundOneShot">
@@ -1705,6 +1810,7 @@
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
         <Macros value="TerrainSquibAnimations"/>
+        <Macros value="SCVSCBW@HardcoreMacro"/>
         <On index="65" Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack {} {} 0 0.700000 AsTimeScale"/>
         <On Terms="Abil.*.WorkerCancel" Send="AnimClear Build"/>
         <On Terms="Abil.*.WorkerCancel" Send="TimerKill Build"/>
@@ -1794,7 +1900,7 @@
         <HeroIcon value="Assets\Textures\btn-unit-terran-scv@scbw.dds"/>
         <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
         <SoundArray index="Ready" value="SCVSCBW@Ready"/>
-        <SoundArray index="Help" value="Alert_TerranEconomyUnderAttack"/>
+        <SoundArray index="Help" value="Alert_TerranEconomyUnderAttack_BWTe"/>
         <SoundArray index="What" value="SCVSCBW@What"/>
         <SoundArray index="Yes" value="SCVSCBW@Yes"/>
         <SoundArray index="Attack" value="SCVSCBW@Attack"/>
@@ -1823,6 +1929,11 @@
     </CActorSound>
     <CActorProgress id="SCVSCBW@Build" parent="BuildAbilSCBW@Progress"/>
     <CActorProgress id="SCVSCBW@BuildAdv" parent="BuildAbilSCBW@Progress"/>
+    <CActorEventMacro id="SCVSCBW@HardcoreMacro">
+        <On Terms="Abil.SCVSCBW@RepairHardcore.SourceChannelStart" Send="TimerSet 0.000000,0.300000 Repair"/>
+        <On Terms="Abil.SCVSCBW@RepairHardcore.SourceChannelStop" Send="AnimClear Repair"/>
+        <On Terms="Abil.SCVSCBW@RepairHardcore.SourceChannelStop" Send="TimerKill Repair"/>
+    </CActorEventMacro>
     <CActorTurret id="SiegeTankSCBWSieged@Turret">
         <On Terms="TurretEnable.SiegeTankSCBWSieged" Send="Create"/>
         <On Terms="AbilMorph.*.Start; MorphFrom SiegeTankSCBWSieged" Send="Destroy"/>
@@ -1940,6 +2051,8 @@
         <Aliases value="_UnitMedium"/>
         <Macros value="UnloadDropAnim"/>
         <Macros value="TerrainSquibAnimations"/>
+        <Macros value="PhysicsDeathsSwarmGround"/>
+        <Macros value="PhysicsDeathsVoidGround"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ActorModel="VultureSCBW@DeathModel" ModelLink="VultureSCBW@Death" SoundLink="VultureSCBW@Explode"/>
         <PortraitModel value="VultureSCBW@Portrait"/>
@@ -1983,6 +2096,26 @@
         <UnitKillRank MinKills="50" Text="UnitKillRank/TerranRank10"/>
         <UnitKillRank MinKills="65" Text="UnitKillRank/TerranRank13"/>
         <UnitKillRank MinKills="85" Text="UnitKillRank/TerranRank15"/>
+        <DeathCustoms ActorModel="VultureSCBW@DeathRagdollModel" ModelLink="VultureSCBW@DeathRagdoll" Name="RagdollBasic">
+            <BodySquibs Name="Basic" Model="TerranSquibDeathRagdoll"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Fire"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
+            <BodySquibs Name="Acid"/>
+        </DeathCustoms>
+        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
     </CActorUnit>
     <CActorUnit id="MedicSCBW" parent="GenericUnitStandard" unitName="MedicSCBW">
         <Aliases value="_UnitSmall"/>
@@ -1997,6 +2130,8 @@
         <On Terms="Abil.MedicSCBWHeal.SourceChannelStop" Send="AnimClear Spell"/>
         <On Terms="Abil.MedicSCBWRestoration.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
         <On Terms="Abil.MedicSCBWOpticFlare.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Abil.MedicSCBWRestoration@Hardcore.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Abil.MedicSCBWOpticFlare@Hardcore.SourceCastStart" Send="$Spell 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create MedicSCBW@Land"/>
         <On Terms="UnitMovementUpdate.*.Walk; AnimPlayingName Spell" Send="AnimClear Spell"/>
         <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
@@ -2362,118 +2497,6 @@
         <On Terms="UnitDeath.SiegeTankSCBW" Send="Destroy"/>
         <Sound value="SiegeTankSCBW@Unsiege"/>
     </CActorSound>
-    <CActorUnit id="KerriganSCBW" parent="GenericUnitBase" unitName="KerriganSCBW">
-        <Aliases value="_UnitSmall"/>
-        <Macros value="UnloadDropAnim"/>
-        <!--<Macros value="DropshipSCBW@UnloadDropAnim"/>-->
-        <Macros value="BunkerSCBW@UnloadDropAnim"/>
-        <Macros value="PhysicsDeathsSwarmGround"/>
-        <Macros value="PhysicsDeathsVoidGround"/>
-        <On Terms="Abil.TacNukeStrike.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
-        <On Terms="Abil.TacNukeStrike.SourceCastStop" Send="AnimClear SpellA"/>
-        <On Terms="Abil.TacNukeStrike.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
-        <On Terms="Abil.TacNukeStrike.SourceChannelStop" Send="AnimClear SpellB"/>
-        <On Terms="Abil.TacNukeStrike.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
-        <On Terms="Abil.TacNukeStrike.SourceFinishStop" Send="AnimClear SpellC"/>
-        <On Terms="Abil.Snipe.SourceCastStart" Send="AnimBaselineStop"/>
-        <On Terms="Abil.Snipe.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
-        <On Terms="Abil.Snipe.SourceCastStop" Send="AnimClear SpellA"/>
-        <On Terms="Abil.Snipe.SourceCastStop" Send="AnimBaselineStart"/>
-        <On Terms="Abil.Snipe.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
-        <On Terms="Abil.Snipe.SourceChannelStop" Send="AnimClear SpellB"/>
-        <On Terms="Abil.Snipe.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
-        <On Terms="UnitMovementUpdate.*.Walk; AnimPlaying SpellC" Send="AnimClear SpellC"/>
-        <On Terms="Abil.GhostSCBWLockdown.SourceCastStart" Send="AnimPlay SpellC Spell,C 0 0.000000 0.300000"/>
-        <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="AnimGroupApply Cover"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="AnimPlay MorphStart Cover,Start"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="AnimClear MorphEnd"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.On" Send="Create Ghost_HoldFire_Sound"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="AnimPlay MorphEnd Cover,End"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="AnimClear MorphStart"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="AnimGroupRemove Cover"/>
-        <On Terms="Behavior.GhostSCBWHoldFire.Off" Send="Create Ghost_WeaponsFree_Sound"/>
-        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
-        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
-        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
-        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
-        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
-        <On Terms="AbilMorph.*.Start; MorphTo GhostAlternate" Send="Destroy"/>
-        <On Terms="UnitHeightUpdate.*.Land" Send="Create Ghost@Land"/>
-        <On Terms="Signal.*.PenetratingShotGuideCreate" Send="Create PenetratingShotVisualQuad"/>
-        <On Terms="Signal.*.PenetratingShotGuideDestroy" Target="PenetratingShotVisualQuad" Send="Destroy"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize Variation17"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit IsCelestialBurning" Send="DeathCustomize RagdollFire"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit HaveVoidShade" Send="DeathCustomize Shadow"/>
-        <On Terms="UnitDeathCustomize; ValidateUnit HaveTerrazineShadow" Send="DeathCustomize Shadow"/>
-        <DeathCustoms ModelLink="TerranSmallBiologicalUnitDeathLow" Name="AntiGravTerran"/>
-        <DeathCustoms ActorModel="UnitDeathRagdollBloodPrevent" ModelLink="KerriganSCBW@DeathRagdoll" Name="RagdollBasic">
-            <BodySquibs Name="None"/>
-        </DeathCustoms>
-        <DeathCustoms Name="RagdollSiegeTank" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms Name="RagdollNuke" InheritsFrom="RagdollBasic">
-            <BodySquibs Name="Fire"/>
-        </DeathCustoms>
-        <DeathCustoms Name="RagdollFire" InheritsFrom="RagdollBasic">
-            <BodySquibs Name="Fire"/>
-        </DeathCustoms>
-        <DeathCustoms Name="RagdollAcid" InheritsFrom="RagdollBasic">
-            <BodySquibs Name="Acid"/>
-        </DeathCustoms>
-        <DeathCustoms Name="RagdollBaneling" InheritsFrom="RagdollBasic">
-            <BodySquibs Name="Acid"/>
-        </DeathCustoms>
-        <DeathCustoms Name="RagdollUltraUnburrow" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms ActorModel="SpineCrawlerHurlDeathRagdollBloodPrevent" ModelLink="KerriganSCBW@DeathRagdoll" Name="RagdollSpineCrawlerHurl">
-            <BodySquibs Name="None"/>
-        </DeathCustoms>
-        <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms ModelLink="KerriganSCBW@DeathFire" Name="Variation17"/>
-        <DeathCustoms>
-            <ModelLink value="DeathVoidShadowSmall"/>
-            <SoundLink value="ShadowUnit_DeathFX"/>
-            <VoiceLink value="ShadowUnit_DeathVox"/>
-            <Name value="Shadow"/>
-        </DeathCustoms>
-        <AnimBlendTime value="-0.800000"/>
-        <ModelFlags index="OutlineEmitter" value="1"/>
-        <DeathArray index="Normal" ModelLink="KerriganSCBW@Death" SoundLink="KerriganSCBW@Death"/>
-        <DeathArray index="Blast" ModelLink="GhostSCBW@DeathBlast"/>
-        <DeathArray index="Disintegrate" ModelLink="KerriganSCBW@DeathAcid" SoundLink="Uni_DeathFXAcid"/>
-        <DeathArray index="Eviscerate" ModelLink="KerriganSCBW@DeathEviscerate" SoundLink="Uni_DeathFXEviscerate"/>
-        <DeathArray index="Fire" ModelLink="KerriganSCBW@DeathFire" SoundLink="Uni_DeathFXFire"/>
-        <DeathActorModel value="UnitDeathModelWithDeathMotionGround"/>
-        <PortraitModel value="KerriganSCBW@Portrait"/>
-        <TerrainSquibs>
-            <MovementDistance value="0.150000,0.150000"/>
-            <IdlePeriod value="0.100000,0.250000"/>
-            <RangeUp value="0.400000"/>
-            <RangeDown value="0.400000"/>
-            <AttachQuery Methods="AMFilterCenter"/>
-            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleSmall"/>
-        </TerrainSquibs>
-        <WalkAnimMoveSpeed value="2.25"/>
-        <BarOffset value="50"/>
-        <BarWidth value="42"/>
-        <GroupIcon>
-            <Image value="Assets\Textures\Wireframe-Terran-Ghost.dds"/>
-        </GroupIcon>
-        <HeroIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
-        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terranscbw-infantryarmorslevel0.dds"/>
-        <SoundArray index="Ready" value="KerriganSCBW@Ready"/>
-        <SoundArray index="Help" value="KerriganSCBW@Help"/>
-        <SoundArray index="What" value="KerriganSCBW@What"/>
-        <SoundArray index="Yes" value="KerriganSCBW@Yes"/>
-        <SoundArray index="Attack" value="KerriganSCBW@Attack"/>
-        <SoundArray index="Pissed" value="KerriganSCBW@Pissed"/>
-        <UnitIcon value="Assets\Textures\btn-unit-terran-ghost.dds"/>
-        <Wireframe>
-            <Image value="Assets\Textures\Wireframe-Terran-Ghost.dds"/>
-        </Wireframe>
-        <UnitKillRank Text="UnitKillRank/TerranRank20"/>
-    </CActorUnit>
     <CActorSound id="SiegeTankSCBW@Land" parent="SoundOneShot"/>
     <CActorUnit id="GhostSCBW" parent="GenericUnitBase" unitName="GhostSCBW">
         <Aliases value="_UnitSmall"/>
@@ -2482,6 +2505,7 @@
         <Macros value="BunkerSCBW@UnloadDropAnim"/>
         <Macros value="PhysicsDeathsSwarmGround"/>
         <Macros value="PhysicsDeathsVoidGround"/>
+        <Macros value="GhostSCBW@HardcoreMacro"/>
         <On Terms="UnitDeathCustomize; PassChance 100.000000" Send="Create GhostSCBW@Death"/>
         <On Terms="Abil.GhostSCBWNuclearStrike.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
         <On Terms="Abil.GhostSCBWNuclearStrike.SourceCastStop" Send="AnimClear SpellA"/>
@@ -2583,6 +2607,21 @@
         <UnitKillRank MinKills="70" Text="UnitKillRank/TerranRank13"/>
         <UnitKillRank MinKills="90" Text="UnitKillRank/TerranRank15"/>
     </CActorUnit>
+    <CActorEventMacro id="GhostSCBW@HardcoreMacro">
+        <On Terms="Abil.GhostSCBWNuclearStrike@Hardcore.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
+        <On Terms="Abil.GhostSCBWNuclearStrike@Hardcore.SourceCastStop" Send="AnimClear SpellA"/>
+        <On Terms="Abil.GhostSCBWNuclearStrike@Hardcore.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
+        <On Terms="Abil.GhostSCBWNuclearStrike@Hardcore.SourceChannelStop" Send="AnimClear SpellB"/>
+        <On Terms="Abil.GhostSCBWNuclearStrike@Hardcore.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
+        <On Terms="Abil.GhostSCBWNuclearStrike@Hardcore.SourceFinishStop" Send="AnimClear SpellC"/>
+        <On Terms="Abil.GhostSCBWLockdown@Hardcore.SourceCastStart" Send="AnimBaselineStop"/>
+        <On Terms="Abil.GhostSCBWLockdown@Hardcore.SourceCastStart" Send="AnimPlay SpellA Spell,A"/>
+        <On Terms="Abil.GhostSCBWLockdown@Hardcore.SourceCastStop" Send="AnimClear SpellA"/>
+        <On Terms="Abil.GhostSCBWLockdown@Hardcore.SourceCastStop" Send="AnimBaselineStart"/>
+        <On Terms="Abil.GhostSCBWLockdown@Hardcore.SourceChannelStart" Send="AnimPlay SpellB Spell,B PlayForever"/>
+        <On Terms="Abil.GhostSCBWLockdown@Hardcore.SourceChannelStop" Send="AnimClear SpellB"/>
+        <On Terms="Abil.GhostSCBWLockdown@Hardcore.SourceFinishStart" Send="AnimPlay SpellC Spell,C"/>
+    </CActorEventMacro>
     <CActorUnit id="FirebatSCBW" parent="GenericUnitStandard" unitName="FirebatSCBW">
         <Aliases value="_UnitMedium"/>
         <Macros value="UnloadDropAnim"/>
@@ -2643,7 +2682,6 @@
         <UnitKillRank MinKills="75" Text="UnitKillRank/TerranRank13"/>
         <UnitKillRank MinKills="95" Text="UnitKillRank/TerranRank15"/>
     </CActorUnit>
-    <CActorSound id="KerriganSCBW@Land" parent="SoundOneShot"/>
     <CActorSound id="GhostSCBW@Land" parent="SoundOneShot"/>
     <CActorUnit id="MarineSCBW" parent="GenericUnitBase" unitName="MarineSCBW">
         <Aliases value="_UnitSmall"/>
@@ -2784,6 +2822,36 @@
         <Array value="ScienceVesselSCBW@EMP2A"/>
         <Array value="ScienceVesselSCBW@EMPEMPBestPoint"/>
     </CTargetFindSet>
+    <CModel id="SpiderMineSCBW@Death" parent="UnitDeath" Race="Terran">
+        <Model value="Assets\Units\Terran\SpiderMineSCBW\SpiderMineSCBW@Death.m3"/>
+        <LowQualityModel value="SpiderMineSCBW@ExplosionLow"/>
+        <Occlusion value="Show"/>
+        <Flags index="TeenSafe" value="1"/>
+        <Radius value="0.250000"/>
+        <SelectionRadius value="0.250000"/>
+        <ShadowRadius value="0.250000"/>
+    </CModel>
+    <CModel id="SpiderMineSCBW@BurrowedDeath" parent="UnitDeath" Race="Terran">
+        <Model value="Assets\Units\Terran\SpiderMineSCBW\SpiderMineSCBW@Death_Burrowed.m3"/>
+        <LowQualityModel value="SpiderMineSCBW@ExplosionLow"/>
+        <Occlusion value="Show"/>
+        <Flags index="TeenSafe" value="1"/>
+        <Radius value="0.250000"/>
+        <SelectionRadius value="0.250000"/>
+        <ShadowRadius value="0.250000"/>
+    </CModel>
+    <CModel id="SpiderMineSCBW@BurrowedSplat" parent="BurrowedSplat">
+        <Model value="Assets\Splats\Splat_SpiderMineSCBW\Splat_SpiderMineSCBW.m3"/>
+        <VariationCount value="1"/>
+    </CModel>
+    <CModel id="GoliathSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Terran">
+        <Model value="Assets\Units\Terran\GoliathSCBW\GoliathSCBW@DeathRagdoll.m3"/>
+        <Radius value="0.750000"/>
+    </CModel>
+    <CModel id="VultureSCBW@DeathRagdoll" parent="UnitDeathRagdoll" Race="Terran">
+        <Model value="Assets\Units\Terran\VultureSCBW\VultureSCBW@Death.m3"/>
+        <Radius value="0.650000"/>
+    </CModel>
     <CModel id="VultureSCBW@DeathLight" parent="UnitDeath" Race="Terran">
         <Model value="Assets\Units\Terran\VultureSCBW\VultureSCBW@DeathLight.m3"/>
     </CModel>
@@ -3177,31 +3245,17 @@
         <LowQualityModel value="TerranMediumUnitDeathLow"/>
         <Events>
             <Anim value="Death,00"/>
-            <Name value="GoliathDeathFXA"/>
-            <Type value="Sound"/>
-            <Time value="0.010000"/>
-            <Payload value="Goliath_DeathFXA"/>
-        </Events>
-        <Events>
-            <Anim value="Death,01"/>
-            <Name value="GoliathDeathFXA"/>
-            <Type value="Sound"/>
-            <Time value="0.010000"/>
-            <Payload value="Goliath_DeathFXA"/>
-        </Events>
-        <Events>
-            <Anim value="Death,00"/>
-            <Name value="GoliathDeathFXB"/>
+            <Name value="GoliathSCBW@DeathFX"/>
             <Type value="Sound"/>
             <Time value="2.000000"/>
-            <Payload value="Goliath_DeathFXB"/>
+            <Payload value="GoliathSCBW@DeathFX"/>
         </Events>
         <Events>
             <Anim value="Death,02"/>
-            <Name value="GoliathDeathFXB"/>
+            <Name value="GoliathSCBW@DeathFX"/>
             <Type value="Sound"/>
             <Time value="0.870000"/>
-            <Payload value="Goliath_DeathFXB"/>
+            <Payload value="GoliathSCBW@DeathFX"/>
         </Events>
         <Occlusion value="Show"/>
         <SelectionRadius value="1.250000"/>
@@ -3472,31 +3526,16 @@
         <Radius value="0.900000"/>
         <Tipability value="0.950000"/>
     </CModel>
-    <CModel id="KerriganSCBW@Portrait" parent="FXAPortrait" Prefix="Portraits\" Race="Terran">
-        <Model value="Assets\Portraits\Terran\SarahPortrait\SarahPortrait.m3"/>
-        <RequiredAnims value="Assets\Portraits\Terran\NovaPortrait_RequiredAnims\NovaPortrait_RequiredAnims.m3a"/>
-        <FacialController value="LocalizedData\Facial\SarahPortrait.fxa"/>
-    </CModel>
     <CModel id="VultureSCBW@Death" parent="UnitDeath" Race="Terran">
         <Model value="Assets\Units\Terran\VultureSCBW\VultureSCBW@Death.m3"/>
         <LowQualityModel value="TerranMediumUnitDeathLow"/>
         <Radius value="0.650000"/>
     </CModel>
-    <CModel id="VultureSCBW@Portrait" parent="FXAPortrait" Race="Terran">
-        <Model value="Assets\Portraits\Terran\VulturePortrait\VulturePortrait.m3"/>
-    </CModel>
-    <CModel id="KerriganSCBW" parent="GhostBase">
-        <Model value="Assets\Units\Terran\GhostFemaleNova\GhostFemaleNova.m3"/>
-        <RequiredAnims index="0" value="Assets\Units\Terran\GhostFemale_RequiredAnims\GhostFemale_RequiredAnims.m3a"/>
-    </CModel>
+    <CModel id="VultureSCBW@Portrait" parent="FXAPortrait" Race="Terran"/>
     <CModel id="GhostSCBW@DeathBlast" parent="UnitDeath" Race="Terran">
         <Model value="Assets\Units\Terran\GhostSCBW\GhostSCBW@DeathBlast.m3"/>
         <LowQualityModel value="TerranBloodDeathLow"/>
         <Occlusion value="Show"/>
-        <Radius value="0.375000"/>
-    </CModel>
-    <CModel id="KerriganSCBW@Death" parent="GhostDeathBase">
-        <Model value="Assets\Units\Terran\GhostFemaleNova_Death\GhostFemaleNova_Death.m3"/>
         <Radius value="0.375000"/>
     </CModel>
     <CModel id="FirebatSCBW@Portrait" parent="FXAPortrait" Prefix="Portraits\" Race="Terran">
@@ -3504,19 +3543,7 @@
         <FacialController value="LocalizedData\Facial\FirebatPortrait.fxa"/>
         <Flags index="Download" value="1"/>
     </CModel>
-    <CModel id="KerriganSCBW@DeathAcid" parent="GhostDeathAcidBase">
-        <Model value="Assets\Units\Terran\GhostFemaleNova_DeathAcid\GhostFemaleNova_DeathAcid.m3"/>
-        <Radius value="0.375000"/>
-    </CModel>
     <CModel id="GhostSCBW@Portrait" parent="GhostPortraitBase"/>
-    <CModel id="KerriganSCBW@DeathFire" parent="GhostDeathFireBase">
-        <Model value="Assets\Units\Terran\GhostFemaleNova_DeathFire\GhostFemaleNova_DeathFire.m3"/>
-        <Radius value="0.375000"/>
-    </CModel>
-    <CModel id="KerriganSCBW@DeathRagdoll" parent="GhostDeathRagdollBase">
-        <Model value="Assets\Units\Terran\Ghost_Alternate_DeathRagdoll\Ghost_Alternate_DeathRagdoll.m3"/>
-        <Radius value="0.375000"/>
-    </CModel>
     <CModel id="GhostSCBW" parent="Unit" Race="Terran">
         <RequiredAnims value="Assets\Units\Terran\Ghost_SwarmAnims\Ghost_SwarmAnims.m3a"/>
         <Occlusion value="Show"/>
@@ -3645,10 +3672,6 @@
         <Radius value="0.250000"/>
         <Flags index="TeenSafe" value="1"/>
     </CModel>
-    <CModel id="KerriganSCBW@DeathEviscerate" parent="GhostDeathEviscerateBase">
-        <Model value="Assets\Units\Terran\GhostDeathEviscerateEx1\GhostDeathEviscerateEx1.m3"/>
-        <Radius value="0.375000"/>
-    </CModel>
     <CModel id="WraithSCBW@Evade" parent="ImpactFX">
         <Model value="Assets\Effects\Terran\DisplacementFieldImpact\DisplacementFieldImpact.m3"/>
         <EditorCategories value="Race:Terran"/>
@@ -3656,30 +3679,32 @@
     <CModel id="SpiderMineSCBW@Portrait" parent="TerranAdvisorSCBW@PortraitBase"/>
     <CModel id="SpiderMineSCBW" parent="Unit" Race="Terran">
         <Occlusion value="Show"/>
-        <PlanetPanelCamera value="Star2CameraMid01"/>
+        <PlanetPanelCamera value="Star2CameraMid03"/>
         <Radius value="0.250000"/>
         <SelectionLayer value="3"/>
         <SelectionRadius value="0.250000"/>
         <ShadowRadius value="0.250000"/>
-        <TechPurchaseCamera value="Star2CameraMid01"/>
-        <UnitGlossaryCamera value="Star2CameraMid01"/>
+        <TechPurchaseCamera value="Star2CameraMid03"/>
+        <UnitGlossaryCamera value="Star2CameraMid03"/>
         <SquibTypeDefault value="LightArmor"/>
-        <ScaleMax value="1.650000,1.650000,1.650000"/>
-        <ScaleMin value="1.650000,1.650000,1.650000"/>
+        <ScaleMax value="0.950000,0.950000,0.950000"/>
+        <ScaleMin value="0.950000,0.950000,0.950000"/>
         <Tipability value="0.850000"/>
         <TipabilityLength value="0.150000"/>
         <TipabilityWidth value="0.150000"/>
+        <AnimBlendTime value="0.000000"/>
     </CModel>
     <CModel id="SpiderMineSCBW@Placement" parent="Placement" Race="Terran" low="SpiderMineSCBW">
-        <Model value="Assets\Effects\Terran\SpiderMinePlacement\SpiderMinePlacement.m3"/>
+        <Model value="Assets\Units\Terran\SpiderMineSCBW\SpiderMineSCBW@Placement.m3"/>
         <SelectionRadius value="0.250000"/>
         <ShadowRadius value="0.250000"/>
-        <ScaleMax value="1.650000,1.650000,1.650000"/>
-        <ScaleMin value="1.650000,1.650000,1.650000"/>
+        <ScaleMax value="0.950000,0.950000,0.950000"/>
+        <ScaleMin value="0.950000,0.950000,0.950000"/>
         <Tipability value="0.850000"/>
         <TipabilityLength value="0.150000"/>
         <TipabilityWidth value="0.150000"/>
         <Radius value="0.250000"/>
+        <AnimBlendTime value="0.000000"/>
     </CModel>
     <CModel id="SCVSCBW_KMC" parent="SCVSCBW">
         <Model value="Assets\Units\Terran\SCVSCBW_KMC\SCVSCBW_KMC.m3"/>
@@ -3704,16 +3729,21 @@
         <Period value="0.833"/>
         <Effect value="FakeWeaponDummy"/>
     </CWeaponLegacy>
+    <CSound id="VultureSCBW@Explode" parent="TerranDeathSCBW" Folder="VultureSCBW">
+        <AssetArray TemplateParam="VultureSCBW@Death00"/>
+        <Volume value="3.000000,3.000000"/>
+    </CSound>
     <CSound id="NukeSCBW@Ready" parent="Alert">
         <EditorCategories value="Race:Terran"/>
         <AssetArray File="LocalizedData\Sounds\TerranUnitVO\TerranAdvisorSCBW\Alert@TerranNukeReady.ogg" FacialAnim="Alert_TerranNukeReady"/>
     </CSound>
     <CSound id="SpiderMineSCBW@Explosion" parent="Combat">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SpiderMineSCBW\SpiderMineSCBW@Explode00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Terran\SpiderMineSCBW\SpiderMineSCBW@Explode00.ogg"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="5"/>
+        <Volume value="2.000000,3.000000"/>
     </CSound>
     <CSound id="SpiderMineSCBW@Burrow" parent="Combat">
         <EditorCategories value="Race:Terran"/>
@@ -3763,9 +3793,9 @@
     </CSound>
     <CSound id="FirebatSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav"/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
@@ -3776,9 +3806,9 @@
     </CSound>
     <CSound id="MedicSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav"/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
@@ -3789,14 +3819,9 @@
     </CSound>
     <CSound id="VultureSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Hellion_Test00.wav" FacialGroup=""/>
-        <AssetArray>
-            <File value="Assets\Sounds\Hellion_Test01.wav"/>
-            <Pitch value="-2.000000,-2.000000"/>
-            <Volume value="-3.000000,-2.000000"/>
-            <FacialGroup value=""/>
-        </AssetArray>
-        <AssetArray File="Assets\Sounds\Hellion_Test02.wav" Volume="-1.000000,-1.000000" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Hellion_Test00.wav"/>
+        <AssetArray File="Assets\Sounds\Hellion_Test01.wav" Pitch="-2.000000,-2.000000" Volume="-3.000000,-2.000000"/>
+        <AssetArray File="Assets\Sounds\Hellion_Test02.wav" Volume="-1.000000,-1.000000"/>
         <Category value="Combat"/>
         <DupeMaximumMethod value="Replace"/>
         <DupePrioritization value="Oldest"/>
@@ -3805,10 +3830,10 @@
     </CSound>
     <CSound id="GoliathSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Titan_LandingThud_00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Titan_LandingThud_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Titan_LandingThud_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Titan_LandingThud_03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Titan_LandingThud_00.wav"/>
+        <AssetArray File="Assets\Sounds\Titan_LandingThud_01.wav"/>
+        <AssetArray File="Assets\Sounds\Titan_LandingThud_02.wav"/>
+        <AssetArray File="Assets\Sounds\Titan_LandingThud_03.wav"/>
         <Category value="Combat"/>
         <DupeMaximumMethod value="Replace"/>
         <DupePrioritization value="Oldest"/>
@@ -3817,6 +3842,7 @@
     </CSound>
     <CSound id="BattlecruiserSCBW@Death" parent="TerranDeathSCBW" Folder="BattlecruiserSCBW">
         <AssetArray TemplateParam="BattlecruiserSCBW@Death00"/>
+        <Volume value="5.000000,5.000000"/>
     </CSound>
     <CSound id="BattlecruiserSCBW@Attack" parent="TerranAckSCBW" Folder="BattlecruiserSCBW">
         <AssetArray TemplateParam="BattlecruiserSCBW@Yes00" FacialAnim="BattlecruiserSCBW@Yes00"/>
@@ -3874,11 +3900,11 @@
     </CSound>
     <CSound id="BattlecruiserSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_1.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_4a.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_5.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6a.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_1.wav"/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_4a.wav"/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_5.wav"/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6.wav"/>
+        <AssetArray File="Assets\Sounds\BattleCruiser_Land_6a.wav"/>
         <Pitch value="-2.000000,0.000000"/>
         <Volume value="-3.000000,0.000000"/>
     </CSound>
@@ -3935,11 +3961,11 @@
     </CSound>
     <CSound id="DropshipSCBW@Land" parent="FlyingUnit_Land">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_04.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_05.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_01.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_02.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_03.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_04.wav"/>
+        <AssetArray File="Assets\Sounds\Uni\Terran_FlyingUnit_Medium_Land_05.wav"/>
         <Pitch value="-3.000000,-1.000000"/>
         <Volume value="-8.000000,-6.000000"/>
     </CSound>
@@ -4023,6 +4049,14 @@
     <CSound id="GoliathSCBW@Explode" parent="TerranDeathSCBW" Folder="GoliathSCBW">
         <AssetArray TemplateParam="GoliathSCBW@Death00"/>
     </CSound>
+    <CSound id="GoliathSCBW@DeathFX" parent="Death">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\Goliath\Goliath_DeathFXB0.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Goliath\Goliath_DeathFXB1.wav"/>
+        <AssetArray File="Assets\Sounds\Terran\Goliath\Goliath_DeathFXB2.wav"/>
+        <DupeMuteCount value="3"/>
+        <Volume value="-2.000000,-2.000000"/>
+    </CSound>
     <CSound id="GoliathSCBW@Help" parent="AlertTerranSCBW" Folder="GoliathSCBW">
         <AssetArray TemplateParam="GoliathSCBW@Help00"/>
         <Mode value="3DWorld"/>
@@ -4065,9 +4099,9 @@
     </CSound>
     <CSound id="SCVSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Hellion_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Hellion_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Hellion_Land02.wav" Pitch="4.000000,4.000000" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Hellion_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Hellion_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Hellion_Land02.wav" Pitch="4.000000,4.000000"/>
         <Category value="Combat"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="3"/>
@@ -4324,9 +4358,9 @@
     </CSound>
     <CSound id="SiegeTankSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\SiegeTank_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\SiegeTank_Land01.wav" Pitch="2.000000,2.000000" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\SiegeTank_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\SiegeTank_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\SiegeTank_Land01.wav" Pitch="2.000000,2.000000"/>
+        <AssetArray File="Assets\Sounds\SiegeTank_Land02.wav"/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
@@ -4376,27 +4410,6 @@
         <AssetArray TemplateParam="VultureSCBW@Yes02"/>
         <AssetArray TemplateParam="VultureSCBW@Yes03"/>
     </CSound>
-    <CSound id="VultureSCBW@Death" parent="TerranDeathSCBW" Folder="VultureSCBW">
-        <AssetArray TemplateParam="VultureSCBW@Death00"/>
-    </CSound>
-    <CSound id="VultureSCBW@Explode" parent="Combat">
-        <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium0.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium1.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium2.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium3.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium4.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium5.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium6.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium7.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium8.wav"/>
-        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionMedium9.wav"/>
-        <DupeDestroyCount value="5"/>
-        <DupeMaximumMethod value="Replace"/>
-        <DupeMuteCount value="5"/>
-        <Pitch value="-2.000000,3.000000"/>
-        <Volume value="-5.000000,-3.000000"/>
-    </CSound>
     <CSound id="VultureSCBW@Help" parent="AlertTerranSCBW" Folder="VultureSCBW">
         <AssetArray TemplateParam="VultureSCBW@Help00"/>
         <Mode value="3DWorld"/>
@@ -4439,70 +4452,6 @@
         <AssetArray TemplateParam="VultureSCBW@Yes02"/>
         <AssetArray TemplateParam="VultureSCBW@Yes03"/>
     </CSound>
-    <CSound id="KerriganSCBW@Explode" parent="Combat">
-        <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall0.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall1.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall2.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall3.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall4.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall5.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionSmall6.wav" Pitch="-3.000000,6.000000" Volume="-6.000000,-4.000000"/>
-    </CSound>
-    <CSound id="KerriganSCBW@Land" parent="Spell">
-        <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
-        <Flags index="VariationFallback" value="0"/>
-        <Category value="Combat"/>
-        <Pitch value="1.000000,4.000000"/>
-        <Volume value="-13.000000,-11.000000"/>
-    </CSound>
-    <CSound id="KerriganSCBW@Attack" parent="TerranAckSCBW" Folder="SarahKerriganSCBW">
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes00"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes01"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes02"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes03"/>
-        <Volume value="-1.000000,-1.000000"/>
-    </CSound>
-    <CSound id="KerriganSCBW@Yes" parent="TerranAckSCBW" Folder="SarahKerriganSCBW">
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes00"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes01"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes02"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Yes03"/>
-        <Volume value="-1.000000,-1.000000"/>
-    </CSound>
-    <CSound id="KerriganSCBW@Death" parent="TerranDeathSCBW" Folder="SarahKerriganSCBW">
-        <AssetArray TemplateParam="SarahKerriganSCBW@Death00"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Death01"/>
-    </CSound>
-    <CSound id="KerriganSCBW@Help" parent="AlertTerranSCBW" Folder="SarahKerriganSCBW">
-        <AssetArray TemplateParam="SarahKerriganSCBW@Help00"/>
-        <Mode value="3DWorld"/>
-        <Volume value="-1.000000,-1.000000"/>
-    </CSound>
-    <CSound id="KerriganSCBW@Pissed" parent="TerranAckSCBW" Folder="SarahKerriganSCBW">
-        <AssetArray TemplateParam="SarahKerriganSCBW@Pissed00"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Pissed01"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Pissed02"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Pissed03"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@Pissed04"/>
-        <Flags index="Download" value="0"/>
-        <Select value="Sequential"/>
-        <Volume value="-1.000000,-1.000000"/>
-    </CSound>
-    <CSound id="KerriganSCBW@Ready" parent="TerranReadySCBW" Folder="GhostSCBW">
-        <AssetArray TemplateParam="GhostSCBW@Ready00"/>
-        <Volume value="-1.000000,-1.000000"/>
-    </CSound>
-    <CSound id="KerriganSCBW@What" parent="TerranAckSCBW" Folder="SarahKerriganSCBW">
-        <AssetArray TemplateParam="SarahKerriganSCBW@What00"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@What01"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@What02"/>
-        <AssetArray TemplateParam="SarahKerriganSCBW@What03"/>
-        <Volume value="-1.000000,-1.000000"/>
-    </CSound>
     <CSound id="GhostSCBW@Attack" parent="TerranAckSCBW" Folder="GhostSCBW">
         <AssetArray TemplateParam="GhostSCBW@Yes00"/>
         <AssetArray TemplateParam="GhostSCBW@Yes01"/>
@@ -4530,9 +4479,9 @@
     </CSound>
     <CSound id="GhostSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav"/>
         <Flags index="VariationFallback" value="0"/>
         <Category value="Combat"/>
         <Pitch value="1.000000,4.000000"/>
@@ -4655,9 +4604,9 @@
     </CSound>
     <CSound id="MarineSCBW@Land" parent="Spell">
         <EditorCategories value="Race:Terran"/>
-        <AssetArray File="Assets\Sounds\Marine_Land00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Marine_Land02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Marine_Land00.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land01.wav"/>
+        <AssetArray File="Assets\Sounds\Marine_Land02.wav"/>
         <Category value="Combat"/>
         <DupeDestroyCount value="5"/>
         <DupeMaximumMethod value="Replace"/>
@@ -4750,6 +4699,7 @@
         <DataRecord Entry="Actor,SpiderMineSCBW@SeekSound"/>
         <DataRecord Entry="Actor,SpiderMineSCBW@UnburrowRange"/>
         <DataRecord Entry="Actor,SpiderMineSCBW@MorphModel"/>
+        <DataRecord Entry="Actor,SpiderMineSCBW@BurrowedSplat"/>
         <DataRecord Entry="Behavior,SpiderMineSCBW@InitialStun"/>
         <DataRecord Entry="Behavior,SpiderMineSCBW@BurrowFirst"/>
         <DataRecord Entry="Button,SpiderMineSCBW@Info"/>
@@ -4761,6 +4711,7 @@
         <DataRecord Entry="Model,SpiderMineSCBW@Placement"/>
         <DataRecord Entry="Model,SpiderMineSCBW@Impact"/>
         <DataRecord Entry="Model,SpiderMineSCBW@ExplosionLow"/>
+        <DataRecord Entry="Model,SpiderMineSCBW@BurrowedSplat"/>
         <DataRecord Entry="Requirement,SpiderMineSCBW@Burrowed"/>
         <DataRecord Entry="RequirementNode,SpiderMineSCBW@Burrowed"/>
         <DataRecord Entry="RequirementNode,SpiderMineSCBW@Burrowed@Show"/>
@@ -4783,6 +4734,11 @@
         <DataRecord Entry="Sound,SpiderMineSCBW@Seek"/>
         <DataRecord Entry="Unit,SpiderMineSCBW@Burrowed"/>
         <DataRecord Entry="Unit,SpiderMineSCBW@Placement"/>
+        <DataRecord Entry="Validator,SpiderMineSCBW@Burrowed@Is"/>
+        <DataRecord Entry="Validator,SpiderMineSCBW@IsAlias"/>
+        <DataRecord Entry="Validator,SpiderMineSCBW@Not"/>
+        <DataRecord Entry="Validator,SpiderMineSCBW@NotAlias"/>
+        <DataRecord Entry="Validator,SpiderMineSCBW@Burrowed@Not"/>
         <DataRecord Entry="Validator,SpiderMineSCBW@RangeCondition"/>
         <DataRecord Entry="Validator,SpiderMineSCBW@ChaseRange"/>
         <DataRecord Entry="Validator,SpiderMineSCBW@Burrow"/>
@@ -4795,14 +4751,7 @@
         <DataRecord Entry="Actor,BattlecruiserSCBW@DeathRagdoll"/>
         <DataRecord Entry="Actor,BattlecruiserSCBW@SOpBanker"/>
         <DataRecord Entry="Actor,BattlecruiserSCBW@Land"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt00"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt01"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt02"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt03"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt04"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt05"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt06"/>
-        <DataRecord Entry="Actor,BattlecruiserSCBW@LookAt07"/>
+        <DataRecord Entry="Actor,BattlecruiserSCBW@HardcoreMacro"/>
         <DataRecord Entry="Button,BattlecruiserSCBW@Passive"/>
         <DataRecord Entry="Model,BattlecruiserSCBW@DeathA"/>
         <DataRecord Entry="Model,BattlecruiserSCBW@DeathRagdoll"/>
@@ -4868,12 +4817,13 @@
     </CDataCollectionUnit>
     <CDataCollectionUnit id="GhostSCBW" parent="TerranInfantrySCBW">
         <DataRecord Entry="Actor,GhostSCBW@Death"/>
+        <DataRecord Entry="Actor,GhostSCBW@HardcoreMacro"/>
         <DataRecord Entry="Actor,GhostSCBW@Land"/>
         <DataRecord Entry="Button,GhostSCBW@Passive"/>
         <DataRecord Entry="Light,GhostSCBW@PortraitOld"/>
-        <DataRecord Entry="Model,GhostSCBW@DeathBlast"/>
         <DataRecord Entry="Model,GhostSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,GhostSCBW@DeathFire"/>
+        <DataRecord Entry="Model,GhostSCBW@DeathBlast"/>
         <DataRecord Entry="Model,GhostSCBW@DeathAcid"/>
         <DataRecord Entry="Model,GhostSCBW@DeathEviscerate"/>
         <DataRecord Entry="RequirementNode,GhostSCBW@Show"/>
@@ -4903,6 +4853,7 @@
         <DataRecord Entry="Actor,GoliathSCBW@Death"/>
         <DataRecord Entry="Actor,GoliathSCBW@Turret"/>
         <DataRecord Entry="Button,GoliathSCBW@Passive"/>
+        <DataRecord Entry="Model,GoliathSCBW@DeathRagdoll"/>
         <DataRecord Entry="RequirementNode,GoliathSCBW@Show"/>
         <DataRecord Entry="RequirementNode,GoliathSCBW@AllowUnit"/>
         <DataRecord Entry="Sound,GoliathSCBW@Land"/>
@@ -4912,30 +4863,10 @@
         <DataRecord Entry="Sound,GoliathSCBW@Attack"/>
         <DataRecord Entry="Sound,GoliathSCBW@Pissed"/>
         <DataRecord Entry="Sound,GoliathSCBW@Movement"/>
+        <DataRecord Entry="Sound,GoliathSCBW@DeathFX"/>
         <DataRecord Entry="Turret,GoliathSCBW@Turret"/>
         <TechInfoUpgradeUsed value="GoliathSCBWRangeUpgrade"/>
         <UpgradeInfoWeapon index="1" DamagePerDice="2"/>
-    </CDataCollectionUnit>
-    <CDataCollectionUnit id="KerriganSCBW" parent="TerranInfantrySCBW">
-        <DataRecord Entry="Actor,KerriganSCBW@Land"/>
-        <DataRecord Entry="Model,KerriganSCBW@DeathRagdoll"/>
-        <DataRecord Entry="Model,KerriganSCBW@DeathFire"/>
-        <DataRecord Entry="Model,KerriganSCBW@DeathAcid"/>
-        <DataRecord Entry="Model,KerriganSCBW@DeathEviscerate"/>
-        <DataRecord Entry="RequirementNode,KerriganSCBW@Show"/>
-        <DataRecord Entry="RequirementNode,KerriganSCBW@AllowUnit"/>
-        <DataRecord Entry="RequirementNode,KerriganSCBW@Count"/>
-        <DataRecord Entry="RequirementNode,KerriganSCBW@QoB"/>
-        <DataRecord Entry="RequirementNode,KerriganSCBW@QoBAtUnit"/>
-        <DataRecord Entry="RequirementNode,KerriganSCBW@NotQoBAtUnit"/>
-        <DataRecord Entry="RequirementNode,KerriganSCBW@NotQoB"/>
-        <DataRecord Entry="Sound,KerriganSCBW@Death"/>
-        <DataRecord Entry="Sound,KerriganSCBW@Help"/>
-        <DataRecord Entry="Sound,KerriganSCBW@Yes"/>
-        <DataRecord Entry="Sound,KerriganSCBW@Attack"/>
-        <DataRecord Entry="Sound,KerriganSCBW@Pissed"/>
-        <DataRecord Entry="Sound,KerriganSCBW@Land"/>
-        <DataRecord Entry="Sound,KerriganSCBW@Explode"/>
     </CDataCollectionUnit>
     <CDataCollectionUnit id="MarineSCBW" parent="TerranInfantrySCBW">
         <TechInfoUpgradeUsed value="MarineSCBWRangeUpgrade"/>
@@ -4996,8 +4927,9 @@
     <CDataCollectionUnit id="SCVSCBW" parent="TerranInfantrySCBW">
         <DataRecord Entry="Abil,SCVSCBW@Build"/>
         <DataRecord Entry="Abil,SCVSCBW@BuildAdv"/>
-        <DataRecord Entry="Abil,SCVSCBW@Repair"/>
         <DataRecord Entry="Abil,SCVSCBW@Harvest"/>
+        <DataRecord Entry="Abil,SCVSCBW@Repair"/>
+        <DataRecord Entry="Abil,SCVSCBW@RepairHardcore"/>
         <DataRecord Entry="Abil,SCVSCBW@HarvestNoQue"/>
         <DataRecord Entry="Actor,SCVSCBW@Land"/>
         <DataRecord Entry="Actor,SCVSCBW@RepairSound"/>
@@ -5005,6 +4937,7 @@
         <DataRecord Entry="Actor,SCVSCBW@HarvestSound"/>
         <DataRecord Entry="Actor,SCVSCBW@Build"/>
         <DataRecord Entry="Actor,SCVSCBW@BuildAdv"/>
+        <DataRecord Entry="Actor,SCVSCBW@HardcoreMacro"/>
         <DataRecord Entry="Button,SCVSCBW@Repair"/>
         <DataRecord Entry="Button,SCVSCBW@Harvest"/>
         <DataRecord Entry="Button,SCVSCBW@ReturnCargo"/>
@@ -5022,7 +4955,23 @@
         <DataRecord Entry="Sound,SCVSCBW@Pissed"/>
         <DataRecord Entry="Sound,SCVSCBW@Build"/>
         <DataRecord Entry="Sound,SCVSCBW@Harvest"/>
+        <DataRecord Entry="Validator,SCVSCBW@Is"/>
+        <DataRecord Entry="Validator,SCVSCBW@Not"/>
         <DataRecord Entry="Validator,SCVSCBW@Repair"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_CommandCenterSCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_SupplyDepotSCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_RefinerySCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_BarracksSCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_EngineeringBaySCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_MissileTurretSCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_BunkerSCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_RefineryRichSCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Build_AcademySCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@BuildAdv_FactorySCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@BuildAdv_StarportSCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@BuildAdv_ScienceFacilitySCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@BuildAdv_ArmorySCBW"/>
+        <DataRecord Entry="Validator,SCVSCBW@Building"/>
         <Pattern value="UnitBaseSCBWBuilder"/>
         <TechInfoUpgradeUsed index="3" removed="1"/>
         <TechInfoUpgradeUsed index="4" removed="1"/>
@@ -5128,8 +5077,10 @@
     <CDataCollectionUnit id="VultureSCBW" parent="TerranVehicleSCBW">
         <DataRecord Entry="Actor,VultureSCBW@DeathLight"/>
         <DataRecord Entry="Actor,VultureSCBW@DeathModel"/>
+        <DataRecord Entry="Actor,VultureSCBW@DeathRagdollModel"/>
         <DataRecord Entry="Actor,VultureSCBW@Land"/>
         <DataRecord Entry="Model,VultureSCBW@DeathLight"/>
+        <DataRecord Entry="Model,VultureSCBW@DeathRagdoll"/>
         <DataRecord Entry="RequirementNode,VultureSCBW@Show"/>
         <DataRecord Entry="RequirementNode,VultureSCBW@AllowUnit"/>
         <DataRecord Entry="Sound,VultureSCBW@Land"/>
@@ -5139,7 +5090,6 @@
         <DataRecord Entry="Sound,VultureSCBW@Attack"/>
         <DataRecord Entry="Sound,VultureSCBW@Pissed"/>
         <DataRecord Entry="Sound,VultureSCBW@Movement"/>
-        <DataRecord Entry="Sound,VultureSCBW@Death"/>
         <TechInfoUpgradeUsed value="VultureSCBWSpeedUpgrade"/>
         <UpgradeInfoWeapon index="0" DamagePerDice="2"/>
     </CDataCollectionUnit>
@@ -5206,6 +5156,7 @@
         <Food value="-8"/>
         <Sight value="3"/>
         <TechAliasArray value="Alias_Nuke"/>
+        <BuildTime value="88"/>
     </CUnit>
     <CUnit id="SpiderMineSCBW@Placement">
         <Description value=""/>
@@ -5255,6 +5206,7 @@
         <Description value="Button/Tooltip/SpiderMineSCBW"/>
         <DeathRevealRadius value="3"/>
         <Race value="BWTe"/>
+        <FlagArray index="Turnable" value="0"/>
         <FlagArray index="Uncommandable" value="1"/>
         <FlagArray index="UseLineOfSight" value="1"/>
         <FlagArray index="Cloaked" value="1"/>
@@ -5262,7 +5214,6 @@
         <FlagArray index="NoScore" value="1"/>
         <FlagArray index="NoPortraitTalk" value="1"/>
         <FlagArray index="AISplash" value="1"/>
-        <FlagArray index="ArmorDisabledWhileConstructing" value="1"/>
         <PlaneArray index="Ground" value="1"/>
         <Collide index="Burrow" value="1"/>
         <Collide index="Burrow3" value="1"/>
@@ -5275,7 +5226,7 @@
         <StationaryTurningRate value="2292.8906"/>
         <Sight value="3"/>
         <CostResource index="Minerals" value="25"/>
-        <RepairTime value="33.3332"/>
+        <RepairTime value="10"/>
         <AbilArray Link="SpiderMineSCBW@Unburrow"/>
         <AbilArray Link="attack"/>
         <BehaviorArray Link="SpiderMineSCBW@BurrowFirst"/>
@@ -5328,7 +5279,7 @@
         <StationaryTurningRate value="2292.8906"/>
         <Sight value="3"/>
         <CostResource index="Minerals" value="25"/>
-        <RepairTime value="33.3332"/>
+        <RepairTime value="10"/>
         <AbilArray Link="SpiderMineSCBW@Burrow"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5383,8 +5334,8 @@
         <Food value="-6"/>
         <CostResource index="Minerals" value="400"/>
         <CostResource index="Vespene" value="300"/>
-        <BuildTime value="125"/>
-        <RepairTime value="84"/>
+        <BuildTime value="117"/>
+        <RepairTime value="137.875"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5457,7 +5408,7 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="100"/>
         <CostResource index="Vespene" value="225"/>
-        <RepairTime value="50"/>
+        <RepairTime value="82"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
@@ -5500,7 +5451,7 @@
             <ChanceArray index="Anim" value="33"/>
             <ChanceArray index="Idle" value="33"/>
         </Fidget>
-        <BuildTime value="75"/>
+        <BuildTime value="70"/>
         <TacticalAIThink value="AIThinkScienceVesselSCBW"/>
         <TacticalAI value="ScienceVesselSCBW@TacticalEMP"/>
         <GlossaryStrongArray value="WraithSCBW"/>
@@ -5533,8 +5484,8 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="100"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="46.875"/>
-        <RepairTime value="32"/>
+        <BuildTime value="44"/>
+        <RepairTime value="51.0625"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>
@@ -5587,8 +5538,8 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="100"/>
         <CostResource index="Vespene" value="50"/>
-        <BuildTime value="37.5"/>
-        <RepairTime value="25"/>
+        <BuildTime value="35"/>
+        <RepairTime value="41.625"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5654,8 +5605,8 @@
         <Food value="-3"/>
         <CostResource index="Minerals" value="250"/>
         <CostResource index="Vespene" value="125"/>
-        <BuildTime value="46.875"/>
-        <RepairTime value="32"/>
+        <BuildTime value="44"/>
+        <RepairTime value="51.5625"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5672,7 +5623,7 @@
         <SeparationRadius value="0.6875"/>
         <ScoreMake value="375"/>
         <ScoreKill value="375"/>
-        <SubgroupPriority value="62"/>
+        <SubgroupPriority value="50"/>
         <MinimapRadius value="0.6875"/>
         <GlossaryPriority value="175"/>
         <GlossaryStrongArray value="BattlecruiserSCBW"/>
@@ -5707,8 +5658,8 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="56.25"/>
-        <RepairTime value="38"/>
+        <BuildTime value="53"/>
+        <RepairTime value="61.875"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5767,8 +5718,8 @@
         <Food value="-1"/>
         <CostCategory value="Economy"/>
         <CostResource index="Minerals" value="50"/>
-        <BuildTime value="18.75"/>
-        <RepairTime value="19"/>
+        <BuildTime value="18"/>
+        <RepairTime value="20.375"/>
         <AttackTargetPriority value="20"/>
         <AIOverideTargetPriority value="10"/>
         <AbilArray Link="stop"/>
@@ -5785,8 +5736,22 @@
             <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
             <LayoutButtons Face="AttackWorker" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
             <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
-            <LayoutButtons Face="SCVSCBW@Build" Type="Submenu" SubmenuCardId="Bld1" Row="2" Column="0"/>
-            <LayoutButtons Face="SCVSCBW@BuildAdv" Type="Submenu" SubmenuCardId="Bld2" Row="2" Column="1"/>
+            <LayoutButtons>
+                <Face value="SCVSCBW@Build"/>
+                <Type value="Submenu"/>
+                <Requirements value="SCBW_MultipleUnitsSelected@Not"/>
+                <SubmenuCardId value="Bld1"/>
+                <Row value="2"/>
+                <Column value="0"/>
+            </LayoutButtons>
+            <LayoutButtons>
+                <Face value="SCVSCBW@BuildAdv"/>
+                <Type value="Submenu"/>
+                <Requirements value="SCBW_MultipleUnitsSelected@Not"/>
+                <SubmenuCardId value="Bld2"/>
+                <Row value="2"/>
+                <Column value="1"/>
+            </LayoutButtons>
             <LayoutButtons Face="Halt" Type="AbilCmd" AbilCmd="SCVSCBW@Build,Halt" Row="2" Column="4"/>
             <LayoutButtons Face="Halt" Type="AbilCmd" AbilCmd="SCVSCBW@BuildAdv,Halt" Row="2" Column="4"/>
             <LayoutButtons Face="SCVSCBW@Harvest" Type="AbilCmd" AbilCmd="SCVSCBW@Harvest,Gather" Row="1" Column="0"/>
@@ -5815,6 +5780,7 @@
             <ChanceArray index="Turn" value="33"/>
         </Fidget>
         <TacticalAIThink value="AIThinkSCVSCBW"/>
+        <BehaviorArray Link="LegacyMovement@WorkerIsMining"/>
     </CUnit>
     <CUnit id="SiegeTankSCBW" parent="TerranVehicleSCBW">
         <DeathRevealRadius value="3"/>
@@ -5839,8 +5805,8 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="46.875"/>
-        <RepairTime value="45"/>
+        <BuildTime value="44"/>
+        <RepairTime value="51.0625"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5903,8 +5869,8 @@
         <Food value="-2"/>
         <CostResource index="Minerals" value="150"/>
         <CostResource index="Vespene" value="100"/>
-        <BuildTime value="46.875"/>
-        <RepairTime value="45"/>
+        <BuildTime value="44"/>
+        <RepairTime value="51.0625"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -5954,8 +5920,8 @@
         <Sight value="8"/>
         <Food value="-2"/>
         <CostResource index="Minerals" value="75"/>
-        <BuildTime value="28.125"/>
-        <RepairTime value="19"/>
+        <BuildTime value="26"/>
+        <RepairTime value="31.1875"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -6004,80 +5970,6 @@
         <Deceleration value="15"/>
         <InnerRadius value="0.5"/>
     </CUnit>
-    <CUnit id="KerriganSCBW">
-        <DeathRevealRadius value="3"/>
-        <Race value="BWTe"/>
-        <Mob value="Multiplayer"/>
-        <FlagArray index="PreventDestroy" value="1"/>
-        <FlagArray index="UseLineOfSight" value="1"/>
-        <FlagArray index="ArmySelect" value="1"/>
-        <PlaneArray index="Ground" value="1"/>
-        <Collide index="Ground" value="1"/>
-        <Collide index="ForceField" value="1"/>
-        <Collide index="Locust" value="1"/>
-        <Collide index="Small" value="1"/>
-        <Attributes index="Light" value="1"/>
-        <Attributes index="Biological" value="1"/>
-        <LifeStart value="100"/>
-        <LifeMax value="100"/>
-        <LifeArmorName value="Unit/LifeArmorName/TerranInfantryArmor"/>
-        <EnergyStart value="50"/>
-        <EnergyMax value="200"/>
-        <EnergyRegenRate value="0.5"/>
-        <Speed value="2.25"/>
-        <Acceleration value="1000"/>
-        <LateralAcceleration value="46.0625"/>
-        <StationaryTurningRate value="999.8437"/>
-        <TurningRate value="999.8437"/>
-        <Sight value="11"/>
-        <Food value="-1"/>
-        <CostCategory value="Army"/>
-        <CostResource index="Minerals" value="200"/>
-        <CostResource index="Vespene" value="100"/>
-        <RepairTime value="40"/>
-        <AttackTargetPriority value="20"/>
-        <AbilArray Link="stop"/>
-        <AbilArray Link="attack"/>
-        <AbilArray Link="move"/>
-        <AbilArray Link="GhostSCBWCloak"/>
-        <AbilArray Link="GhostSCBWLockdown"/>
-        <AbilArray Link="GhostSCBWHoldFire"/>
-        <AbilArray Link="GhostSCBWWeaponsFree"/>
-        <WeaponArray Link="GhostSCBWWeapon"/>
-        <CardLayouts>
-            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
-            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
-            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
-            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
-            <LayoutButtons Face="AttackGhost" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
-        </CardLayouts>
-        <Radius value="0.375"/>
-        <SeparationRadius value="0.375"/>
-        <InnerRadius value="0.375"/>
-        <CargoSize value="2"/>
-        <ScoreMake value="300"/>
-        <ScoreKill value="300"/>
-        <ScoreResult value="BuildOrder"/>
-        <SubgroupPriority value="82"/>
-        <MinimapRadius value="0.375"/>
-        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
-        <TacticalAI value="Ghost"/>
-        <TacticalAIThink value="AIThinkSarahKerriganSCBW"/>
-        <AIEvalFactor value="1.2"/>
-        <GlossaryPriority value="70"/>
-        <GlossaryStrongArray value="Raven"/>
-        <GlossaryStrongArray value="Infestor"/>
-        <GlossaryStrongArray value="HighTemplar"/>
-        <GlossaryWeakArray value="Marauder"/>
-        <GlossaryWeakArray value="Zergling"/>
-        <GlossaryWeakArray value="Stalker"/>
-        <Fidget>
-            <ChanceArray index="Anim" value="33"/>
-            <ChanceArray index="Idle" value="33"/>
-            <ChanceArray index="Turn" value="33"/>
-        </Fidget>
-        <RankDisplay value="Always"/>
-    </CUnit>
     <CUnit id="FirebatSCBW" parent="TerranInfantrySCBW">
         <DeathRevealRadius value="3"/>
         <FlagArray index="PreventDestroy" value="1"/>
@@ -6095,8 +5987,8 @@
         <Food value="-1"/>
         <CostResource index="Minerals" value="50"/>
         <CostResource index="Vespene" value="25"/>
-        <BuildTime value="22.5"/>
-        <RepairTime value="22.5"/>
+        <BuildTime value="21"/>
+        <RepairTime value="25"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -6158,8 +6050,8 @@
         <Food value="-1"/>
         <CostResource index="Minerals" value="25"/>
         <CostResource index="Vespene" value="75"/>
-        <BuildTime value="46.875"/>
-        <RepairTime value="47"/>
+        <BuildTime value="44"/>
+        <RepairTime value="51.375"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -6254,8 +6146,8 @@
         <Sight value="7"/>
         <Food value="-1"/>
         <CostResource index="Minerals" value="50"/>
-        <BuildTime value="22.5"/>
-        <RepairTime value="22.5"/>
+        <BuildTime value="21"/>
+        <RepairTime value="24.5625"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="attack"/>
@@ -6326,8 +6218,8 @@
         <Food value="-1"/>
         <CostResource index="Minerals" value="50"/>
         <CostResource index="Vespene" value="25"/>
-        <BuildTime value="28.125"/>
-        <RepairTime value="28"/>
+        <BuildTime value="26"/>
+        <RepairTime value="30.9375"/>
         <AttackTargetPriority value="20"/>
         <AbilArray Link="stop"/>
         <AbilArray Link="move"/>

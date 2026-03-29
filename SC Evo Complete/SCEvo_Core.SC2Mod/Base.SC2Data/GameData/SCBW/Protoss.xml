@@ -284,6 +284,31 @@
             </Upgrade>
         </Instances>
     </CUser>
+    <CEffectModifyUnit id="HighTemplarSCBWHallucination@CopyScarabsTrigger">
+        <EditorCategories value="Race:Protoss"/>
+        <ValidatorArray value="ReaverSCBW@Not"/>
+    </CEffectModifyUnit>
+    <CEffectEnumArea id="ShieldBatterySCBWBattery@Enum">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="CanHaveShields,Visible;Self,Enemy,Structure,RawResource,HarvestableResource,Missile,Uncommandable,Stasis,Dead,Hidden,Decaying"/>
+        <AreaArray Radius="4.5" Effect="ShieldBatterySCBWBattery@SmartOrder"/>
+    </CEffectEnumArea>
+    <CEffectIssueOrder id="ShieldBatterySCBWBattery@SmartOrder">
+        <ValidatorArray value="ShieldBatterySCBWBattery@Set"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Abil value="move"/>
+        <CmdFlags index="SmartClick" value="1"/>
+        <Target Value="CasterUnit"/>
+    </CEffectIssueOrder>
+    <CEffectSwitch id="ShieldBatterySCBWBattery@Switch">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="ShieldBatterySCBWBattery@OrderUnit" Effect="ShieldBatterySCBWBattery@SmartOrder"/>
+        <CaseArray Validator="ShieldBatterySCBWBattery@OrderUnit"/>
+        <CaseDefault value="ShieldBatterySCBWBattery@Enum"/>
+        <TargetLocationType value="UnitOrPoint"/>
+        <ValidatorArray value="CasterHasEnergy"/>
+    </CEffectSwitch>
     <CEffectTeleport id="ArbiterSCBWRecall@TeleportInitial">
         <ValidatorArray value="GroundUnitFilter"/>
         <EditorCategories value="Race:Protoss"/>
@@ -554,7 +579,7 @@
         <PeriodCount value="8"/>
         <PeriodicValidator value="CarrierSCBWWeapon@CP@Periodic"/>
         <PeriodicEffectArray value="CarrierSCBWWeapon@IM"/>
-        <PeriodicPeriodArray value="0.4375"/>
+        <PeriodicPeriodArray value="0.4665"/>
     </CEffectCreatePersistent>
     <CEffectDamage id="InterceptorSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
@@ -580,18 +605,25 @@
         <AreaArray Radius="3.125" Fraction="0.25"/-->
         <ExcludeArray Value="Target"/>
         <SearchFilters value="Air,Visible;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
         <SearchFlags index="SameCliff" value="0"/>
-        <KindSplash value="Splash"/>
+        <KindSplash value="Ranged"/>
+        <MaxCount value="0"/>
+        <ImpactUnitValidator value="noMarkers"/>
     </CEffectDamage>
     <CEffectDamage id="CorsairSCBWWeapon@DamageAccum2" parent="CorsairSCBWWeapon@DamageAccum">
         <Name value="Effect/Name/CorsairSCBWWeapon@DamageAccum2"/>
-        <ImpactUnitValidator value="noMarkers"/>
-        <AreaArray index="0" Radius="1.5625" Fraction="1" Validator="noMarkers"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
+        <AreaArray index="0" Radius="1.5625" Fraction="1" Validator="CorsairSCBWWeapon@Splash"/>
+        <MaxCount value="4294967295"/>
     </CEffectDamage>
     <CEffectDamage id="CorsairSCBWWeapon@DamageAccum3" parent="CorsairSCBWWeapon@DamageAccum">
         <Name value="Effect/Name/CorsairSCBWWeapon@DamageAccum3"/>
-        <ImpactUnitValidator value="noMarkers"/>
-        <AreaArray index="0" Radius="3.125" Fraction="1" Validator="noMarkers"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
+        <AreaArray index="0" Radius="3.125" Fraction="1" Validator="CorsairSCBWWeapon@Splash"/>
+        <MaxCount value="4294967295"/>
     </CEffectDamage>
     <CEffectDamage id="ProbeSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
         <EditorCategories value="Race:Protoss"/>
@@ -1271,9 +1303,16 @@
     <CEffectCreatePersistent id="CorsairSCBWDisruptionWeb@CP">
         <EditorCategories value="Race:Protoss"/>
         <InitialEffect value="CorsairSCBWDisruptionWeb@Search"/>
-        <PeriodCount value="90"/>
+        <PeriodCount value="84"/>
         <PeriodicEffectArray value="CorsairSCBWDisruptionWeb@Search"/>
         <PeriodicPeriodArray value="0.25"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="CorsairSCBWDisruptionWeb@CPInfinite" parent="CorsairSCBWDisruptionWeb@CP">
+        <ExpireEffect value="CorsairSCBWDisruptionWeb@CPInfinite"/>
+        <PeriodCount value="65535"/>
+        <Name value="Effect/Name/CorsairSCBWDisruptionWeb@CPInfinite"/>
+        <WhichLocation Value="TargetUnit"/>
+        <PeriodicValidator value="TargetNotDead"/>
     </CEffectCreatePersistent>
     <CEffectEnumTransport id="CorsairSCBWDisruptionWeb@IterateTransport">
         <ValidatorArray value="CorsairSCBWDisruptionWeb@IterateTransport"/>
@@ -1282,8 +1321,8 @@
     </CEffectEnumTransport>
     <CEffectEnumArea id="CorsairSCBWDisruptionWeb@Search">
         <EditorCategories value="Race:Protoss"/>
-        <SearchFilters value="Ground;RawResource,HarvestableResource,Missile,Item,Dead,Hidden,Unstoppable"/>
-        <AreaArray Radius="1.725" Effect="CorsairSCBWDisruptionWeb@Set"/>
+        <SearchFilters value="Ground;RawResource,HarvestableResource,Missile,Item,Dead,Hidden,Invulnerable,Unstoppable"/>
+        <AreaArray Radius="1.75" Effect="CorsairSCBWDisruptionWeb@Set"/>
         <AINotifyFlags index="HurtFriend" value="1"/>
         <AINotifyFlags index="HurtEnemy" value="1"/>
     </CEffectEnumArea>
@@ -1332,8 +1371,8 @@
         <ValidatorArray value="NotPointDefenseDrone"/>
         <ValidatorArray value="IsNotEgg"/>
         <ValidatorArray value="NotLarva"/>
-        <ValidatorArray value="NotLarvaSCBW"/>
-        <ValidatorArray value="NotEggSCBW"/>
+        <ValidatorArray value="LarvaSCBW@Not"/>
+        <ValidatorArray value="EggSCBW@Not"/>
         <ValidatorArray value="DarkArchonSCBWMindControl@Set"/>
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="DarkArchonSCBWMindControl@Clear"/>
@@ -1399,19 +1438,25 @@
     </CEffectDamage>
     <CEffectCreatePersistent id="HighTemplarSCBWPsiStorm@CPDelayInital">
         <EditorCategories value="Race:Protoss"/>
-        <ExpireDelay value="0.3125"/>
+        <ExpireDelay value="0.5625"/>
         <FinalEffect value="HighTemplarSCBWPsiStorm@CP"/>
     </CEffectCreatePersistent>
     <CEffectApplyBehavior id="HighTemplarSCBWPsiStorm@AB">
         <EditorCategories value="Race:Protoss"/>
         <Behavior value="HighTemplarSCBWPsiStorm"/>
     </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="HighTemplarSCBWPsiStorm@Marker">
+        <EditorCategories value="Race:Protoss"/>
+    </CEffectApplyBehavior>
     <CEffectDamage id="HighTemplarSCBWPsiStorm@Damage">
         <ValidatorArray value="HighTemplarSCBWPsiStorm@Damage"/>
+        <ValidatorArray value="HighTemplarSCBWPsiStorm@NoMarker"/>
         <EditorCategories value="Race:Protoss"/>
         <Visibility value="Hidden"/>
         <Amount value="14"/>
         <KillHallucination value="1"/>
+        <Flags index="NoZeroDamageInherit" value="1"/>
+        <DamageInheritEffect value="HighTemplarSCBWPsiStorm@Marker"/>
     </CEffectDamage>
     <CEffectDamage id="HighTemplarSCBWPsiStorm@DamageInitial">
         <ValidatorArray value="HighTemplarSCBWPsiStorm@Damage"/>
@@ -1419,18 +1464,21 @@
         <ResponseFlags index="Acquire" value="1"/>
         <ResponseFlags index="Flee" value="1"/>
         <Flags index="Notification" value="1"/>
+        <Flags index="NoZeroDamageInherit" value="1"/>
         <Amount value="14"/>
         <KillHallucination value="1"/>
         <Visibility value="Hidden"/>
+        <DamageInheritEffect value="HighTemplarSCBWPsiStorm@Marker"/>
     </CEffectDamage>
     <CEffectCreatePersistent id="HighTemplarSCBWPsiStorm@CP">
         <EditorCategories value="Race:Protoss"/>
         <InitialEffect value="HighTemplarSCBWPsiStorm@Search"/>
         <PeriodCount value="7"/>
         <PeriodicEffectArray value="HighTemplarSCBWPsiStorm@Search"/>
-        <PeriodicPeriodArray value="0.5446"/>
+        <PeriodicPeriodArray value="0.4687"/>
         <AINotifyEffect value="HighTemplarSCBWPsiStorm@Search"/>
         <InitialDelay value="0.1875"/>
+        <ExpireDelay value="0.4687"/>
     </CEffectCreatePersistent>
     <CEffectEnumArea id="HighTemplarSCBWPsiStorm@Search">
         <EditorCategories value="Race:Protoss"/>
@@ -1444,7 +1492,7 @@
         <ValidatorArray value="SCBW_IsNotTempUnit"/>
         <ValidatorArray value="IsNotEggUnit"/>
         <ValidatorArray value="IsNotLarva"/>
-        <ValidatorArray value="NotLarvaSCBW"/>
+        <ValidatorArray value="LarvaSCBW@Not"/>
         <EditorCategories value="Race:Protoss"/>
         <EffectArray value="HighTemplarSCBWHallucination@CU"/>
     </CEffectSet>
@@ -1460,7 +1508,7 @@
         <SpawnRange value="5"/>
         <TypeFallbackUnit Value="Target"/>
     </CEffectCreateUnit>
-    <CEffectApplyBehavior id="ShieldBatterySCBWRecharge@BatteryTrackerCaster">
+    <CEffectApplyBehavior id="ShieldBatterySCBWBattery@TrackerCaster">
         <ValidatorArray index="0" removed="1"/>
         <EditorCategories value="Race:Protoss"/>
         <WhichUnit Value="Caster"/>
@@ -1474,6 +1522,7 @@
         <DrainVitalCostFactor value="0.33"/>
         <RechargeVital value="Shields"/>
         <RechargeVitalRate value="9"/>
+        <InitialEffect value="ShieldBatterySCBWBattery@Cooldown"/>
     </CEffectCreateHealer>
     <CEffectDamage id="ShieldBatterySCBWRecharge@DamageDummy">
         <EditorCategories value="Race:Protoss"/>
@@ -1484,34 +1533,34 @@
         <AreaArray Radius="10" Effect="ShieldBatterySCBWRecharge@DamageDummy"/>
         <MaxCount value="1"/>
     </CEffectEnumArea>
-    <CEffectCreateHealer id="ShieldBatterySCBWRecharge@BatteryHealer">
+    <CEffectCreateHealer id="ShieldBatterySCBWBattery@Healer">
         <EditorCategories value="Race:Terran"/>
+        <PeriodCount value="0"/>
         <DrainVital value="Energy"/>
         <DrainVitalCostFactor value="0.5"/>
         <RechargeVital value="Shields"/>
         <RechargeVitalRate value="80"/>
-        <PeriodCount value="0"/>
     </CEffectCreateHealer>
-    <CEffectApplyBehavior id="ShieldBatterySCBWRecharge@BatteryTracker">
+    <CEffectApplyBehavior id="ShieldBatterySCBWBattery@Tracker">
         <ValidatorArray index="0" removed="1"/>
         <EditorCategories value="Race:Protoss"/>
     </CEffectApplyBehavior>
-    <CEffectSet id="ShieldBatterySCBWRecharge@BatterySet">
-        <ValidatorArray value="ShieldBatterySCBWRecharge@BatterySet"/>
+    <CEffectSet id="ShieldBatterySCBWBattery@Set">
+        <ValidatorArray value="ShieldBatterySCBWBattery@Set"/>
         <EditorCategories value="Race:Protoss"/>
         <Marker Link="Abil/ShieldBatterySCBWRecharge">
             <MatchFlags index="Link" value="1"/>
             <MismatchFlags index="Id" value="1"/>
         </Marker>
         <AINotifyFlags index="HelpFriend" value="1"/>
-        <EffectArray value="ShieldBatterySCBWRecharge@BatteryTracker"/>
-        <EffectArray value="ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
-        <EffectArray value="ShieldBatterySCBWRecharge@BatteryHealer"/>
-        <EffectArray value="ShieldBatterySCBWRecharge@Cooldown"/>
+        <EffectArray value="ShieldBatterySCBWBattery@Tracker"/>
+        <EffectArray value="ShieldBatterySCBWBattery@TrackerCaster"/>
+        <EffectArray value="ShieldBatterySCBWBattery@Healer"/>
+        <EffectArray value="ShieldBatterySCBWBattery@Cooldown"/>
     </CEffectSet>
-    <CEffectApplyBehavior id="ShieldBatterySCBWRecharge@Cooldown">
-        <WhichUnit Value="Source"/>
+    <CEffectApplyBehavior id="ShieldBatterySCBWBattery@Cooldown">
         <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Value="Source"/>
     </CEffectApplyBehavior>
     <CEffectLaunchMissile id="InterceptorSCBWWeapon@LM">
         <EditorCategories value="Race:Terran"/>
@@ -1544,6 +1593,20 @@
     <CEffectSet id="InterceptorSCBWWeapon@Impact">
         <EffectArray value="InterceptorSCBWWeapon@Damage"/>
     </CEffectSet>
+    <CAbilEffectTarget id="ShieldBatterySCBWBattery@Target">
+        <OrderArray index="0" Model="Assets\UI\Cursors\WayPointConfirm_Void\WayPointConfirm_Void.m3"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <AbilityCategories index="CanBeDisabled" value="1"/>
+        <AbilityCategories index="CanBeIllusionDisabled" value="1"/>
+        <Effect index="0" value="ShieldBatterySCBWBattery@Switch"/>
+        <Flags index="RequireTargetVision" value="0"/>
+        <TargetFilters value="CanHaveShields,Visible;Self,Enemy,Structure,RawResource,HarvestableResource,Missile,Uncommandable,Stasis,Dead,Hidden,Decaying"/>
+        <Range value="500"/>
+        <Arc value="360"/>
+        <CursorEffect value="ShieldBatterySCBWBattery@Enum"/>
+        <IgnoreFilters value="CanHaveShields;Self,Ally,Neutral,Enemy,Structure,Uncommandable,Stasis,Dead,Hidden"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="ShieldBatterySCBWBattery"/>
+    </CAbilEffectTarget>
     <CAbilEffectInstant id="ReaverSCBWWeapon@UnloadStunAbil">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <TechAliasArray value="_IllusionEnabled"/>
@@ -1579,7 +1642,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ArbiterSCBWEnergyUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1587,7 +1650,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ArbiterSCBWRecallResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="112.5">
+        <InfoArray index="Research1" Time="105">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1595,7 +1658,7 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="ArbiterSCBWStasisFieldResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1603,21 +1666,21 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="ReaverSCBWWeaponRangeUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="169.4">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="CarrierSCBWHangarIncreaseUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="CorsairSCBWDisruptionWebResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="75">
+        <InfoArray index="Research1" Time="70">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1625,7 +1688,7 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="CorsairSCBWEnergyUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
@@ -1633,7 +1696,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="DarkArchonSCBWEnergyUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1641,7 +1704,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="DarkArchonSCBWFeedbackResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="112.5">
+        <InfoArray index="Research1" Time="105">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
@@ -1649,7 +1712,7 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="DarkArchonSCBWMaelstromResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="93.75">
+        <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
@@ -1657,7 +1720,7 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="DarkArchonSCBWMindControlResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="112.5">
+        <InfoArray index="Research1" Time="105">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1665,7 +1728,7 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="DragoonSCBWRangeUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1673,7 +1736,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="HighTemplarSCBWEnergyUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1681,7 +1744,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="HighTemplarSCBWHallucinationResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="75">
+        <InfoArray index="Research1" Time="70">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1689,7 +1752,7 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="HighTemplarSCBWPsiStormResearch" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="112.5">
+        <InfoArray index="Research1" Time="105">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1697,7 +1760,7 @@
         <Activity value="UI/Developing"/>
     </CAbilResearch>
     <CAbilResearch id="ObserverSCBWSightUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="125">
+        <InfoArray index="Research1" Time="117">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1705,7 +1768,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ObserverSCBWSpeedUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="125">
+        <InfoArray index="Research1" Time="117">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1713,15 +1776,15 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ProtossAirArmorsSCBW" parent="SCBW_ResearchLeveled" race="Protoss">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="225"/>
             <Resource index="Vespene" value="225"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="300"/>
             <Resource index="Vespene" value="300"/>
         </InfoArray>
@@ -1729,15 +1792,15 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ProtossAirWeaponsSCBW" parent="SCBW_ResearchLeveled" race="Protoss">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="175"/>
             <Resource index="Vespene" value="175"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="250"/>
             <Resource index="Vespene" value="250"/>
         </InfoArray>
@@ -1745,15 +1808,15 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ProtossGroundArmorsSCBW" parent="SCBW_ResearchLeveled" race="Protoss">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="175"/>
             <Resource index="Vespene" value="175"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="250"/>
             <Resource index="Vespene" value="250"/>
         </InfoArray>
@@ -1761,15 +1824,15 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ProtossGroundWeaponsSCBW" parent="SCBW_ResearchLeveled" race="Protoss">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1777,15 +1840,15 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ProtossShieldsSCBW" parent="SCBW_ResearchLeveled" race="Protoss">
-        <InfoArray index="Research1" Time="250">
+        <InfoArray index="Research1" Time="233">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
-        <InfoArray index="Research2" Time="280">
+        <InfoArray index="Research2" Time="261">
             <Resource index="Minerals" value="300"/>
             <Resource index="Vespene" value="300"/>
         </InfoArray>
-        <InfoArray index="Research3" Time="310">
+        <InfoArray index="Research3" Time="289">
             <Resource index="Minerals" value="400"/>
             <Resource index="Vespene" value="400"/>
         </InfoArray>
@@ -1793,21 +1856,21 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ReaverSCBWHangarIncreaseUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ScarabSCBWWeaponDamageUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ScoutSCBWSightUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="100"/>
             <Resource index="Vespene" value="100"/>
             <Button>
@@ -1819,7 +1882,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ScoutSCBWSpeedUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1827,7 +1890,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ShuttleSCBWSpeedUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="156.25">
+        <InfoArray index="Research1" Time="146">
             <Resource index="Minerals" value="200"/>
             <Resource index="Vespene" value="200"/>
         </InfoArray>
@@ -1835,7 +1898,7 @@
         <Activity value="UI/Upgrading"/>
     </CAbilResearch>
     <CAbilResearch id="ZealotSCBWSpeedUpgrade" parent="SCBW_Research" race="Protoss">
-        <InfoArray index="Research1" Time="125">
+        <InfoArray index="Research1" Time="117">
             <Resource index="Minerals" value="150"/>
             <Resource index="Vespene" value="150"/>
         </InfoArray>
@@ -1870,6 +1933,10 @@
         <Range value="9"/>
         <CursorEffect value="ArbiterSCBWStasisField@Search"/>
     </CAbilEffectTarget>
+    <CAbilEffectTarget id="ArbiterSCBWStasisField@Hardcore" parent="ArbiterSCBWStasisField">
+        <Flags index="AllowMovement" value="0"/>
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
     <CAbilEffectTarget id="ArbiterSCBWRecall" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="ArbiterSCBWRecall@CP"/>
@@ -1883,6 +1950,9 @@
         <CursorEffect value="ArbiterSCBWRecall@SearchDummy"/>
         <Flags index="Transient" value="1"/>
     </CAbilEffectTarget>
+    <CAbilEffectTarget id="ArbiterSCBWRecall@Hardcore" parent="ArbiterSCBWRecall">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
     <CAbilMerge id="ArchonSCBWMerge">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <CmdButtonArray index="SelectedUnits" DefaultButtonFace="ArchonSCBWMerge@Selection" State="Restricted">
@@ -1890,15 +1960,18 @@
         </CmdButtonArray>
         <CmdButtonArray index="WithTarget" DefaultButtonFace="ArchonSCBWMerge@Target" State="Restricted"/>
         <Flags index="IgnoreUnitCost" value="1"/>
-        <Info Unit="ArchonSCBW" Time="18.75"/>
+        <Info Unit="ArchonSCBW" Time="18"/>
         <Effect value="SCBW_MergeBegin"/>
+    </CAbilMerge>
+    <CAbilMerge id="ArchonSCBWMerge@Hardcore" parent="ArchonSCBWMerge">
+        <Flags index="BestUnit" value="0"/>
     </CAbilMerge>
     <CAbilArmMagazine id="CarrierSCBWHangar" parent="SCBW_ArmMagazine" Ammo1="InterceptorSCBW">
         <AbilSetId value="CarrierHanger"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Flags index="Retarget" value="1"/>
         <Leash value="12"/>
-        <InfoArray index="Ammo1" Time="18.75" Manage="Recall">
+        <InfoArray index="Ammo1" Time="18" Manage="Recall">
             <Flags index="AutoBuild" value="1"/>
             <Flags index="AutoBuildOn" value="1"/>
             <Flags index="LeashRetarget" value="1"/>
@@ -1909,14 +1982,15 @@
         <MaxCount value="4"/>
         <Activity value="UI/Building"/>
     </CAbilArmMagazine>
-    <CAbilEffectTarget id="CorsairSCBWDisruptionWeb">
+    <CAbilEffectTarget id="CorsairSCBWDisruptionWeb" parent="SCBW_AbilTarget">
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
         <Effect index="0" value="CorsairSCBWDisruptionWeb@CP"/>
         <Flags index="AllowMovement" value="1"/>
         <Flags index="NoDeceleration" value="1"/>
+        <Flags index="WaitToSpend" value="1"/>
         <Cost>
             <Vital index="Energy" value="125"/>
-            <Cooldown TimeUse="1.5"/>
+            <Cooldown TimeUse="1.3125"/>
         </Cost>
         <Range value="9"/>
         <AutoCastFilters value="Visible;Player,Ally,Neutral"/>
@@ -1926,7 +2000,10 @@
         <AutoCastValidatorArray value="TargetCanAttack"/>
         <AutoCastValidatorArray value="CorsairSCBWDisruptionWeb@Filters"/>
         <CursorEffect value="CorsairSCBWDisruptionWeb@Search"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="CorsairSCBWDisruptionWeb" Requirements="CorsairSCBWDisruptionWeb"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="CorsairSCBWDisruptionWeb@Hardcore" parent="CorsairSCBWDisruptionWeb">
+        <Flags index="AllowMovement" value="0"/>
+        <Flags index="BestUnit" value="0"/>
     </CAbilEffectTarget>
     <CAbilMerge id="DarkArchonSCBWMerge">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -1935,21 +2012,29 @@
         </CmdButtonArray>
         <CmdButtonArray index="WithTarget" DefaultButtonFace="DarkArchonSCBWMerge@Target"/>
         <Flags index="IgnoreUnitCost" value="1"/>
-        <Info Unit="DarkArchonSCBW" Time="18.75"/>
+        <Info Unit="DarkArchonSCBW" Time="18"/>
         <Effect value="SCBW_MergeBegin"/>
+    </CAbilMerge>
+    <CAbilMerge id="DarkArchonSCBWMerge@Hardcore" parent="DarkArchonSCBWMerge">
+        <Flags index="BestUnit" value="0"/>
     </CAbilMerge>
     <CAbilEffectTarget id="DarkArchonSCBWMindControl" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="DarkArchonSCBWMindControl@Set"/>
         <Cost>
             <Vital index="Energy" value="150"/>
-            <Cooldown TimeUse="1.375"/>
+            <Cooldown TimeUse="1.3125"/>
         </Cost>
         <TargetFilters value="Visible;Player,Structure,Heroic,Missile,Uncommandable,Stasis,Dead,Invulnerable"/>
         <Range value="8"/>
         <CmdButtonArray index="Cancel" DefaultButtonFace="Cancel"/>
         <CastIntroTime value="0.01"/>
         <UninterruptibleArray index="Cast" value="1"/>
+        <Flags index="WaitToSpend" value="1"/>
+        <UseMarkerArray index="Approach" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="DarkArchonSCBWMindControl@Hardcore" parent="DarkArchonSCBWMindControl">
+        <Flags index="BestUnit" value="0"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="DarkArchonSCBWMaelstrom" parent="SCBW_AbilTarget">
         <Alignment value="Negative"/>
@@ -1966,34 +2051,49 @@
         <CursorEffect value="DarkArchonSCBWMaelstrom@Search"/>
         <AINotifyEffect value="DarkArchonSCBWMaelstrom@Search"/>
     </CAbilEffectTarget>
+    <CAbilEffectTarget id="DarkArchonSCBWMaelstrom@Hardcore" parent="DarkArchonSCBWMaelstrom">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
     <CAbilEffectTarget id="DarkArchonSCBWFeedback" parent="SCBW_AbilTarget">
         <Alignment value="Negative"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="DarkArchonSCBWFeedback@Set"/>
         <Flags index="AllowMovement" value="1"/>
+        <Flags index="WaitToSpend" value="1"/>
         <Cost>
             <Vital index="Energy" value="50"/>
-            <Cooldown TimeUse="1.375"/>
+            <Cooldown TimeUse="1.3125"/>
         </Cost>
         <TargetFilters value="CanHaveEnergy,Visible,HasEnergy;Self,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Range value="10"/>
         <AINotifyEffect value=""/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="DarkArchonSCBWFeedback@Hardcore" parent="DarkArchonSCBWFeedback">
+        <Flags index="AllowMovement" value="0"/>
+        <Flags index="BestUnit" value="0"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="HighTemplarSCBWPsiStorm" parent="SCBW_AbilTarget">
         <Alignment value="Negative"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="HighTemplarSCBWPsiStorm@CPDelayInital"/>
         <Flags index="AllowMovement" value="1"/>
+        <Flags index="WaitToSpend" value="1"/>
         <Cost>
             <Vital index="Energy" value="75"/>
-            <Cooldown TimeUse="2.8125"/>
+            <Cooldown TimeUse="2.625"/>
         </Cost>
         <Range value="9"/>
-        <CastIntroTime value="0.25"/>
-        <UninterruptibleArray index="Cast" value="1"/>
         <UninterruptibleArray index="Channel" value="1"/>
         <CursorEffect value="HighTemplarSCBWPsiStorm@Search"/>
-        <CastOutroTime value="0.3125"/>
+        <CastOutroTime value="0.25"/>
+        <AbilSetId value="Storm"/>
+        <CmdButtonArray index="Execute">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="HighTemplarSCBWPsiStorm@Hardcore" parent="HighTemplarSCBWPsiStorm">
+        <Flags index="AllowMovement" value="0"/>
+        <Flags index="BestUnit" value="0"/>
     </CAbilEffectTarget>
     <CAbilEffectTarget id="HighTemplarSCBWHallucination" parent="SCBW_AbilTarget">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
@@ -2011,10 +2111,14 @@
         <UninterruptibleArray index="Finish" value="1"/>
         <CastIntroTime value="0.1875"/>
     </CAbilEffectTarget>
+    <CAbilEffectTarget id="HighTemplarSCBWHallucination@Hardcore" parent="HighTemplarSCBWHallucination">
+        <Flags index="AllowMovement" value="0"/>
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
     <CAbilArmMagazine id="ReaverSCBWHangar" parent="SCBW_ArmMagazine" Ammo1="ScarabSCBW@Dummy">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Leash value="20"/>
-        <InfoArray index="Ammo1" Time="6.5625">
+        <InfoArray index="Ammo1" Time="6">
             <Button DefaultButtonFace="ScarabSCBW"/>
             <Flags index="AutoBuild" value="1"/>
             <Flags index="AutoBuildOn" value="1"/>
@@ -2026,12 +2130,6 @@
         <EffectArray index="Death" value="ReaverSCBWHangar@ScarabCounterReduce"/>
         <EffectArray index="Release" value="ReaverSCBWHangar@ScarabCounterReduce"/>
     </CAbilArmMagazine>
-    <CAbilAttack id="ReaverSCBWWeapon@Attack" parent="attack">
-        <Name value="Abil/Name/ReaverSCBWWeapon@Attack"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="ReaverSCBWWeapon@Attack"/>
-        <CmdButtonArray index="Towards" DefaultButtonFace="ReaverSCBWWeapon@AttackTowards"/>
-        <CmdButtonArray index="Barrage" DefaultButtonFace="ReaverSCBWWeapon@AttackGround"/>
-    </CAbilAttack>
     <CAbilEffectTarget id="ShieldBatterySCBWRecharge">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Effect index="0" value="ShieldBatterySCBWRecharge@Healer"/>
@@ -2047,11 +2145,11 @@
             <SortArray value="TSShieldsFraction"/>
             <SortArray value="TSDistance"/>
         </TargetSorts>
-        <Range value="4.5"/>
+        <Range value="4"/>
         <Arc value="360"/>
         <AutoCastAcquireLevel value="Defensive"/>
         <AutoCastFilters value="Visible;Self,Neutral,Enemy,Missile,UnderConstruction,Dead,Hidden"/>
-        <AutoCastRange value="4.5"/>
+        <AutoCastRange value="4"/>
         <AutoCastValidatorArray value="ShieldBatterySCBWRecharge@Autocast"/>
         <UseMarkerArray index="Approach" value="0"/>
         <UseMarkerArray index="Prep" value="0"/>
@@ -2061,21 +2159,59 @@
         <CmdButtonArray index="Cancel" DefaultButtonFace="Stop">
             <Flags index="ToSelection" value="1"/>
         </CmdButtonArray>
+        <CancelableArray index="Channel" value="1"/>
     </CAbilEffectTarget>
-    <CAbilBattery id="ShieldBatterySCBWRecharge@Battery">
+    <CAbilAttack id="ReaverSCBWWeapon@Attack" parent="attack">
+        <Name value="Abil/Name/ReaverSCBWWeapon@Attack"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="ReaverSCBWWeapon@Attack"/>
+        <CmdButtonArray index="Towards" DefaultButtonFace="ReaverSCBWWeapon@AttackTowards"/>
+        <CmdButtonArray index="Barrage" DefaultButtonFace="ReaverSCBWWeapon@AttackGround"/>
+    </CAbilAttack>
+    <CAbilBattery id="ShieldBatterySCBWBattery">
         <Alignment value="Neutral"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <AbilityCategories index="CanBeDisabled" value="1"/>
         <AbilityCategories index="CanBeIllusionDisabled" value="1"/>
-        <CmdButtonArray index="Execute" DefaultButtonFace="ShieldBatterySCBWRecharge@Battery">
+        <CmdButtonArray index="Execute" DefaultButtonFace="ShieldBatterySCBWBattery">
             <Flags index="AllowMinimap" value="0"/>
         </CmdButtonArray>
         <TargetFilters value="CanHaveShields,Visible;Self,Enemy,Structure,RawResource,HarvestableResource,Missile,Stasis,Dead,Hidden,Decaying"/>
-        <Range value="4.5"/>
+        <Range value="4"/>
         <EnumRange value="0"/>
-        <Effect value="ShieldBatterySCBWRecharge@BatterySet"/>
+        <Effect value="ShieldBatterySCBWBattery@Set"/>
         <SmartPriority value="14"/>
     </CAbilBattery>
+    <CValidatorPlayerRequirement id="SCEV_HideWorkerCount">
+        <Find value="1"/>
+        <Value value="SCEV_HideWorkerCount"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorCombine id="CorsairSCBWWeapon@Splash">
+        <Type value="And"/>
+        <CombineArray value="noMarkers"/>
+        <CombineArray value="InterceptorSCBW@Not"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="HighTemplarSCBWPsiStorm@NoMarker">
+        <Behavior value="HighTemplarSCBWPsiStorm@Marker"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="ShieldBatterySCBWBattery@GuideRegionAdd" parent="SCBW_Effect">
+        <ResultFailed value="CantTargetThatUnit"/>
+        <CombineArray value="ShieldsNotFull"/>
+        <CombineArray value="NotWarpingIn"/>
+        <CombineArray value="NotVortexd"/>
+        <CombineArray value="NotUncommandable"/>
+        <CombineArray value="NotInterceptor"/>
+        <CombineArray value="InterceptorSCBW@Not"/>
+        <CombineArray value="ShieldBatterySCBWBattery@CanIssueOrders"/>
+    </CValidatorCombine>
+    <CValidatorUnitOrderTargetType id="ShieldBatterySCBWBattery@OrderUnit">
+        <AbilLink value="ShieldBatterySCBWBattery@Target"/>
+    </CValidatorUnitOrderTargetType>
+    <CValidatorPlayerAlliance id="ShieldBatterySCBWBattery@CanIssueOrders">
+        <WhichPlayer Value="Target"/>
+        <Find value="1"/>
+        <WithPlayer Value="Caster"/>
+        <Value value="Control"/>
+    </CValidatorPlayerAlliance>
     <CValidatorCombine id="ArbiterSCBWRecall@CPSet">
         <Type value="And"/>
         <CombineArray value="CasterNotDead"/>
@@ -2441,8 +2577,8 @@
         <CombineArray value="NotLarva"/>
         <CombineArray value="NotAbducted"/>
         <CombineArray value="LarvaSCBW@Not"/>
-        <CombineArray value="NotEggSCBW"/>
-        <CombineArray value="NotLurkerSCBWEgg"/>
+        <CombineArray value="EggSCBW@Not"/>
+        <CombineArray value="LurkerSCBWEgg@Not"/>
         <CombineArray value="ArbiterSCBWRecall@SharedControl"/>
     </CValidatorCombine>
     <CValidatorCombine id="ArbiterSCBWRecall@ABRecalling" parent="SCBW_Effect">
@@ -2450,8 +2586,8 @@
         <CombineArray value="NotLarva"/>
         <CombineArray value="NotAbducted"/>
         <CombineArray value="LarvaSCBW@Not"/>
-        <CombineArray value="NotEggSCBW"/>
-        <CombineArray value="NotLurkerSCBWEgg"/>
+        <CombineArray value="EggSCBW@Not"/>
+        <CombineArray value="LurkerSCBWEgg@Not"/>
     </CValidatorCombine>
     <CValidatorCombine id="HighTemplarSCBWPsiStorm@Damage" parent="SCBW_Effect">
         <CombineArray value="HighTemplarSCBWPsiStorm@DamageTargetFilters"/>
@@ -2459,9 +2595,13 @@
     <CValidatorUnitFilters id="HighTemplarSCBWPsiStorm@DamageTargetFilters">
         <Filters value="-;Structure,Missile,Destructible,Stasis,Dead,Hidden,Invulnerable"/>
     </CValidatorUnitFilters>
+    <CValidatorUnitCompareBehaviorCount id="HighTemplarSCBWPsiStorm@Behavior">
+        <Compare value="GT"/>
+        <Behavior value="HighTemplarSCBWPsiStorm"/>
+    </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="DarkArchonSCBWMindControl@Set" parent="SCBW_Effect">
         <CombineArray value="DarkArchonSCBWMindControl@PreventionNot"/>
-        <CombineArray value="NotSpiderMineSCBW"/>
+        <CombineArray value="SpiderMineSCBW@NotAlias"/>
         <CombineArray value="IsNotNeuralParasited"/>
         <ResultFailed value="CantMindControl"/>
     </CValidatorCombine>
@@ -2473,7 +2613,7 @@
         <CombineArray value="SCBW_IsNotTempUnit"/>
         <CombineArray value="IsNotEggUnit"/>
         <CombineArray value="IsNotLarva"/>
-        <CombineArray value="NotLarvaSCBW"/>
+        <CombineArray value="LarvaSCBW@Not"/>
         <ResultFailed value="CantTargetThatUnit"/>
     </CValidatorCombine>
     <CValidatorCombine id="DarkArchonSCBWFeedback@Set" parent="SCBW_Effect">
@@ -2481,15 +2621,16 @@
         <CombineArray value="NotOrbitalCommandFlying"/>
         <CombineArray value="NotNexus"/>
         <CombineArray value="NotShieldBattery"/>
-        <CombineArray value="NotShieldBatterySCBW"/>
-        <CombineArray value="NotComsatStationSCBW"/>
-        <CombineArray value="NotInfestedOrbitalCommandSCBW"/>
-        <CombineArray value="NotInfestedOrbitalCommandSCBW@Flying"/>
+        <CombineArray value="ShieldBatterySCBW@Not"/>
+        <CombineArray value="CommandCenterSCBW@Not"/>
+        <CombineArray value="ComsatStationSCBW@Not"/>
+        <CombineArray value="InfestedOrbitalCommandSCBW@Not"/>
+        <CombineArray value="InfestedOrbitalCommandSCBW@Flying@Not"/>
         <ResultFailed value="CantTargetStructures"/>
     </CValidatorCombine>
     <CValidatorCombine id="CorsairSCBWDisruptionWeb@IterateTransport" parent="SCBW_Effect">
         <CombineArray value="IsBunker"/>
-        <CombineArray value="IsBunkerSCBW"/>
+        <CombineArray value="BunkerSCBW@Is"/>
         <Type value="Or"/>
     </CValidatorCombine>
     <CValidatorUnitCompareBehaviorCount id="CorsairSCBWDisruptionWeb@HasNotBehavior">
@@ -2510,7 +2651,7 @@
     </CValidatorUnitFilters>
     <CValidatorCombine id="HighTemplarSCBWHallucination@Birth">
         <Type value="And"/>
-        <CombineArray value="NotScarabSCBW"/>
+        <CombineArray value="ScarabSCBW@Not"/>
     </CValidatorCombine>
     <CValidatorPlayerRequirement id="ReaverSCBWHangar@Armed">
         <WhichPlayer Value="Caster"/>
@@ -2521,11 +2662,11 @@
         <CombineArray value="ReaverSCBWHangar@Armed"/>
         <Negate value="1"/>
     </CValidatorCombine>
-    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWRecharge@BatteryTrackerCaster">
+    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWBattery@TrackerCaster">
         <WhichUnit Value="Caster"/>
         <Compare value="LT"/>
         <Value value="1"/>
-        <Behavior value="ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
+        <Behavior value="ShieldBatterySCBWBattery@TrackerCaster"/>
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="ShieldBatterySCBWRecharge@Healer" parent="SCBW_Effect">
         <CombineArray value="noMarkers"/>
@@ -2537,10 +2678,11 @@
         <CombineArray value="NotUncommandable"/>
         <CombineArray value="SourceNotHidden"/>
         <CombineArray value="NotInterceptor"/>
-        <CombineArray value="NotInterceptorSCBW"/>
+        <CombineArray value="InterceptorSCBW@Not"/>
         <ResultFailed value="CantTargetThatUnit"/>
     </CValidatorCombine>
-    <CValidatorCombine id="ShieldBatterySCBWRecharge@BatterySet" parent="SCBW_Effect">
+    <CValidatorCombine id="ShieldBatterySCBWBattery@Set" parent="SCBW_Effect">
+        <ResultFailed value="CantTargetThatUnit"/>
         <CombineArray value="CasterHasEnergy"/>
         <CombineArray value="SCBW_CasterNotStasisNotStunnedNotDead"/>
         <CombineArray value="noMarkers"/>
@@ -2552,15 +2694,15 @@
         <CombineArray value="NotUncommandable"/>
         <CombineArray value="SourceNotHidden"/>
         <CombineArray value="NotInterceptor"/>
-        <CombineArray value="NotInterceptorSCBW"/>
-        <ResultFailed value="CantTargetThatUnit"/>
+        <CombineArray value="InterceptorSCBW@Not"/>
+        <CombineArray value="ShieldBatterySCBWBattery@CanIssueOrders"/>
     </CValidatorCombine>
     <CValidatorCombine id="ShieldBatterySCBWRecharge@Autocast" parent="SCBW_Effect">
         <CombineArray value="ShieldBatterySCBW@HasEnergy"/>
         <CombineArray value="UnitOrAttackingStructureSCBW"/>
-        <CombineArray value="ShieldBatterySCBWRecharge@NoCooldown"/>
-        <CombineArray value="ShieldBatterySCBWRecharge@BatteryTracker"/>
-        <CombineArray value="ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
+        <CombineArray value="ShieldBatterySCBWBattery@NoCooldown"/>
+        <CombineArray value="ShieldBatterySCBWBattery@Tracker"/>
+        <CombineArray value="ShieldBatterySCBWBattery@TrackerCaster"/>
     </CValidatorCombine>
     <CValidatorLocationCompareRange id="ReaverSCBWWeapon@TeleportTrackDistance">
         <WhichLocation Effect="ReaverSCBWWeapon@LaunchSwitch" Value="OriginPoint"/>
@@ -2568,24 +2710,24 @@
         <Range value="9"/>
         <Value Effect="ReaverSCBWWeapon@LaunchSwitch" Value="TargetUnit"/>
     </CValidatorLocationCompareRange>
-    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWRecharge@NoCooldown">
+    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWBattery@NoCooldown">
         <WhichUnit Value="Caster"/>
-        <Behavior value="ShieldBatterySCBWRecharge@Cooldown"/>
+        <Behavior value="ShieldBatterySCBWBattery@Cooldown"/>
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="ShieldBatterySCBWRecharge@HealerPeriodic" parent="SCBW_Effect">
         <CombineArray value="ShieldsNotFull"/>
-        <CombineArray value="ShieldBatterySCBWRecharge@BatteryTracker"/>
-        <CombineArray value="ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
+        <CombineArray value="ShieldBatterySCBWBattery@Tracker"/>
+        <CombineArray value="ShieldBatterySCBWBattery@TrackerCaster"/>
     </CValidatorCombine>
-    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWRecharge@BatteryTracker">
+    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWBattery@Tracker">
         <Compare value="LT"/>
         <Value value="1"/>
-        <Behavior value="ShieldBatterySCBWRecharge@BatteryTracker"/>
+        <Behavior value="ShieldBatterySCBWBattery@Tracker"/>
     </CValidatorUnitCompareBehaviorCount>
-    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWRecharge@BatteryTrackerMultiple">
+    <CValidatorUnitCompareBehaviorCount id="ShieldBatterySCBWBattery@TrackerMultiple">
         <Compare value="LT"/>
         <Value value="2"/>
-        <Behavior value="ShieldBatterySCBWRecharge@BatteryTracker"/>
+        <Behavior value="ShieldBatterySCBWBattery@Tracker"/>
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorPlayerRequirement id="ObserverSCBWSightUpgrade@SourcePlayer">
         <WhichPlayer Value="Source"/>
@@ -2768,9 +2910,6 @@
     <CRequirement id="ScoutSCBWSightUpgrade" parent="SCBW_AbilReq" Race="Protoss"/>
     <CRequirement id="ScoutSCBWSpeedUpgrade" parent="SCBW_AbilReqNoUse" Race="Protoss"/>
     <CRequirement id="ShuttleSCBWSpeedUpgrade" parent="SCBW_AbilReqNoUse" Race="Protoss"/>
-    <CRequirement id="ScarabSCBWWeapon" Race="Protoss">
-        <EditorCategories value="Race:Protoss,TechType:Unit"/>
-    </CRequirement>
     <CRequirement id="CarrierSCBWHangar@Arm" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
     <CRequirement id="CarrierSCBWHangar@ArmUpgrade" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
     <CRequirement id="ArbiterSCBWRecall" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
@@ -3229,19 +3368,16 @@
         <DefaultButtonLayout Row="2" Column="1"/>
         <HidesForSimpleText value="0"/>
     </CButton>
-    <CButton id="ShieldBatterySCBWRecharge@Battery">
+    <CButton id="ShieldBatterySCBWRecharge@Overcharge">
         <Icon value="Assets\Textures\btn-ability-spearofadun-shieldovercharge.dds"/>
         <EditorCategories value="Race:Protoss"/>
         <HidesForSimpleText value="0"/>
     </CButton>
-    <CButton id="ShieldBatterySCBWRecharge@BatteryClassic">
-        <Tooltip value="Button/Tooltip/ShieldBatterySCBWRecharge@Battery"/>
+    <CButton id="ShieldBatterySCBWBattery">
         <Icon value="Assets\Textures\btn-ability-protoss-rechargeshields@scbw.dds"/>
-        <AlertTooltip value="Button/Tooltip/ShieldBatterySCBWRecharge@Battery"/>
-        <Hotkey value="Button/Hotkey/ShieldBatterySCBWRecharge"/>
         <EditorCategories value="Race:Protoss"/>
-        <HotkeyAlias value="ShieldBatterySCBWRecharge"/>
         <HidesForSimpleText value="0"/>
+        <HotkeyAlias value="ShieldBatterySCBWRecharge"/>
     </CButton>
     <CButton id="ShieldBatterySCBWRecharge">
         <Icon value="Assets\Textures\btn-ability-protoss-rechargeshields@scbw.dds"/>
@@ -3411,13 +3547,11 @@
     </CRequirementAnd>
     <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW"/>
     <CRequirementAnd id="ProtossAirArmorsSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossAirArmorsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl1QoB">
-        <OperandArray index="0" value="ProtossAirArmorsSCBW@Lvl1QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossAirArmorsSCBW@Lvl1">
+    <CRequirementNot id="ProtossAirArmorsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="ProtossAirArmorsSCBW@Lvl1QoB"/>
+    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossAirArmorsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossAirArmorsSCBW@Lvl1Show">
@@ -3427,13 +3561,11 @@
         <OperandArray value="ProtossAirArmorsSCBW@Lvl1Count"/>
         <OperandArray value="FleetBeaconSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossAirArmorsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl2QoB">
-        <OperandArray index="0" value="ProtossAirArmorsSCBW@Lvl2QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossAirArmorsSCBW@Lvl2">
+    <CRequirementNot id="ProtossAirArmorsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="ProtossAirArmorsSCBW@Lvl2QoB"/>
+    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossAirArmorsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossAirArmorsSCBW@Lvl2Show">
@@ -3444,13 +3576,11 @@
         <OperandArray value="ProtossAirArmorsSCBW@Lvl2Count"/>
         <OperandArray value="FleetBeaconSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossAirArmorsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossAirArmorsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl3QoB">
-        <OperandArray index="0" value="ProtossAirArmorsSCBW@Lvl3QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossAirArmorsSCBW@Lvl3">
+    <CRequirementNot id="ProtossAirArmorsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="ProtossAirArmorsSCBW@Lvl3QoB"/>
+    <CRequirementCountUpgrade id="ProtossAirArmorsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossAirArmorsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossAirArmorsSCBW@Lvl3Show">
@@ -3464,13 +3594,11 @@
     </CRequirementEq>
     <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Count" parent="SCBW_UpgradeCount" x="ProtossAirWeaponsSCBW"/>
     <CRequirementAnd id="ProtossAirWeaponsSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossAirWeaponsSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossAirWeaponsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossAirWeaponsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl1QoB">
-        <OperandArray index="0" value="ProtossAirWeaponsSCBW@Lvl1QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossAirWeaponsSCBW@Lvl1">
+    <CRequirementNot id="ProtossAirWeaponsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="ProtossAirWeaponsSCBW@Lvl1QoB"/>
+    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossAirWeaponsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossAirWeaponsSCBW@Lvl1Show">
@@ -3480,13 +3608,11 @@
         <OperandArray value="ProtossAirWeaponsSCBW@Lvl1Count"/>
         <OperandArray value="FleetBeaconSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossAirWeaponsSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossAirWeaponsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossAirWeaponsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl2QoB">
-        <OperandArray index="0" value="ProtossAirWeaponsSCBW@Lvl2QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossAirWeaponsSCBW@Lvl2">
+    <CRequirementNot id="ProtossAirWeaponsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="ProtossAirWeaponsSCBW@Lvl2QoB"/>
+    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossAirWeaponsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossAirWeaponsSCBW@Lvl2Show">
@@ -3497,13 +3623,11 @@
         <OperandArray value="ProtossAirWeaponsSCBW@Lvl2Count"/>
         <OperandArray value="FleetBeaconSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossAirWeaponsSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossAirWeaponsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossAirWeaponsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl3QoB">
-        <OperandArray index="0" value="ProtossAirWeaponsSCBW@Lvl3QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossAirWeaponsSCBW@Lvl3">
+    <CRequirementNot id="ProtossAirWeaponsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="ProtossAirWeaponsSCBW@Lvl3QoB"/>
+    <CRequirementCountUpgrade id="ProtossAirWeaponsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossAirWeaponsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossAirWeaponsSCBW@Lvl3Show">
@@ -3516,13 +3640,11 @@
         <OperandArray index="1" value="0"/>
     </CRequirementEq>
     <CRequirementAnd id="ProtossGroundArmorsSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossGroundArmorsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl1QoB">
-        <OperandArray index="0" value="ProtossGroundArmorsSCBW@Lvl1QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundArmorsSCBW@Lvl1">
+    <CRequirementNot id="ProtossGroundArmorsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="ProtossGroundArmorsSCBW@Lvl1QoB"/>
+    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundArmorsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossGroundArmorsSCBW@Lvl1Show">
@@ -3532,13 +3654,11 @@
         <OperandArray value="ProtossGroundArmorsSCBW@Lvl1Count"/>
         <OperandArray value="TemplarArchiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossGroundArmorsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl2QoB">
-        <OperandArray index="0" value="ProtossGroundArmorsSCBW@Lvl2QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundArmorsSCBW@Lvl2">
+    <CRequirementNot id="ProtossGroundArmorsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="ProtossGroundArmorsSCBW@Lvl2QoB"/>
+    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundArmorsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossGroundArmorsSCBW@Lvl2Show">
@@ -3549,13 +3669,11 @@
         <OperandArray value="ProtossGroundArmorsSCBW@Lvl2Count"/>
         <OperandArray value="TemplarArchiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossGroundArmorsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossGroundArmorsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl3QoB">
-        <OperandArray index="0" value="ProtossGroundArmorsSCBW@Lvl3QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundArmorsSCBW@Lvl3">
+    <CRequirementNot id="ProtossGroundArmorsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="ProtossGroundArmorsSCBW@Lvl3QoB"/>
+    <CRequirementCountUpgrade id="ProtossGroundArmorsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundArmorsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossGroundArmorsSCBW@Lvl3Show">
@@ -3569,13 +3687,11 @@
     </CRequirementEq>
     <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Count" parent="SCBW_UpgradeCount" x="ProtossGroundWeaponsSCBW"/>
     <CRequirementAnd id="ProtossGroundWeaponsSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossGroundWeaponsSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossGroundWeaponsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossGroundWeaponsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl1QoB">
-        <OperandArray index="0" value="ProtossGroundWeaponsSCBW@Lvl1QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundWeaponsSCBW@Lvl1">
+    <CRequirementNot id="ProtossGroundWeaponsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="ProtossGroundWeaponsSCBW@Lvl1QoB"/>
+    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundWeaponsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossGroundWeaponsSCBW@Lvl1Show">
@@ -3585,13 +3701,11 @@
         <OperandArray value="ProtossGroundWeaponsSCBW@Lvl1Count"/>
         <OperandArray value="TemplarArchiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossGroundWeaponsSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossGroundWeaponsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossGroundWeaponsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl2QoB">
-        <OperandArray index="0" value="ProtossGroundWeaponsSCBW@Lvl2QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundWeaponsSCBW@Lvl2">
+    <CRequirementNot id="ProtossGroundWeaponsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="ProtossGroundWeaponsSCBW@Lvl2QoB"/>
+    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundWeaponsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossGroundWeaponsSCBW@Lvl2Show">
@@ -3602,13 +3716,11 @@
         <OperandArray value="ProtossGroundWeaponsSCBW@Lvl2Count"/>
         <OperandArray value="TemplarArchiveSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossGroundWeaponsSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossGroundWeaponsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossGroundWeaponsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryWeaponsSCBW@Lvl3QoB">
-        <OperandArray index="0" value="ProtossGroundWeaponsSCBW@Lvl3QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundWeaponsSCBW@Lvl3">
+    <CRequirementNot id="ProtossGroundWeaponsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="ProtossGroundWeaponsSCBW@Lvl3QoB"/>
+    <CRequirementCountUpgrade id="ProtossGroundWeaponsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossGroundWeaponsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossGroundWeaponsSCBW@Lvl3Show">
@@ -3622,13 +3734,11 @@
     </CRequirementEq>
     <CRequirementCountUpgrade id="ProtossShieldsSCBW@Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW"/>
     <CRequirementAnd id="ProtossShieldsSCBW@Lvl1"/>
-    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW@Lvl1">
+    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl1Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossShieldsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl1QoB">
-        <OperandArray index="0" value="ProtossShieldsSCBW@Lvl1QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossShieldsSCBW@Lvl1">
+    <CRequirementNot id="ProtossShieldsSCBW@Lvl1NotQoB" parent="SCBW_Not" x="ProtossShieldsSCBW@Lvl1QoB"/>
+    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl1QoB" parent="SCBW_UpgradeQoB" x="ProtossShieldsSCBW_Lvl1">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossShieldsSCBW@Lvl1Show">
@@ -3638,13 +3748,11 @@
         <OperandArray value="ProtossShieldsSCBW@Lvl1Count"/>
         <OperandArray value="CyberneticsCoreSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW@Lvl2">
+    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl2Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossShieldsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl2QoB">
-        <OperandArray index="0" value="ProtossShieldsSCBW@Lvl2QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossShieldsSCBW@Lvl2">
+    <CRequirementNot id="ProtossShieldsSCBW@Lvl2NotQoB" parent="SCBW_Not" x="ProtossShieldsSCBW@Lvl2QoB"/>
+    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl2QoB" parent="SCBW_UpgradeQoB" x="ProtossShieldsSCBW_Lvl2">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossShieldsSCBW@Lvl2Show">
@@ -3655,13 +3763,11 @@
         <OperandArray value="ProtossShieldsSCBW@Lvl2Count"/>
         <OperandArray value="CyberneticsCoreSCBW@Count"/>
     </CRequirementAnd>
-    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW@Lvl3">
+    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl3Count" parent="SCBW_UpgradeCount" x="ProtossShieldsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
-    <CRequirementNot id="ProtossShieldsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="TerranInfantryArmorsSCBW@Lvl3QoB">
-        <OperandArray index="0" value="ProtossShieldsSCBW@Lvl3QoB"/>
-    </CRequirementNot>
-    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossShieldsSCBW@Lvl3">
+    <CRequirementNot id="ProtossShieldsSCBW@Lvl3NotQoB" parent="SCBW_Not" x="ProtossShieldsSCBW@Lvl3QoB"/>
+    <CRequirementCountUpgrade id="ProtossShieldsSCBW@Lvl3QoB" parent="SCBW_UpgradeQoB" x="ProtossShieldsSCBW_Lvl3">
         <Flags index="TechTreeCheat" value="0"/>
     </CRequirementCountUpgrade>
     <CRequirementAnd id="ProtossShieldsSCBW@Lvl3Show">
@@ -3786,6 +3892,58 @@
     <CRequirementAnd id="CarrierSCBWHangar@Arm">
         <OperandArray value="InterceptorSCBW@QoBAtUnitLT4"/>
     </CRequirementAnd>
+    <CActorUnit id="CorsairSCBWDisruptionWeb@Unit" parent="GenericUnitMinimal" unitName="CorsairSCBWDisruptionWeb@Unit">
+        <Aliases index="1" removed="1"/>
+    </CActorUnit>
+    <CActorQueryResponse id="ShieldBatterySCBWBattery@GuideRegionRemove" parent="GuideRegionRemove">
+        <OnResponse Target="ModelPretargetGroundCustom" Send="Destroy"/>
+    </CActorQueryResponse>
+    <CActorQueryResponse id="ShieldBatterySCBWBattery@GuideRegionClosestAdd" parent="GuideRegionAdd">
+        <Subject Terms="ValidateUnit ShieldBatterySCBWBattery@GuideRegionAdd IncludeDerivedSnapshot System_Snapshot_Dummy; ScopeContains GroundPreSelection"/>
+    </CActorQueryResponse>
+    <CActorQueryResponse id="ShieldBatterySCBWBattery@GuideRegionAdd" parent="GuideRegionAdd">
+        <Subject Terms="ValidateUnit ShieldBatterySCBWBattery@GuideRegionAdd IncludeDerivedSnapshot System_Snapshot_Dummy"/>
+        <OnResponse index="0" Send="Create ModelPretargetGroundCustom"/>
+    </CActorQueryResponse>
+    <CActorRegionCircle id="ShieldBatterySCBWBattery@CursorRegion" parent="CursorRegion">
+        <QueryEffect value="ShieldBatterySCBWBattery@Enum"/>
+        <QueryFilters value="CanHaveShields,Visible;Self,Enemy,Structure,RawResource,HarvestableResource,Missile,Uncommandable,Stasis,Dead,Hidden,Decaying"/>
+        <Radius value="4.500000"/>
+        <On index="0" Terms="ActorCreation" Send="QueryPersistent ShieldBatterySCBWBattery@GuideRegionAdd ShieldBatterySCBWBattery@GuideRegionRemove AgainstRadiusGame"/>
+        <Aliases index="0" removed="1"/>
+        <RegionFlags index="UseEffectRange" value="1"/>
+    </CActorRegionCircle>
+    <CActorRegionCircle id="ShieldBatterySCBWBattery@CursorRegionClosest" parent="GuideRegionClosest">
+        <On index="1" Terms="RegionSubject.*.AddedFirst" Target="_GuideVisual" Send="SetVisibility"/>
+        <On index="2" Terms="RegionSubject.*.RemovedLast" Target="_GuideVisual" Send="SetVisibility 1"/>
+        <On index="3" Terms="ActorCreation" Send="QueryPersistent Bogus Bogus AgainstRadiusContact 0.000000 ::Cursor ShieldBatterySCBWBattery@GuideRegionClosestAdd GuideRegionRemove"/>
+        <On Terms="RegionSubject.*.AddedFirst" Target="::Creator" Send="Signal AddedFirst"/>
+        <On Terms="RegionSubject.*.RemovedLast" Target="::Creator" Send="Signal RemovedLast"/>
+        <HostSiteOps Ops="SOpBasicScopeFollow"/>
+        <Aliases index="1" removed="1"/>
+    </CActorRegionCircle>
+    <CActorSplat id="ShieldBatterySCBWBattery@CursorSplat" parent="CursorSplat" abil="ShieldBatterySCBWBattery@Target">
+        <Aliases value="_GuideVisual"/>
+        <On index="1" Terms="ActorCreation" Send="Create ShieldBatterySCBWBattery@CursorRegion"/>
+        <On index="2" Terms="ActorDestruction" Target="ShieldBatterySCBWBattery@CursorRegion" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="Create ShieldBatterySCBWBattery@CursorRegionClosest"/>
+        <On Terms="ActorCreation" Send="SetOpacity"/>
+        <On Terms="ActorCreation" Send="Create ShieldBatterySCBWBattery@CursorRange"/>
+        <On Terms="Signal.*.AddedFirst" Target="ShieldBatterySCBWBattery@CursorRegion" Send="Destroy"/>
+        <On Terms="Signal.*.RemovedLast" Send="Create ShieldBatterySCBWBattery@CursorRegion"/>
+        <Model value="ShieldBatterySCBWBattery@TargetCursorSplat"/>
+    </CActorSplat>
+    <CActorRange id="ShieldBatterySCBWBattery@CursorRange" abil="ShieldBatterySCBWBattery@Target">
+        <Aliases value="_GuideVisual"/>
+        <Host Subject="::Creator"/>
+        <HostSiteOps Ops="SOpBasicScopeFollow SOpShadow"/>
+        <Range value="4.500000"/>
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+    </CActorRange>
+    <CActorRange id="ShieldBatterySCBWRecharge@Range" parent="RangeAbil" abil="ShieldBatterySCBWRecharge">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
     <CActorSound id="ArbiterSCBWRecall@CastSound" parent="SoundOneShot">
         <On Terms="Abil.ArbiterSCBWRecall.SourceCastStart" Send="Create"/>
         <Host Subject="_Unit"/>
@@ -3838,6 +3996,8 @@
     <CActorEventMacro id="HighTemplarSCBWPsiStorm@CastMacro">
         <On Terms="Abil.HighTemplarSCBWPsiStorm.SourceCastStart" Send="Create HighTemplarSCBWPsiStorm@CastFX"/>
         <On Terms="Abil.HighTemplarSCBWPsiStorm.SourceCastStart" Send="Create HighTemplarSCBWPsiStorm@CastSound"/>
+        <On Terms="Abil.HighTemplarSCBWPsiStorm@Hardcore.SourceCastStart" Send="Create HighTemplarSCBWPsiStorm@CastFX"/>
+        <On Terms="Abil.HighTemplarSCBWPsiStorm@Hardcore.SourceCastStart" Send="Create HighTemplarSCBWPsiStorm@CastSound"/>
     </CActorEventMacro>
     <CActorModel id="HighTemplarSCBWPsiStorm@CastFX" parent="ModelAnimationStyleOneShot">
         <Inherits index="CloakEffect" value="1"/>
@@ -3875,13 +4035,14 @@
     <CActorSound id="ZealotSCBWWeapon@Impact" parent="SoundOneShot">
         <On Terms="Effect.ZealotSCBWWeapon@Damage.Start; At Caster" Send="Create"/>
     </CActorSound>
-    <CActorAction id="DarkArchonSCBWWeapon@Action" parent="GenericAttack" effectAttack="DarkArchonSCBWWeapon@Damage">
+    <CActorAction id="DarkArchonSCBWWeapon@Action" parent="GenericAttackWhiff" effectAttack="DarkArchonSCBWWeapon@Damage">
         <LaunchAssets Sound="DarkArchonSCBWWeapon@Launch"/>
         <Beam value="DarkArchonSCBWWeapon@Beam"/>
         <BeamScope value="Caster"/>
         <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeNoVizEnhance VoidRaySOpForwardLaunch"/>
         <ImpactMap index="None" Model="" Sound="DarkArchonSCBWWeapon@Impact"/>
         <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+        <ImpactSite value="GenericAttackImpactSiteWhiff"/>
     </CActorAction>
     <CActorBeamSimple id="DarkArchonSCBWWeapon@Beam" parent="BeamSimpleAnimationStyleOneShot">
         <Macros value="ActionTargetTeleportDestroy"/>
@@ -4122,10 +4283,10 @@
     <CActorSound id="ReaverSCBWWeapon@Launch" parent="SoundOneShot">
         <On Terms="Effect.ReaverSCBWWeapon@SetInitial.Start; At Caster" Send="Create"/>
     </CActorSound>
-    <CActorAction id="HighTemplarSCBWWeapon@Action" parent="GenericAttack" effectImpact="HighTemplarSCBWWeapon@Damage" effectLaunch="HighTemplarSCBWWeapon@LM">
+    <CActorAction id="HighTemplarSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="HighTemplarSCBWWeapon@Damage" effectLaunch="HighTemplarSCBWWeapon@LM">
+        <LaunchSiteOps Ops="SOpAttachCenter SOpMoveByDot15"/>
         <LaunchAssets Sound="HighTemplarSCBWWeapon@AttackLaunch"/>
         <ImpactMap index="None" Model="HighTemplarSCBWWeapon@AttackImpact" Sound="HighTemplarSCBWWeapon@AttackImpact"/>
-        <LaunchSiteOps Ops="SOpAttachCenter SOpMoveByDot15"/>
         <ImpactPhysics Name="PsiBlastImpact" MatchKeys="Basic" Physics="HighTemplarSCBWWeapon@PhysicsImpactForce"/>
     </CActorAction>
     <CActorMissile id="HighTemplarSCBWWeapon@ActionMissile" parent="GenericAttackMissile" unitName="HighTemplarSCBWWeapon@Missile"/>
@@ -4188,34 +4349,44 @@
     </CActorSiteOpAttach>
     <CActorSound id="DarkArchonSCBWMerge@Sound" parent="SoundOneShot">
         <On Terms="Abil.DarkArchonSCBWMerge.Start" Send="Create"/>
+        <On Terms="Abil.DarkArchonSCBWMerge@Hardcore.Start" Send="Create"/>
     </CActorSound>
-    <CActorSplat id="CorsairSCBWDisruptionWeb@CursorSplat" parent="ProtossCursorSplatSCBW" abil="CorsairSCBWDisruptionWeb"/>
+    <CActorSplat id="CorsairSCBWDisruptionWeb@CursorSplat" parent="ProtossCursorSplatSCBW" abil="CorsairSCBWDisruptionWeb">
+        <On Terms="Abil.CorsairSCBWDisruptionWeb@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
     <CActorModel id="DarkArchonSCBWMaelstrom@CastModel" parent="ModelAnimationStyleOneShot">
         <HostSiteOps Ops="SOpAttachWeapon"/>
     </CActorModel>
     <CActorModel id="CorsairSCBWDisruptionWeb@Impact" parent="ModelAnimationStyleContinuous">
         <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Start" Send="Create"/>
-        <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Stop" Send="AnimBracketStop BSD"/>
+        <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Stop; FromEffectTreeDescendant" Send="AnimBracketStop BSD"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
-        <Scale value="0.750000"/>
         <VisibilityShape Shape="CorsairSCBWDisruptionWeb@Visibility"/>
         <HostSiteOps Ops="SOpShadowSyncGround SOpMoveUpByDot75"/>
     </CActorModel>
     <CActorSound id="CorsairSCBWDisruptionWeb@LaunchSound" parent="SoundOneShot">
         <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Start" Send="Create"/>
+        <On Terms="Effect.CorsairSCBWDisruptionWeb@CPInfinite.Start" Send="Create"/>
         <Sound value="CorsairSCBWDisruptionWeb@Launch"/>
     </CActorSound>
-    <CActorRange id="CorsairSCBWDisruptionWeb@Range" parent="RangeAbil" abil="CorsairSCBWDisruptionWeb">
+    <CActorRange id="CorsairSCBWDisruptionWeb@Range" parent="SCBW_RangeAbilMultiple" abil2="CorsairSCBWDisruptionWeb@Hardcore" abil="CorsairSCBWDisruptionWeb">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
     <CActorSound id="CorsairSCBWDisruptionWeb@LoopSound" parent="SoundOneShot">
         <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Start" Send="Create"/>
-        <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Stop" Send="Destroy"/>
+        <On Terms="Effect.CorsairSCBWDisruptionWeb@CP.Stop; FromEffectTreeDescendant" Send="Destroy"/>
+        <Sound value="CorsairSCBWDisruptionWeb@Loop"/>
+    </CActorSound>
+    <CActorSound id="CorsairSCBWDisruptionWeb@LoopSoundUnit" parent="SoundContinuous">
+        <Host Subject="_Unit"/>
+        <On Terms="Effect.CorsairSCBWDisruptionWeb@CPInfinite.Start" Send="Create"/>
+        <On Terms="Effect.CorsairSCBWDisruptionWeb@CPInfinite.Stop; FromEffectTreeDescendant" Send="Destroy"/>
         <Sound value="CorsairSCBWDisruptionWeb@Loop"/>
     </CActorSound>
     <CActorModel id="CorsairSCBWDisruptionWeb@Cast" parent="ModelAnimationStyleOneShot">
         <On Terms="Abil.CorsairSCBWDisruptionWeb.SourceFinishStart" Send="Create"/>
+        <On Terms="Abil.CorsairSCBWDisruptionWeb@Hardcore.SourceFinishStart" Send="Create"/>
         <Host Subject="_Unit"/>
         <HostSiteOps Ops="SOpAttachWeapon"/>
     </CActorModel>
@@ -4241,7 +4412,7 @@
         <Host Subject="_Selectable"/>
         <Sound value="DarkArchonSCBWFeedback@Launch"/>
     </CActorSound>
-    <CActorRange id="DarkArchonSCBWFeedback@Range" parent="RangeAbil" abil="DarkArchonSCBWFeedback">
+    <CActorRange id="DarkArchonSCBWFeedback@Range" parent="SCBW_RangeAbilMultiple" abil2="DarkArchonSCBWFeedback@Hardcore" abil="DarkArchonSCBWFeedback">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
@@ -4260,8 +4431,10 @@
         <HostImpactSiteOps Ops="SOpAttachHead"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
     </CActorBeamSimple>
-    <CActorRange id="DarkArchonSCBWMindControl@Range" parent="RangeAbil" abil="DarkArchonSCBWMindControl"/>
-    <CActorSplat id="DarkArchonSCBWMaelstrom@CursorSplat" parent="ProtossCursorSplatSCBW" abil="DarkArchonSCBWMaelstrom"/>
+    <CActorRange id="DarkArchonSCBWMindControl@Range" parent="SCBW_RangeAbilMultiple" abil2="DarkArchonSCBWMindControl@Hardcore" abil="DarkArchonSCBWMindControl"/>
+    <CActorSplat id="DarkArchonSCBWMaelstrom@CursorSplat" parent="ProtossCursorSplatSCBW" abil="DarkArchonSCBWMaelstrom">
+        <On Terms="Abil.DarkArchonSCBWMaelstrom@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
     <CActorSound id="DarkArchonSCBWMindControl@Sound" parent="SoundOneShot">
         <On Terms="Effect.DarkArchonSCBWMindControl@AB.Start; At Target" Send="Create"/>
     </CActorSound>
@@ -4283,10 +4456,13 @@
     </CActorModel>
     <CActorSound id="DarkArchonSCBWMaelstrom@LaunchSound" parent="SoundOneShot">
         <On Terms="Abil.DarkArchonSCBWMaelstrom.SourceCastStart" Send="Create"/>
+        <On Terms="Abil.DarkArchonSCBWMaelstrom@Hardcore.SourceCastStart" Send="Create"/>
         <Sound value="DarkArchonSCBWMaelstrom@Launch"/>
     </CActorSound>
-    <CActorSplat id="ArbiterSCBWStasisField@CursorSplat" parent="ProtossCursorSplatSCBW" abil="ArbiterSCBWStasisField"/>
-    <CActorRange id="DarkArchonSCBWMaelstrom@Range" parent="RangeAbil" abil="DarkArchonSCBWMaelstrom"/>
+    <CActorSplat id="ArbiterSCBWStasisField@CursorSplat" parent="ProtossCursorSplatSCBW" abil="ArbiterSCBWStasisField">
+        <On Terms="Abil.ArbiterSCBWStasisField@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
+    <CActorRange id="DarkArchonSCBWMaelstrom@Range" parent="SCBW_RangeAbilMultiple" abil2="DarkArchonSCBWMaelstrom@Hardcore" abil="DarkArchonSCBWMaelstrom"/>
     <CActorModel id="DarkArchonSCBWMaelstrom@StunImpact" parent="ModelAnimationStyleContinuous">
         <On Terms="ActorCreation" Send="AnimBracketStart GL_BSD GLbirth GLstand GLdeath"/>
         <On Terms="Behavior.DarkArchonSCBWMaelstrom.On" Send="Create"/>
@@ -4326,13 +4502,17 @@
         <Host Subject="_Selectable"/>
         <Sound value="ArbiterSCBWStasisField@Off"/>
     </CActorSound>
-    <CActorRange id="ArbiterSCBWStasisField@Range" parent="RangeAbil" abil="ArbiterSCBWStasisField">
+    <CActorRange id="ArbiterSCBWStasisField@Range" parent="SCBW_RangeAbilMultiple" abil2="ArbiterSCBWStasisField@Hardcore" abil="ArbiterSCBWStasisField">
         <Icon value="Assets\Textures\radaricon1.dds"/>
         <IconArcLength value="3.250000"/>
         <On Terms="ActorCreation" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility"/>
         <On Terms="ActorDestruction" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility 1"/>
     </CActorRange>
-    <CActorSplat id="ArbiterSCBWRecall@CursorSplat" parent="ProtossCursorSplatSCBW" abil="ArbiterSCBWRecall"/>
+    <CActorSplat id="ArbiterSCBWRecall@CursorSplat" parent="ProtossCursorSplatSCBW" abil="ArbiterSCBWRecall">
+        <On index="1" Terms="ActorCreation" Send="Create ArbiterSCBWRecall@CursorRegion"/>
+        <On index="2" Terms="ActorDestruction" Target="ArbiterSCBWRecall@CursorRegion" Send="Destroy"/>
+        <On Terms="Abil.ArbiterSCBWRecall@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
     <CActorSound id="ArbiterSCBWStasisField@Shockwave" parent="SoundOneShot">
         <On Terms="Effect.ArbiterSCBWStasisField@Search.Start" Send="Create"/>
     </CActorSound>
@@ -4355,7 +4535,7 @@
         <AutoScaleFactor value="0.350000"/>
         <VisibilityShape Shape="ArbiterSCBWRecall@Visibility"/>
     </CActorModel>
-    <CActorRange id="ArbiterSCBWRecall@Range" parent="RangeAbil" abil="ArbiterSCBWRecall">
+    <CActorRange id="ArbiterSCBWRecall@Range" parent="SCBW_RangeAbilMultiple" abil2="ArbiterSCBWRecall@Hardcore" abil="ArbiterSCBWRecall">
         <On Terms="ActorCreation" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility"/>
         <On Terms="ActorDestruction" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility 1"/>
         <Abil Link=""/>
@@ -4415,7 +4595,7 @@
         <On Terms="Behavior.HighTemplarSCBWHallucination.On; ValidateUnit HighTemplarSCBWHallucination@Birth" Send="Create"/>
         <Sound value="HighTemplarSCBWHallucination@Launch"/>
     </CActorSound>
-    <CActorRange id="HighTemplarSCBWHallucination@Range" parent="RangeAbil" abil="HighTemplarSCBWHallucination"/>
+    <CActorRange id="HighTemplarSCBWHallucination@Range" parent="SCBW_RangeAbilMultiple" abil2="HighTemplarSCBWHallucination@Hardcore" abil="HighTemplarSCBWHallucination"/>
     <CActorModel id="HighTemplarSCBWHallucination@Birth" parent="ModelAnimationStyleOneShot">
         <Inherits index="BaseModelScale" value="1"/>
         <Inherits index="Scale" value="1"/>
@@ -4438,6 +4618,7 @@
     <CActorSound id="HighTemplarSCBWPsiStorm@ImpactSound" parent="SoundOneShot">
         <On Terms="Behavior.HighTemplarSCBWPsiStorm.On" Send="Create"/>
         <Sound value="HighTemplarSCBWPsiStorm@Impact"/>
+        <Terms value="Cap 1"/>
     </CActorSound>
     <CActorSound id="HighTemplarSCBWPsiStorm@CastSound" parent="SoundOneShot">
         <Host Subject="_Unit"/>
@@ -4446,17 +4627,18 @@
     </CActorSound>
     <CActorSplat id="HighTemplarSCBWPsiStorm@CursorSplat" parent="ProtossCursorSplatSCBW" abil="HighTemplarSCBWPsiStorm">
         <Model value="HighTemplarSCBWPsiStorm@CursorSplat"/>
+        <On Terms="Abil.HighTemplarSCBWPsiStorm@Hardcore.Cursor" Send="Create"/>
     </CActorSplat>
     <CActorModel id="HighTemplarSCBWPsiStorm@Impact" parent="ModelAnimationStyleContinuous">
         <Inherits index="BaseModelScale" value="1"/>
         <Inherits index="Scale" value="1"/>
         <Inherits index="Visibility" value="1"/>
         <On Terms="Behavior.HighTemplarSCBWPsiStorm.On" Send="Create"/>
-        <On Terms="Behavior.HighTemplarSCBWPsiStorm.Off" Send="AnimBracketStop BSD"/>
+        <On Terms="Behavior.HighTemplarSCBWPsiStorm.Off" Send="TimerSet 0.300000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="AnimBracketStop BSD"/>
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
         <AutoScaleFactor value="0.750000"/>
-        <Preload value="HighTemplarSCBWPsiStorm@Impact"/>
     </CActorModel>
     <CActorModel id="HighTemplarSCBWPsiStorm@Model" parent="ModelAnimationStyleContinuous">
         <On Terms="Effect.HighTemplarSCBWPsiStorm@CP.Start" Send="Create"/>
@@ -4465,18 +4647,18 @@
         <HostSiteOps Ops="SOpShadow"/>
         <Scale value="1.300000"/>
     </CActorModel>
-    <CActorSound id="HighTemplarSCBWPsiStorm@Sound" parent="SoundContinuous">
+    <CActorSound id="HighTemplarSCBWPsiStorm@Sound" parent="SoundOneShot">
         <On Terms="Effect.HighTemplarSCBWPsiStorm@CP.Start" Send="Create"/>
-        <On Terms="Effect.HighTemplarSCBWPsiStorm@CP.Stop" Send="Destroy"/>
         <HostSiteOps Ops="SOpShadow"/>
         <Sound value="HighTemplarSCBWPsiStorm@Launch"/>
     </CActorSound>
-    <CActorRange id="HighTemplarSCBWPsiStorm@Range" parent="RangeAbil" abil="HighTemplarSCBWPsiStorm">
+    <CActorRange id="HighTemplarSCBWPsiStorm@Range" parent="SCBW_RangeAbilMultiple" abil2="HighTemplarSCBWPsiStorm@Hardcore" abil="HighTemplarSCBWPsiStorm">
         <Icon value="Assets\Textures\RadarIcon2.dds"/>
         <IconArcLength value="3.250000"/>
     </CActorRange>
     <CActorSound id="ArchonSCBWMerge@Sound" parent="SoundOneShot">
         <On Terms="Abil.ArchonSCBWMerge.Start" Send="Create"/>
+        <On Terms="Abil.ArchonSCBWMerge@Hardcore.Start" Send="Create"/>
     </CActorSound>
     <CActorAction id="ScarabSCBWWeapon@Action" parent="GenericAttack" effectAttack="ScarabSCBWWeapon@ImpactSet">
         <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
@@ -4549,40 +4731,38 @@
         <On Terms="Effect.ShieldBatterySCBWRecharge@Healer.TargetStop; At Caster" Send="Destroy"/>
         <On Terms="ActorOrphan" Send="Destroy"/>
     </CActorSound>
-    <CActorBeamSimple id="ShieldBatterySCBWRecharge@BatteryBeam" parent="BeamSimpleAnimationStyleContinuous">
+    <CActorBeamSimple id="ShieldBatterySCBWBattery@Beam" parent="BeamSimpleAnimationStyleContinuous">
         <Inherits index="Visibility" value="1"/>
         <On Terms="ActorCreation" Send="SetTintColor 0,255,108 0.000000 OneShot Overcharge"/>
         <On Terms="ActorCreation" Send="SetScale 2.000000 0.000000 OverchargeScale"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@BatterySet.Start; At Target; ValidateUnit ShieldBatterySCBWRecharge@BatteryTracker" Send="Create"/>
-        <On Terms="Behavior.ShieldBatterySCBWRecharge@BatteryTracker.Off" Send="Destroy"/>
+        <On Terms="Effect.ShieldBatterySCBWBattery@Set.Start; At Target; ValidateUnit ShieldBatterySCBWBattery@Tracker" Send="Create"/>
+        <On Terms="Behavior.ShieldBatterySCBWBattery@Tracker.Off" Send="Destroy"/>
         <HostForProps Subject="_Unit" Scope="Target" Actor="Find"/>
         <ModelFlags index="AutomateGlobalLoops" value="1"/>
         <HostLaunch Subject="_Unit" Scope="Caster" Actor="Find"/>
         <HostLaunchSiteOps Ops="ShieldBatterySCBWRecharge@ShieldBatteryAttach"/>
         <HostImpact Subject="_Unit" Scope="Target" Actor="Find"/>
         <HostImpactSiteOps Ops="SOpAttachCenter"/>
-        <Model value="ShieldBatterySCBWRecharge@Beam"/>
     </CActorBeamSimple>
-    <CActorModel id="ShieldBatterySCBWRecharge@BatteryModel" parent="ModelAnimationStyleContinuous">
+    <CActorModel id="ShieldBatterySCBWBattery@Model" parent="ModelAnimationStyleContinuous">
         <On Terms="ActorCreation" Send="$Birth PlayForever"/>
-        <On Terms="Effect.ShieldBatterySCBWRecharge@BatterySet.Start; At Target; ValidateUnit ShieldBatterySCBWRecharge@BatteryTracker" Send="Create"/>
-        <On Terms="Behavior.ShieldBatterySCBWRecharge@BatteryTracker.Off" Send="Destroy"/>
+        <On Terms="Effect.ShieldBatterySCBWBattery@Set.Start; At Target; ValidateUnit ShieldBatterySCBWBattery@Tracker" Send="Create"/>
+        <On Terms="Behavior.ShieldBatterySCBWBattery@Tracker.Off" Send="Destroy"/>
         <On Terms="ActorOrphan" Send="Destroy"/>
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
-        <Model value="ShieldBatterySCBWRecharge@Model"/>
     </CActorModel>
-    <CActorSound id="ShieldBatterySCBWRecharge@BatterySoundLoopTarget" parent="SoundContinuous">
-        <On Terms="Effect.ShieldBatterySCBWRecharge@BatterySet.Start; At Target; ValidateUnit ShieldBatterySCBWRecharge@BatteryTracker" Send="Create"/>
-        <On Terms="Behavior.ShieldBatterySCBWRecharge@BatteryTracker.Off" Send="Destroy"/>
+    <CActorSound id="ShieldBatterySCBWBattery@SoundLoopTarget" parent="SoundContinuous">
+        <On Terms="Effect.ShieldBatterySCBWBattery@Set.Start; At Target; ValidateUnit ShieldBatterySCBWBattery@Tracker" Send="Create"/>
+        <On Terms="Behavior.ShieldBatterySCBWBattery@Tracker.Off" Send="Destroy"/>
         <On Terms="ActorOrphan" Send="Destroy"/>
         <Host Subject="_Selectable"/>
         <HostSiteOps Ops="SOpAttachOverhead"/>
         <Sound value="ShieldBatterySCBWRecharge@SoundLoopTarget"/>
     </CActorSound>
-    <CActorSound id="ShieldBatterySCBWRecharge@BatterySoundLoopCaster" parent="SoundContinuous">
-        <On Terms="Effect.ShieldBatterySCBWRecharge@BatterySet.Start; At Target; ValidateUnit ShieldBatterySCBWRecharge@BatteryTracker" Send="Create"/>
-        <On Terms="Behavior.ShieldBatterySCBWRecharge@BatteryTracker.Off" Send="Destroy"/>
+    <CActorSound id="ShieldBatterySCBWBattery@SoundLoopCaster" parent="SoundContinuous">
+        <On Terms="Effect.ShieldBatterySCBWBattery@Set.Start; At Target; ValidateUnit ShieldBatterySCBWBattery@Tracker" Send="Create"/>
+        <On Terms="Behavior.ShieldBatterySCBWBattery@Tracker.Off" Send="Destroy"/>
         <On Terms="ActorOrphan" Send="Destroy"/>
         <Sound value="ShieldBatterySCBWRecharge@SoundLoopCaster"/>
     </CActorSound>
@@ -4647,6 +4827,28 @@
         <Radius value="0.500000,0.150000"/>
         <On Terms="ActorCreation" Send="Create InterceptorSCBWWeapon@ActionExplosionDeathForce"/>
     </CActorForceSphere>
+    <CModel id="CorsairSCBWDisruptionWeb@Unit" parent="Unit">
+        <Model value="Assets\Effects\Protoss\Corsair_DisruptionWeb\Corsair_DisruptionWeb.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Flags index="FreezeParticlesAndRibbonsOnAnimPause" value="1"/>
+        <ScaleMax value="0.750000,0.750000,0.750000"/>
+        <ScaleMin value="0.750000,0.750000,0.750000"/>
+    </CModel>
+    <CModel id="ShieldBatterySCBWBattery@TargetCursorSplat" parent="Splat">
+        <Model value="Assets\Splats\Terran_Target_Splat\Terran_Target_Splat.m3"/>
+        <EditorCategories value="Race:Neutral"/>
+        <Flags index="FOW" value="0"/>
+        <ScaleMax value="0.001000,0.001000,0.001000"/>
+        <ScaleMin value="0.001000,0.001000,0.001000"/>
+    </CModel>
+    <CModel id="ShieldBatterySCBWBattery@Beam" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Protoss\ProtossShield_Battery_Beam\ProtossShield_Battery_Beam.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CModel id="ShieldBatterySCBWBattery@Model" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Protoss\ProtossShield_Battery_Beam_Impact\ProtossShield_Battery_Beam_Impact.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
     <CModel id="InterceptorSCBWWeapon@Missile" parent="MissileFX">
         <Model value="Assets\Effects\Protoss\InterceptorSCBWWeapon@Missile\InterceptorSCBWWeapon@Missile.m3"/>
         <EditorCategories value="Race:Protoss"/>
@@ -4827,6 +5029,8 @@
     </CModel>
     <CModel id="CorsairSCBWDisruptionWeb@Impact" parent="RacePersistentSpellFX" Race="Protoss">
         <Model value="Assets\Effects\Protoss\Corsair_DisruptionWeb\Corsair_DisruptionWeb.m3"/>
+        <ScaleMax value="0.750000,0.750000,0.750000"/>
+        <ScaleMin value="0.750000,0.750000,0.750000"/>
     </CModel>
     <CModel id="CorsairSCBWDisruptionWeb@Cast" parent="LaunchFX">
         <Model value="Assets\Effects\Protoss\Corsair_DisruptionWeb_Cast\Corsair_DisruptionWeb_Cast.m3"/>
@@ -4894,6 +5098,10 @@
         <SelectionRadius value="2.500000"/>
         <ShadowRadius value="2.500000"/>
     </CModel>
+    <CModel id="ShieldBatterySCBWRecharge@Model" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Protoss\ProtossShield_Battery_Beam_Impact\ProtossShield_Battery_Beam_Impact.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
     <CModel id="CorsairSCBWDisruptionWeb@Disrupted" parent="PersistentSpellFX">
         <Model value="Assets\Effects\Protoss\PsiStormImpact\PsiStormImpact.m3"/>
         <EditorCategories value="Race:Protoss"/>
@@ -4902,10 +5110,6 @@
     </CModel>
     <CModel id="ShieldBatterySCBWRecharge@Beam" parent="OneShotSpellFX">
         <Model value="Assets\Effects\Protoss\ProtossShield_Battery_Beam\ProtossShield_Battery_Beam.m3"/>
-        <EditorCategories value="Race:Protoss"/>
-    </CModel>
-    <CModel id="ShieldBatterySCBWRecharge@Model" parent="OneShotSpellFX">
-        <Model value="Assets\Effects\Protoss\ProtossShield_Battery_Beam_Impact\ProtossShield_Battery_Beam_Impact.m3"/>
         <EditorCategories value="Race:Protoss"/>
     </CModel>
     <CModel id="ReaverSCBWWeapon@UnloadStun" parent="PersistentSpellFX">
@@ -4921,7 +5125,7 @@
         <TargetFilters value="Visible;Player,Ally,Neutral,Enemy"/>
         <Range value="8"/>
         <Arc value="360"/>
-        <Period value="1.875"/>
+        <Period value="2.2165"/>
         <DamagePoint value="0"/>
         <Backswing value="0"/>
         <Effect value="CarrierSCBWWeapon@CP"/>
@@ -4939,6 +5143,7 @@
         </Cost>
         <Period value="1.1875"/>
         <Effect value="DarkArchonSCBWWeapon@Damage"/>
+        <Options index="NeverMiss" value="0"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="ArbiterSCBWWeapon">
         <EditorCategories value="Race:Protoss"/>
@@ -4989,7 +5194,7 @@
         <Range value="4"/>
         <TeleportResetRange value="0"/>
         <Arc value="19.6875"/>
-        <Period value="1.875"/>
+        <Period value="2.2165"/>
         <Effect value="InterceptorSCBWWeapon@CP"/>
         <Options index="NeverMiss" value="0"/>
         <LoiterInnerRadius value="2.5"/>
@@ -5156,6 +5361,7 @@
         <Range value="6"/>
         <Period value="1.75"/>
         <Effect value="HighTemplarSCBWWeapon@LM"/>
+        <Options index="NeverMiss" value="0"/>
     </CWeaponLegacy>
     <CWeaponLegacy id="ReaverSCBWWeapon@NoScan" parent="ReaverSCBWWeapon">
         <AcquireScanFilters value="-;Player,Ally,Neutral,Enemy"/>
@@ -5307,23 +5513,23 @@
     <CAccumulatorSwitch id="CorsairSCBWDisruptionWeb@DisruptedBatch">
         <MinAccumulation value="0"/>
         <MaxAccumulation value="15"/>
-        <CaseArray Validator="IsGoliathSCBW" Accumulator="4"/>
-        <CaseArray Validator="IsSiegeTankSCBW" Accumulator="4"/>
+        <CaseArray Validator="GoliathSCBW@Is" Accumulator="4"/>
+        <CaseArray Validator="SiegeTankSCBW@Is" Accumulator="4"/>
         <CaseArray Validator="SCBW_IsThorAlias" Accumulator="12"/>
         <CaseArray Validator="IsCyclone" Accumulator="3"/>
         <CaseArray Validator="IsColossus" Accumulator="4"/>
         <CaseArray Validator="IsMissileTurret" Accumulator="6"/>
-        <CaseArray Validator="IsMissileTurretSCBW" Accumulator="6"/>
+        <CaseArray Validator="MissileTurretSCBW@Is" Accumulator="6"/>
         <CaseArray Validator="IsPlanetaryFortress" Accumulator="4"/>
         <CaseDefault value="2"/>
     </CAccumulatorSwitch>
     <CSound id="ArbiterSCBWRecall@CastSound" parent="Spell">
-        <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBW@mov00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBW@mov00.ogg"/>
         <Pitch value="-5.000000,-5.000000"/>
         <Volume value="5.000000,5.000000"/>
     </CSound>
     <CSound id="CorsairSCBWWeapon@ImpactAlt" parent="Combat">
-        <AssetArray File="Assets\Sounds\Protoss\CorsairSCBW\CorsairSCBWWeapon@ImpactAlt00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\CorsairSCBW\CorsairSCBWWeapon@ImpactAlt00.ogg"/>
         <DupeDestroyCount value="8"/>
         <DupeMuteCount value="5"/>
         <Volume value="-5.000000,-5.000000"/>
@@ -5352,8 +5558,8 @@
         <OverlapTimeDelta value="50"/>
     </CSound>
     <CSound id="CorsairSCBWWeapon@Launch" parent="Combat">
-        <AssetArray File="Assets\Sounds\WarMissile_Launch00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\WarMissile_Launch02.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\WarMissile_Launch00.wav"/>
+        <AssetArray File="Assets\Sounds\WarMissile_Launch02.wav"/>
         <Pitch value="0.740000,2.740000"/>
         <Volume value="-14.000000,-13.000000"/>
         <DupeDestroyCount value="8"/>
@@ -5362,11 +5568,11 @@
     </CSound>
     <CSound id="ArbiterSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Launch00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Launch00.ogg"/>
     </CSound>
     <CSound id="ArbiterSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Impact00.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Impact00.ogg"/>
     </CSound>
     <CSound id="DarkTemplarSCBWWeapon@Impact" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
@@ -5489,8 +5695,8 @@
     </CSound>
     <CSound id="ProbeSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\ProbeSCBW\ProbeSCBW@att00.ogg" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss\ProbeSCBW\ProbeSCBW@att01.ogg" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\ProbeSCBW\ProbeSCBW@att00.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\ProbeSCBW\ProbeSCBW@att01.ogg"/>
         <Pitch value="-0.500000,0.000000"/>
         <Volume value="-14.000000,-14.000000"/>
     </CSound>
@@ -5516,22 +5722,22 @@
     </CSound>
     <CSound id="ReaverSCBWWeapon@ExplodeDud" parent="Death">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact00.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact01.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact02.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact03.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_ScarabImpact04.wav"/>
         <Category value="Combat"/>
         <Pitch value="2.000000,3.000000"/>
         <Volume value="-3.000000,-2.000000"/>
     </CSound>
     <CSound id="ReaverSCBWWeapon@Launch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch00.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch01.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch02.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch03.wav"/>
+        <AssetArray File="Assets\Sounds\Reaver_AttackLaunch04.wav"/>
         <DupeMaximumMethod value="Replace"/>
         <Pitch value="-3.000000,0.000000"/>
         <Volume value="-6.000000,-4.000000"/>
@@ -5543,10 +5749,10 @@
     </CSound>
     <CSound id="HighTemplarSCBWWeapon@AttackImpact" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_01.wav"/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_02.wav"/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_03.wav"/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Impact_04.wav"/>
         <Pitch value="-2.000000,0.000000"/>
         <Volume value="-3.000000,-3.000000"/>
         <DupeDestroyCount value="3"/>
@@ -5556,10 +5762,10 @@
     </CSound>
     <CSound id="HighTemplarSCBWWeapon@AttackLaunch" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_03.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_04.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_01.wav"/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_02.wav"/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_03.wav"/>
+        <AssetArray File="Assets\Sounds\HighTemplar_Taldarim_Launch_04.wav"/>
         <Pitch value="-2.000000,1.000000"/>
         <Volume value="-3.000000,-3.000000"/>
         <DupeDestroyCount value="3"/>
@@ -5617,24 +5823,9 @@
     </CSound>
     <CSound id="CorsairSCBWDisruptionWeb@Loop" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray>
-            <File value="Assets\Sounds\CorsairMP_DisruptionWebLoop01_1ch.wav"/>
-            <LoopCount value="-1"/>
-            <Pitch value="-1.000000,1.000000"/>
-            <FacialGroup value=""/>
-        </AssetArray>
-        <AssetArray>
-            <File value="Assets\Sounds\CorsairMP_DisruptionWebLoop02_1ch.wav"/>
-            <LoopCount value="-1"/>
-            <Pitch value="-1.000000,1.000000"/>
-            <FacialGroup value=""/>
-        </AssetArray>
-        <AssetArray>
-            <File value="Assets\Sounds\CorsairMP_DisruptionWebLoop03_1ch.wav"/>
-            <LoopCount value="-1"/>
-            <Pitch value="-1.000000,1.000000"/>
-            <FacialGroup value=""/>
-        </AssetArray>
+        <AssetArray File="Assets\Sounds\CorsairMP_DisruptionWebLoop01_1ch.wav" LoopCount="-1" Pitch="-1.000000,1.000000"/>
+        <AssetArray File="Assets\Sounds\CorsairMP_DisruptionWebLoop02_1ch.wav" LoopCount="-1" Pitch="-1.000000,1.000000"/>
+        <AssetArray File="Assets\Sounds\CorsairMP_DisruptionWebLoop03_1ch.wav" LoopCount="-1" Pitch="-1.000000,1.000000"/>
         <DupeMaximumMethod value="Replace"/>
         <DupeMuteCount value="3"/>
         <DupeThresholdPoints/>
@@ -5682,8 +5873,8 @@
     </CSound>
     <CSound id="ArbiterSCBWStasisField@Shockwave" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Spell_Entomb_Impact_00.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Spell_Entomb_Impact_01.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Spell_Entomb_Impact_00.wav"/>
+        <AssetArray File="Assets\Sounds\Spell_Entomb_Impact_01.wav"/>
         <DupeDestroyCount value="8"/>
         <DupeMuteCount value="3"/>
         <Pitch value="-1.000000,1.000000"/>
@@ -5711,15 +5902,14 @@
     </CSound>
     <CSound id="HighTemplarSCBWPsiStorm@Launch" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBWPsiStorm@Launch00.ogg"/>
         <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBWPsiStorm@Launch01.ogg"/>
         <Volume value="2.000000,2.000000"/>
     </CSound>
     <CSound id="HighTemplarSCBWPsiStorm@Cast" parent="Combat">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_01.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_02.wav" FacialGroup=""/>
-        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_03.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_01.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_02.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\Zeratul\Zeratul_AC_AA_Cast_Launch_03.wav"/>
         <Pitch value="-4.000000,-3.000000"/>
         <Volume value="-14.000000,-13.000000"/>
         <NonLocalVolumeAdjustment value="4.000000,4.000000"/>
@@ -5736,7 +5926,7 @@
     </CSound>
     <CSound id="ShieldBatterySCBWRecharge@SoundLoopCaster" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\Protoss\ShieldBatterySCBW\ShieldBatterySCBWRecharge@SoundLoopCaster00.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\Protoss\ShieldBatterySCBW\ShieldBatterySCBWRecharge@SoundLoopCaster00.wav"/>
         <DupeDestroyCount value="3"/>
         <DupeMuteCount value="3"/>
         <LoopCount value="-1"/>
@@ -5745,11 +5935,10 @@
         <OffsetFadeIn Volume="-96.000000"/>
         <OffsetFadeIn Time="100"/>
         <OffsetShiftBlend value="Logarithmic"/>
-        <Volume value="-3.000000,-3.000000"/>
     </CSound>
     <CSound id="ShieldBatterySCBWRecharge@SoundLoopTarget" parent="Spell">
         <EditorCategories value="Race:Protoss"/>
-        <AssetArray File="Assets\Sounds\ShieldBattery_ReCharge2_Loop.wav" FacialGroup=""/>
+        <AssetArray File="Assets\Sounds\ShieldBattery_ReCharge2_Loop.wav"/>
         <LoopCount value="-1"/>
         <MuteFadeOut/>
         <MuteFadeOut Time="299" Volume="-96.000000"/>
@@ -5887,9 +6076,9 @@
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirArmorsSCBW@QoB2"/>
-        <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ProtossAirArmorsSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossAirWeaponsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossAirWeaponsSCBW"/>
@@ -5919,9 +6108,9 @@
         <DataRecord Entry="RequirementNode,ProtossAirWeaponsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirWeaponsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossAirWeaponsSCBW@QoB"/>
-        <DataRecord Entry="Upgrade,ProtossAirWeaponsSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ProtossAirWeaponsSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ProtossAirWeaponsSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ProtossAirWeaponsSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ProtossAirWeaponsSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ProtossAirWeaponsSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossShieldsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossShieldsSCBW"/>
@@ -5951,9 +6140,9 @@
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossShieldsSCBW@QoB2"/>
-        <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ProtossShieldsSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ProtossShieldsSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ProtossShieldsSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ProtossShieldsSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="CorsairSCBWDisruptionWebResearch" parent="ProtossUpgradeSCBW">
         <DataRecord Entry="Abil,CorsairSCBWDisruptionWebResearch"/>
@@ -6117,9 +6306,9 @@
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@QoB2"/>
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@Count"/>
         <DataRecord Entry="RequirementNode,ProtossGroundArmorsSCBW@QoB"/>
-        <DataRecord Entry="Upgrade,ProtossGroundArmorsSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ProtossGroundArmorsSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ProtossGroundArmorsSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ProtossGroundArmorsSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ProtossGroundArmorsSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ProtossGroundArmorsSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ProtossGroundWeaponsSCBW" parent="ProtossUpgradeLeveledSCBW">
         <DataRecord Entry="Abil,ProtossGroundWeaponsSCBW"/>
@@ -6149,9 +6338,9 @@
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3NotQoB"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@Lvl3QoB"/>
         <DataRecord Entry="RequirementNode,ProtossGroundWeaponsSCBW@QoB"/>
-        <DataRecord Entry="Upgrade,ProtossGroundWeaponsSCBW@Lvl1"/>
-        <DataRecord Entry="Upgrade,ProtossGroundWeaponsSCBW@Lvl2"/>
-        <DataRecord Entry="Upgrade,ProtossGroundWeaponsSCBW@Lvl3"/>
+        <DataRecord Entry="Upgrade,ProtossGroundWeaponsSCBW_Lvl1"/>
+        <DataRecord Entry="Upgrade,ProtossGroundWeaponsSCBW_Lvl2"/>
+        <DataRecord Entry="Upgrade,ProtossGroundWeaponsSCBW_Lvl3"/>
     </CDataCollectionUpgrade>
     <CDataCollectionUpgrade id="ReaverSCBWHangarIncreaseUpgrade" parent="ProtossUpgradeSCBW">
         <DataRecord Entry="Abil,ReaverSCBWHangarIncreaseUpgrade"/>
@@ -6310,6 +6499,7 @@
         <DataRecord Entry="Sound,CorsairSCBWWeapon@Impact"/>
         <DataRecord Entry="Sound,CorsairSCBWWeapon@ImpactAlt"/>
         <DataRecord Entry="Sound,CorsairSCBWWeapon@Launch"/>
+        <DataRecord Entry="Validator,CorsairSCBWWeapon@Splash"/>
         <DataRecord Entry="Weapon,CorsairSCBWWeapon"/>
         <DataRecord Entry="Accumulator,CorsairSCBWWeapon@Damage"/>
         <Pattern value="SCBW_Weapon_Accumulator"/>
@@ -6398,7 +6588,6 @@
         <DataRecord Entry="Effect,ScarabSCBWWeapon@Impact"/>
         <DataRecord Entry="Effect,ScarabSCBWWeapon@ImpactLocation"/>
         <DataRecord Entry="Effect,ScarabSCBWWeapon@DamageFallback"/>
-        <DataRecord Entry="Requirement,ScarabSCBWWeapon"/>
         <DataRecord Entry="Validator,ScarabSCBWWeapon@ImpactUpgraded"/>
         <DataRecord Entry="Validator,ScarabSCBWWeapon@ImpactNormal"/>
         <DataRecord Entry="Validator,ScarabSCBWWeapon@TargetCondition"/>
@@ -6579,8 +6768,8 @@
         <DataRecord Entry="Model,ReaverSCBWWeapon@TargetWarningIndicator"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@UnloadStun"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@ImpactDud"/>
-        <DataRecord Entry="Model,ReaverSCBWWeapon@ImpactUpgraded"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@Impact"/>
+        <DataRecord Entry="Model,ReaverSCBWWeapon@ImpactUpgraded"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@TargetWarningIndicatorUpgraded"/>
         <DataRecord Entry="Mover,ReaverSCBWWeapon@Mover"/>
         <DataRecord Entry="Preload,ReaverSCBWWeapon@Impact"/>
@@ -6681,6 +6870,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ArchonSCBWMerge" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ArchonSCBWMerge"/>
+        <DataRecord Entry="Abil,ArchonSCBWMerge@Hardcore"/>
         <DataRecord Entry="Actor,ArchonSCBWMerge@Sound"/>
         <DataRecord Entry="Button,ArchonSCBWMerge@Selection"/>
         <DataRecord Entry="Button,ArchonSCBWMerge@Target"/>
@@ -6690,6 +6880,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWMerge" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWMerge"/>
+        <DataRecord Entry="Abil,DarkArchonSCBWMerge@Hardcore"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMerge@Sound"/>
         <DataRecord Entry="Button,DarkArchonSCBWMerge@Selection"/>
         <DataRecord Entry="Button,DarkArchonSCBWMerge@Target"/>
@@ -6721,14 +6912,15 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ArbiterSCBWRecall" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ArbiterSCBWRecall"/>
+        <DataRecord Entry="Abil,ArbiterSCBWRecall@Hardcore"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@CastSound"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@GuideRegionAdd"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@CursorRegion"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@CursorSplat"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchEnd"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchStart"/>
-        <DataRecord Entry="Actor,ArbiterSCBWRecall@Opacity"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@Range"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@Opacity"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactRecalled"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactRecalling"/>
         <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactSoundRecalling"/>
@@ -6787,6 +6979,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ArbiterSCBWStasisField" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="Abil,ArbiterSCBWStasisField@Hardcore"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@CursorSplat"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@CastModel"/>
         <DataRecord Entry="Actor,ArbiterSCBWStasisField@Impact"/>
@@ -6818,6 +7011,8 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="CorsairSCBWDisruptionWeb" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,CorsairSCBWDisruptionWeb"/>
+        <DataRecord Entry="Abil,CorsairSCBWDisruptionWeb@Hardcore"/>
+        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Unit"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Disrupted"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@DisruptedAttach"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@DisruptedBatch"/>
@@ -6826,14 +7021,17 @@
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@LaunchSound"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Range"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@LoopSound"/>
+        <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@LoopSoundUnit"/>
         <DataRecord Entry="Actor,CorsairSCBWDisruptionWeb@Cast"/>
         <DataRecord Entry="Behavior,CorsairSCBWDisruptionWeb"/>
         <DataRecord Entry="Button,CorsairSCBWDisruptionWeb"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@AB"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@CP"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@Search"/>
+        <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@CPInfinite"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@IterateTransport"/>
         <DataRecord Entry="Effect,CorsairSCBWDisruptionWeb@Set"/>
+        <DataRecord Entry="Model,CorsairSCBWDisruptionWeb@Unit"/>
         <DataRecord Entry="Model,CorsairSCBWDisruptionWeb@Disrupted"/>
         <DataRecord Entry="Model,CorsairSCBWDisruptionWeb@Impact"/>
         <DataRecord Entry="Model,CorsairSCBWDisruptionWeb@Cast"/>
@@ -6842,6 +7040,7 @@
         <DataRecord Entry="Shape,CorsairSCBWDisruptionWeb@Visibility"/>
         <DataRecord Entry="Sound,CorsairSCBWDisruptionWeb@Launch"/>
         <DataRecord Entry="Sound,CorsairSCBWDisruptionWeb@Loop"/>
+        <DataRecord Entry="Unit,CorsairSCBWDisruptionWeb@Unit"/>
         <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@IterateTransport"/>
         <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@HasNotBehavior"/>
         <DataRecord Entry="Validator,CorsairSCBWDisruptionWeb@Filters"/>
@@ -6849,6 +7048,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWFeedback" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWFeedback"/>
+        <DataRecord Entry="Abil,DarkArchonSCBWFeedback@Hardcore"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@Impact"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@ImpactSound"/>
         <DataRecord Entry="Actor,DarkArchonSCBWFeedback@Launch"/>
@@ -6868,6 +7068,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWMaelstrom" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWMaelstrom"/>
+        <DataRecord Entry="Abil,DarkArchonSCBWMaelstrom@Hardcore"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@CastModel"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@CursorSplat"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMaelstrom@Impact"/>
@@ -6889,6 +7090,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="DarkArchonSCBWMindControl" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,DarkArchonSCBWMindControl"/>
+        <DataRecord Entry="Abil,DarkArchonSCBWMindControl@Hardcore"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Impact"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Beam"/>
         <DataRecord Entry="Actor,DarkArchonSCBWMindControl@Range"/>
@@ -6925,6 +7127,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HighTemplarSCBWHallucination" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,HighTemplarSCBWHallucination"/>
+        <DataRecord Entry="Abil,HighTemplarSCBWHallucination@Hardcore"/>
         <DataRecord Entry="Actor,HighTemplarSCBWHallucination@BirthSound"/>
         <DataRecord Entry="Actor,HighTemplarSCBWHallucination@Range"/>
         <DataRecord Entry="Actor,HighTemplarSCBWHallucination@Birth"/>
@@ -6932,6 +7135,7 @@
         <DataRecord Entry="Behavior,HighTemplarSCBWHallucination"/>
         <DataRecord Entry="Behavior,HighTemplarSCBWHallucination@TimedLife"/>
         <DataRecord Entry="Button,HighTemplarSCBWHallucination"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWHallucination@CopyScarabsTrigger"/>
         <DataRecord Entry="Effect,HighTemplarSCBWHallucination@SetAB"/>
         <DataRecord Entry="Effect,HighTemplarSCBWHallucination@AB"/>
         <DataRecord Entry="Effect,HighTemplarSCBWHallucination@ABTimedLife"/>
@@ -6952,6 +7156,7 @@
     </CDataCollectionAbil>
     <CDataCollectionAbil id="HighTemplarSCBWPsiStorm" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,HighTemplarSCBWPsiStorm"/>
+        <DataRecord Entry="Abil,HighTemplarSCBWPsiStorm@Hardcore"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastMacro"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@CastFX"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@ImpactSound"/>
@@ -6962,10 +7167,12 @@
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Sound"/>
         <DataRecord Entry="Actor,HighTemplarSCBWPsiStorm@Range"/>
         <DataRecord Entry="Behavior,HighTemplarSCBWPsiStorm"/>
+        <DataRecord Entry="Behavior,HighTemplarSCBWPsiStorm@Marker"/>
         <DataRecord Entry="Button,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@CPDelayInital"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@CP"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@AB"/>
+        <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Marker"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Damage"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@DamageInitial"/>
         <DataRecord Entry="Effect,HighTemplarSCBWPsiStorm@Search"/>
@@ -6973,61 +7180,94 @@
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@CursorSplat"/>
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Model,HighTemplarSCBWPsiStorm@Model"/>
-        <DataRecord Entry="Preload,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Requirement,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="RequirementNode,HighTemplarSCBWPsiStorm"/>
         <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Impact"/>
         <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Cast"/>
         <DataRecord Entry="Sound,HighTemplarSCBWPsiStorm@Launch"/>
         <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@Damage"/>
+        <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@NoMarker"/>
         <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@DamageTargetFilters"/>
+        <DataRecord Entry="Validator,HighTemplarSCBWPsiStorm@Behavior"/>
     </CDataCollectionAbil>
     <CDataCollectionAbil id="ShieldBatterySCBWRecharge" parent="ProtossAbilSCBW">
         <DataRecord Entry="Abil,ShieldBatterySCBWRecharge"/>
-        <DataRecord Entry="Abil,ShieldBatterySCBWRecharge@Battery"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@Range"/>
         <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@ShieldBatteryAttach"/>
         <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@Beam"/>
         <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@Model"/>
         <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@SoundLoopTarget"/>
         <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@SoundLoopCaster"/>
-        <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@BatteryBeam"/>
-        <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@BatteryModel"/>
-        <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@BatterySoundLoopTarget"/>
-        <DataRecord Entry="Actor,ShieldBatterySCBWRecharge@BatterySoundLoopCaster"/>
-        <DataRecord Entry="Behavior,ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
-        <DataRecord Entry="Behavior,ShieldBatterySCBWRecharge@BatteryTracker"/>
-        <DataRecord Entry="Behavior,ShieldBatterySCBWRecharge@Cooldown"/>
         <DataRecord Entry="Button,ShieldBatterySCBWRecharge"/>
-        <DataRecord Entry="Button,ShieldBatterySCBWRecharge@Battery"/>
-        <DataRecord Entry="Button,ShieldBatterySCBWRecharge@BatteryClassic"/>
-        <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
+        <DataRecord Entry="Button,ShieldBatterySCBWRecharge@Overcharge"/>
         <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@Healer"/>
         <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@RevealSearch"/>
         <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@DamageDummy"/>
-        <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@BatteryHealer"/>
-        <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@BatteryTracker"/>
-        <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@BatterySet"/>
-        <DataRecord Entry="Effect,ShieldBatterySCBWRecharge@Cooldown"/>
         <DataRecord Entry="Model,ShieldBatterySCBWRecharge@Beam"/>
         <DataRecord Entry="Model,ShieldBatterySCBWRecharge@Model"/>
         <DataRecord Entry="Sound,ShieldBatterySCBWRecharge@SoundLoopTarget"/>
         <DataRecord Entry="Sound,ShieldBatterySCBWRecharge@SoundLoopCaster"/>
         <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@Healer"/>
         <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@HealerPeriodic"/>
-        <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@BatterySet"/>
         <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@Autocast"/>
-        <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@BatteryTrackerCaster"/>
-        <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@NoCooldown"/>
-        <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@BatteryTracker"/>
-        <DataRecord Entry="Validator,ShieldBatterySCBWRecharge@BatteryTrackerMultiple"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="ShieldBatterySCBWBattery" parent="ProtossAbilSCBW">
+        <DataRecord Entry="Abil,ShieldBatterySCBWBattery@Target"/>
+        <DataRecord Entry="Abil,ShieldBatterySCBWBattery"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@GuideRegionRemove"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@GuideRegionClosestAdd"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@GuideRegionAdd"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@CursorRegion"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@CursorRegionClosest"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@CursorSplat"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@CursorRange"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@Beam"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@Model"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@SoundLoopTarget"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWBattery@SoundLoopCaster"/>
+        <DataRecord Entry="Behavior,ShieldBatterySCBWBattery@TrackerCaster"/>
+        <DataRecord Entry="Behavior,ShieldBatterySCBWBattery@Tracker"/>
+        <DataRecord Entry="Behavior,ShieldBatterySCBWBattery@Cooldown"/>
+        <DataRecord Entry="Button,ShieldBatterySCBWBattery"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@Enum"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@SmartOrder"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@Switch"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@TrackerCaster"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@Cooldown"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@Healer"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@Tracker"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWBattery@Set"/>
+        <DataRecord Entry="Model,ShieldBatterySCBWBattery@TargetCursorSplat"/>
+        <DataRecord Entry="Model,ShieldBatterySCBWBattery@Beam"/>
+        <DataRecord Entry="Model,ShieldBatterySCBWBattery@Model"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@Set"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@OrderUnit"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@GuideRegionAdd"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@CanIssueOrders"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@TrackerCaster"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@NoCooldown"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@Tracker"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWBattery@TrackerMultiple"/>
     </CDataCollectionAbil>
     <CAttachMethodPattern id="ZealotSCBWWeapon@AMPattern">
         <Keyword value="SetA"/>
         <Driver value="ZealotSCBWWeapon@Damage"/>
         <Base value="::RollingIndex"/>
     </CAttachMethodPattern>
-    <CPreloadModel id="HighTemplarSCBWPsiStorm@Impact"/>
     <CPreloadModel id="ReaverSCBWWeapon@Impact"/>
+    <CUnit id="CorsairSCBWDisruptionWeb@Unit" parent="SCBW_InvulnerableDummy">
+        <Name value="Unit/Name/CorsairSCBWDisruptionWeb@Unit"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="CreateVisible" value="1"/>
+        <FlagArray index="Uncloakable" value="1"/>
+        <FlagArray index="PlayerRevivable" value="0"/>
+        <FogVisibility value="Snapshot"/>
+        <EditorFlags index="NoPalettes" value="0"/>
+        <EditorFlags index="BlockStructures" value="0"/>
+        <EditorFlags index="NeutralDefault" value="1"/>
+        <EffectArray index="Create" value="CorsairSCBWDisruptionWeb@CPInfinite"/>
+        <EditorCategories value="ObjectFamily:Melee,ObjectType:Spell"/>
+    </CUnit>
     <CUnit id="ArbiterSCBWWeapon@Missile" parent="MISSILE">
         <Race value="BWPr"/>
         <Mover value="ArbiterSCBWWeapon@Mover"/>
@@ -7149,8 +7389,9 @@
         <InfoFlags index="Hidden" value="1"/>
         <InfoIcon value="Assets\Textures\stunswirl1_orange.dds"/>
         <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
-        <RemoveValidatorArray value="IsReaverSCBW"/>
-        <Duration value="1.5"/>
+        <RemoveValidatorArray value="ReaverSCBW@Is"/>
+        <RemoveValidatorArray value="NotInsideTransport"/>
+        <Duration value="1.75"/>
         <InitialEffect value="ReaverSCBWWeapon@DelayAttack"/>
         <Modification>
             <StateFlags index="SuppressAttack" value="1"/>
@@ -7248,7 +7489,7 @@
         <DisplayDuration index="Ally" value="1"/>
         <DisplayDuration index="Neutral" value="1"/>
         <DisplayDuration index="Enemy" value="1"/>
-        <Duration value="65.5"/>
+        <Duration value="61.125"/>
         <Modification>
             <ModifyFlags index="DisableAbils" value="1"/>
             <ModifyFlags index="Detected" value="1"/>
@@ -7279,7 +7520,7 @@
         <BehaviorCategories index="Magic" value="1"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <DisplayDuration index="Enemy" value="1"/>
-        <Duration value="65.5"/>
+        <Duration value="61.125"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ArbiterSCBWRecall@Recalled">
         <InfoFlags index="Hidden" value="1"/>
@@ -7359,7 +7600,7 @@
         <DisplayDuration index="Ally" value="1"/>
         <DisplayDuration index="Neutral" value="1"/>
         <DisplayDuration index="Enemy" value="1"/>
-        <Duration value="11"/>
+        <Duration value="10.25"/>
         <Modification>
             <ModifyFlags index="DisableAbils" value="1"/>
             <ModifyFlags index="EnableMove" value="1"/>
@@ -7412,7 +7653,7 @@
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <DisplayDuration index="Self" value="1"/>
-        <Duration value="84.375"/>
+        <Duration value="78.75"/>
         <ExpireEffect value="HighTemplarSCBWHallucination@KillHallucination"/>
         <Modification>
             <StateFlags index="SuppressPassenger" value="1"/>
@@ -7424,25 +7665,30 @@
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <TimeScaleSource Value="Global"/>
         <Duration value="0.6665"/>
-        <Period value="0.571"/>
         <InitialEffect value="HighTemplarSCBWPsiStorm@DamageInitial"/>
-        <PeriodicEffect value="HighTemplarSCBWPsiStorm@Damage"/>
         <BuffFlags index="RefreshStack" value="1"/>
+        <RefreshEffect value="HighTemplarSCBWPsiStorm@Damage"/>
     </CBehaviorBuff>
-    <CBehaviorBuff id="ShieldBatterySCBWRecharge@BatteryTrackerCaster">
+    <CBehaviorBuff id="HighTemplarSCBWPsiStorm@Marker">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <TimeScaleSource Value="Global"/>
+        <Duration value="0.4375"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ShieldBatterySCBWBattery@TrackerCaster">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Duration value="0.125"/>
     </CBehaviorBuff>
-    <CBehaviorBuff id="ShieldBatterySCBWRecharge@Cooldown">
+    <CBehaviorBuff id="ShieldBatterySCBWBattery@Cooldown">
         <InfoFlags index="Hidden" value="1"/>
         <TimeScaleSource Value="Caster"/>
         <Duration value="0.125"/>
     </CBehaviorBuff>
-    <CBehaviorBuff id="ShieldBatterySCBWRecharge@BatteryTracker">
+    <CBehaviorBuff id="ShieldBatterySCBWBattery@Tracker">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
-        <RemoveValidatorArray value="ShieldBatterySCBWRecharge@BatteryTrackerMultiple"/>
+        <RemoveValidatorArray value="ShieldBatterySCBWBattery@TrackerMultiple"/>
         <MaxStackCount value="2"/>
         <MaxStackCountPerCaster value="1"/>
         <Duration value="0.125"/>
@@ -7607,62 +7853,62 @@
         <EditorCategories value="UpgradeType:Talents,Race:Protoss"/>
         <AffectedUnitArray value="ObserverSCBW"/>
     </CUpgrade>
-    <CUpgrade id="ProtossAirArmorsSCBW@Lvl1" parent="ProtossAirArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airarmorlevel1.dds">
+    <CUpgrade id="ProtossAirArmorsSCBW_Lvl1" parent="ProtossAirArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airarmorlevel1.dds">
         <ScoreAmount value="300"/>
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ProtossAirArmorsSCBW@Lvl2" parent="ProtossAirArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airarmorlevel2.dds">
+    <CUpgrade id="ProtossAirArmorsSCBW_Lvl2" parent="ProtossAirArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airarmorlevel2.dds">
         <ScoreAmount value="450"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ProtossAirArmorsSCBW@Lvl3" parent="ProtossAirArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airarmorlevel3.dds">
+    <CUpgrade id="ProtossAirArmorsSCBW_Lvl3" parent="ProtossAirArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airarmorlevel3.dds">
         <ScoreAmount value="600"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ProtossAirWeaponsSCBW@Lvl1" parent="ProtossAirWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airweaponslevel1.dds">
+    <CUpgrade id="ProtossAirWeaponsSCBW_Lvl1" parent="ProtossAirWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airweaponslevel1.dds">
         <LeaderLevel value="1"/>
         <ScoreAmount value="200"/>
     </CUpgrade>
-    <CUpgrade id="ProtossAirWeaponsSCBW@Lvl2" parent="ProtossAirWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airweaponslevel2.dds">
+    <CUpgrade id="ProtossAirWeaponsSCBW_Lvl2" parent="ProtossAirWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airweaponslevel2.dds">
         <ScoreAmount value="350"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ProtossAirWeaponsSCBW@Lvl3" parent="ProtossAirWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airweaponslevel3.dds">
+    <CUpgrade id="ProtossAirWeaponsSCBW_Lvl3" parent="ProtossAirWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-airweaponslevel3.dds">
         <ScoreAmount value="500"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ProtossGroundArmorsSCBW@Lvl1" parent="ProtossGroundArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundarmorlevel1.dds">
+    <CUpgrade id="ProtossGroundArmorsSCBW_Lvl1" parent="ProtossGroundArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundarmorlevel1.dds">
         <ScoreAmount value="200"/>
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ProtossGroundArmorsSCBW@Lvl2" parent="ProtossGroundArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundarmorlevel2.dds">
+    <CUpgrade id="ProtossGroundArmorsSCBW_Lvl2" parent="ProtossGroundArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundarmorlevel2.dds">
         <ScoreAmount value="350"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ProtossGroundArmorsSCBW@Lvl3" parent="ProtossGroundArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundarmorlevel3.dds">
+    <CUpgrade id="ProtossGroundArmorsSCBW_Lvl3" parent="ProtossGroundArmorsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundarmorlevel3.dds">
         <ScoreAmount value="500"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ProtossGroundWeaponsSCBW@Lvl1" parent="ProtossGroundWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundweaponslevel1.dds">
+    <CUpgrade id="ProtossGroundWeaponsSCBW_Lvl1" parent="ProtossGroundWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundweaponslevel1.dds">
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ProtossGroundWeaponsSCBW@Lvl2" parent="ProtossGroundWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundweaponslevel2.dds">
+    <CUpgrade id="ProtossGroundWeaponsSCBW_Lvl2" parent="ProtossGroundWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundweaponslevel2.dds">
         <ScoreAmount value="350"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ProtossGroundWeaponsSCBW@Lvl3" parent="ProtossGroundWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundweaponslevel3.dds">
+    <CUpgrade id="ProtossGroundWeaponsSCBW_Lvl3" parent="ProtossGroundWeaponsSCBW" icon="Assets\Textures\btn-upgrade-protoss-groundweaponslevel3.dds">
         <ScoreAmount value="500"/>
         <LeaderLevel value="3"/>
     </CUpgrade>
-    <CUpgrade id="ProtossShieldsSCBW@Lvl1" parent="ProtossShieldsSCBW" icon="Assets\Textures\BTN-Upgrade-Protoss-ShieldsLevel1.dds">
+    <CUpgrade id="ProtossShieldsSCBW_Lvl1" parent="ProtossShieldsSCBW" icon="Assets\Textures\BTN-Upgrade-Protoss-ShieldsLevel1.dds">
         <ScoreAmount value="400"/>
         <LeaderLevel value="1"/>
     </CUpgrade>
-    <CUpgrade id="ProtossShieldsSCBW@Lvl2" parent="ProtossShieldsSCBW" icon="Assets\Textures\BTN-Upgrade-Protoss-ShieldsLevel2.dds">
+    <CUpgrade id="ProtossShieldsSCBW_Lvl2" parent="ProtossShieldsSCBW" icon="Assets\Textures\BTN-Upgrade-Protoss-ShieldsLevel2.dds">
         <ScoreAmount value="600"/>
         <LeaderLevel value="2"/>
     </CUpgrade>
-    <CUpgrade id="ProtossShieldsSCBW@Lvl3" parent="ProtossShieldsSCBW" icon="Assets\Textures\BTN-Upgrade-Protoss-ShieldsLevel3.dds">
+    <CUpgrade id="ProtossShieldsSCBW_Lvl3" parent="ProtossShieldsSCBW" icon="Assets\Textures\BTN-Upgrade-Protoss-ShieldsLevel3.dds">
         <ScoreAmount value="800"/>
         <LeaderLevel value="3"/>
     </CUpgrade>

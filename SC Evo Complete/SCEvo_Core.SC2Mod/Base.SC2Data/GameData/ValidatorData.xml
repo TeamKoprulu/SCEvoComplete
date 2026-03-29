@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
     <CValidatorCompareTrackedUnitsCount default="1"/>
+    <CValidatorIsUnitTracked default="1"/>
     <CValidatorUnitType default="1" id="SCBW_Unit">
         <?token id="x" value="##id##"?>
         <Value value="##x##"/>
@@ -13,6 +14,15 @@
     </CValidatorCombine>
     <CValidatorUnitType default="1" id="SCBW_UnitCaster" parent="SCBW_Unit">
         <WhichUnit Value="Caster"/>
+    </CValidatorUnitType>
+    <CValidatorUnitType default="1" id="SCBW_UnitAlias" parent="SCBW_Unit">
+        <Type value="SelectAlias"/>
+    </CValidatorUnitType>
+    <CValidatorUnitType default="1" id="SCBW_UnitNot" parent="SCBW_Unit">
+        <Find value="0"/>
+    </CValidatorUnitType>
+    <CValidatorUnitType default="1" id="SCBW_UnitNotAlias" parent="SCBW_UnitNot">
+        <Type value="SelectAlias"/>
     </CValidatorUnitType>
     <CValidatorUnitFilters default="1" id="SCBW_HallucinationTargetFilter">
         <Filters value="Hallucination;-"/>
@@ -45,7 +55,7 @@
         <Value value="##unitName##"/>
     </CValidatorUnitType>
     <CValidatorUnitType default="1" id="NotTemplate">
-        <?token id="unitName" value="Bogus"?>
+        <?token id="unitName" type="CUnitLink" value="Bogus"?>
         <Value value="##unitName##"/>
         <Find value="0"/>
     </CValidatorUnitType>
@@ -59,6 +69,12 @@
         <Value value="##unitName##"/>
         <WhichUnit Value="Source"/>
     </CValidatorUnitType>
+    <CValidatorUnitState id="NotHighlighted">
+        <State value="Highlighted"/>
+    </CValidatorUnitState>
+    <CValidatorUnitCompareVital id="CasterHasEnergy">
+        <ResultFailed value="NotEnoughEnergy"/>
+    </CValidatorUnitCompareVital>
     <CValidatorUnitCompareBehaviorCount id="HasZergGenericDeath">
         <Value value="1"/>
         <Behavior value="ZergGenericDeath"/>
@@ -67,6 +83,33 @@
         <Behavior value="Frenzy"/>
         <Compare value="GT"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCondition id="IsTerranSCBWCondition">
+        <ResultFailed value="CantTargetThatUnit,e_cmdMustTargetTerran"/>
+        <IfArray Test="SCBW_AllowProtossRepair"/>
+        <Else value="IsTerranSCBW"/>
+    </CValidatorCondition>
+    <CValidatorUnitState id="IsHighlighted">
+        <Enabled value="1"/>
+        <State value="Highlighted"/>
+    </CValidatorUnitState>
+    <CValidatorLocationType id="NotResourcesTargetType">
+        <Unit value="NotResources"/>
+    </CValidatorLocationType>
+    <CValidatorPlayerRequirement id="SCBW_DisableRallyGather">
+        <Find value="1"/>
+        <Value value="SCBW_DisableRallyGather"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorCondition id="SCBW_DisableRallyGather@Condition">
+        <IfArray Test="SCBW_DisableRallyGather" Return="NotResourcesTargetType"/>
+    </CValidatorCondition>
+    <CValidatorPlayerRequirement id="SCBW_LimitedRally@Not">
+        <WhichPlayer Value="Caster"/>
+        <Value value="SCBW_LimitedRally"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorPlayerRequirement id="SCBW_AllowProtossRepair">
+        <Find value="1"/>
+        <Value value="SCBW_AllowProtossRepair"/>
+    </CValidatorPlayerRequirement>
     <CValidatorUnitCompareVital id="SCBW_CanHaveEnergy">
         <Compare value="GT"/>
         <Type value="Maximum"/>
@@ -74,7 +117,7 @@
     </CValidatorUnitCompareVital>
     <CValidatorCombine id="IsDarkArchonUnit">
         <CombineArray value="IsDarkArchon"/>
-        <CombineArray value="IsDarkArchonSCBW"/>
+        <CombineArray value="DarkArchonSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorUnitFilters id="NotStasis">
         <ResultNoUnit value="CantTargetUnitsInAStasisField"/>
@@ -96,6 +139,14 @@
         <Compare value="GT"/>
         <Behavior value="Detector9"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorLocationCompareCliffLevel id="SCBW_LimitedRally@TeleportCliffLevel">
+        <OtherLocation Effect="SCBW_LimitedRally@TrainFinish" Value="CasterUnitOrPoint"/>
+    </CValidatorLocationCompareCliffLevel>
+    <CValidatorCombine id="SCBW_LimitedRally@TeleportValidator">
+        <Type value="And"/>
+        <CombineArray value="Walkable"/>
+        <CombineArray value="SCBW_LimitedRally@TeleportCliffLevel"/>
+    </CValidatorCombine>
     <CValidatorUnitState id="SCBW_NotInsideAnyTransport">
         <State value="InsideTransport"/>
     </CValidatorUnitState>
@@ -106,7 +157,7 @@
         <Value value="Thor"/>
         <Type value="SelectAlias"/>
     </CValidatorUnitType>
-    <CValidatorUnitType id="SCBW_IsAdept" parent="IsTemplate" unitName="Adept"/>
+    <CValidatorUnitType id="SCBW_IsAdept" parent="SCBW_Unit" x="Adept"/>
     <CValidatorUnitState id="SCBW_CasterIsIdle">
         <WhichUnit Value="Caster"/>
         <Enabled value="1"/>
@@ -132,6 +183,10 @@
         <Range value="0.5"/>
     </CValidatorLocationCompareRange>
     <CValidatorUnitState id="SCBW_NotHarvesting">
+        <State value="Harvesting"/>
+    </CValidatorUnitState>
+    <CValidatorUnitState id="SCBW_Harvesting">
+        <Enabled value="1"/>
         <State value="Harvesting"/>
     </CValidatorUnitState>
     <CValidatorCombine id="SCBW_PlayerIsProtoss">
@@ -188,7 +243,7 @@
     </CValidatorUnitState>
     <CValidatorCombine id="IsDroneOrDroneSCBW">
         <CombineArray value="IsDrone"/>
-        <CombineArray value="IsDroneSCBW"/>
+        <CombineArray value="DroneSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorCombine id="False">
         <Negate value="1"/>
@@ -221,14 +276,14 @@
     </CValidatorUnitCompareBehaviorCount>
     <CValidatorCombine id="SCBW_NotBurrowedUnit">
         <Type value="And"/>
-        <CombineArray value="IsDroneSCBW@Burrowed"/>
-        <CombineArray value="IsZerglingSCBW@Burrowed"/>
-        <CombineArray value="IsHydraliskSCBW@Burrowed"/>
-        <CombineArray value="IsLurkerSCBW@Burrowed"/>
-        <CombineArray value="IsUltraliskSCBW@Burrowed"/>
-        <CombineArray value="IsInfestedTerranSCBW@Burrowed"/>
-        <CombineArray value="IsDefilerSCBW@Burrowed"/>
-        <CombineArray value="IsSpiderMineSCBW@Burrowed"/>
+        <CombineArray value="DroneSCBW@Burrowed@Is"/>
+        <CombineArray value="ZerglingSCBW@Burrowed@Is"/>
+        <CombineArray value="HydraliskSCBW@Burrowed@Is"/>
+        <CombineArray value="LurkerSCBW@Burrowed@Is"/>
+        <CombineArray value="UltraliskSCBW@Burrowed@Is"/>
+        <CombineArray value="InfestedTerranSCBW@Burrowed@Is"/>
+        <CombineArray value="DefilerSCBW@Burrowed@Is"/>
+        <CombineArray value="SpiderMineSCBW@Burrowed@Is"/>
         <Negate value="1"/>
     </CValidatorCombine>
     <CValidatorUnitFilters id="SCBW_NotResistant">
@@ -326,10 +381,10 @@
         <CombineArray value="FirebatSCBW@DamageFilters"/>
     </CValidatorCombine>
     <CValidatorCombine id="IsNotEggUnit">
-        <CombineArray value="NotDevourerSCBWEgg"/>
-        <CombineArray value="NotGuardianSCBWEgg"/>
-        <CombineArray value="NotLurkerSCBWEgg"/>
-        <CombineArray value="NotEggSCBW"/>
+        <CombineArray value="DevourerSCBWEgg@Not"/>
+        <CombineArray value="GuardianSCBWEgg@Not"/>
+        <CombineArray value="LurkerSCBWEgg@Not"/>
+        <CombineArray value="EggSCBW@Not"/>
     </CValidatorCombine>
     <CValidatorCombine id="SCBW_TargetNotStasisNotStunnedNotDead">
         <Type value="And"/>
@@ -341,6 +396,14 @@
         <WhichUnit Value="Source"/>
         <State value="AttackSuppressed"/>
     </CValidatorUnitState>
+    <CValidatorCombine id="AnyRallyPointIsSetCaster">
+        <CombineArray value="StandardRallyPointSetCaster"/>
+        <CombineArray value="WorkerRallyPointSetCaster"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareRallyPointCount id="StandardRallyPointSetCaster">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+    </CValidatorUnitCompareRallyPointCount>
     <CValidatorCombine id="TargetIsCloakedNotDetectedSCBW">
         <Type value="And"/>
         <CombineArray value="SCBW_TargetIsCloakedOrBurrowed"/>
@@ -366,8 +429,8 @@
         <State value="InsideUnitTransport"/>
     </CValidatorUnitState>
     <CValidatorCombine id="IsCommandCenterSCBWAddon">
-        <CombineArray value="IsComsatStationSCBW"/>
-        <CombineArray value="IsNuclearSiloSCBW"/>
+        <CombineArray value="ComsatStationSCBW@Is"/>
+        <CombineArray value="NuclearSiloSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorCombine id="GeyserRawIsExhausted">
         <CombineArray value="GeyserExhausted"/>
@@ -555,6 +618,7 @@
     <CValidatorCombine id="IsProtossSCBW">
         <CombineArray value="IsProtoss"/>
         <CombineArray value="IsBWPr"/>
+        <ResultFailed value="CantTargetThatUnit,e_cmdMustTargetProtoss"/>
     </CValidatorCombine>
     <CValidatorCombine id="RequiresTerranSCBW">
         <ResultFailed value="MustTargetRace"/>
@@ -569,13 +633,16 @@
         <AbilLink value="attack"/>
         <Target Value="TargetUnit"/>
     </CValidatorUnitOrderQueue>
-    <CValidatorUnitType id="CommandCenter" parent="SCBW_Unit"/>
-    <CValidatorUnitType id="CommandCenterFlying" parent="SCBW_Unit"/>
     <CValidatorLocationCompareCliffLevel id="SCBW_CliffLevelNotEqual">
         <WhichLocation Value="TargetUnit"/>
         <OtherLocation Value="OriginUnit"/>
         <Compare value="NE"/>
     </CValidatorLocationCompareCliffLevel>
+    <CValidatorUnitCompareRallyPointCount id="WorkerRallyPointSetCaster">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+        <Point value="1"/>
+    </CValidatorUnitCompareRallyPointCount>
     <CValidatorCombine id="ZergBleedLight">
         <CombineArray value="HatcherySCBW@NotMorphing"/>
         <CombineArray value="LairSCBW@NotMorphing"/>
@@ -630,6 +697,7 @@
     <CValidatorCombine id="IsZergSCBW">
         <CombineArray value="IsZerg"/>
         <CombineArray value="IsBWZe"/>
+        <ResultFailed value="CantTargetThatUnit,e_cmdMustTargetZerg"/>
     </CValidatorCombine>
     <CValidatorUnitFilters id="UnitIsNotArmored">
         <Filters value="-;Armored"/>
@@ -720,9 +788,9 @@
     </CValidatorUnitFilters>
     <CValidatorCombine id="SCBW_IsHatcheryLairOrHive">
         <ResultFailed value="MustTargetStructures,Error/MustTargetHatchery"/>
-        <CombineArray value="IsHatcherySCBW"/>
-        <CombineArray value="IsLairSCBW"/>
-        <CombineArray value="IsHiveSCBW"/>
+        <CombineArray value="HatcherySCBW@Is"/>
+        <CombineArray value="LairSCBW@Is"/>
+        <CombineArray value="HiveSCBW@Is"/>
     </CValidatorCombine>
     <CValidatorUnitCompareVital id="SCBW_CanHaveShields">
         <ResultFailed value="NotEnoughShields"/>
