@@ -59,6 +59,7 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
     int i;
     playergroup pg = PlayerGroupActive();
     int k;
+    int skinsVersion;
     bank playerBank;
     KopruluSkin kopruluSkin;
 
@@ -70,7 +71,13 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
         tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
         if(PlayerType(tmp_player) != c_playerTypeUser){ continue; }
         playerBank = gv_extensionBank[tmp_player];
-        if(!BankSectionExists(playerBank, c_extBankSectionOptions)){ continue; }
+        if(!BankSectionExists(playerBank, c_extBankSectionOptions)){
+            // No Bank exists, display callout if new Skins available only.
+            if(gv_KopruluSkinsNewSkinsAvailable){
+                KopruluSkinsNotificationStart(tmp_player);
+            } 
+            continue;
+        }
         
         if(BankKeyExists(playerBank, c_extBankSectionOptions, c_extBankKeyVersion)){ 
             if(BankValueGetAsFixed(playerBank, c_extBankSectionOptions, c_extBankKeyVersion) != c_extOptionsVersion)
@@ -85,7 +92,26 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
             }
         }
 
-        if(!BankSectionExists(playerBank, c_extBankSectionSkins)){ continue; }
+        if(!BankSectionExists(playerBank, c_extBankSectionSkins)){
+            // No Skins section exists and New Skins are available, Display Callout
+            if(gv_KopruluSkinsNewSkinsAvailable){
+                KopruluSkinsNotificationStart(tmp_player);
+            } 
+            continue;
+        }
+
+
+        if(BankKeyExists(playerBank, c_extBankSectionSkins, c_extBankSkinsKeyVersion)){
+            // Skins version exists but is out of date, Display callout
+            skinsVersion = BankValueGetAsInt(playerBank, c_extBankSectionSkins, c_extBankSkinsKeyVersion);
+            if(skinsVersion < c_extBankSkinsVersion){
+                KopruluSkinsNotificationStart(tmp_player);
+            }
+        }
+        else{
+            skinsVersion = c_extBankSkinsVersion;
+        }
+
         for (k = 0; k < gv_KopruluSkinsCount - 1; k += 1) {
             kopruluSkin = gv_KopruluSkins[k];
             if(BankKeyExists(playerBank, c_extBankSectionSkins, kopruluSkin.id)){
@@ -97,6 +123,14 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
                     DialogControlSetPropertyAsBool(kopruluSkin.menuControl, c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), false);
                 }
             }
+
+            if(skinsVersion <= kopruluSkin.skinsVersion){
+                if(gv_KopruluSkinsCalloutTimer[tmp_player] == null){
+                    KopruluSkinsNotificationStart(tmp_player);
+                }
+                DialogControlSetAnimationState(kopruluSkin.menuControl, PlayerGroupSingle(tmp_player), "NewSkin", "True");
+            }
+
         }
     }
 
@@ -114,6 +148,22 @@ void Extension_BankSaveSkin(int player, string key, int value){
     }
 
     BankValueSetFromInt(gv_extensionBank[player], c_extBankSectionSkins, key, value);
+    
+    BankSave(gv_extensionBank[player]);
+    DYB_BankBackupsClear(player, gv_extensionBank[player], 1);
+    DYB_BankBackup(player, gv_extensionBank[player], 1);
+}
+
+void Extension_BankUpdateSkinVersion(int player){
+
+    if(BankSectionExists(gv_extensionBank[player], c_extBankSectionSkins)){
+        if(BankKeyExists(gv_extensionBank[player], c_extBankSectionSkins, c_extBankSkinsKeyVersion)){
+            if(BankValueGetAsInt(gv_extensionBank[player], c_extBankSectionSkins, c_extBankSkinsKeyVersion) > c_extBankSkinsVersion){
+                return;
+            }
+        }
+    }
+    BankValueSetFromInt(gv_extensionBank[player], c_extBankSectionSkins, c_extBankSkinsKeyVersion, c_extBankSkinsVersion + 1);
     
     BankSave(gv_extensionBank[player]);
     DYB_BankBackupsClear(player, gv_extensionBank[player], 1);

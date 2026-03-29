@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CValidatorUnitType id="CreepColonySCBW@Is" parent="SCBW_Unit" x="CreepColonySCBW"/>
+    <CValidatorUnitType id="CreepColonySCBW@Not" parent="SCBW_UnitNot" x="CreepColonySCBW"/>
+    <CRequirement id="CreepColonySCBW" parent="SCBW_UnitReqNoUse" Race="Zerg"/>
+    <CButton id="CreepColonySCBW">
+        <Icon value="Assets\Textures\btn-building-zerg-creepcolony@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-creepcolony@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Column="1"/>
+    </CButton>
+    <CRequirementAllowUnit id="CreepColonySCBW@AllowUnit" parent="SCBW_AllowUnit" x="CreepColonySCBW"/>
+    <CRequirementAnd id="CreepColonySCBW@Show" parent="SCBW_BuildingShow" x="CreepColonySCBW"/>
+    <CRequirementAnd id="CreepColonySCBW"/>
+    <CRequirementCountUnit id="CreepColonySCBW@Count" parent="SCBW_UnitCount" x="CreepColonySCBW"/>
+    <CRequirementCountUnit id="CreepColonySCBW@CountAtUnit" parent="SCBW_UnitCountAtUnit" x="CreepColonySCBW"/>
+    <CRequirementNot id="CreepColonySCBW@NotCount" parent="SCBW_Not" x="CreepColonySCBW@Count"/>
+    <CRequirementNot id="CreepColonySCBW@NotCountAtUnit" parent="SCBW_Not" x="CreepColonySCBW@CountAtUnit"/>
+    <CRequirementNot id="CreepColonySCBW@NotQoB" parent="SCBW_Not" x="CreepColonySCBW@QoB"/>
+    <CRequirementNot id="CreepColonySCBW@NotQoBAtUnit" parent="SCBW_Not" x="CreepColonySCBW@QoBAtUnit"/>
+    <CRequirementCountUnit id="CreepColonySCBW@QoB" parent="SCBW_UnitQoB" x="CreepColonySCBW"/>
+    <CRequirementCountUnit id="CreepColonySCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="CreepColonySCBW"/>
+    <CActorSiteOpLocalOffset id="CreepColonySCBW@SplatOffset">
+        <LocalOffset value="0.100000,0.000000,0.000000"/>
+    </CActorSiteOpLocalOffset>
+    <CActorModel id="CreepColonySCBW@PlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation" Send="Create SunkenColonySCBW@ProtectRange"/>
+        <On Terms="ActorDestruction" Target="SunkenColonySCBW@ProtectRange" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="Create SporeColonySCBW@ProtectRange"/>
+        <On Terms="ActorDestruction" Target="SporeColonySCBW@ProtectRange" Send="Destroy"/>
+    </CActorModel>
+    <CActorSplat id="CreepColonySCBW@Splat" parent="BurrowedSplatBase">
+        <!--On Terms="UnitBirth.CreepColonySCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SporeColonySCBW" Send="RefClear ::Host"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SporeColonySCBW" Send="TimerSet 1.500000 DelayDestroy"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="RefClear ::Host"/>
+        <On Terms="AbilMorph.*.Start; MorphTo SunkenColonySCBW" Send="TimerSet 1.500000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <Scale value="0.970000"/>
+        <HostSiteOps Ops="CreepColonySCBW@SplatOffset"/>
+        <AutoScaleFactor value="0.800000"/-->
+    </CActorSplat>
+    <CActorProgress id="CreepColonySCBW@MorphProgress">
+        <Supporter Subject="_ZergColonyMorph"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="Destroy"/>
+        <StageArray AnimProps="Morph,Start"/>
+        <StageArray AnimProps="Morph,Stand"/>
+    </CActorProgress>
+    <CActorUnit id="CreepColonySCBW" parent="ZergBuildingSCBW" unitName="CreepColonySCBW">
+        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Create CreepColonySCBW@MorphProgress"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="AnimBaselineStop"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimClear ::Progress"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimBaselineStart"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimPlay Morph Morph,End 0 0.000000"/>
+        <!--On Terms="AbilMorph.*.Cancel; MorphFrom CreepColonySCBW" Send="AnimSetTime Morph 0.0"/-->
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW; MorphTo SunkenColonySCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CreepColonySCBW; MorphTo SporeColonySCBW" Send="Destroy"/>
+        <!--On Terms="Signal.*.Morph" Send="SetOpacity 0.000000 0.500000"/>
+        <On Terms="Signal.*.MorphEnd" Send="SetOpacity 1.000000 0.500000"/>
+        <On Terms="Signal.*.MorphEnd" Target="SporeColonySCBW" Send="SetOpacity 1.000000"/>
+        <On Terms="Signal.*.MorphEnd" Target="SunkenColonySCBW" Send="SetOpacity 1.000000"/-->
+        <!--On Terms="Signal.*.DelayDestroy" Send="TimerSet 0.062500 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/-->
+        <!--On Terms="AbilMorph.*.Start; MorphFrom CreepColonySCBW" Send="Destroy"/-->
+        <!--On Terms="AbilMorph.*.Finish; MorphTo SunkenColonySCBW" Send="Signal DelayDestroy"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo SporeColonySCBW" Send="Signal DelayDestroy"/-->
+        <AnimBlendTime value="0.400000"/>
+        <PlacementSound value="ZergBuildingSCBW@PlacementSmall"/>
+        <WalkAnimMoveSpeed value="0.7968"/>
+        <BarOffset value="60"/>
+        <BarWidth value="90"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-zerg-creepcolony@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-creepcolony@scbw.dds"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-creepcolony@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-zerg-creepcolony@scbw.dds"/>
+        </Wireframe>
+        <PlacementActorModel value="CreepColonySCBW@PlacementModel"/>
+        <Aliases value="_ZergColonyMorph"/>
+    </CActorUnit>
+    <CActorModel id="CreepColonySCBW@Build" parent="ZergBuildingSCBW@Build"/>
+    <CModel id="CreepColonySCBW@Placement" parent="PlacementEx" Race="Zerg" low="CreepColonySCBW">
+        <Model value="Assets\Buildings\Zerg\CreepColonySCBW\CreepColonySCBW@Placement.m3"/>
+        <Radius value="1.000000"/>
+        <ScaleMax value="0.730000,0.730000,0.730000"/>
+        <ScaleMin value="0.730000,0.730000,0.730000"/>
+        <SelectionLayer value="2"/>
+        <SelectionRadius value="1.000000"/>
+        <ShadowRadius value="1.176200"/>
+        <SquibTypeDefault value="Flesh"/>
+    </CModel>
+    <CModel id="CreepColonySCBW@Portrait" parent="ZergAdvisorSCBW@PortraitBase" Race="Zerg"/>
+    <CModel id="CreepColonySCBW@Build" parent="ZergBuildingBuild2x2"/>
+    <CModel id="CreepColonySCBW@DeathUnderConstruction" parent="ZergBuildingLargeDeathBase">
+        <Model value="Assets\Buildings\Zerg\ZergBuildingDeathEx1\ZergBuildingDeathEx1.m3"/>
+        <ScaleMax value="0.800000,0.800000,0.800000"/>
+        <ScaleMin value="0.800000,0.800000,0.800000"/>
+    </CModel>
+    <CModel id="CreepColonySCBW" parent="Building" Race="Zerg">
+        <PlanetPanelCamera value="Star2CameraHigh09"/>
+        <Radius value="1.000000"/>
+        <SelectionLayer value="2"/>
+        <SelectionRadius value="1.000000"/>
+        <ShadowRadius value="1.176200"/>
+        <SquibTypeDefault value="Flesh"/>
+        <TechPurchaseCamera value="Star2CameraHigh09"/>
+        <UnitGlossaryCamera value="Star2CameraHigh09"/>
+        <RequiredAnims value="Assets\Buildings\Zerg\CreepColonySCBW\CreepColonySCBW@MorphAnims.m3a"/>
+    </CModel>
+    <CModel id="CreepColonySCBW@Death" parent="BuildingDeath" Race="Zerg">
+        <Model value="Assets\Buildings\Zerg\CreepColonySCBW\CreepColonySCBW@Death.m3"/>
+        <LowQualityModel value="ZergBuildingDeathLow"/>
+        <SquibTypeDefault value="Flesh"/>
+    </CModel>
+    <CSound id="CreepColonySCBW@Hatch" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Construction\Zerg_BuildingMorphEnd1.wav"/>
+    </CSound>
+    <CSound id="CreepColonySCBW@Explode" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Zerg\SharedEffects\Explosions\Zerg_ExplosionLarge4.wav" Pitch="-3.000000,3.000000"/>
+    </CSound>
+    <CSound id="CreepColonySCBW@Ready" parent="Ready">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\CreepColonySCBW\CreepColonySCBW@What00.ogg"/>
+        <Volume value="-6.000000,-6.000000"/>
+    </CSound>
+    <CSound id="CreepColonySCBW@What" parent="Voice">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\CreepColonySCBW\CreepColonySCBW@What00.ogg"/>
+        <Volume value="-6.000000,-6.000000"/>
+    </CSound>
+    <CDataCollectionUnit id="CreepColonySCBW" parent="ZergBuildingSCBW">
+        <DataRecord Entry="Actor,CreepColonySCBW@SplatOffset"/>
+        <DataRecord Entry="Actor,CreepColonySCBW@PlacementModel"/>
+        <DataRecord Entry="Actor,CreepColonySCBW@Splat"/>
+        <DataRecord Entry="Actor,CreepColonySCBW@MorphProgress"/>
+        <DataRecord Entry="Actor,CreepColonySCBW@Build"/>
+        <DataRecord Entry="Model,CreepColonySCBW@DeathUnderConstruction"/>
+        <DataRecord Entry="Model,CreepColonySCBW@Placement"/>
+        <DataRecord Entry="Model,CreepColonySCBW@Build"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@Show"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@Count"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@NotCount"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@NotCountAtUnit"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@NotQoB"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,CreepColonySCBW@QoBAtUnit"/>
+        <DataRecord Entry="Sound,CreepColonySCBW@Explode"/>
+        <DataRecord Entry="Sound,CreepColonySCBW@Hatch"/>
+        <DataRecord Entry="Validator,CreepColonySCBW@Is"/>
+        <DataRecord Entry="Validator,CreepColonySCBW@Not"/>
+    </CDataCollectionUnit>
+    <CUnit id="CreepColonySCBW" parent="ZergUnitSCBW">
+        <DeathRevealRadius value="3"/>
+        <Facing value="45"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="PreventDefeat" value="1"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="PenaltyRevealed" value="1"/>
+        <FlagArray index="TownAlert" value="1"/>
+        <FlagArray index="NoPortraitTalk" value="1"/>
+        <FlagArray index="AIThreatAir" value="1"/>
+        <FlagArray index="AIPressForwardDisabled" value="1"/>
+        <FlagArray index="AIAllowSuicideOverride" value="1"/>
+        <FogVisibility value="Snapshot"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Burrow" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="Structure" value="1"/>
+        <Collide index="RoachBurrow" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <Attributes index="Structure" value="1"/>
+        <LifeStart value="400"/>
+        <LifeMax value="400"/>
+        <LifeArmorName value="Unit/LifeArmorName/ZergBuildingArmor"/>
+        <StationaryTurningRate value="719.4726"/>
+        <TurningRate value="719.4726"/>
+        <Sight value="10"/>
+        <CostCategory value="Technology"/>
+        <CostResource index="Minerals" value="125"/>
+        <BuildTime value="18"/>
+        <AttackTargetPriority value="19"/>
+        <AbilArray Link="MutateInProgressSCBW"/>
+        <AbilArray Link="SunkenColonySCBW@Morph"/>
+        <AbilArray Link="SporeColonySCBW@Morph"/>
+        <BehaviorArray Link="OnCreep"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepGrowthMedium"/>
+        <CardLayouts>
+            <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="CancelMutateMorph" Type="AbilCmd" AbilCmd="SunkenColonySCBW@Morph,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="CancelMutateMorph" Type="AbilCmd" AbilCmd="SporeColonySCBW@Morph,Cancel" Row="2" Column="4"/>
+        </CardLayouts>
+        <Radius value="0.875"/>
+        <SeparationRadius value="0.875"/>
+        <Footprint value="SCBW_Footprint2x2Contour"/>
+        <PlacementFootprint value="Footprint2x2CreepNoFog"/>
+        <ScoreMake value="75"/>
+        <ScoreKill value="125"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="4"/>
+        <MinimapRadius value="0.875"/>
+        <EditorCategories value="ObjectType:Structure,ObjectFamily:Melee"/>
+        <AIEvalFactor value="0.65"/>
+        <GlossaryCategory value=""/>
+        <RankDisplay value="Always"/>
+        <TechTreeProducedUnitArray value="SunkenColonySCBW"/>
+        <TechTreeProducedUnitArray value="SporeColonySCBW"/>
+        <GlossaryPriority value="220"/>
+        <TechAliasArray value="Alias_CreepColonySCBW"/>
+    </CUnit>
+</Catalog>

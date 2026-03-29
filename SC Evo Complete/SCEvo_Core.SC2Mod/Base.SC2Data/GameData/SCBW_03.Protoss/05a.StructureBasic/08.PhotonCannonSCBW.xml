@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectDamage id="PhotonCannonSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
+        <EditorCategories value="Race:Protoss"/>
+        <Kind value="Ranged"/>
+        <Amount value="20"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="PhotonCannonSCBWWeapon@LM">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="PhotonCannonSCBWWeapon@Damage"/>
+        <AmmoUnit value="PhotonCannonSCBWWeapon@Missile"/>
+    </CEffectLaunchMissile>
+    <CValidatorUnitType id="PhotonCannonSCBW@Is" parent="SCBW_Unit" x="PhotonCannonSCBW"/>
+    <CValidatorUnitType id="PhotonCannonSCBW@Not" parent="SCBW_UnitNot" x="PhotonCannonSCBW"/>
+    <CRequirement id="PhotonCannonSCBW" parent="SCBW_UnitReq" Race="Protoss"/>
+    <CButton id="PhotonCannonSCBW">
+        <Icon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Row="1" Column="2"/>
+    </CButton>
+    <CButton id="PhotonCannonSCBW@Passive" parent="SCBW_UnitPassive" x="PhotonCannonSCBW">
+        <Icon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CRequirementAllowUnit id="PhotonCannonSCBW@AllowUnit" parent="SCBW_AllowUnit" x="PhotonCannonSCBW"/>
+    <CRequirementAnd id="PhotonCannonSCBW@Show" parent="SCBW_BuildingShow" x="PhotonCannonSCBW"/>
+    <CRequirementAnd id="PhotonCannonSCBW">
+        <OperandArray value="ForgeSCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementCountUnit id="PhotonCannonSCBW@Count" parent="SCBW_UnitCount" x="PhotonCannonSCBW"/>
+    <CRequirementCountUnit id="PhotonCannonSCBW@QoB" parent="SCBW_UnitQoB" x="PhotonCannonSCBW"/>
+    <CRequirementCountUnit id="PhotonCannonSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="PhotonCannonSCBW"/>
+    <CRequirementNot id="PhotonCannonSCBW@NotQoBAtUnit" parent="SCBW_Not" x="PhotonCannonSCBW@QoBAtUnit"/>
+    <CRequirementNot id="PhotonCannonSCBW@NotQoB" parent="SCBW_Not" x="PhotonCannonSCBW@QoB"/>
+    <CActorForceCylinder id="PhotonCannonSCBWWeapon@DeathForce">
+        <HostSiteOps Ops="SOpIncomingMissileDot25"/>
+        <Receiver Subject="::Main"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="17.000000,12.000000"/>
+        <HostEndSiteOps Ops="SOpIncomingMissileDot25 SOpMoveBy1Dot5"/>
+        <Radius value="0.500000"/>
+    </CActorForceCylinder>
+    <CActorAction id="PhotonCannonSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="PhotonCannonSCBWWeapon@Damage" effectLaunch="PhotonCannonSCBWWeapon@LM">
+        <LaunchAssets Sound="PhotonCannonSCBWWeapon@Launch"/>
+        <Missile value="PhotonCannonSCBWWeapon@Missile"/>
+        <ImpactMap index="None" Model="PhotonCannonSCBWWeapon@Impact" Sound="PhotonCannonSCBWWeapon@Impact"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact"/>
+        <ImpactPhysics Name="PhotonCannonImpact" MatchKeys="Basic" Physics="PhotonCannonAttackDeathForce"/>
+    </CActorAction>
+    <CActorMissile id="PhotonCannonSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="PhotonCannonSCBWWeapon@Missile">
+        <On Terms="UnitBirth" Send="AnimSetTimeScaleAbsolute Lifetime 1.000000"/>
+    </CActorMissile>
+    <CActorModel id="PhotonCannonSCBW@SkinnablePlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation" Send="Create PhotonCannonSCBW@ProtectRange"/>
+        <On Terms="ActorDestruction" Target="PhotonCannonSCBW@ProtectRange" Send="Destroy"/>
+    </CActorModel>
+    <CActorRange id="PhotonCannonSCBW@ProtectRange" parent="RangeWeapon" weapon="PhotonCannonSCBWWeapon">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorModel id="PhotonCannonSCBW@PlacementModel" parent="PlacementModel">
+        <On Terms="ActorCreation; ModelName PhotonCannonSCBW@Placement" Send="Create PhotonCannonSCBW@Range"/>
+        <On Terms="ActorCreation; ModelName PhotonCannonSCBW; ModelIsLowQuality" Send="Create PhotonCannonSCBW@Range"/>
+        <On Terms="ActorDestruction" Target="PhotonCannonSCBW@Range" Send="Destroy"/>
+    </CActorModel>
+    <!--    <CActorRange id="PhotonCannonSCBWDetectRange">-->
+    <!--        <On Terms="Behavior.PhotonCannonDetectRange.On" Send="Create"/>-->
+    <!--        <On Terms="BehaviorLevel.PowerUserBaseDefenseSmall.Start; Level 0" Send="SetVisibility"/>-->
+    <!--        <On Terms="BehaviorLevel.PowerUserBaseDefenseSmall.Stop; Level 0" Send="SetVisibility 1"/>-->
+    <!--        <On Terms="Behavior.PhotonCannonDetectRange.Off" Send="Destroy"/>-->
+    <!--        <Behavior value="Detector11"/>-->
+    <!--        <Icon value="Assets\Textures\btn-status-detector.dds"/>-->
+    <!--    </CActorRange>-->
+    <CActorRange id="PhotonCannonSCBW@Range" parent="RangeWeapon" weapon="PhotonCannonSCBWWeapon">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorModel id="PhotonCannonSCBW@Death" parent="UnitDeathModel">
+        <CopySource value="PhotonCannonSCBW"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
+    <CActorUnit id="PhotonCannonSCBW" parent="ProtossBuildingSCBWNoWeapon" unitName="PhotonCannonSCBW">
+        <!--
+        <On Terms="ActorCreation" Send="Create PhotonCannonTurretLookAt"/>
+        <On Terms="Abil.attack.ReadyStart" Target="PhotonCannonTurretLookAt" Send="LookAtEngage"/>
+        <On Terms="Abil.attack.ReadyStop" Target="PhotonCannonTurretLookAt" Send="LookAtDisengage"/>
+        -->
+        <On Terms="Abil.attack.ReadyStart" Target="" Send="AnimGroupApply Ready"/>
+        <On Terms="Abil.attack.ReadyStart" Target="" Send="TimerKill ReadyDelay"/>
+        <On Terms="WeaponStart.*.AttackStart" Target="" Send="TimerKill ReadyDelay"/>
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Target="" Send="AnimClear Birth"/>
+        <On Terms="WeaponStart.*.AttackStart" Target="" Send="AnimPlay Attack Attack"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimPlay Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimPlay Attack Attack,Inferior"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="TimerSet 1.500000,0.500000 ReadyDelay"/>
+        <On Terms="Abil.attack.ReadyStop" Send="TimerSet 1.500000,0.500000 ReadyDelay"/>
+        <On Terms="TimerExpired; TimerName ReadyDelay" Send="AnimClear Attack"/>
+        <On Terms="TimerExpired; TimerName ReadyDelay" Send="AnimGroupRemove Ready"/>
+        <On Terms="Signal.*.ProtossPowerDown" Send="TimerKill ReadyDelay"/>
+        <On Terms="Signal.*.ProtossPowerDown" Send="AnimClear Attack"/>
+        <On Terms="Signal.*.ProtossPowerDown" Send="AnimGroupRemove Ready"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstruction" Send="DeathCustomize Variation2"/>
+        <On Terms="AbilMorph.*.Finish; MorphTo PhotonCannonSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom PhotonCannonSCBW" Send="Destroy"/>
+        <On Terms="AnimDone; AnimPlaying Birth" Send="ModelSwap PhotonCannonSCBW"/>
+        <On Terms="AnimDone; AnimPlaying Birth" Send="AnimPlay Creation Stand,Unpowered,End"/>
+        <On Terms="AnimDone; AnimPlaying Birth" Send="AnimSetTimeScale Creation 2.000000"/>
+        <CreepHeightClass value="Tiny"/>
+        <DeathArray index="Timeout" AnimProps="Birth" ModelLink="PhaseCannonWarpOut"/>
+        <DeathArray index="UnderConstruction" ModelLink="ProtossWarpInDeath" SoundLink="PhotonCannon_Explode"/>
+        <DeathActorModel value="PhotonCannonSCBW@Death"/>
+        <PlacementSound value="ProtossBuildingSCBW@PlacementSmall"/>
+        <PortraitModel value="ProtAdvisorSCBW@Portrait"/>
+        <BarOffset value="60"/>
+        <BarWidth value="75"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+        <UnitIcon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon@scbw.dds"/>
+        </Wireframe>
+        <WireframeShield>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon-shield01@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon-shield02@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-photoncannon-shield03@scbw.dds"/>
+        </WireframeShield>
+        <PlacementActorModel value="PhotonCannonSCBW@SkinnablePlacementModel"/>
+    </CActorUnit>
+    <CActorSplat id="PhotonCannonSCBW@Splat" parent="GenericUnitSplat" unitName="PhotonCannonSCBW"/>
+    <CActorTurret id="PhotonCannonSCBW@Turret">
+        <On Terms="TurretEnable.PhotonCannonSCBW@Turret" Send="Create"/>
+    </CActorTurret>
+    <CActorModel id="PhotonCannonSCBW@Build" parent="ProtossBuildingSCBW@Build"/>
+    <CModel id="PhotonCannonSCBWWeapon@Impact" parent="ImpactFX">
+        <Model value="Assets\Effects\Protoss\DragoonAttackImpact@SCBWEffect\DragoonAttackImpact@SCBWEffect.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.900000,0.900000,0.900000"/>
+        <ScaleMin value="0.900000,0.900000,0.900000"/>
+    </CModel>
+    <CModel id="PhotonCannonSCBWWeapon@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Protoss\DragoonAttackMissile@SCBWEffect\DragoonAttackMissile@SCBWEffect.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.900000,0.900000,0.900000"/>
+        <ScaleMin value="0.900000,0.900000,0.900000"/>
+    </CModel>
+    <CModel id="PhotonCannonSCBW@Build" parent="ProtossBuildingBuildSmallBase"/>
+    <CModel id="PhotonCannonSCBW" parent="BuildingEx" Race="Protoss">
+        <PlanetPanelCamera value="Star2CameraMid06"/>
+        <Radius value="1.000000"/>
+        <ScaleMax value="0.850000,0.850000,0.850000"/>
+        <ScaleMin value="0.850000,0.850000,0.850000"/>
+        <SelectionRadius value="1.176200"/>
+        <ShadowRadius value="1.176200"/>
+        <SquibTypeDefault value="Metal"/>
+        <TechPurchaseCamera value="Star2CameraMid06"/>
+        <UnitGlossaryCamera value="Star2CameraMid06"/>
+    </CModel>
+    <CModel id="PhotonCannonSCBW@Birth" parent="PhotonCannonWarpInBase">
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@WarpIn.m3"/>
+    </CModel>
+    <CModel id="PhotonCannonSCBW@Death" parent="UnitDeath">
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@Death.m3"/>
+        <LowQualityModel value="ProtossSmallBuildingDeathLow"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CModel id="PhotonCannonSCBW@DeathUnpowered" parent="UnitDeath">
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@Death.m3"/>
+        <LowQualityModel value="ProtossSmallBuildingDeathLow"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CModel id="PhotonCannonSCBW@Placement" parent="PlacementEx" Race="Protoss" low="PhotonCannonSCBW">
+        <Model value="Assets\Buildings\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@Placement.m3"/>
+        <Radius value="-1.000000"/>
+        <ScaleMax value="0.850000,0.850000,0.850000"/>
+        <ScaleMin value="0.850000,0.850000,0.850000"/>
+    </CModel>
+    <CModel id="PhotonCannonSCBW@Splat" parent="Splat">
+        <Model value="Assets\Splats\Splat_PhotonCannonSCBW\Splat_PhotonCannonSCBW.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMin value="0.480000,0.480000,0.480000"/>
+        <ScaleMax value="0.480000,0.480000,0.480000"/>
+    </CModel>
+    <CWeaponLegacy id="PhotonCannonSCBWWeapon">
+        <EditorCategories value="Race:Protoss"/>
+        <Icon value="Assets\Textures\btn-building-protoss-photoncannon@scbw.dds"/>
+        <DisplayEffect value="PhotonCannonSCBWWeapon@Damage"/>
+        <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="7"/>
+        <RangeSlop value="0"/>
+        <Period value="1.3125"/>
+        <Effect value="PhotonCannonSCBWWeapon@LM"/>
+        <Options index="NeverMiss" value="0"/>
+        <RandomDelayMax value="0.0625"/>
+    </CWeaponLegacy>
+    <CMoverMissile id="PhotonCannonSCBWWeapon@Mover" parent="MissileDefault">
+        <MotionPhases index="0">
+            <Driver value="Guidance"/>
+            <Acceleration value="3200"/>
+            <MaxSpeed value="18"/>
+            <ClearanceAcceleration value="75"/>
+            <Outro value="-1"/>
+            <YawPitchRoll value="719.2968"/>
+        </MotionPhases>
+    </CMoverMissile>
+    <CSound id="PhotonCannonSCBWWeapon@Impact" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhotonCannonSCBW\PhotonCannonSCBWWeapon@Impact00.ogg"/>
+        <Volume value="2.000000,2.000000"/>
+    </CSound>
+    <CSound id="PhotonCannonSCBWWeapon@Launch" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhotonCannonSCBW\PhotonCannonSCBWWeapon@Launch00.ogg"/>
+        <Volume value="3.000000,3.000000"/>
+    </CSound>
+    <CSound id="PhotonCannonSCBW@Explode" parent="Protoss_ExplosionLarge"/>
+    <CSound id="PhotonCannonSCBW@Ready" parent="Ready">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@What.ogg"/>
+        <Volume value="-2.000000,-2.000000"/>
+    </CSound>
+    <CSound id="PhotonCannonSCBW@What" parent="Voice">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\PhotonCannonSCBW\PhotonCannonSCBW@What.ogg"/>
+        <Volume value="-2.000000,-2.000000"/>
+    </CSound>
+    <CDataCollectionAbil id="PhotonCannonSCBWWeapon" parent="ProtossInfantryWeaponSCBW">
+        <DataRecord Entry="Actor,PhotonCannonSCBWWeapon@DeathForce"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBWWeapon@Missile"/>
+        <DataRecord Entry="Effect,PhotonCannonSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,PhotonCannonSCBWWeapon@LM"/>
+        <DataRecord Entry="Model,PhotonCannonSCBWWeapon@Impact"/>
+        <DataRecord Entry="Model,PhotonCannonSCBWWeapon@Missile"/>
+        <DataRecord Entry="Mover,PhotonCannonSCBWWeapon@Mover"/>
+        <DataRecord Entry="Sound,PhotonCannonSCBWWeapon@Launch"/>
+        <DataRecord Entry="Sound,PhotonCannonSCBWWeapon@Impact"/>
+        <DataRecord Entry="Unit,PhotonCannonSCBWWeapon@Missile"/>
+        <DataRecord Entry="Weapon,PhotonCannonSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="PhotonCannonSCBW" parent="ProtossBuildingSCBW">
+        <DataRecord Entry="Actor,PhotonCannonSCBW@SkinnablePlacementModel"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBW@ProtectRange"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBW@PlacementModel"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBW@Range"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBW@Death"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBW@Splat"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBW@Turret"/>
+        <DataRecord Entry="Actor,PhotonCannonSCBW@Build"/>
+        <DataRecord Entry="Button,PhotonCannonSCBW@Passive"/>
+        <DataRecord Entry="Model,PhotonCannonSCBW@Placement"/>
+        <DataRecord Entry="Model,PhotonCannonSCBW@Birth"/>
+        <DataRecord Entry="Model,PhotonCannonSCBW@DeathUnpowered"/>
+        <DataRecord Entry="Model,PhotonCannonSCBW@Splat"/>
+        <DataRecord Entry="Model,PhotonCannonSCBW@Build"/>
+        <DataRecord Entry="RequirementNode,PhotonCannonSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,PhotonCannonSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,PhotonCannonSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,PhotonCannonSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,PhotonCannonSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,PhotonCannonSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,PhotonCannonSCBW@NotQoB"/>
+        <DataRecord Entry="Sound,PhotonCannonSCBW@Explode"/>
+        <DataRecord Entry="Turret,PhotonCannonSCBW@Turret"/>
+        <DataRecord Entry="Validator,PhotonCannonSCBW@Is"/>
+        <DataRecord Entry="Validator,PhotonCannonSCBW@Not"/>
+    </CDataCollectionUnit>
+    <CTurret id="PhotonCannonSCBW@Turret" parent="FreeRotate"/>
+    <CUnit id="PhotonCannonSCBWWeapon@Missile" parent="MISSILE">
+        <Race value="BWPr"/>
+        <Mover value="PhotonCannonSCBWWeapon@Mover"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="PhotonCannonSCBW">
+        <Facing value="29.9926"/>
+        <Race value="BWPr"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="PreventDefeat" value="1"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="PenaltyRevealed" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="TownAlert" value="1"/>
+        <FlagArray index="NoPortraitTalk" value="1"/>
+        <FlagArray index="AIDefense" value="1"/>
+        <FogVisibility value="Snapshot"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Burrow" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="Structure" value="1"/>
+        <Collide index="RoachBurrow" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Structure" value="1"/>
+        <LifeStart value="100"/>
+        <LifeMax value="100"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossBuildingPlating"/>
+        <ShieldsStart value="100"/>
+        <ShieldsMax value="100"/>
+        <ShieldRegenRate value="0.4375"/>
+        <ShieldArmorName value="Unit/ShieldArmorName/ProtossPlasmaShields"/>
+        <Sight value="11"/>
+        <CostCategory value="Technology"/>
+        <CostResource index="Minerals" value="150"/>
+        <AttackTargetPriority value="20"/>
+        <AbilArray Link="WarpInProgressSCBW"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <BehaviorArray Link="Detector9"/>
+        <BehaviorArray Link="PowerUserBaseDefenseSmall"/>
+        <BehaviorArray Link="UnderConstruction"/>
+        <WeaponArray Link="PhotonCannonSCBWWeapon" Turret="PhotonCannonSCBW@Turret"/>
+        <CardLayouts>
+            <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="WarpInProgressSCBW,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="AttackBuilding" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="DetectorSCBW@Detector" Type="Passive" Requirements="SCBW_NotDetectionSuppressed" Row="2" Column="3"/>
+        </CardLayouts>
+        <Radius value="1"/>
+        <SeparationRadius value="1"/>
+        <Footprint value="Footprint2x2Contour"/>
+        <PlacementFootprint value="Footprint2x2"/>
+        <ScoreMake value="150"/>
+        <ScoreKill value="150"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="4"/>
+        <MinimapRadius value="0.75"/>
+        <EditorCategories value="ObjectType:Structure,ObjectFamily:Melee"/>
+        <AIEvalFactor value="0.8"/>
+        <GlossaryCategory value="Unit/Category/ProtossUnitsSCBW"/>
+        <GlossaryPriority value="200"/>
+        <GlossaryStrongArray value="WraithSCBW"/>
+        <GlossaryStrongArray value="MutaliskSCBW"/>
+        <GlossaryStrongArray value="DarkTemplarSCBW"/>
+        <GlossaryWeakArray value="SiegeTankSCBWSieged"/>
+        <GlossaryWeakArray value="GuardianSCBW"/>
+        <GlossaryWeakArray value="ReaverSCBW"/>
+        <HotkeyCategory value="Unit/Category/ProtossUnitsSCBW"/>
+        <Speed value="46.5"/>
+        <BuildTime value="44"/>
+    </CUnit>
+</Catalog>

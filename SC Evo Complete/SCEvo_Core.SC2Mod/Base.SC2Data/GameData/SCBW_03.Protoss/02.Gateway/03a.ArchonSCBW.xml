@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectUserData id="ArchonSCBWWeapon@MissChance" parent="MissChanceBase">
+        <EditorCategories value="Race:Protoss"/>
+    </CEffectUserData>
+    <CEffectSet id="ArchonSCBWWeapon@Impact">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArchonSCBWWeapon@Damage"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSet>
+    <CEffectSet id="ArchonSCBWWeapon@InitialSet">
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="ArchonSCBWWeapon@MissChance"/>
+        <EffectArray value="ArchonSCBWWeapon@MissSwitch"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="ArchonSCBWWeapon@Miss">
+        <EditorCategories value="Race:Terran"/>
+        <WhichLocation Effect="ArchonSCBWWeapon@InitialSet"/>
+        <OffsetVectorStartLocation Effect="ArchonSCBWWeapon@InitialSet" Value="TargetPoint"/>
+        <OffsetVectorEndLocation Value="CasterUnitOrPoint"/>
+        <InitialEffect value="ArchonSCBWWeapon@MissDummy"/>
+        <InitialOffset value="0,-1.1,0"/>
+        <FinalEffect value="ArchonSCBWWeapon@Impact"/>
+        <FinalOffset value="0,-1.1,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ArchonSCBWWeapon@MissMedium" parent="ArchonSCBWWeapon@Miss">
+        <Name value="Effect/Name/ArchonSCBWWeapon@MissMedium"/>
+        <InitialOffset value="0,-1.4,0"/>
+        <FinalOffset value="0,-1.4,0"/>
+    </CEffectCreatePersistent>
+    <CEffectCreatePersistent id="ArchonSCBWWeapon@MissLarge" parent="ArchonSCBWWeapon@Miss">
+        <Name value="Effect/Name/ArchonSCBWWeapon@MissLarge"/>
+        <InitialOffset value="0,-1.7,0"/>
+        <FinalOffset value="0,-1.7,0"/>
+    </CEffectCreatePersistent>
+    <CEffectSwitch id="ArchonSCBWWeapon@MissOffsetSwitch">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Validator="SiegeTankSCBWSiegedWeapon@RadiusLarge" Effect="ArchonSCBWWeapon@MissLarge"/>
+        <CaseArray Validator="SiegeTankSCBWSiegedWeapon@RadiusMedium" Effect="ArchonSCBWWeapon@MissMedium"/>
+        <CaseDefault value="ArchonSCBWWeapon@Miss"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSwitch>
+    <CEffectDamage id="ArchonSCBWWeapon@MissDummy">
+        <EditorCategories value="Race:Terran"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <AreaArray/>
+        <SearchFlags index="OffsetAreaByAngle" value="1"/>
+    </CEffectDamage>
+    <CEffectSwitch id="ArchonSCBWWeapon@MissSwitch">
+        <EditorCategories value="Race:Terran"/>
+        <CaseArray Validator="SCBW_MissChance@CheckDarkSwarm" Effect="ArchonSCBWWeapon@MissOffsetSwitch"/>
+        <CaseArray Validator="SCBW_MissChance@WeaponMissed" Effect="ArchonSCBWWeapon@MissOffsetSwitch"/>
+        <CaseDefault value="ArchonSCBWWeapon@Impact"/>
+        <TargetLocationType value="UnitOrPoint"/>
+    </CEffectSwitch>
+    <CEffectDamage id="ArchonSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactUnitValidator value="NotUnderDarkSwarmCombine"/>
+        <Kind value="Ranged"/>
+        <KindSplash value="Splash"/>
+        <Amount value="30"/>
+        <AreaArray Radius="0.0937" Fraction="1" Validator="ArchonSCBWWeapon@SplashInner"/>
+        <AreaArray Radius="0.4687" Fraction="0.5" Validator="ArchonSCBWWeapon@Splash"/>
+        <AreaArray Radius="0.9375" Fraction="0.25" Validator="ArchonSCBWWeapon@Splash"/>
+        <ExcludeArray Value="Outer"/>
+        <ExcludeArray Value="Target"/>
+        <SearchFilters value="-;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CAbilMerge id="ArchonSCBWMerge">
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <CmdButtonArray index="SelectedUnits" DefaultButtonFace="ArchonSCBWMerge@Selection" State="Restricted">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="WithTarget" DefaultButtonFace="ArchonSCBWMerge@Target" State="Restricted"/>
+        <Flags index="IgnoreUnitCost" value="1"/>
+        <Info Unit="ArchonSCBW" Time="18"/>
+        <Effect value="SCBW_MergeBegin"/>
+    </CAbilMerge>
+    <CAbilMerge id="ArchonSCBWMerge@Hardcore" parent="ArchonSCBWMerge">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilMerge>
+    <CAbilMergeable id="ArchonSCBW@Mergeable">
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <Cancelable value="0"/>
+    </CAbilMergeable>
+    <CValidatorUnitType id="ArchonSCBW@Is" parent="SCBW_Unit" x="ArchonSCBW"/>
+    <CValidatorUnitType id="ArchonSCBW@Not" parent="SCBW_UnitNot" x="ArchonSCBW"/>
+    <CValidatorCombine id="ArchonSCBWWeapon@TargetCondition">
+        <CombineArray value="CasterAttackingTargetSCBW"/>
+        <CombineArray value="ArchonSCBWWeapon@DamageFilters"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArchonSCBWWeapon@Damage" parent="SCBW_Effect">
+        <CombineArray value="ArchonSCBWWeapon@TargetCondition"/>
+    </CValidatorCombine>
+    <CValidatorUnitFilters id="ArchonSCBWWeapon@DamageFilters">
+        <Filters value="-;Player"/>
+    </CValidatorUnitFilters>
+    <CValidatorCombine id="ArchonSCBWWeapon@Splash" parent="SCBW_Effect">
+        <CombineArray value="SCBW_NotBurrowed"/>
+        <CombineArray value="ArchonSCBWWeapon@TargetCondition"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArchonSCBWWeapon@SplashInner" parent="SCBW_Effect">
+        <CombineArray value="ArchonSCBWWeapon@TargetCondition"/>
+    </CValidatorCombine>
+    <CTacticalOrder id="ArchonSCBW"/>
+    <CRequirement id="ArchonSCBWMerge" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
+    <CRequirement id="ArchonSCBW" parent="SCBW_UnitReq" Race="Protoss"/>
+    <CButton id="ArchonSCBWMerge@Selection">
+        <Icon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Universal value="1"/>
+        <DefaultButtonLayout Row="2" Column="3"/>
+    </CButton>
+    <CButton id="ArchonSCBWMerge@Target">
+        <Icon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <HotkeyAlias value="AWrp"/>
+        <Universal value="1"/>
+        <DefaultButtonLayout Row="2" Column="3"/>
+    </CButton>
+    <CButton id="ArchonSCBW">
+        <Icon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Row="2" Column="2"/>
+    </CButton>
+    <CRequirementAnd id="ArchonSCBWMerge"/>
+    <CRequirementAllowUnit id="ArchonSCBW@AllowUnit" parent="SCBW_AllowUnit" x="ArchonSCBW"/>
+    <CRequirementAnd id="ArchonSCBW@Show">
+        <OperandArray value="ArchonSCBW@AllowUnit"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="ArchonSCBW"/>
+    <CRequirementCountUnit id="ArchonSCBW@Count" parent="SCBW_UnitCount" x="ArchonSCBW"/>
+    <CRequirementCountUnit id="ArchonSCBW@QoB" parent="SCBW_UnitQoB" x="ArchonSCBW"/>
+    <CRequirementCountUnit id="ArchonSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="ArchonSCBW"/>
+    <CRequirementNot id="ArchonSCBW@NotQoBAtUnit" parent="SCBW_Not" x="ArchonSCBW@QoBAtUnit"/>
+    <CRequirementNot id="ArchonSCBW@NotQoB" parent="SCBW_Not" x="ArchonSCBW@QoB"/>
+    <CLight id="ArchonSCBW@Portrait" parent="default">
+        <ToDInfoArray index="0" AmbientColor="0.015686,0.007843,0.000000">
+            <Param index="HDRExposure" value="1.550000"/>
+            <Param index="HDRBloomThreshold" value="0.170000"/>
+            <Param index="HDRDiffuseMultiplier" value="0.790000"/>
+            <Param index="ColorizationBlend" value="0.390000"/>
+            <DirectionalLight index="Key">
+                <UseAmbientOcclusion value="1"/>
+                <Color value="1.000000,0.988235,0.949020"/>
+                <ColorMultiplier value="0.760000"/>
+                <SpecularColor value="0.788235,0.760784,0.729412"/>
+                <SpecColorMultiplier value="0.670000"/>
+                <Direction value="0.036968,0.966694,-0.253252"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" Color="0.388235,0.745098,0.921569" ColorMultiplier="1.100000" Direction="0.178950,0.145377,0.973058"/>
+            <DirectionalLight index="Back">
+                <Color value="0.466667,0.854902,0.984314"/>
+                <ColorMultiplier value="2.090000"/>
+                <SpecularColor value="0.000000,0.000000,0.000000"/>
+                <Direction value="-0.561706,-0.520874,0.642788"/>
+            </DirectionalLight>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
+    </CLight>
+    <CActorAction id="ArchonSCBWWeapon@Action" parent="GenericAttack" effectAttack="ArchonSCBWWeapon@Damage">
+        <LaunchAssets Sound="ArchonSCBWWeapon@Launch"/>
+        <Beam value="ArchonSCBWWeapon@Beam"/>
+        <BeamScope value="Caster"/>
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeNoVizEnhance VoidRaySOpForwardLaunch"/>
+        <ImpactMap index="None" Model="" Sound="ArchonSCBWWeapon@Impact"/>
+        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+    </CActorAction>
+    <CActorBeamSimple id="ArchonSCBWWeapon@Beam" parent="BeamSimpleAnimationStyleOneShot">
+        <Macros value="ActionTargetTeleportDestroy"/>
+        <Scale value="0.500000"/>
+    </CActorBeamSimple>
+    <CActorSound id="ArchonSCBWMerge@Sound" parent="SoundOneShot">
+        <On Terms="Abil.ArchonSCBWMerge.Start" Send="Create"/>
+        <On Terms="Abil.ArchonSCBWMerge@Hardcore.Start" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="ArchonSCBW@Death" parent="SoundOneShot">
+        <Aliases value="_DeathVoice"/>
+        <On Terms="UnitDeath.ArchonSCBW; ValidateUnit IsHallucinationSCBW@Not" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="ArchonSCBW@LandSweetener" parent="SoundOneShot"/>
+    <CActorSound id="ArchonSCBW@Land" parent="SoundOneShot"/>
+    <CActorUnit id="ArchonSCBW" parent="GenericUnitBase" unitName="ArchonSCBW">
+        <Aliases value="_UnitLarge"/>
+        <On Terms="Behavior.Hallucination.On" Send="Create HallucinationBirthSoundLarge"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucination" Send="DeathCustomize Hallucination"/>
+        <On Terms="Abil.ArchonSCBWMerge.Start" Send="AnimBracketStart Merging Stand,Work,Start Stand,Work"/>
+        <On Terms="Abil.ArchonSCBWMerge.Stop" Send="AnimBracketStop Merging"/>
+        <On Terms="UnitBirth.*.Normal" Send="AnimPlay Birth Stand,Work,End 0 0.000000"/>
+        <On Terms="UnitMovementUpdate.*.Walk" Target="ArchonSCBWWeapon@Beam" Send="Destroy"/>
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth"/>
+        <On Terms="Abil.attack.ReadyStop" Target="ArchonSCBWWeapon@Beam" Send="Destroy"/>
+        <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior"/>
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior"/>
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack"/>
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
+        <On Terms="ProgressLevel.ProtossWarpIn.Start" Send="ModelSwap ProtossUnitBirth"/>
+        <On Terms="Behavior.PowerUserWarpable.Off" Send="ModelSwap ArchonSCBW"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create ArchonSCBW@Land"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create ArchonSCBW@LandSweetener"/>
+        <On Terms="ProgressLevel.ProtossWarpIn.Start" Send="ModelSwap ProtossUnitBirth"/>
+        <On Terms="ProgressLevel.ProtossWarpIn.Start" Send="$Birth 0 0.000000 0.000000 5.000000 AsDuration"/>
+        <On Terms="Behavior.PowerUserWarpable.Off" Send="ModelSwap ArchonSCBW"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="Abil.ArchonSCBWMerge@Hardcore.Start" Send="AnimBracketStart Merging Stand,Work,Start Stand,Work"/>
+        <On Terms="Abil.ArchonSCBWMerge@Hardcore.Stop" Send="AnimBracketStop Merging"/>
+        <DeathCustoms index="1" ModelLink="ProtossLargeUnitDeathLow" Name="AntiGravProtoss"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="ArchonSCBW@Death" SoundLink="ArchonSCBW@Explode"/>
+        <DeathArray index="UnderConstruction" ModelLink="ProtossMediumUnitDeath" SoundLink="ArchonSCBW@Explode"/>
+        <PortraitModel value="ArchonSCBW@Portrait"/>
+        <BarOffset value="120"/>
+        <BarWidth value="66"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-protoss-archon@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
+        <SoundArray index="Birth" value=""/>
+        <SoundArray index="Ready" value="ArchonSCBW@Ready"/>
+        <SoundArray index="Help" value="ArchonSCBW@Help"/>
+        <SoundArray index="What" value="ArchonSCBW@What"/>
+        <SoundArray index="Yes" value="ArchonSCBW@Yes"/>
+        <SoundArray index="Attack" value="ArchonSCBW@Attack"/>
+        <SoundArray index="Pissed" value="ArchonSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\btn-unit-protoss-archon@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-protoss-archon@scbw.dds"/>
+        </Wireframe>
+        <WireframeShield>
+            <Image value="Assets\Textures\wireframe-protoss-archon-shield01@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-archon-shield02@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-archon-shield03@scbw.dds"/>
+        </WireframeShield>
+        <TerrainSquibs>
+            <MovementDistance value="0.150000,0.150000"/>
+            <IdlePeriod value="0.100000,0.250000"/>
+            <RangeUp value="1.000000"/>
+            <RangeDown value="1.000000"/>
+            <AttachQuery Methods="AMFilterCenter"/>
+            <Visuals TerrainPhysicsMaterial="Water" ActorModel="TerrainSquibHarnessContinuous" ModelLink="WaterRippleMassive2"/>
+        </TerrainSquibs>
+    </CActorUnit>
+    <CModel id="ArchonSCBWWeapon@Beam" parent="PersistentSpellFX">
+        <Model value="Assets\Effects\Protoss\ArchonBeam\ArchonBeam.m3"/>
+        <LowQualityModel value="ArchonAttackBeamLow"/>
+        <EditorCategories value="Race:Protoss"/>
+        <RadiusLoose value="1.000000"/>
+    </CModel>
+    <CModel id="ArchonSCBW" parent="ArchonBase">
+        <LowQualityModel value=""/>
+        <PlanetPanelCamera value="Star2CameraHigher08"/>
+        <TechPurchaseCamera value="Star2CameraHigher08"/>
+        <UnitGlossaryCamera value="Star2CameraHigher08"/>
+        <RequiredAnims index="0" removed="1"/>
+        <ScaleMax value="0.900000,0.900000,0.900000"/>
+        <ScaleMin value="0.900000,0.900000,0.900000"/>
+        <SelectionRadius value="0.900000"/>
+        <ShadowRadius value="0.900000"/>
+    </CModel>
+    <CModel id="ArchonSCBW@Death" parent="ArchonDeathBase">
+        <Model value="Assets\Units\Protoss\ArchonSCBW\ArchonSCBW@Death.m3"/>
+    </CModel>
+    <CModel id="ArchonSCBW@Portrait" parent="ArchonPortraitBase">
+        <Model value="Assets\Portraits\Protoss\ArchonPortrait\ArchonPortrait.m3"/>
+    </CModel>
+    <CWeaponLegacy id="ArchonSCBWWeapon">
+        <EditorCategories value="Race:Protoss"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-groundweaponslevel0.dds"/>
+        <DisplayEffect value="ArchonSCBWWeapon@Damage"/>
+        <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="2"/>
+        <TeleportResetRange value="0"/>
+        <Cost>
+            <Cooldown Location="Unit"/>
+        </Cost>
+        <Period value="1.1875"/>
+        <Effect value="ArchonSCBWWeapon@InitialSet"/>
+    </CWeaponLegacy>
+    <CSound id="ArchonSCBWWeapon@Impact" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\Archon\Archon_AttackImpact0.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\Archon\Archon_AttackImpact1.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\Archon\Archon_AttackImpact2.wav"/>
+        <Volume value="-12.349999,-12.349999"/>
+    </CSound>
+    <CSound id="ArchonSCBWWeapon@Launch" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArchonSCBW\ArchonSCBWWeapon@Launch00.ogg"/>
+        <Flags index="VariationFallback" value="0"/>
+    </CSound>
+    <CSound id="ArchonSCBWMerge@Sound" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArchonSCBW\ArchonSCBWMerge@Sound00.ogg"/>
+        <Volume value="2.000000,2.000000"/>
+    </CSound>
+    <CSound id="ArchonSCBW@LandSweetener" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav"/>
+        <Category value="Combat"/>
+        <Pitch value="-2.000000,1.000000"/>
+        <Volume value="-6.000000,-5.000000"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Attack" parent="ProtossAckSCBW" Folder="ArchonSCBW">
+        <AssetArray TemplateParam="ArchonSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes02"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes03"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Death" parent="ProtossDeathSCBW" Folder="ArchonSCBW">
+        <AssetArray TemplateParam="ArchonSCBW@Death00"/>
+        <Volume value="5.000000,5.000000"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Help" parent="AlertProtossSCBW" Folder="ArchonSCBW">
+        <AssetArray TemplateParam="ArchonSCBW@Help00"/>
+        <Mode value="3DWorld"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Pissed" parent="ProtossAckSCBW" Folder="ArchonSCBW">
+        <AssetArray TemplateParam="ArchonSCBW@Pissed00"/>
+        <AssetArray TemplateParam="ArchonSCBW@Pissed01"/>
+        <AssetArray TemplateParam="ArchonSCBW@Pissed02"/>
+        <AssetArray TemplateParam="ArchonSCBW@Pissed03"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Ready" parent="ProtossReadySCBW" Folder="ArchonSCBW">
+        <AssetArray TemplateParam="ArchonSCBW@Ready00"/>
+    </CSound>
+    <CSound id="ArchonSCBW@What" parent="ProtossAckSCBW" Folder="ArchonSCBW">
+        <AssetArray TemplateParam="ArchonSCBW@What00"/>
+        <AssetArray TemplateParam="ArchonSCBW@What01"/>
+        <AssetArray TemplateParam="ArchonSCBW@What02"/>
+        <AssetArray TemplateParam="ArchonSCBW@What03"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Yes" parent="ProtossAckSCBW" Folder="ArchonSCBW">
+        <AssetArray TemplateParam="ArchonSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes02"/>
+        <AssetArray TemplateParam="ArchonSCBW@Yes03"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Land" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Observer_Land_02.wav"/>
+        <Category value="Combat"/>
+        <Pitch value="-9.000000,-8.000000"/>
+        <Volume value="-5.000000,-4.000000"/>
+    </CSound>
+    <CSound id="ArchonSCBW@Explode" parent="Protoss_ExplosionSmall"/>
+    <CDataCollectionAbil id="ArchonSCBWWeapon" parent="ProtossInfantryWeaponSCBW">
+        <DataRecord Entry="Actor,ArchonSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,ArchonSCBWWeapon@Beam"/>
+        <DataRecord Entry="Effect,ArchonSCBWWeapon@MissChance"/>
+        <DataRecord Entry="Effect,ArchonSCBWWeapon@Impact"/>
+        <DataRecord Entry="Effect,ArchonSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,ArchonSCBWWeapon@InitialSet"/>
+        <DataRecord Entry="Effect,ArchonSCBWWeapon@MissSwitch"/>
+        <DataRecord Entry="Effect,ArchonSCBWWeapon@Miss"/>
+        <DataRecord Entry="Effect,ArchonSCBWWeapon@MissDummy"/>
+        <DataRecord Entry="Model,ArchonSCBWWeapon@Beam"/>
+        <DataRecord Entry="Sound,ArchonSCBWWeapon@Launch"/>
+        <DataRecord Entry="Sound,ArchonSCBWWeapon@Impact"/>
+        <DataRecord Entry="Validator,ArchonSCBWWeapon@SplashInner"/>
+        <DataRecord Entry="Validator,ArchonSCBWWeapon@Splash"/>
+        <DataRecord Entry="Validator,ArchonSCBWWeapon@TargetCondition"/>
+        <DataRecord Entry="Validator,ArchonSCBWWeapon@DamageFilters"/>
+        <DataRecord Entry="Validator,ArchonSCBWWeapon@Damage"/>
+        <DataRecord Entry="Weapon,ArchonSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="ArchonSCBWMerge" parent="ProtossAbilSCBW">
+        <DataRecord Entry="Abil,ArchonSCBWMerge"/>
+        <DataRecord Entry="Abil,ArchonSCBWMerge@Hardcore"/>
+        <DataRecord Entry="Actor,ArchonSCBWMerge@Sound"/>
+        <DataRecord Entry="Button,ArchonSCBWMerge@Selection"/>
+        <DataRecord Entry="Button,ArchonSCBWMerge@Target"/>
+        <DataRecord Entry="Requirement,ArchonSCBWMerge"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBWMerge"/>
+        <DataRecord Entry="Sound,ArchonSCBWMerge@Sound"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="ArchonSCBW" parent="ProtossGroundUnitSCBW">
+        <DataRecord Entry="Abil,ArchonSCBW@Mergeable"/>
+        <DataRecord Entry="Actor,ArchonSCBW@Death"/>
+        <DataRecord Entry="Actor,ArchonSCBW@LandSweetener"/>
+        <DataRecord Entry="Actor,ArchonSCBW@Land"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ArchonSCBW@NotQoB"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Death"/>
+        <DataRecord Entry="Sound,ArchonSCBW@LandSweetener"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Land"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Explode"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Help"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Yes"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Attack"/>
+        <DataRecord Entry="Sound,ArchonSCBW@Pissed"/>
+        <DataRecord Entry="Tactical,ArchonSCBW"/>
+        <DataRecord Entry="Validator,ArchonSCBW@Is"/>
+        <DataRecord Entry="Validator,ArchonSCBW@Not"/>
+        <UpgradeInfoWeapon index="0" DamagePerDice="3"/>
+    </CDataCollectionUnit>
+    <CUnit id="ArchonSCBW" parent="ProtossUnitSCBW">
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="AIThreatGround" value="1"/>
+        <FlagArray index="AISplash" value="1"/>
+        <FlagArray index="AIHighPrioTarget" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Psionic" value="1"/>
+        <Attributes index="Massive" value="1"/>
+        <Attributes index="Hover" value="1"/>
+        <LifeStart value="10"/>
+        <LifeMax value="10"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossArmor"/>
+        <ShieldsStart value="350"/>
+        <ShieldsMax value="350"/>
+        <Speed value="2.8125"/>
+        <Acceleration value="10"/>
+        <LateralAcceleration value="46"/>
+        <StationaryTurningRate value="999.8437"/>
+        <TurningRate value="999.8437"/>
+        <Sight value="8"/>
+        <Food value="-4"/>
+        <CostCategory value="Army"/>
+        <BuildTime value="18"/>
+        <AttackTargetPriority value="20"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="ProgressRally"/>
+        <AbilArray Link="Warpable"/>
+        <AbilArray Link="ArchonSCBW@Mergeable"/>
+        <WeaponArray Link="ArchonSCBWWeapon"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
+        </CardLayouts>
+        <Radius value="0.75"/>
+        <SeparationRadius value="0.75"/>
+        <InnerRadius value="0.5"/>
+        <CargoSize value="4"/>
+        <ScoreKill value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="45"/>
+        <MinimapRadius value="1"/>
+        <GlossaryPriority value="90"/>
+        <GlossaryStrongArray value="MarineSCBW"/>
+        <GlossaryStrongArray value="MutaliskSCBW"/>
+        <GlossaryStrongArray value="ZealotSCBW"/>
+        <GlossaryWeakArray value="ScienceVesselSCBW"/>
+        <GlossaryWeakArray value="UltraliskSCBW"/>
+        <GlossaryWeakArray value="DragoonSCBW"/>
+        <RepairTime value="20"/>
+    </CUnit>
+</Catalog>

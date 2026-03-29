@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectSet id="CommandCenterSCBW@CreateSet">
+        <EditorCategories value="Race:Terran"/>
+    </CEffectSet>
+    <CEffectSet id="CommandCenterSCBW@BirthSet">
+        <EditorCategories value="Race:Terran"/>
+    </CEffectSet>
+    <CEffectRemoveBehavior id="CommandCenterSCBW@ComsatRemoveAttached">
+        <BehaviorLink value="ComsatStationSCBW@Attached"/>
+        <EditorCategories value="Race:Terran"/>
+    </CEffectRemoveBehavior>
+    <CEffectRemoveBehavior id="CommandCenterSCBW@NuclearSiloRemoveAttached">
+        <BehaviorLink value="NuclearSiloSCBW@Attached"/>
+        <EditorCategories value="Race:Terran"/>
+    </CEffectRemoveBehavior>
+    <CEffectTeleport id="CommandCenterSCBW@DetachAddon">
+        <ValidatorArray value="NotDeadOrConstruction"/>
+        <ValidatorArray value="IsCommandCenterSCBWAddon"/>
+        <EditorCategories value="Race:Terran"/>
+        <MinDistance value="0"/>
+        <Range value="0.025"/>
+        <SourceLocation Value="TargetPoint"/>
+        <TargetLocation Value="TargetPoint"/>
+        <TeleportFlags index="TestFog" value="0"/>
+    </CEffectTeleport>
+    <!-- Dont move dataspace causes bug with flying cc addon placement-->
+    <CAbilMorphPlacement id="CommandCenterSCBW@Land" parent="TerranBuildingSCBW@Land" unit="CommandCenterSCBW"/>
+    <CAbilBuild id="CommandCenterSCBW@AddOns" parent="TerranBuildingSCBW@AddOns">
+        <BuildMorphAbil value="CommandCenterSCBW@LiftOff"/>
+        <InfoArray index="Build1" Unit="ComsatStationSCBW">
+            <Button DefaultButtonFace="ComsatStationSCBW" Requirements="ComsatStationSCBW"/>
+        </InfoArray>
+        <InfoArray index="Build2" Unit="NuclearSiloSCBW">
+            <Button DefaultButtonFace="NuclearSiloSCBW" Requirements="NuclearSiloSCBW"/>
+        </InfoArray>
+    </CAbilBuild>
+    <CAbilMorph id="CommandCenterSCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff" unit="CommandCenterSCBW@Flying"/>
+    <CAbilTrain id="CommandCenterSCBW@Train" parent="SCBW_Train">
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <InfoArray index="Train1">
+            <Button DefaultButtonFace="SCVSCBW" Requirements="SCVSCBW"/>
+            <Unit value="SCVSCBW"/>
+        </InfoArray>
+        <Alert value="TrainWorkerComplete"/>
+    </CAbilTrain>
+    <CAbilTransport id="CommandCenterSCBW@Transport">
+        <AbilSetId value="ULdS"/>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <CmdButtonArray index="Load">
+            <Flags index="Hidden" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="UnloadAll" DefaultButtonFace="CommandCenterSCBW@UnloadAll">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="UnloadAt">
+            <Flags index="Hidden" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="UnloadUnit">
+            <Flags index="Hidden" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="LoadAll" DefaultButtonFace="CommandCenterSCBW@Load"/>
+        <Flags index="AllowPassengerSmartCmd" value="0"/>
+        <Flags index="AllowSmartCmd" value="0"/>
+        <MaxCargoCount value="5"/>
+        <MaxCargoSize value="1"/>
+        <TotalCargoSpace value="5"/>
+        <LoadCargoBehavior value="CommandCenterSCBW@TransportDummy"/>
+        <LoadCargoEffect value="CCLoadDummy"/>
+        <UnloadCargoEffect value="CCUnloadDummy"/>
+        <SearchRadius value="8"/>
+        <LoadValidatorArray value="CommandCenterTransportCombine"/>
+        <LoadValidatorArray value="NotWidowMineTarget"/>
+        <LoadValidatorArray value="SCBW_IsTransportable"/>
+        <DeathUnloadEffect value="RemoveCommandCenterCargo"/>
+    </CAbilTransport>
+    <CAbilRally id="CommandCenterSCBW@Rally">
+        <OrderArray index="0">
+            <DisplayType value="Rally"/>
+            <Color value="255,245,140,70"/>
+            <Model value="Assets\UI\Feedback\WayPointRally\WayPointRally.m3"/>
+            <LineTexture value="Assets\Textures\WayPointLine.dds"/>
+        </OrderArray>
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <InfoArray index="0">
+            <AllowSetValidators value="SCBW_DisableRallyGather@Condition"/>
+        </InfoArray>
+    </CAbilRally>
+    <CValidatorUnitType id="CommandCenterSCBW@Is" parent="SCBW_Unit" x="CommandCenterSCBW"/>
+    <CValidatorUnitType id="CommandCenterSCBW@Not" parent="SCBW_UnitNot" x="CommandCenterSCBW"/>
+    <CValidatorPlayerRequirement id="CommandCenterSCBW@AddOnParent">
+        <Find value="1"/>
+        <Value value="CommandCenterSCBW@AddOnParent"/>
+        <WhichUnit Value="Source"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorCombine id="CommandCenterSCBW@AddOnValidator">
+        <CombineArray value="CommandCenterSCBW@Is"/>
+        <CombineArray value="CommandCenterSCBW@AddOnParent"/>
+    </CValidatorCombine>
+    <CValidatorUnitType id="CommandCenterSCBW@Flying@Is" parent="SCBW_Unit" unitName="CommandCenterSCBW@Flying"/>
+    <CValidatorUnitType id="CommandCenterSCBW@IsCaster" parent="SCBW_UnitCaster" unitName="CommandCenterSCBW@Flying"/>
+    <CTacticalOrder id="CommandCenterSCBW">
+        <Abil value="CommandCenterSCBW@Rally"/>
+        <TargetFind value="WorkerRallyPoint"/>
+    </CTacticalOrder>
+    <CRequirement id="CommandCenterSCBW@AddOnParent">
+        <NodeArray index="Use" Link="CountUnitAlias_CommandCenterSCBWCompleteOnlyAtUnit"/>
+    </CRequirement>
+    <CRequirement id="CommandCenterSCBW" parent="SCBW_UnitReqNoUse"/>
+    <CRequirement id="CommandCenterSCBW@Flying" parent="SCBW_UnitReqNoShow"/>
+    <CButton id="CommandCenterSCBW">
+        <Icon value="Assets\Textures\btn-building-terran-commandcenter@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-terran-commandcenter@scbw.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <DefaultButtonLayout CardId="Bld1"/>
+    </CButton>
+    <CButton id="CommandCenterSCBW@Load">
+        <Icon value="Assets\Textures\btn-ability-terran-load.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-load.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+        <Universal value="1"/>
+    </CButton>
+    <CButton id="CommandCenterSCBW@UnloadAll">
+        <Icon value="Assets\Textures\btn-ability-terran-unloadall.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-unloadall.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+        <Universal value="1"/>
+    </CButton>
+    <CRequirementAllowUnit id="CommandCenterSCBW@AllowUnit" parent="SCBW_AllowUnit" x="CommandCenterSCBW"/>
+    <CRequirementAnd id="CommandCenterSCBW@Show" parent="SCBW_BuildingShow" x="CommandCenterSCBW"/>
+    <CRequirementAnd id="CommandCenterSCBW"/>
+    <CRequirementAnd id="CommandCenterSCBW@Flying"/>
+    <CRequirementCountUnit id="CommandCenterSCBW@Flying@Count" parent="SCBW_UnitCount" x="CommandCenterSCBW@Flying"/>
+    <CRequirementCountUnit id="CommandCenterSCBW@Flying@QoB" parent="SCBW_UnitQoB" x="CommandCenterSCBW@Flying"/>
+    <CRequirementCountUnit id="CommandCenterSCBW@Flying@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="CommandCenterSCBW@Flying"/>
+    <CRequirementNot id="CommandCenterSCBW@Flying@NotQoBAtUnit" parent="SCBW_Not" x="CommandCenterSCBW@Flying@QoBAtUnit"/>
+    <CRequirementNot id="CommandCenterSCBW@Flying@NotQoB" parent="SCBW_Not" x="CommandCenterSCBW@Flying@QoB"/>
+    <CRequirementCountUnit id="CommandCenterSCBW@Count" parent="SCBW_UnitCount" x="Alias_CommandCenterSCBW"/>
+    <CActorModel id="CommandCenterSCBW@CommandPlayerDecalW" parent="ModelAddition">
+        <Inherits index="BaseModelScale" value="0"/>
+        <Inherits index="CloakEffect" value="0"/>
+        <Inherits index="CreepEngulfment" value="0"/>
+        <Inherits index="Scale" value="0"/>
+        <Remove Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="Create CommandPlayerDecalWFoliageFXSpawner"/>
+        <On Terms="ActorOrphan" Send="AnimBracketStop BSD"/>
+        <On Terms="TextureUpdate; TextureUpdateSlot decal; ValidatePlayer SCBW_PlayerIsZerg; !HasStatus OwnedByZerg" Send="Signal BlockZergDecals"/>
+        <On Terms="Signal.*.BlockZergDecals" Send="StatusSet OwnedByZerg 1"/>
+        <On Terms="Signal.*.BlockZergDecals" Send="TextureSelectBySlot decal Innate"/>
+        <On Terms="TextureUpdate; TextureUpdateSlot decal; !HasStatus OwnedByZerg" Send="TextureSelectByUpdateLink background Replace Decal Background"/>
+        <On Terms="TextureUpdate; TextureUpdateSlot decal; ValidatePlayer PlayerIsBWZe; !HasStatus OwnedByZerg" Send="Signal BlockZergDecals"/>
+        <HostSiteOps Ops="CommandPlayerDecalWForwardOffset CommandCenterSCBW@TerranCommandPlayerDecalOffset SOpShadow"/>
+        <Model value="CommandPlayerDecal"/>
+    </CActorModel>
+    <CActorSiteOpLocalOffset id="CommandCenterSCBW@TerranCommandPlayerDecalOffset">
+        <LocalOffset value="0.000000,-3.500000,0.000000"/>
+    </CActorSiteOpLocalOffset>
+    <CActorEventMacro id="CommandCenterSCBW@TerranPlayerDecalMacro">
+        <On Terms="UnitBirth.CommandCenterSCBW; ValidateUnit NotCloaked" Send="TimerSet 0.125000 DecalDelay"/>
+        <On Terms="UnitBirth.CommandCenterSCBW.EditorPlaced" Send="Create CommandCenterSCBW@CommandPlayerDecalW"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Target="CommandCenterSCBW@CommandPlayerDecalW" Send="AnimBracketStop BSD"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW@Flying; MorphTo CommandCenterSCBW; ValidateUnit NotCloaked" Send="Create CommandCenterSCBW@CommandPlayerDecalW"/>
+        <On Terms="Behavior.CloakFieldEffect.On" Target="CommandPlayerDecalW" Send="AnimBracketStop BSD"/>
+        <On Terms="Behavior.CloakFieldEffect.Off; ValidateUnit IsNotFlying" Send="Create CommandCenterSCBW@CommandPlayerDecalW"/>
+        <On Terms="TimerExpired; TimerName DecalDelay; ValidateUnit NotCloaked" Send="Create CommandCenterSCBW@CommandPlayerDecalW"/>
+    </CActorEventMacro>
+    <CActorProgress id="CommandCenterSCBW@AddOns" parent="BuildAbilSCBW@Progress"/>
+    <CActorModel id="CommandCenterSCBW@Build" parent="TerranBuildingSCBW@Build"/>
+    <CActorSound id="CommandCenterSCBW@Land" parent="TerranBuildingSCBW@Land" unitName="CommandCenterSCBW"/>
+    <CActorSound id="CommandCenterSCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff" unitName="CommandCenterSCBW"/>
+    <CActorUnit id="CommandCenterSCBW" parent="TerranBuildingSCBW@Flyer" unitName="CommandCenterSCBW">
+        <Macros value="MacroTownhallDeco_Terran"/>
+        <Macros value="CommandCenterSCBW@TerranPlayerDecalMacro"/>
+        <Macros value="SprayHelperMacro"/>
+        <Macros value="SCBW_InfestationMacro"/>
+        <Macros value="HideWorkerCount"/>
+        <AcceptedHostedPropTransfers index="Decal" value="0"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove A"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove B"/>
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever"/>
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC"/>
+        <On Terms="UnitDeathCustomize; AnimPlaying Morph" Send="DeathCustomize Variation2"/>
+        <On Terms="Abil.CommandCenterSCBW@LiftOff.Start" Send="StatusSet FlyDeathAnim 1"/>
+        <On Terms="Abil.CommandCenterSCBW@LiftOff.Start" Send="TimerSet 1.100000 FlyDeathAnimChange"/>
+        <On Terms="TimerExpired; TimerName FlyDeathAnimChange" Send="StatusSet FlyDeathAnim 2"/>
+        <On Terms="UnitBirth.CommandCenterSCBW@Flying" Send="StatusSet FlyDeathAnim 2"/>
+        <On Terms="Abil.CommandCenterSCBW@Land.Start" Send="TimerSet 0.700000 LandDeathAnimChange"/>
+        <On Terms="Abil.CommandCenterSCBW@Land.Start" Send="TimerSet 1.100000 LandDeathAnimChangeB"/>
+        <On Terms="TimerExpired; TimerName LandDeathAnimChange" Send="StatusSet FlyDeathAnim 1"/>
+        <On Terms="TimerExpired; TimerName LandDeathAnimChangeB" Send="StatusSet FlyDeathAnim 0"/>
+        <On Terms="UnitDeathCustomize; IsStatus FlyDeathAnim 1" Send="DeathCustomize Variation3"/>
+        <On Terms="UnitDeathCustomize; IsStatus FlyDeathAnim 2" Send="DeathCustomize Flying"/>
+        <On Terms="UnitBirth.CommandCenterSCBW@Flying" Send="HideWorkerCount 1"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Send="HideWorkerCount 1"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW@Flying; MorphTo CommandCenterSCBW" Send="HideWorkerCount"/>
+        <On Terms="UnitBirth.CommandCenterSCBW" Send="Create PlayerLogoDoodadList"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Target="PlayerLogoDoodadList" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Target="TerranClanFlag" Send="Signal DestroyFlag"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBWFlying; MorphTo CommandCenterSCBW; PlayerHasClanDecal" Send="Create TerranClanFlag"/>
+        <On Terms="UnitBirth.CommandCenterSCBW; PlayerHasClanDecal" Send="Create TerranClanFlag"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Target="TerranPlayerTrophy" Send="Signal DestroyFlag"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenterSCBW@Flying; MorphTo CommandCenterSCBW; PlayerHasTrophy" Send="Create TerranPlayerTrophy"/>
+        <On Terms="UnitBirth.CommandCenterSCBW; PlayerHasTrophy" Send="Create TerranPlayerTrophy"/>
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="CommandCenterSCBW@Explode"/>
+        <DeathCustoms index="5" ModelLink="CommandCenterSCBW@Death" SoundLink="CommandCenterSCBW@Explode" Name="Variation2"/>
+        <DeathCustoms ModelLink="CommandCenterSCBW@FlyDeath" SoundLink="CommandCenterSCBW@Explode" Name="Flying"/>
+        <DeathCustoms ModelLink="CommandCenterSCBW@DeathLow" Name="Variation3"/>
+        <BarOffset value="165"/>
+        <BarWidth value="200"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-terran-commandcenter@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-commandcenter@scbw.dds"/>
+        <NameOffset value="150"/>
+        <StatusHarvesterData Text="UI/HarvesterCountMinerals" SearchFilters="HarvestableResource;Player,Ally,Enemy" SearchRadius="8"/>
+        <UnitIcon value="Assets\Textures\btn-building-terran-commandcenter@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-commandcenter@scbw.dds"/>
+        </Wireframe>
+        <StatusBarFlags index="Energy" value="0"/>
+    </CActorUnit>
+    <CActorSplat id="CommandCenterSCBW@Splat" parent="GenericUnitSplat" unitName="CommandCenterSCBW">
+        <On Terms="AbilMorph.*.Start; MorphTo CommandCenterSCBW; MorphFrom CommandCenterSCBW@Flying" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom CommandCenterSCBW; MorphTo CommandCenterSCBW@Flying" Send="Destroy"/>
+    </CActorSplat>
+    <CModel id="CommandCenterSCBW@Build" parent="CommandCenterBuildBase"/>
+    <CModel id="CommandCenterSCBW" parent="CommandCenterBase"/>
+    <CModel id="CommandCenterSCBW@Death" parent="CommandCenterDeathBase" low="CommandCenterSCBW@DeathLow">
+        <Model value="Assets\Buildings\Terran\CommandCenterSCBW\CommandCenterSCBW@Death.m3"/>
+    </CModel>
+    <CModel id="CommandCenterSCBW@DeathLow" parent="TerranLargeBuildingDeathLowAndSound"/>
+    <CModel id="CommandCenterSCBW@FlyDeath" parent="CommandCenterFlyDeathBase">
+        <Model value="Assets\Buildings\Terran\CommandCenterSCBW\CommandCenterSCBW@FlyDeath.m3"/>
+    </CModel>
+    <CModel id="CommandCenterSCBW@Placement" parent="CommandCenterPlacementBase" low="CommandCenterSCBW">
+        <Model value="Assets\Buildings\Terran\CommandCenterSCBW\CommandCenterSCBW@Placement.m3"/>
+    </CModel>
+    <CModel id="CommandCenterSCBW@Portrait" parent="TerranAdvisorSCBW@PortraitBase"/>
+    <CModel id="CommandCenterSCBW@Splat" parent="Splat">
+        <Model value="Assets\Splats\Splat_CommandCenterSCBW\Splat_CommandCenterSCBW.m3"/>
+        <EditorCategories value="Race:Terran"/>
+        <ScaleMax value="1.350000,1.350000,1.350000"/>
+        <ScaleMin value="1.350000,1.350000,1.350000"/>
+    </CModel>
+    <CSound id="CommandCenterSCBW@LiftOff" parent="TerranBuildingSCBW@LiftOff"/>
+    <CSound id="CommandCenterSCBW@Explode" parent="Combat">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge4.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge5.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge6.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge7.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge8.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Explosions\Terran_ExplosionLarge9.wav" Pitch="-3.000000,3.000000"/>
+        <DupeDestroyCount value="5"/>
+        <DupeHistoryCount value="15"/>
+        <DupeMuteCount value="3"/>
+        <Volume value="-3.000000,0.000000"/>
+    </CSound>
+    <CSound id="CommandCenterSCBW@Movement" parent="Movement">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Propulsion\Terran_BuildingMovement0.wav" LoopCount="-1"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Propulsion\Terran_BuildingMovement1.wav" LoopCount="-1"/>
+        <AssetArray File="Assets\Sounds\Terran\SharedEffects\Propulsion\Terran_BuildingMovement2.wav" LoopCount="-1"/>
+        <OffsetFadeIn Volume="-96.000000"/>
+        <OffsetFadeIn Time="200"/>
+        <Pitch value="-3.000000,-2.000000"/>
+        <Volume value="-6.000000,-6.000000"/>
+    </CSound>
+    <CSound id="CommandCenterSCBW@Ready" parent="Ready">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\CommandCenter\CommandCenter_What.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="CommandCenterSCBW@What" parent="Voice">
+        <EditorCategories value="Race:Terran"/>
+        <AssetArray File="Assets\Sounds\Terran\CommandCenter\CommandCenter_What.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="CommandCenterSCBW@Land" parent="TerranBuildingSCBW@Land"/>
+    <CDataCollectionUnit id="CommandCenterSCBW" parent="TerranBuildingSCBW">
+        <DataRecord Entry="Abil,CommandCenterSCBW@Land"/>
+        <DataRecord Entry="Abil,CommandCenterSCBW@Train"/>
+        <DataRecord Entry="Abil,CommandCenterSCBW@AddOns"/>
+        <DataRecord Entry="Abil,CommandCenterSCBW@LiftOff"/>
+        <DataRecord Entry="Abil,CommandCenterSCBW@Transport"/>
+        <DataRecord Entry="Abil,CommandCenterSCBW@Rally"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@CommandPlayerDecalW"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@TerranCommandPlayerDecalOffset"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@TerranPlayerDecalMacro"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@AddOns"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@Build"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@Land"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@LiftOff"/>
+        <DataRecord Entry="Actor,CommandCenterSCBW@Splat"/>
+        <DataRecord Entry="Behavior,CommandCenterSCBW@TransportDummy"/>
+        <DataRecord Entry="Button,CommandCenterSCBW@UnloadAll"/>
+        <DataRecord Entry="Button,CommandCenterSCBW@Load"/>
+        <DataRecord Entry="Effect,CommandCenterSCBW@CreateSet"/>
+        <DataRecord Entry="Effect,CommandCenterSCBW@BirthSet"/>
+        <DataRecord Entry="Effect,CommandCenterSCBW@DetachAddon"/>
+        <DataRecord Entry="Effect,CommandCenterSCBW@ComsatRemoveAttached"/>
+        <DataRecord Entry="Effect,CommandCenterSCBW@NuclearSiloRemoveAttached"/>
+        <DataRecord Entry="Model,CommandCenterSCBW@Build"/>
+        <DataRecord Entry="Model,CommandCenterSCBW@FlyDeath"/>
+        <DataRecord Entry="Model,CommandCenterSCBW@DeathLow"/>
+        <DataRecord Entry="Model,CommandCenterSCBW@Placement"/>
+        <DataRecord Entry="Model,CommandCenterSCBW@Splat"/>
+        <DataRecord Entry="Requirement,CommandCenterSCBW@AddOnParent"/>
+        <DataRecord Entry="Requirement,CommandCenterSCBW@Flying"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Flying"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Flying@Count"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Flying@QoB"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Flying@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Flying@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,CommandCenterSCBW@Flying@NotQoB"/>
+        <DataRecord Entry="Sound,CommandCenterSCBW@Land"/>
+        <DataRecord Entry="Sound,CommandCenterSCBW@LiftOff"/>
+        <DataRecord Entry="Sound,CommandCenterSCBW@Explode"/>
+        <DataRecord Entry="Sound,CommandCenterSCBW@Movement"/>
+        <DataRecord Entry="Tactical,CommandCenterSCBW"/>
+        <DataRecord Entry="Unit,CommandCenterSCBW@Flying"/>
+        <DataRecord Entry="Validator,CommandCenterSCBW@Is"/>
+        <DataRecord Entry="Validator,CommandCenterSCBW@Not"/>
+        <DataRecord Entry="Validator,CommandCenterSCBW@AddOnParent"/>
+        <DataRecord Entry="Validator,CommandCenterSCBW@AddOnValidator"/>
+        <DataRecord Entry="Validator,CommandCenterSCBW@Flying@Is"/>
+        <DataRecord Entry="Validator,CommandCenterSCBW@IsCaster"/>
+    </CDataCollectionUnit>
+    <CUnit id="CommandCenterSCBW@Flying" parent="TerranBuildingSCBW@Flying" AliasUnit="CommandCenterSCBW">
+        <Facing value="315"/>
+        <FlagArray index="PreventReveal" value="1"/>
+        <LifeStart value="1500"/>
+        <LifeMax value="1500"/>
+        <LifeArmor value="1"/>
+        <Sight value="10"/>
+        <VisionHeight value="4"/>
+        <Food value="11"/>
+        <CostCategory value="Economy"/>
+        <CostResource index="Minerals" value="400"/>
+        <RepairTime value="125"/>
+        <AbilArray Link="CommandCenterSCBW@AddOns"/>
+        <AbilArray Link="CommandCenterSCBW@Land"/>
+        <CardLayouts>
+            <LayoutButtons Face="Land" Type="AbilCmd" AbilCmd="CommandCenterSCBW@Land,Execute" Row="2" Column="3"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
+        </CardLayouts>
+        <Radius value="2.5"/>
+        <SeparationRadius value="2.5"/>
+        <ScoreKill value="400"/>
+        <SubgroupPriority value="5"/>
+        <MinimapRadius value="2.5"/>
+        <HotkeyCategory value="Unit/Category/TerranUnitsSCBW"/>
+    </CUnit>
+    <CUnit id="CommandCenterSCBW" parent="TerranBuildingSCBW">
+        <Facing value="315"/>
+        <FlagArray index="PreventReveal" value="1"/>
+        <FlagArray index="TownCamera" value="1"/>
+        <ResourceDropOff index="Minerals" value="1"/>
+        <ResourceDropOff index="Vespene" value="1"/>
+        <ResourceDropOff index="Terrazine" value="1"/>
+        <ResourceDropOff index="Custom" value="1"/>
+        <LifeStart value="1500"/>
+        <LifeMax value="1500"/>
+        <LifeArmor value="1"/>
+        <Sight value="10"/>
+        <Food value="11"/>
+        <CostCategory value="Economy"/>
+        <CostResource index="Minerals" value="400"/>
+        <BuildTime value="105"/>
+        <RepairTime value="125"/>
+        <AbilArray Link="que5CancelToSelection"/>
+        <AbilArray Link="CommandCenterSCBW@Train"/>
+        <AbilArray Link="CommandCenterSCBW@Rally"/>
+        <AbilArray Link="CommandCenterSCBW@AddOns"/>
+        <AbilArray Link="CommandCenterSCBW@LiftOff"/>
+        <AbilArray Link="ComsatStationSCBWScannerSweep@Redirect"/>
+        <AbilArray Link="InfestedCommandCenterSCBW@Morph"/>
+        <EffectArray index="Create" value="CommandCenterSCBW@CreateSet"/>
+        <EffectArray index="Birth" value="CommandCenterSCBW@BirthSet"/>
+        <CardLayouts>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="CommandCenterSCBW@Rally,Rally1" Row="1" Column="4"/>
+            <LayoutButtons Face="Lift" Type="AbilCmd" AbilCmd="CommandCenterSCBW@LiftOff,Execute" Row="2" Column="3"/>
+            <LayoutButtons Face="Halt" Type="AbilCmd" AbilCmd="BuildInProgress,Halt" Row="2" Column="3"/>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5CancelToSelection,CancelLast" Row="2" Column="4"/>
+            <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="BuildInProgress,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="SelectBuilder" Type="SelectBuilder" AbilCmd="CommandCenterSCBW@Train,Train1" Row="1" Column="3"/>
+        </CardLayouts>
+        <Radius value="2.5"/>
+        <SeparationRadius value="2.5"/>
+        <Footprint value="Footprint5x5Contour"/>
+        <PlacementFootprint value="Footprint5x5DropOff"/>
+        <ScoreMake value="400"/>
+        <ScoreKill value="400"/>
+        <SubgroupPriority value="32"/>
+        <MinimapRadius value="2.5"/>
+        <TacticalAIThink value="AIThinkCommandCenterSCBW"/>
+        <GlossaryPriority value="30"/>
+        <HotkeyCategory value="Unit/Category/TerranUnitsSCBW"/>
+        <TechTreeProducedUnitArray value="SCVSCBW"/>
+        <TechTreeProducedUnitArray value="ComsatStationSCBW"/>
+        <TechTreeProducedUnitArray value="NuclearSiloSCBW"/>
+        <BehaviorArray Link="ComsatStationSCBWScannerSweep@Energy"/>
+    </CUnit>
+    <CBehaviorBuff id="CommandCenterSCBW@TransportDummy">
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+</Catalog>

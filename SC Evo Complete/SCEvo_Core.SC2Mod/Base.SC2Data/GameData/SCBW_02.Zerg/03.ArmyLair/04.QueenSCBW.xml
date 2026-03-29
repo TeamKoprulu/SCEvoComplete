@@ -1,0 +1,1957 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectSet id="QueenSCBWParasite@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWParasite@AB"/>
+        <EffectArray value="HighTemplarSCBWHallucination@KillHallucination"/>
+    </CEffectSet>
+    <CEffectSwitch id="QueenSCBWEnsnare@ABSwitch">
+        <EditorCategories value="Race:Zerg"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AB" Effect="QueenSCBWEnsnare@AB"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackAB" Effect="QueenSCBWEnsnare@AttackAB"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MovementAB" Effect="QueenSCBWEnsnare@MovementAB"/>
+    </CEffectSwitch>
+    <CEffectApplyBehavior id="QueenSCBWEnsnare@AttackAB">
+        <ValidatorArray value="QueenSCBWEnsnare@AttackAB"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWEnsnare@Attack"/>
+    </CEffectApplyBehavior>
+    <CEffectUserData id="QueenSCBWSpawnBroodlings@DamageValidate">
+        <EditorCategories value="Race:Zerg"/>
+        <Amount value="0">
+            <AccumulatorArray value="QueenSCBWSpawnBroodlings@Damaged"/>
+        </Amount>
+        <Operation value="Set"/>
+        <EffectFailure value="QueenSCBWSpawnBroodlings@DamageInheritSet"/>
+        <BehaviorScope Value="Target"/>
+    </CEffectUserData>
+    <CEffectSet id="QueenSCBWSpawnBroodlings@DamageInheritSet">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWSpawnBroodlings@DamageKill"/>
+        <EffectArray value="QueenSCBWSpawnBroodlings@CU"/>
+    </CEffectSet>
+    <CEffectDamage id="QueenSCBWSpawnBroodlings@DamageKill">
+        <EditorCategories value="Race:Zerg"/>
+        <Flags index="Kill" value="1"/>
+    </CEffectDamage>
+    <CEffectDamage id="QueenSCBWSpawnBroodlings@MissileDummy">
+        <ValidatorArray value="QueenSCBWSpawnBroodlings@MissilePhase"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactLocation Effect="QueenSCBWSpawnBroodlings@LM" Value="TargetUnit"/>
+    </CEffectDamage>
+    <CEffectEnumArea id="QueenSCBWSpawnBroodlings@LMLaunch">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactLocation Value="SourceUnit"/>
+        <SearchFilters value="Missile;Ally,Neutral,Enemy,Dead,Hidden"/>
+        <AreaArray MaxCount="1" Radius="0.125" Effect="QueenSCBWSpawnBroodlings@MissileAB"/>
+        <MaxCount value="1"/>
+    </CEffectEnumArea>
+    <CEffectApplyBehavior id="QueenSCBWSpawnBroodlings@MissileAB">
+        <ValidatorArray index="0" value="QueenSCBWSpawnBroodlings@Missile"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWSpawnBroodlings@Missile"/>
+    </CEffectApplyBehavior>
+    <CEffectDamage id="QueenSCBWSpawnBroodlings@MissileFate">
+        <ImpactLocation Value="SourceUnit"/>
+        <Flags index="Kill" value="1"/>
+        <Flags index="NoKillCredit" value="1"/>
+    </CEffectDamage>
+    <CEffectDamage id="QueenSCBWInfestCommandCenter@Notify">
+        <EditorCategories value="Race:Zerg"/>
+        <Flags index="Notification" value="1"/>
+    </CEffectDamage>
+    <CEffectSet id="QueenSCBWInfestCommandCenter@ExpireSet">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@CancelOrbital"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@CancelPlanetary"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@ValidateMorph"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter"/>
+    </CEffectSet>
+    <CEffectTeleport id="QueenSCBWInfestCommandCenter@InfestingCasterTeleport">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichUnit Effect="QueenSCBWInfestCommandCenter@InfestingStart" Value="Caster"/>
+        <MinDistance value="0.1"/>
+        <TargetLocation Effect="QueenSCBWInfestCommandCenter@InfestingStart" Value="TargetUnitOrPoint"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <ClearQueuedOrders value="0"/>
+    </CEffectTeleport>
+    <CEffectLaunchMissile id="QueenSCBWInfestCommandCenter@InfestLM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactEffect value="QueenSCBWInfestCommandCenter@InfestImpact"/>
+        <Flags index="Channeled" value="1"/>
+        <AmmoUnit value="QueenSCBWInfestCommandCenter@Missile"/>
+        <Movers Link="MissileDefault" IfRangeLTE="3"/>
+        <Movers Link="CausticSprayMissileClose" IfRangeLTE="5"/>
+        <Movers Link="CausticSprayMissile" IfRangeLTE="-1"/>
+        <ValidatorArray index="0" value="SCBW_CasterNotNoDraw"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="QueenSCBWInfestCommandCenter@InfestImpact" parent="DU_WEAP_MISSILE">
+        <Flags index="Notification" value="0"/>
+    </CEffectDamage>
+    <CEffectIssueOrder id="QueenSCBWInfestCommandCenter@CancelPlanetary">
+        <ValidatorArray value="IsCommandCenter"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Abil value="UpgradeToPlanetaryFortress"/>
+        <AbilCmdIndex value="1"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <CmdFlags index="AutoQueued" value="1"/>
+    </CEffectIssueOrder>
+    <CEffectIssueOrder id="QueenSCBWInfestCommandCenter@CancelOrbital">
+        <ValidatorArray value="IsCommandCenter"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Abil value="UpgradeToOrbital"/>
+        <AbilCmdIndex value="1"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <CmdFlags index="AutoQueued" value="1"/>
+    </CEffectIssueOrder>
+    <CEffectSet id="QueenSCBWInfestCommandCenter@PeriodicSet">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@SprayDummy"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@InfestLM"/>
+    </CEffectSet>
+    <CEffectDamage id="QueenSCBWInfestCommandCenter@SprayDummy" parent="DU_WEAP_MISSILE">
+        <Flags index="Notification" value="0"/>
+        <ValidatorArray value="SCBW_CasterNotNoDraw"/>
+    </CEffectDamage>
+    <CEffectApplyBehavior id="QueenSCBWInfestCommandCenter@InfestingCasterAB">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichUnit Value="Caster"/>
+        <Behavior value="QueenSCBWInfestCommandCenter@InfestingCaster"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="QueenSCBWInfestCommandCenter@InfestingTargetAB">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWInfestCommandCenter@InfestingTarget"/>
+    </CEffectApplyBehavior>
+    <CEffectRemoveBehavior id="QueenSCBWInfestCommandCenter@InfestingTargetRB">
+        <EditorCategories value="Race:Zerg"/>
+        <BehaviorLink value="QueenSCBWInfestCommandCenter@InfestingTarget"/>
+    </CEffectRemoveBehavior>
+    <CEffectSet id="QueenSCBWInfestCommandCenter@InfestingFinish">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@InfestingCasterRB"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@InfestingTargetRB"/>
+    </CEffectSet>
+    <CEffectRemoveBehavior id="QueenSCBWInfestCommandCenter@InfestingCasterRB">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichUnit Value="Caster"/>
+        <BehaviorLink value="QueenSCBWInfestCommandCenter@InfestingCaster"/>
+    </CEffectRemoveBehavior>
+    <CEffectSet id="QueenSCBWInfestCommandCenter@InfestingStart">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@InfestingCasterAB"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@InfestingTargetAB"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@CP"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@Notify"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter@InfestedTargetNot"/>
+    </CEffectSet>
+    <CEffectIssueOrder id="QueenSCBWInfestCommandCenter@RecastMoveOrder">
+        <ValidatorArray value="QueenSCBWInfestCommandCenter@InfestRange"/>
+        <EditorCategories value="Race:Zerg"/>
+        <WhichUnit Value="Caster"/>
+        <Abil value="move"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <Player Value="Caster"/>
+        <Target Value="TargetPoint"/>
+    </CEffectIssueOrder>
+    <CEffectCreatePersistent id="QueenSCBWInfestCommandCenter@CP">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichLocation Value="TargetUnit"/>
+        <OffsetVectorEndLocation Value="TargetUnit"/>
+        <Flags index="Channeled" value="1"/>
+        <InitialDelay value="0.125"/>
+        <PeriodCount value="58"/>
+        <PeriodicValidator value="QueenSCBWInfestCommandCenter@PeriodicValidator"/>
+        <PeriodicPeriodArray value="0.0625"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter@InfestedTargetNot"/>
+        <TimeScaleSource Value="Caster"/>
+        <ExpireEffect value="QueenSCBWInfestCommandCenter@ExpireSet"/>
+        <FinalEffect value="QueenSCBWInfestCommandCenter@InfestingFinish"/>
+        <PeriodicEffectArray value="QueenSCBWInfestCommandCenter@PeriodicSet"/>
+    </CEffectCreatePersistent>
+    <CEffectSwitch id="QueenSCBWInfestCommandCenter@InitialSwitch">
+        <EditorCategories value="Race:Zerg"/>
+        <CaseArray Validator="QueenSCBWInfestCommandCenter@InfestRange" Effect="QueenSCBWInfestCommandCenter@Recast"/>
+        <CaseDefault value="QueenSCBWInfestCommandCenter@InfestingStart"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter"/>
+        <ValidatorArray value="QueenSCBWInfestCommandCenter@InfestedTargetNot"/>
+    </CEffectSwitch>
+    <CEffectIssueOrder id="QueenSCBWInfestCommandCenter@OrderInfest">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichUnit Value="Caster"/>
+        <Abil value="QueenSCBWInfestCommandCenter"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <Player Value="Caster"/>
+        <Target Value="TargetUnit"/>
+    </CEffectIssueOrder>
+    <CEffectSet id="QueenSCBWInfestCommandCenter@Recast">
+        <ValidatorArray value="QueenSCBWInfestCommandCenter"/>
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@OrderInfest"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@RecastMoveOrder"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="QueenSCBWInfestCommandCenter@ValidateMorph">
+        <EditorCategories value="Race:Zerg"/>
+        <WhichLocation Value="TargetUnitOrPoint"/>
+        <OffsetVectorEndLocation Value="TargetUnitOrPoint"/>
+        <Flags index="EffectSuccess" value="1"/>
+        <PeriodCount value="100"/>
+        <PeriodicEffectArray value="QueenSCBWInfestCommandCenter@Set"/>
+        <PeriodicPeriodArray value="0.0625"/>
+    </CEffectCreatePersistent>
+    <CEffectApplyBehavior id="QueenSCBWEnsnare@MovementAB">
+        <ValidatorArray value="QueenSCBWEnsnare@MovementAB"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWEnsnare@Movement"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="QueenSCBWEnsnare@Impact">
+        <ValidatorArray value=""/>
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWEnsnare@Search"/>
+        <EffectArray value="QueenSCBWEnsnare@CreepDummyCreate"/>
+        <TargetLocationType value="Point"/>
+    </CEffectSet>
+    <CEffectCreateUnit id="QueenSCBWEnsnare@CreepDummyCreate">
+        <EditorCategories value="Race:Zerg"/>
+        <Chance value="0"/>
+        <WhichLocation Value="TargetPoint"/>
+        <CreateFlags index="DropOff" value="0"/>
+        <CreateFlags index="Placement" value="0"/>
+        <CreateFlags index="ProvideFood" value="0"/>
+        <CreateFlags index="TechComplete" value="0"/>
+        <CreateFlags index="UseFood" value="0"/>
+        <SpawnUnit value="QueenSCBWEnsnare@CreepDummy"/>
+        <SpawnRange value="0"/>
+    </CEffectCreateUnit>
+    <CEffectModifyUnit id="QueenSCBWInfestCommandCenter@MUChangeAddonOwner">
+        <ValidatorArray value="IsCommandCenterSCBWAddon"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ModifyFlags index="Owner" value="1"/>
+        <ModifyOwnerPlayer Value="Neutral"/>
+    </CEffectModifyUnit>
+    <CEffectEnumArea id="QueenSCBWInfestCommandCenter@SearchAddon">
+        <EditorCategories value="Race:Zerg"/>
+        <LaunchLocation Value="TargetPoint"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="Ground,Structure;Dead,Hidden"/>
+        <AreaArray MaxCount="1" Radius="0.5" Effect="QueenSCBWInfestCommandCenter@MUChangeAddonOwner"/>
+        <AreaRelativeOffset value="3.5,-1.5"/>
+    </CEffectEnumArea>
+    <CEffectCreatePersistent id="QueenSCBWInfestCommandCenter@SearchAddonDelay">
+        <EditorCategories value="Race:Zerg"/>
+        <OffsetVectorStartLocation Value="TargetPoint"/>
+        <InitialDelay value="0.1"/>
+        <InitialEffect value="QueenSCBWInfestCommandCenter@SearchAddon"/>
+        <ValidatorArray value="CommandCenterSCBW@Is"/>
+    </CEffectCreatePersistent>
+    <CEffectSwitch id="QueenSCBWInfestCommandCenter@Switch">
+        <EditorCategories value="Race:Zerg"/>
+        <CaseArray Validator="CommandCenterSCBW@Is" Effect="InfestedCommandCenterSCBW@Morph"/>
+        <CaseArray Validator="CommandCenterSCBW@Flying@Is" Effect="InfestedCommandCenterSCBW@MorphFlyer"/>
+        <CaseArray Validator="IsCommandCenter" Effect="InfestedCommandCenterSC2@Morph"/>
+        <CaseArray Validator="IsCommandCenterFlying" Effect="InfestedCommandCenterSC2@MorphFlyer"/>
+        <CaseArray Validator="IsOrbitalCommand" Effect="InfestedOrbitalCommandSCBW@Morph"/>
+        <CaseArray Validator="IsOrbitalCommandFlying" Effect="InfestedOrbitalCommandSCBW@MorphFlyer"/>
+        <CaseArray Validator="IsPlanetaryFortress" Effect="InfestedPlanetaryFortressSCBW@Morph"/>
+    </CEffectSwitch>
+    <CEffectModifyUnit id="QueenSCBWInfestCommandCenter@MU">
+        <EditorCategories value="Race:Zerg"/>
+        <VitalArray index="Life">
+            <ChangeFraction value="1"/>
+        </VitalArray>
+    </CEffectModifyUnit>
+    <CEffectSet id="QueenSCBWInfestCommandCenter@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@SearchAddonDelay"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@Switch"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@MU"/>
+        <EffectArray value="QueenSCBWInfestCommandCenter@MUChangeOwner"/>
+        <ValidatorArray value="SCBW_NotMorphing"/>
+    </CEffectSet>
+    <CEffectModifyUnit id="QueenSCBWInfestCommandCenter@MUChangeOwner">
+        <EditorCategories value="Race:Zerg"/>
+        <ModifyFlags index="Owner" value="1"/>
+        <ModifyOwnerPlayer Value="Caster"/>
+    </CEffectModifyUnit>
+    <CEffectApplyBehavior id="QueenSCBWSpawnBroodlings@TimedLife">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWSpawnBroodlings@BroodlingFate"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="QueenSCBWParasite@AB">
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWParasite"/>
+    </CEffectApplyBehavior>
+    <CEffectCreatePersistent id="QueenSCBWParasite@Detector">
+        <ValidatorArray value="QueenSCBWParasite@Detector"/>
+        <EditorCategories value="Race:Zerg"/>
+        <WhichLocation Value="SourceUnit"/>
+        <ExpireDelay value="0.25"/>
+        <RevealRadius value="0">
+            <AccumulatorArray value="QueenSCBWParasite@Detector"/>
+        </RevealRadius>
+        <RevealFlags index="Detect" value="1"/>
+        <DetectFilters value="-;Missile"/>
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="QueenSCBWParasite@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactEffect value="QueenSCBWParasite@Set"/>
+        <AmmoUnit value="QueenSCBWParasite@Missile"/>
+    </CEffectLaunchMissile>
+    <CEffectApplyBehavior id="QueenSCBWEnsnare@AB">
+        <ValidatorArray value="QueenSCBWEnsnare@AB"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Behavior value="QueenSCBWEnsnare"/>
+    </CEffectApplyBehavior>
+    <CEffectDamage id="QueenSCBWEnsnare@DamageDummy">
+        <EditorCategories value="Race:Terran"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <Flags index="Notification" value="1"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="QueenSCBWEnsnare@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ImpactEffect value="QueenSCBWEnsnare@Impact"/>
+        <AmmoUnit value="QueenSCBWEnsnare@Missile"/>
+        <ImpactOffset value="0,0,0.1"/>
+    </CEffectLaunchMissile>
+    <CEffectEnumArea id="QueenSCBWEnsnare@Search">
+        <EditorCategories value="Race:Zerg"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="-;Structure,Missile,Buried,Stasis,Dead,Hidden,Invulnerable"/>
+        <AreaArray Radius="2.25" Effect="QueenSCBWEnsnare@Set"/>
+        <SearchFlags index="CallForHelp" value="1"/>
+        <AINotifyFlags index="HurtFriend" value="1"/>
+        <AINotifyFlags index="HurtEnemy" value="1"/>
+    </CEffectEnumArea>
+    <CEffectSet id="QueenSCBWEnsnare@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWEnsnare@ABSwitch"/>
+        <EffectArray value="QueenSCBWEnsnare@DamageDummy"/>
+        <EffectArray value="HighTemplarSCBWHallucination@KillHallucination"/>
+    </CEffectSet>
+    <CEffectCreateUnit id="QueenSCBWSpawnBroodlings@CU">
+        <EditorCategories value="Race:Zerg"/>
+        <SpawnEffect value="QueenSCBWSpawnBroodlings@TimedLife"/>
+        <SpawnUnit value="BroodlingSCBW"/>
+        <SpawnCount value="2"/>
+        <ValidatorArray value="QueenSCBWSpawnBroodlings@CU"/>
+    </CEffectCreateUnit>
+    <CEffectDamage id="QueenSCBWSpawnBroodlings@Damage">
+        <EditorCategories value="Race:Zerg"/>
+        <AINotifyFlags index="HurtEnemy" value="1"/>
+        <ResponseFlags index="Acquire" value="1"/>
+        <ResponseFlags index="Flee" value="1"/>
+        <Flags index="NoBehaviorResponse" value="1"/>
+        <DamageInheritEffect value="QueenSCBWSpawnBroodlings@DamageValidate"/>
+        <Kind value="NoProc"/>
+        <VitalFractionCurrent index="Life" value="1"/>
+        <VitalFractionCurrent index="Shields" value="1"/>
+        <Visibility value="Visible"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="QueenSCBWSpawnBroodlings@LM">
+        <EditorCategories value="Race:Zerg"/>
+        <ImpactEffect value="QueenSCBWSpawnBroodlings@Set"/>
+        <AmmoUnit value="QueenSCBWSpawnBroodlings@Missile"/>
+        <LaunchEffect value="QueenSCBWSpawnBroodlings@LMLaunch"/>
+        <AmmoOwner Value="Caster"/>
+    </CEffectLaunchMissile>
+    <CEffectSet id="QueenSCBWSpawnBroodlings@Set">
+        <EditorCategories value="Race:Zerg"/>
+        <EffectArray value="QueenSCBWSpawnBroodlings@Damage"/>
+        <ValidatorArray value="NotStasis"/>
+        <ValidatorArray value="NotInvulnerable"/>
+    </CEffectSet>
+    <CAbilResearch id="QueenSCBWEnergyUpgrade" parent="SCBW_Research" race="Zerg">
+        <InfoArray index="Research1" Time="146">
+            <Resource index="Minerals" value="150"/>
+            <Resource index="Vespene" value="150"/>
+        </InfoArray>
+        <AbilityCategories index="User1" value="1"/>
+        <Activity value="UI/Evolving"/>
+    </CAbilResearch>
+    <CAbilResearch id="QueenSCBWEnsnareResearch" parent="SCBW_Research">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <InfoArray index="Research1" Time="70">
+            <Resource index="Minerals" value="100"/>
+            <Resource index="Vespene" value="100"/>
+        </InfoArray>
+        <Activity value="UI/Evolving"/>
+    </CAbilResearch>
+    <CAbilResearch id="QueenSCBWParasiteResearch" parent="SCBW_Research">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <Activity value="UI/Evolving"/>
+    </CAbilResearch>
+    <CAbilResearch id="QueenSCBWSpawnBroodlingsResearch" parent="SCBW_Research">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Structures"/>
+        <InfoArray index="Research1" Time="70">
+            <Resource index="Minerals" value="100"/>
+            <Resource index="Vespene" value="100"/>
+        </InfoArray>
+        <Activity value="UI/Evolving"/>
+    </CAbilResearch>
+    <CAbilEffectTarget id="QueenSCBWParasite" parent="SCBW_AbilTarget">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <Effect index="0" value="QueenSCBWParasite@LM"/>
+        <Cost>
+            <Vital index="Energy" value="75"/>
+        </Cost>
+        <TargetFilters value="-;Player,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="12"/>
+        <CastIntroTime value="0.5"/>
+        <UninterruptibleArray index="Cast" value="1"/>
+        <UninterruptibleArray index="Channel" value="1"/>
+        <UninterruptibleArray index="Finish" value="1"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWParasite@Hardcore" parent="QueenSCBWParasite">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWEnsnare" parent="SCBW_AbilTarget">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <Effect index="0" value="QueenSCBWEnsnare@LM"/>
+        <Cost>
+            <Vital index="Energy" value="75"/>
+        </Cost>
+        <Range value="9"/>
+        <CursorEffect value="QueenSCBWEnsnare@Search"/>
+        <CastIntroTime value="0.5"/>
+        <UninterruptibleArray index="Cast" value="1"/>
+        <UninterruptibleArray index="Channel" value="1"/>
+        <UninterruptibleArray index="Finish" value="1"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWEnsnare@Hardcore" parent="QueenSCBWEnsnare">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWSpawnBroodlings" parent="SCBW_AbilTarget">
+        <EditorCategories value="AbilityorEffectType:Units,Race:Zerg"/>
+        <Effect index="0" value="QueenSCBWSpawnBroodlings@LM"/>
+        <Cost>
+            <Vital index="Energy" value="150"/>
+        </Cost>
+        <TargetFilters value="-;Air,Robotic,Psionic,Structure,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="9"/>
+        <CastIntroTime value="0.5"/>
+        <UninterruptibleArray index="Cast" value="1"/>
+        <UninterruptibleArray index="Channel" value="1"/>
+        <UninterruptibleArray index="Finish" value="1"/>
+        <RangeSlop value="2"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWSpawnBroodlings@Hardcore" parent="QueenSCBWSpawnBroodlings">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="QueenSCBWInfestCommandCenter">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <Effect index="0" value="QueenSCBWInfestCommandCenter@InitialSwitch"/>
+        <Flags index="AllowMovement" value="1"/>
+        <Flags index="AutoCast" value="1"/>
+        <Flags index="AutoCastOn" value="1"/>
+        <Flags index="CancelResetAutoCast" value="0"/>
+        <Flags index="ChannelingMinimum" value="0"/>
+        <Flags index="DeferCooldown" value="1"/>
+        <Flags index="RangeUseCasterRadius" value="0"/>
+        <Flags index="Smart" value="1"/>
+        <TargetFilters value="Structure,Visible;Self,Missile,Stasis,UnderConstruction,Dead,Invulnerable"/>
+        <Range value="0.5"/>
+        <SmartValidatorArray value="QueenSCBWInfestCommandCenter"/>
+        <SmartValidatorArray value="TargetIsEnemyOrNeutral"/>
+        <AutoCastValidatorArray value="QueenSCBWInfestCommandCenter"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="QueenSCBWInfestCommandCenter">
+            <Flags index="UseDefaultButton" value="1"/>
+            <Flags index="CreateDefaultButton" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="Cancel" DefaultButtonFace="Cancel"/>
+        <UninterruptibleArray index="Cast" value="1"/>
+        <UninterruptibleArray index="Channel" value="1"/>
+        <UninterruptibleArray index="Finish" value="1"/>
+        <Cost/>
+        <RangeSlop value="100"/>
+        <TrackingArc value="0.9997"/>
+        <CancelableArray index="Channel" value="1"/>
+    </CAbilEffectTarget>
+    <CValidatorUnitType id="QueenSCBW@Is" parent="SCBW_Unit" x="QueenSCBW"/>
+    <CValidatorUnitType id="QueenSCBW@Not" parent="SCBW_UnitNot" x="QueenSCBW"/>
+    <CValidatorCombine id="QueenSCBWEnsnare@NotUnloader">
+        <CombineArray value="QueenSCBWEnsnare@IsUnloader"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@IsUnloader">
+        <CombineArray value="ReaverSCBW@Is"/>
+        <CombineArray value="CarrierSCBW@Is"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackSlowCaster">
+        <CombineArray value="QueenSCBWEnsnare@Caster"/>
+        <CombineArray value="QueenSCBWEnsnare@AttackCaster"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AB">
+        <Type value="And"/>
+        <CombineArray value="NotFrenzied"/>
+        <CombineArray value="QueenSCBWEnsnare@NotTurretUser"/>
+        <CombineArray value="QueenSCBWEnsnare@NotUnloader"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@AttackCaster">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+        <Behavior value="QueenSCBWEnsnare@Attack"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@Attack">
+        <Compare value="GT"/>
+        <Behavior value="QueenSCBWEnsnare@Attack"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="QueenSCBWEnsnare@MovementAB">
+        <CombineArray value="QueenSCBWEnsnare@IsTurretUser"/>
+        <CombineArray value="QueenSCBWEnsnare@IsUnloader"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackAB">
+        <CombineArray value="IsFrenziedSCBW"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@Movement">
+        <Compare value="GT"/>
+        <Behavior value="QueenSCBWEnsnare@Movement"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="QueenSCBWEnsnare@HaveAny">
+        <CombineArray value="QueenSCBWEnsnare"/>
+        <CombineArray value="QueenSCBWEnsnare@Movement"/>
+        <CombineArray value="QueenSCBWEnsnare@Attack"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@Not">
+        <Behavior value="QueenSCBWEnsnare"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@AttackNot">
+        <Behavior value="QueenSCBWEnsnare@Attack"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="QueenSCBWEnsnare@NotTurretUser">
+        <CombineArray value="QueenSCBWEnsnare@IsTurretUser"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@IsTurretUser">
+        <CombineArray value="SiegeTankSCBW@IsAlias"/>
+        <CombineArray value="GoliathSCBW@Is"/>
+        <CombineArray value="StingerSCBW@Is"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWParasite@Have">
+        <Compare value="GT"/>
+        <Behavior value="QueenSCBWParasite"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareMoverPhase id="QueenSCBWSpawnBroodlings@MissilePhase">
+        <WhichUnit Effect="QueenSCBWSpawnBroodlings@MissileAB"/>
+        <Compare value="GT"/>
+    </CValidatorUnitCompareMoverPhase>
+    <CValidatorUnitType id="QueenSCBWSpawnBroodlings@Missile">
+        <Value value="QueenSCBWSpawnBroodlings@Missile"/>
+    </CValidatorUnitType>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@MovementNot">
+        <Behavior value="QueenSCBWEnsnare@Movement"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_Stimpack">
+        <CombineArray value="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <CombineArray value="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
+        <CombineArray value="IsMarineStimmed"/>
+        <CombineArray value="IsMarauderStimmed"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare@Caster">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GT"/>
+        <Behavior value="QueenSCBWEnsnare"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareVital id="QueenSCBWInfestCommandCenter@LifeThreshold" parent="LifeLTHalf"/>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWInfestCommandCenter@InfestedTargetNot">
+        <Behavior value="QueenSCBWInfestCommandCenter@InfestingTarget"/>
+        <IgnoreWhileChanneling value="1"/>
+        <ResultFailed value="CantTargetThatUnit,Error/TargetUnderInfestation"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="QueenSCBWInfestCommandCenter@PeriodicValidator">
+        <Type value="And"/>
+        <CombineArray value="QueenSCBWInfestCommandCenter@IsCommandCenter"/>
+        <CombineArray value="CasterNotDeadAndTargetNotDead"/>
+        <CombineArray value="NotHidden"/>
+        <CombineArray value="NotStasis"/>
+        <CombineArray value="SCBW_CasterNotStunned"/>
+        <CombineArray value="SCBW_CasterNotStasis"/>
+        <CombineArray value="CasterIsNotHidden"/>
+    </CValidatorCombine>
+    <CValidatorLocationCompareRange id="QueenSCBWInfestCommandCenter@InfestRange">
+        <Compare value="GT"/>
+        <Range value="1"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_AdrenalBW">
+        <Type value="And"/>
+        <CombineArray value="ZerglingSCBW@IsAlias"/>
+        <CombineArray value="ZerglingSCBWAttackSpeedUpgrade"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_Adrenal">
+        <Type value="And"/>
+        <CombineArray value="IsZergling"/>
+        <CombineArray value="SCBW_HaveAdrenalGlands"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_AdeptGlaives">
+        <Type value="And"/>
+        <CombineArray value="SCBW_IsAdept"/>
+        <CombineArray value="SCBW_HaveAdeptPiercingAttack"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack">
+        <CombineArray value="MarineSCBWStimpack@TestBuff"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack">
+        <CombineArray value="FirebatSCBWStimpack@TestBuff"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorUnitCompareBehaviorCount id="QueenSCBWEnsnare">
+        <Compare value="GT"/>
+        <Behavior value="QueenSCBWEnsnare"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorCombine id="QueenSCBWSpawnBroodlings@CU" parent="SCBW_Effect">
+        <CombineArray value="NotHallucinationTarget"/>
+        <CombineArray value="IsDead"/>
+    </CValidatorCombine>
+    <CValidatorUnitState id="QueenSCBWParasite@Detector">
+        <Enabled value="1"/>
+        <State value="Detector"/>
+    </CValidatorUnitState>
+    <CValidatorCombine id="QueenSCBWInfestCommandCenter">
+        <CombineArray value="QueenSCBWInfestCommandCenter@IsCommandCenter"/>
+        <CombineArray value="QueenSCBWInfestCommandCenter@LifeThreshold"/>
+        <ResultFailed value="MustTargetStructures,Validator/Error/QueenSCBWInfestCommandCenter"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWInfestCommandCenter@IsCommandCenter">
+        <ResultFailed value="MustTargetStructures,Validator/Error/QueenSCBWInfestCommandCenter@IsCommandCenter"/>
+        <CombineArray value="CommandCenterSCBW@Is"/>
+        <CombineArray value="CommandCenterSCBW@Flying@Is"/>
+        <CombineArray value="IsCommandCenter"/>
+        <CombineArray value="IsCommandCenterFlying"/>
+        <CombineArray value="IsOrbitalCommand"/>
+        <CombineArray value="IsOrbitalCommandFlying"/>
+        <CombineArray value="IsPlanetaryFortress"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW">
+        <CombineArray value="HydraliskSCBW@IsAlias"/>
+        <CombineArray value="HydraliskSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ObserverSCBW">
+        <CombineArray value="ObserverSCBW@Is"/>
+        <CombineArray value="ObserverSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_OverlordSCBW">
+        <CombineArray value="OverlordSCBW@Is"/>
+        <CombineArray value="OverlordSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ScoutSCBW">
+        <CombineArray value="ScoutSCBW@Is"/>
+        <CombineArray value="ScoutSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW">
+        <CombineArray value="ShuttleSCBW@Is"/>
+        <CombineArray value="ShuttleSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW">
+        <CombineArray value="UltraliskSCBW@IsAlias"/>
+        <CombineArray value="UltraliskSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_VultureSCBW">
+        <CombineArray value="VultureSCBW@Is"/>
+        <CombineArray value="VultureSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ZealotSCBW">
+        <CombineArray value="ZealotSCBW@Is"/>
+        <CombineArray value="ZealotSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW">
+        <CombineArray value="ZerglingSCBW@IsAlias"/>
+        <CombineArray value="ZerglingSCBWSpeedUpgrade"/>
+        <Type value="And"/>
+    </CValidatorCombine>
+    <CRequirement id="QueenSCBWEnergyUpgrade" parent="SCBW_AbilReq" Race="Zerg">
+        <NodeArray index="Use" Link=""/>
+    </CRequirement>
+    <CRequirement id="QueenSCBWEnsnareResearch" parent="SCBW_AbilReq" Race="Zerg"/>
+    <CRequirement id="QueenSCBWParasiteResearch" parent="SCBW_AbilReq" Race="Zerg"/>
+    <CRequirement id="QueenSCBWSpawnBroodlingsResearch" parent="SCBW_AbilReq" Race="Zerg"/>
+    <CRequirement id="QueenSCBWEnsnare" parent="SCBW_AbilReqNoShow" Race="Zerg"/>
+    <CRequirement id="QueenSCBWSpawnBroodlings" parent="SCBW_AbilReqNoShow" Race="Zerg"/>
+    <CRequirement id="QueenSCBWEnergyUpgrade@Passive" parent="SCBW_PassiveReq" Race="Zerg" x="QueenSCBWEnergyUpgrade"/>
+    <CRequirement id="QueenSCBW" parent="SCBW_UnitReq" Race="Zerg"/>
+    <CButton id="QueenSCBWEnergyUpgrade">
+        <Icon value="Assets\Textures\btn-upgrade-zerg-gametemeiosis@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-zerg-gametemeiosis@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Row="1"/>
+    </CButton>
+    <CButton id="QueenSCBWEnergyUpgrade@Passive" parent="SCBW_ResearchPassive" x="QueenSCBWEnergyUpgrade">
+        <Icon value="Assets\Textures\btn-upgrade-zerg-gametemeiosis@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-zerg-gametemeiosis@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
+    <CButton id="QueenSCBWEnsnareResearch">
+        <Icon value="Assets\Textures\btn-ability-zerg-ensnare@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-zerg-ensnare@scbw.dds"/>
+        <DefaultButtonLayout Column="1"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
+    <CButton id="QueenSCBWParasiteResearch">
+        <Icon value="Assets\Textures\btn-ability-zerg-parasite@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-zerg-parasite@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
+    <CButton id="QueenSCBWSpawnBroodlingsResearch">
+        <Icon value="Assets\Textures\btn-ability-zerg-swarmseeds-color.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-zerg-swarmseeds-color.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
+    <CButton id="QueenSCBWParasite">
+        <Icon value="Assets\Textures\btn-ability-zerg-parasite@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Row="2"/>
+        <HidesForSimpleText value="0"/>
+        <AlertIcon value="Assets\Textures\btn-ability-zerg-parasite@scbw.dds"/>
+    </CButton>
+    <CButton id="QueenSCBWEnsnare">
+        <Icon value="Assets\Textures\btn-ability-zerg-ensnare@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-zerg-ensnare@scbw.dds"/>
+        <DefaultButtonLayout Row="2" Column="2"/>
+        <EditorCategories value="Race:Zerg"/>
+        <HidesForSimpleText value="0"/>
+        <TooltipAppender Text="Button/Tooltip/QueenSCBWEnsnareAppender"/>
+    </CButton>
+    <CButton id="QueenSCBWSpawnBroodlings">
+        <Icon value="Assets\Textures\btn-ability-zerg-swarmseeds-color.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-zerg-swarmseeds-color.dds"/>
+        <DefaultButtonLayout Row="2" Column="1"/>
+        <EditorCategories value="Race:Zerg"/>
+        <HidesForSimpleText value="0"/>
+        <TooltipAppender Text="Button/Tooltip/QueenSCBWSpawnBroodlingsAppender"/>
+    </CButton>
+    <CButton id="QueenSCBWInfestCommandCenter">
+        <Icon value="Assets\Textures\btn-building-zerg-infestedcommandcenter@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-infestedcommandcenter@scbw.dds"/>
+        <DefaultButtonLayout Row="2" Column="3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <HidesForSimpleText value="0"/>
+    </CButton>
+    <CButton id="QueenSCBW">
+        <Icon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+        <DefaultButtonLayout Row="2"/>
+    </CButton>
+    <CButton id="QueenSCBW@Passive" parent="SCBW_UnitPassive" x="QueenSCBW">
+        <Icon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
+    <CRequirementAllowUpgrade id="QueenSCBWEnergyUpgrade@Allow" parent="SCBW_AllowUpgrade" x="QueenSCBWEnergyUpgrade"/>
+    <CRequirementCountUpgrade id="QueenSCBWEnergyUpgrade@Count" parent="SCBW_UpgradeCount" x="QueenSCBWEnergyUpgrade"/>
+    <CRequirementNot id="QueenSCBWEnergyUpgrade@NotQoB" parent="SCBW_Not" x="MedicSCBWEnergyUpgrade@QoB">
+        <OperandArray index="0" value="QueenSCBWEnergyUpgrade@QoB"/>
+    </CRequirementNot>
+    <CRequirementCountUpgrade id="QueenSCBWEnergyUpgrade@QoB" parent="SCBW_UpgradeQoB" x="QueenSCBWEnergyUpgrade"/>
+    <CRequirementAnd id="QueenSCBWEnergyUpgrade@Show">
+        <OperandArray value="QueenSCBWEnergyUpgrade@NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="QueenSCBWEnsnareResearch"/>
+    <CRequirementCountUpgrade id="QueenSCBWEnsnareResearch@Count" parent="SCBW_UpgradeCount" x="QueenSCBWEnsnareResearch"/>
+    <CRequirementNot id="QueenSCBWEnsnareResearch@NotCount" parent="SCBW_Not" x="QueenSCBWEnsnareResearch@Count"/>
+    <CRequirementNot id="QueenSCBWEnsnareResearch@NotQoB" parent="SCBW_Not" x="QueenSCBWEnsnareResearch@QoB"/>
+    <CRequirementCountUpgrade id="QueenSCBWEnsnareResearch@QoB" parent="SCBW_UpgradeQoB" x="QueenSCBWEnsnareResearch"/>
+    <CRequirementAnd id="QueenSCBWEnsnareResearch@Show">
+        <OperandArray value="QueenSCBWEnsnareResearch@NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="QueenSCBWParasiteResearch"/>
+    <CRequirementCountUpgrade id="QueenSCBWParasiteResearch@Count" parent="SCBW_UpgradeCount" x="QueenSCBWParasiteResearch"/>
+    <CRequirementNot id="QueenSCBWParasiteResearch@NotCount" parent="SCBW_Not" x="QueenSCBWParasiteResearch@Count"/>
+    <CRequirementNot id="QueenSCBWParasiteResearch@NotQoB" parent="SCBW_Not" x="QueenSCBWParasiteResearch@QoB"/>
+    <CRequirementCountUpgrade id="QueenSCBWParasiteResearch@QoB" parent="SCBW_UpgradeQoB" x="QueenSCBWParasiteResearch"/>
+    <CRequirementAnd id="QueenSCBWParasiteResearch@Show">
+        <OperandArray value="QueenSCBWParasiteResearch@NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="QueenSCBWSpawnBroodlingsResearch"/>
+    <CRequirementCountUpgrade id="QueenSCBWSpawnBroodlingsResearch@Count" parent="SCBW_UpgradeCount" x="QueenSCBWSpawnBroodlingsResearch"/>
+    <CRequirementNot id="QueenSCBWSpawnBroodlingsResearch@NotCount" parent="SCBW_Not" x="QueenSCBWSpawnBroodlingsResearch@Count"/>
+    <CRequirementNot id="QueenSCBWSpawnBroodlingsResearch@NotQoB" parent="SCBW_Not" x="QueenSCBWSpawnBroodlingsResearch@QoB"/>
+    <CRequirementCountUpgrade id="QueenSCBWSpawnBroodlingsResearch@QoB" parent="SCBW_UpgradeQoB" x="QueenSCBWSpawnBroodlingsResearch"/>
+    <CRequirementAnd id="QueenSCBWSpawnBroodlingsResearch@Show">
+        <OperandArray value="QueenSCBWSpawnBroodlingsResearch@NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="QueenSCBWEnsnare">
+        <OperandArray value="QueenSCBWEnsnareResearch@Count"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="QueenSCBWSpawnBroodlings">
+        <OperandArray value="QueenSCBWSpawnBroodlingsResearch@Count"/>
+    </CRequirementAnd>
+    <CRequirementAllowUnit id="QueenSCBW@AllowUnit" parent="SCBW_AllowUnit" x="QueenSCBW"/>
+    <CRequirementAnd id="QueenSCBW@Show">
+        <OperandArray value="QueenSCBW@AllowUnit"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="QueenSCBW">
+        <OperandArray value="QueensNestSCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementCountUnit id="QueenSCBW@Count" parent="SCBW_UnitCount" x="QueenSCBW"/>
+    <CRequirementCountUnit id="QueenSCBW@CountAtUnit" parent="SCBW_UnitCountAtUnit" x="QueenSCBW"/>
+    <CRequirementNot id="QueenSCBW@NotCount" parent="SCBW_Not" x="QueenSCBW@Count"/>
+    <CRequirementNot id="QueenSCBW@NotCountAtUnit" parent="SCBW_Not" x="QueenSCBW@CountAtUnit"/>
+    <CRequirementNot id="QueenSCBW@NotQoB" parent="SCBW_Not" x="QueenSCBW@QoB"/>
+    <CRequirementNot id="QueenSCBW@NotQoBAtUnit" parent="SCBW_Not" x="QueenSCBW@QoBAtUnit"/>
+    <CRequirementCountUnit id="QueenSCBW@QoB" parent="SCBW_UnitQoB" x="QueenSCBW"/>
+    <CRequirementCountUnit id="QueenSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="QueenSCBW"/>
+    <CLight id="QueenSCBW@Portrait" parent="default">
+        <EditorCategories value="LightGroup:PortraitsUnitsZerg"/>
+    </CLight>
+    <CActorModel id="QueenSCBWSpawnBroodlings@ActionShieldModelReaction" parent="GenericAttackModel">
+        <On Terms="ActorCreation; ModelName QueenSCBWSpawnBroodlings@MissilePenetrateShield" Send="EventMacroRun ShieldColorMacroRunnable"/>
+    </CActorModel>
+    <CActorAction id="QueenSCBWSpawnBroodlings@ActionShield" parent="GenericAttackBase">
+        <Terms value="Cap 1"/>
+        <On Terms="Behavior.QueenSCBWSpawnBroodlings@Missile.Create" Send="Create"/>
+        <On Terms="Effect.QueenSCBWSpawnBroodlings@MissileDummy.Start; !HasStatus Impacted" Send="ActionDamage"/>
+        <On Terms="Effect.QueenSCBWSpawnBroodlings@MissileDummy.Stop; !HasStatus Impacted" Send="ActionImpact"/>
+        <On Terms="Effect.QueenSCBWSpawnBroodlings@MissileDummy.Stop" Send="StatusSet Impacted 1"/>
+        <ImpactMap index="None" Model="QueenSCBWSpawnBroodlings@MissilePenetrate"/>
+        <ImpactMap index="Flesh" ModelReaction="BloodTargetImpact" ScaleReaction="1.500000"/>
+        <ImpactMap index="LightArmor" ModelReaction="SparkTargetImpact" ScaleReaction="1.500000"/>
+        <ImpactMap index="Metal" ModelReaction="SparkTargetImpact" ScaleReaction="1.500000"/>
+        <ImpactMap index="Shield" ModelReaction="QueenSCBWSpawnBroodlings@MissilePenetrateShield"/>
+        <ImpactModelReaction value="QueenSCBWSpawnBroodlings@ActionShieldModelReaction"/>
+        <ShieldFlashType value="Header"/>
+        <ShieldRippleScaleFactor value="1.500000"/>
+        <Lifetime value="2.500000"/>
+        <AcquisitionYawHalfArc value="0.000000"/>
+        <AcquisitionPitchHalfArc value="0.000000"/>
+        <AccuracyHalfArc value="0.000000"/>
+    </CActorAction>
+    <CActorSound id="QueenSCBWInfestCommandCenter@InfestStart" parent="SoundOneShot">
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Start; At Caster; ValidateUnit SCBW_CasterNoDraw" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="QueenSCBWInfestCommandCenter@InfestEnd" parent="SoundOneShot">
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@ExpireSet.Stop; At Target" Send="Create"/>
+    </CActorSound>
+    <CActorAction id="QueenSCBWInfestCommandCenter@InfestSpray" parent="GenericAttack" effectImpact="QueenSCBWInfestCommandCenter@InfestImpact" effectLaunch="QueenSCBWInfestCommandCenter@InfestLM">
+        <LaunchAttachQuery Methods="Center" Fallback="Weapon"/>
+        <Missile value="QueenSCBWInfestCommandCenter@Missile"/>
+        <HostImpactSource Subject="QueenSCBWInfestCommandCenter@DummyAttack" ReachAcrossEffectTrees="1"/>
+        <ImpactMap index="None" Model="QueenSCBWInfestCommandCenter@Impact"/>
+        <AcquisitionYawHalfArc value="0.000000"/>
+        <AcquisitionPitchHalfArc value="0.000000"/>
+        <AccuracyHalfArc value="0.000000"/>
+    </CActorAction>
+    <CActorBeamSimple id="QueenSCBWInfestCommandCenter@DummyAttackBeam" parent="BeamSimpleAnimationStyleContinuous">
+        <Macros value="ActionTargetTeleportDestroy"/>
+        <Supporter Subject="_Unit" Scope="Caster" Actor="Find"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Stop; At Effect" Send="TimerSet 0.125000 DelayDestroy"/>
+        <On Terms="TimerExpired; TimerName DelayDestroy" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="SetVisibility"/>
+        <Host Subject="_Unit" Scope="Caster" Actor="Find"/>
+        <Model value="VoidRayAttackBeam"/>
+    </CActorBeamSimple>
+    <CActorAction id="QueenSCBWInfestCommandCenter@DummyAttack" parent="GenericAttackBase">
+        <LaunchAttachQuery Methods="Center 0" Fallback="Weapon"/>
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeNoVizEnhance SOpForwardLaunchGuide"/>
+        <ActionFlags index="AlignedImpactsAndDamages" value="1"/>
+        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+        <ActionFlags index="LaunchForceSite" value="1"/>
+        <Lifetime value="-1.000000"/>
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Start; At Caster; ValidateUnit SCBW_CasterNotNoDraw" Send="Create"/>
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@SprayDummy.Start; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Stop; At Caster; FromEffectTreeDescendant" Send="Destroy WhenReady"/>
+        <ShieldFlashType value="None"/>
+        <AcquisitionYawHalfArc value="5.000000"/>
+        <AcquisitionPitchHalfArc value="5.000000"/>
+        <AccuracyHalfArc value="0.000000"/>
+    </CActorAction>
+    <CActorMissile id="QueenSCBWInfestCommandCenter@Missile" parent="GenericAttackMissile" unitName="QueenSCBWInfestCommandCenter@Missile">
+        <Model value="QueenSCBWInfestCommandCenter@Weapon"/>
+    </CActorMissile>
+    <CActorSound id="QueenSCBWInfestCommandCenter@LoopSound" parent="SoundContinuous">
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Start; At Caster; ValidateUnit SCBW_CasterNotNoDraw" Send="Create"/>
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Stop; At Caster; FromEffectTreeDescendant" Send="Destroy"/>
+    </CActorSound>
+    <CActorSound id="QueenSCBWInfestCommandCenter@LaunchSound" parent="SoundOneShot">
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Start; At Caster; ValidateUnit SCBW_CasterNotNoDraw" Send="Create"/>
+    </CActorSound>
+    <CActorUnit id="QueenSCBWEnsnare@CreepDummy" parent="GenericUnitStandardNoAutoSoundLinks" unitName="QueenSCBWEnsnare@CreepDummy">
+        <Model value="Invisible"/>
+        <EditorModel value="Sphere"/>
+        <WalkAnimMoveSpeed value="0"/>
+        <StatusBarFlags index="Shields" value="0"/>
+        <StatusBarFlags index="Life" value="0"/>
+        <StatusBarFlags index="Energy" value="0"/>
+        <StatusBarFlags index="Cargo" value="0"/>
+        <StatusBarFlags index="Progress" value="0"/>
+        <StatusBarFlags index="Duration" value="0"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+    </CActorUnit>
+    <CActorModelMaterial id="QueenSCBWEnsnare@Glaze" parent="BehaviorGlaze" buff="QueenSCBWEnsnare">
+        <On Terms="AnimDone; AnimName Death" Send="ModelMaterialRemoveFrom ::Main"/>
+        <On Terms="AnimDone; AnimName Death" Send="Destroy"/>
+        <On Terms="Behavior.QueenSCBWEnsnare@Attack.On" Send="Create"/>
+        <On Terms="Behavior.QueenSCBWEnsnare@Attack.Off" Send="AnimBracketStop BSD"/>
+    </CActorModelMaterial>
+    <CActorSound id="QueenSCBWParasite@DeathSound" parent="SoundOneShot">
+        <On Terms="Behavior.QueenSCBWParasite.Off; !PassChance 100.000000" Send="Create"/>
+        <Host Subject="_Unit"/>
+        <Sound value="OcularSymbiote_DeathExplosion"/>
+    </CActorSound>
+    <CActorModel id="QueenSCBWParasite@Parasite" parent="ModelAnimationStyleContinuous">
+        <Inherits index="CloakEffect" value="1"/>
+        <Inherits index="Opacity" value="1"/>
+        <Inherits index="Visibility" value="1"/>
+        <On Terms="Behavior.QueenSCBWParasite.On" Send="Create"/>
+        <On Terms="Behavior.QueenSCBWParasite.Off" Send="AnimBracketStop BSD"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOverhead"/>
+        <Model value="Invisible"/>
+        <ModelAspectSets>
+            <Aspects Person="Observer" ObservingPoV="DefaultObservedPlayerId" Model="QueenSCBWParasite@Parasite"/>
+            <Aspects Person="Observer" ObservingPoV="Everyone" Model="QueenSCBWParasite@Parasite"/>
+        </ModelAspectSets>
+    </CActorModel>
+    <CActorAction id="QueenSCBWParasite@Action" parent="GenericAttack" effectImpact="QueenSCBWParasite@AB" effectLaunch="QueenSCBWParasite@LM">
+        <LaunchAssets Sound="QueenSCBWParasite@Launch"/>
+        <Missile value="QueenSCBWParasite@Missile"/>
+        <ImpactSiteOps Ops="SOpAttachCenter"/>
+        <ImpactMap index="None" Sound="QueenSCBWParasite@Impact"/>
+        <ShieldFlashType value="None"/>
+    </CActorAction>
+    <CActorMissile id="QueenSCBWParasite@Missile" parent="GenericAttackMissile" unitName="QueenSCBWParasite@Missile"/>
+    <CActorRange id="QueenSCBWParasite@Range" parent="SCBW_RangeAbilMultiple" abil2="QueenSCBWParasite@Hardcore" abil="QueenSCBWParasite">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorAction id="QueenSCBWEnsnare@Action" parent="GenericAttack" effectImpact="QueenSCBWEnsnare@Search" effectLaunch="QueenSCBWEnsnare@LM">
+        <LaunchAssets Sound="QueenSCBWEnsnare@Launch"/>
+        <Missile value="QueenSCBWEnsnare@Missile"/>
+        <ShieldFlashType value="None"/>
+    </CActorAction>
+    <CActorSplat id="QueenSCBWEnsnare@CursorSplat" parent="ZergCursorSplat" abil="QueenSCBWEnsnare">
+        <On Terms="Abil.QueenSCBWEnsnare@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
+    <CActorModel id="QueenSCBWEnsnare@Impact" parent="ModelAnimationStyleOneShot">
+        <On Terms="Effect.QueenSCBWEnsnare@Search.Start" Send="Create"/>
+    </CActorModel>
+    <CActorSound id="QueenSCBWEnsnare@ImpactSound" parent="SoundOneShot">
+        <On Terms="Effect.QueenSCBWEnsnare@Search.Start" Send="Create"/>
+        <Sound value="QueenSCBWEnsnare@Impact"/>
+    </CActorSound>
+    <CActorMissile id="QueenSCBWEnsnare@Missile" parent="GenericUnitMinimal" unitName="QueenSCBWEnsnare@Missile">
+        <PreHost value="_ActorAction"/>
+    </CActorMissile>
+    <CActorRange id="QueenSCBWEnsnare@Range" parent="SCBW_RangeAbilMultiple" abil2="QueenSCBWEnsnare@Hardcore" abil="QueenSCBWEnsnare">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorMissile id="QueenSCBWSpawnBroodlings@Missile" parent="GenericAttackMissileWithDeathAnim" unitName="QueenSCBWSpawnBroodlings@Missile">
+        <On Terms="UnitBirth" Send="AnimSetTime BSD 0.500000"/>
+        <On Terms="ActorCreation" Send="SetScale 0.300000"/>
+        <On Terms="ActorCreation" Send="SetScale 1.000000 0.250000"/>
+        <On Terms="ActorCreation" Send="SetOpacity"/>
+        <On Terms="ActorCreation" Send="SetOpacity 1.000000 0.150000"/>
+        <On Terms="Effect.QueenSCBWSpawnBroodlings@Set.Start" Send="Destroy"/>
+        <!--On Terms="MotionPhaseStart; MotionPhase" Send="RefSet TentacleAttack ::Supporter"/>
+        <HostedAttaches Name="TentacleAttack">
+            <AttachQuery Methods="Transmission"/>
+            <HostSiteOps Ops="SOpAttachHead"/>
+        </HostedAttaches>
+        <Supporter>
+            <Subject value="_Selectable"/>
+            <Scope value="Caster"/>
+            <Actor value="Find"/>
+            <Effect value="QueenSCBWSpawnBroodlings@LM"/>
+        </Supporter-->
+    </CActorMissile>
+    <CActorModel id="QueenSCBWEnsnare@Slow" parent="ModelAnimationStyleContinuous">
+        <On Terms="Behavior.QueenSCBWEnsnare.On" Send="Create"/>
+        <On Terms="Behavior.QueenSCBWEnsnare.Off" Send="AnimBracketStop BSD"/>
+        <On Terms="Behavior.QueenSCBWEnsnare@Movement.On" Send="Create"/>
+        <On Terms="Behavior.QueenSCBWEnsnare@Movement.Off" Send="AnimBracketStop BSD"/>
+        <Host Subject="_Unit"/>
+        <HostSiteOps Ops="SOpAttachCenter"/>
+        <AutoScaleFactor value="1.000000"/>
+        <Inherits index="Visibility" value="1"/>
+    </CActorModel>
+    <CActorAction id="QueenSCBWSpawnBroodlings@Action" parent="GenericAttack" effectImpact="QueenSCBWSpawnBroodlings@Set" effectLaunch="QueenSCBWSpawnBroodlings@LM">
+        <LaunchAssets Sound="QueenSCBWSpawnBroodlings@Launch"/>
+        <Missile value="QueenSCBWSpawnBroodlings@Missile"/>
+        <ImpactMap index="None" Sound="QueenSCBWSpawnBroodlings@Impact"/>
+        <ShieldFlashType value="None"/>
+        <LaunchSiteOps Ops="SOpAttachWeapon SOpMoveBackByDot5" HoldPosition="1" HoldRotation="1"/>
+        <LaunchAttachQuery Methods="Weapon"/>
+        <ImpactSiteOps Ops="SOpAttachCenter"/>
+    </CActorAction>
+    <CActorRange id="QueenSCBWSpawnBroodlings@Range" parent="SCBW_RangeAbilMultiple" abil2="QueenSCBWSpawnBroodlings@Hardcore" abil="QueenSCBWSpawnBroodlings">
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="3.250000"/>
+    </CActorRange>
+    <CActorUnit id="QueenSCBW" parent="GenericUnitStandard" unitName="QueenSCBW">
+        <Macros value="QueenSCBW@HardcoreMacro"/>
+        <On Terms="Abil.QueenSCBWEnsnare.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWSpawnBroodlings.SourcePrepStart" Send="AnimPlay Spell Attack,01 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Abil.QueenSCBWParasite.SourcePrepStart" Send="AnimPlay Spell Attack,01 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Start; At Caster" Send="$Spell PlayForever -1.000000 -1.000000 1.300000 AsTimeScale"/>
+        <On Terms="Effect.QueenSCBWInfestCommandCenter@CP.Stop; At Caster" Send="AnimClear Spell"/>
+        <On Terms="UnitMovementUpdate.*.Walk" Send="AnimClear Spell"/>
+        <HostSiteOps Ops="SOpBankerQueenMP"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <DeathArray index="Normal" ModelLink="QueenSCBW@Death" SoundLink="QueenSCBW@Death" VoiceLink="QueenMP_Death"/>
+        <PortraitModel value="QueenSCBW@Portrait"/>
+        <BarOffset value="75"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-zerg-queenclassic.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-zerg-flyercarapace-level0.dds"/>
+        <SoundArray index="Ready" value="QueenSCBW@Ready"/>
+        <SoundArray index="Help" value="QueenSCBW@Help"/>
+        <SoundArray index="What" value="QueenSCBW@What"/>
+        <SoundArray index="Yes" value="QueenSCBW@Yes"/>
+        <SoundArray index="Attack" value="QueenSCBW@Attack"/>
+        <SoundArray index="Pissed" value="QueenSCBW@Pissed"/>
+        <UnitIcon value="Assets\Textures\btn-unit-zerg-queen@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-zerg-queenclassic.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorEventMacro id="QueenSCBW@HardcoreMacro">
+        <On Terms="Abil.QueenSCBWEnsnare@Hardcore.SourcePrepStart" Send="AnimPlay Spell Attack,01"/>
+        <On Terms="Abil.QueenSCBWSpawnBroodlings@Hardcore.SourcePrepStart" Send="AnimPlay Spell Attack,01 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
+        <On Terms="Abil.QueenSCBWParasite@Hardcore.SourcePrepStart" Send="AnimPlay Spell Attack,01 0 -1.000000 -1.000000 0.900000 AsTimeScale"/>
+    </CActorEventMacro>
+    <CFootprint id="QueenSCBWEnsnare@CreepGrown">
+        <Layers index="Check" Area="-4,-4,5,5">
+            <Sets Character="o">
+                <Negative index="NoCreep" value="1"/>
+            </Sets>
+            <Rows value="..ooooo.."/>
+            <Rows value=".ooooooo."/>
+            <Rows value="ooooooooo"/>
+            <Rows value="ooooooooo"/>
+            <Rows value="ooooooooo"/>
+            <Rows value="ooooooooo"/>
+            <Rows value="ooooooooo"/>
+            <Rows value=".ooooooo."/>
+            <Rows value="..ooooo.."/>
+        </Layers>
+        <Layers index="Place" Area="-4,-4,5,5">
+            <Sets Character="o">
+                <Positive index="Creep" value="1"/>
+            </Sets>
+            <Rows value="........."/>
+            <Rows value="........."/>
+            <Rows value="...ooo..."/>
+            <Rows value="..ooooo.."/>
+            <Rows value="..ooooo.."/>
+            <Rows value="..ooooo.."/>
+            <Rows value="...ooo..."/>
+            <Rows value="........."/>
+            <Rows value="........."/>
+        </Layers>
+    </CFootprint>
+    <CFootprint id="QueenSCBWEnsnare@CreepStart">
+        <Layers index="Check">
+            <Sets Character="c">
+                <Negative index="NoCreep" value="1"/>
+            </Sets>
+            <Rows value="cc"/>
+            <Rows value="cc"/>
+        </Layers>
+        <Layers index="Place">
+            <Sets Character="c">
+                <Positive index="Creep" value="1"/>
+            </Sets>
+            <Rows value="cc"/>
+            <Rows value="cc"/>
+        </Layers>
+        <Shape Radius="1.4143"/>
+    </CFootprint>
+    <CModel id="QueenSCBWSpawnBroodlings@MissilePenetrateShield" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Terran\Nanocloud_Damage_Shield\Nanocloud_Damage_Shield.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CModel>
+    <CModel id="QueenSCBWSpawnBroodlings@ActionLaunch" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Zerg\CorruptorMissileLaunch\CorruptorMissileLaunch.m3"/>
+        <AnimSpeed value="0.600000"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ScaleMax value="1.200000,1.200000,1.200000"/>
+        <ScaleMin value="1.200000,1.200000,1.200000"/>
+    </CModel>
+    <CModel id="QueenSCBWSpawnBroodlings@MissilePenetrate" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Zerg\MutaliskMissileImpact\MutaliskMissileImpact.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ScaleMax value="1.400000,1.400000,1.400000"/>
+        <ScaleMin value="1.200000,1.200000,1.200000"/>
+    </CModel>
+    <CModel id="QueenSCBWInfestCommandCenter@Impact" parent="ImpactFX">
+        <Model value="Assets\COOP\Stetmann\Effects\Corruptor_Stetmann_COOP_CausticSprayMissileImpact\Corruptor_Stetmann_COOP_CausticSprayMissileImpact.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ScaleMax value="1.200000,1.200000,1.200000"/>
+    </CModel>
+    <CModel id="QueenSCBWInfestCommandCenter@Weapon" parent="MissileFX">
+        <Model value="Assets\COOP\Stetmann\Effects\Corruptor_Stetmann_COOP_CausticSprayMissile\Corruptor_Stetmann_COOP_CausticSprayMissile.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ScaleMax value="1.200000,1.200000,1.200000"/>
+        <ScaleMin value="1.200000,1.200000,1.200000"/>
+    </CModel>
+    <CModel id="QueenSCBWEnsnare@Glaze" parent="Glaze">
+        <Model value="Assets\Effects\Glaze\Glaze_Symbiote_Carapace\Glaze_Symbiote_Carapace.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CModel>
+    <CModel id="QueenSCBWParasite@Parasite" parent="PersistentSpellFX">
+        <Model value="Assets\Effects\Zerg\EyeStalk\EyeStalk.m3"/>
+        <ScaleMax value="0.500000,0.500000,0.500000"/>
+        <ScaleMin value="0.500000,0.500000,0.500000"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CModel>
+    <CModel id="QueenSCBWParasite@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Zerg\EyeStalk\EyeStalk.m3"/>
+        <ScaleMax value="0.500000,0.500000,0.500000"/>
+        <ScaleMin value="0.500000,0.500000,0.500000"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CModel>
+    <CModel id="QueenSCBWEnsnare@Impact" parent="ImpactFX">
+        <Model value="Assets\Effects\Zerg\QueenEnsnareImpact@SCBWEffect\QueenEnsnareImpact@SCBWEffect.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Flags index="Wait" value="1"/>
+    </CModel>
+    <CModel id="QueenSCBWEnsnare@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Zerg\FungalGrowthMissile\FungalGrowthMissile.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CModel>
+    <CModel id="QueenSCBWEnsnare@Slow" parent="PersistentSpellFX">
+        <Model value="Assets\Effects\Zerg\CorrosiveBileImpact\CorrosiveBileImpact.m3"/>
+        <EditorCategories value="Race:Zerg"/>
+        <ScaleMax value="0.500000,0.500000,0.500000"/>
+        <ScaleMin value="0.500000,0.500000,0.500000"/>
+    </CModel>
+    <CModel id="QueenSCBWSpawnBroodlings@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Zerg\QueenSCBWSpawnBroodlings\QueenSCBWSpawnBroodlings.m3"/>
+        <AnimBlendTime value="0.050000"/>
+        <EditorCategories value="Race:Zerg"/>
+        <Events>
+            <Anim value="Death"/>
+            <Name value="QueenSCBWSpawnBroodlings@MissileDeath"/>
+            <Type value="Sound"/>
+            <Time value="0.010000"/>
+            <Payload value="QueenSCBWSpawnBroodlings@MissileDeath"/>
+        </Events>
+        <AnimSpeed value="1.500000"/>
+    </CModel>
+    <CModel id="QueenSCBW" parent="Unit" Race="Zerg">
+        <Model value="Assets\Units\Zerg\QueenClassic\QueenClassic.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraHigh06"/>
+        <SelectionOffset value="0.000000,0.000000,-0.350000"/>
+        <SquibTypeDefault value="Flesh"/>
+        <TechPurchaseCamera value="Star2CameraHigh06"/>
+        <Tipability value="0.750000"/>
+        <UnitGlossaryCamera value="Star2CameraHigh06"/>
+        <SelectionRadius value="0.700000"/>
+        <ShadowRadius value="0.650000"/>
+    </CModel>
+    <CModel id="QueenSCBW@Death" parent="UnitDeath" Race="Zerg">
+        <Model value="Assets\Units\Zerg\QueenClassic_Death\QueenClassic_Death.m3"/>
+        <LowQualityModel value="ZergSmallUnitDeathLow"/>
+        <Occlusion value="Show"/>
+    </CModel>
+    <CModel id="QueenSCBW@Portrait" parent="Portrait" Race="Zerg">
+        <Model value="Assets\Portraits\Zerg\QueenSCBW@Portrait\BroodQueen_Portrait.m3"/>
+    </CModel>
+    <CMoverMissile id="QueenSCBWSpawnBroodlings@Missile">
+        <MotionPhases>
+            <Driver value="Guidance"/>
+            <Acceleration value="30"/>
+            <Speed value="7"/>
+            <MaxSpeed value="18.75"/>
+            <ClearanceAcceleration value="75"/>
+            <ActorTracking value="Actual"/>
+            <Outro value="-4"/>
+            <YawPitchRoll value="MAX"/>
+        </MotionPhases>
+        <MotionPhases Acceleration="50" MaxSpeed="30" YawPitchRoll="MAX"/>
+    </CMoverMissile>
+    <CAccumulatorEffectAmount id="QueenSCBWSpawnBroodlings@Damaged">
+        <SourceEffect value="QueenSCBWSpawnBroodlings@Damage"/>
+        <Total value="1"/>
+    </CAccumulatorEffectAmount>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveSpeedFactor">
+        <Amount value="0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_Stimpack">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveDefault">
+        <Amount value="-0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="QueenSCBWEnsnare@Move">
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_Stimpack" Accumulator="QueenSCBWEnsnare@MoveFactor_Stimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_VultureSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_VultureSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_OverlordSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_OverlordSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ZealotSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ZealotSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ObserverSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
+        <CaseArray Validator="QueenSCBWEnsnare@MoveFactor_ScoutSCBW" Accumulator="QueenSCBWEnsnare@MoveFactor_ScoutSCBW"/>
+        <CaseDefault value="QueenSCBWEnsnare@MoveDefault"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_HydraliskSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ObserverSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_OverlordSCBW">
+        <Amount value="-0.8"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ScoutSCBW">
+        <Amount value="-0.25"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ShuttleSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_UltraliskSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_VultureSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ZealotSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@MoveFactor_ZerglingSCBW">
+        <Amount value="-0.3332"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="QueenSCBWParasite@Detector">
+        <CaseArray Validator="HasDetector12" Accumulator="12"/>
+        <CaseArray Validator="HasDetector11" Accumulator="11"/>
+        <CaseArray Validator="HasDetector10" Accumulator="10"/>
+        <CaseArray Validator="ObserverSCBWSieged@DetectorUpgraded" Accumulator="ObserverSCBWSieged@DetectRangeUpgraded"/>
+        <CaseArray Validator="ObserverSCBWSieged@Detector" Accumulator="ObserverSCBWSieged@DetectRange"/>
+        <CaseArray Validator="ObserverSCBW@DetectorUpgraded" Accumulator="ObserverSCBW@DetectRangeUpgraded"/>
+        <CaseArray Validator="ObserverSCBW@Detector" Accumulator="ObserverSCBW@DetectRange"/>
+        <CaseArray Validator="OverlordSCBW@DetectorUpgraded" Accumulator="OverlordSCBW@DetectRangeUpgraded"/>
+        <CaseArray Validator="OverlordSCBW@Detector" Accumulator="OverlordSCBW@DetectRange"/>
+        <CaseArray Validator="SCBW_HasDetector9" Accumulator="9"/>
+        <CaseArray Validator="SCBW_HasDetector7" Accumulator="7"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackSpeedFactor">
+        <Amount value="0.8"/>
+    </CAccumulatorConstant>
+    <CAccumulatorSwitch id="QueenSCBWEnsnare@AttackAccum">
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack" Accumulator="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack" Accumulator="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_AdrenalBW" Accumulator="QueenSCBWEnsnare@AttackFactor_AdrenalBW"/>
+        <CaseArray Validator="IsMarineStimmed" Accumulator="QueenSCBWEnsnare@AttackFactor_Stimpack"/>
+        <CaseArray Validator="IsMarauderStimmed" Accumulator="QueenSCBWEnsnare@AttackFactor_MarauderStimpack"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_Adrenal" Accumulator="QueenSCBWEnsnare@AttackFactor_Adrenal"/>
+        <CaseArray Validator="QueenSCBWEnsnare@AttackFactor_AdeptGlaives" Accumulator="QueenSCBWEnsnare@AttackFactor_AdeptGlaives"/>
+        <CaseDefault value="QueenSCBWEnsnare@AttackFactor_Default"/>
+    </CAccumulatorSwitch>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack">
+        <Amount value="-0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack">
+        <Amount value="-0.5"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_AdrenalBW">
+        <Amount value="-0.375"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_Stimpack">
+        <Amount value="-0.333"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_MarauderStimpack">
+        <Amount value="-0.333"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_Adrenal">
+        <Amount value="-0.286"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_AdeptGlaives">
+        <Amount value="-0.31"/>
+    </CAccumulatorConstant>
+    <CAccumulatorConstant id="QueenSCBWEnsnare@AttackFactor_Default">
+        <Amount value="-0.2"/>
+    </CAccumulatorConstant>
+    <CSound id="QueenSCBWSpawnBroodlings@ActionShieldImpactShield" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Shields\Protoss_ShieldImpact0.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Shields\Protoss_ShieldImpact1.wav"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Shields\Protoss_ShieldImpact2.wav"/>
+        <Volume value="-6.000000,-4.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWSpawnBroodlings@MissileDeath" parent="Spell">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\SunkenColonySCBW\SunkenColonySCBWWeapon@Impact00.ogg"/>
+        <Pitch value="3.000000,3.000000"/>
+        <Volume value="3.000000,3.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWInfestCommandCenter@InfestStart" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_NeuralParasiteAttackImpact2.wav"/>
+        <Pitch value="-5.000000,-3.000000"/>
+        <NonLocalVolumeAdjustment value="6.000000,6.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWInfestCommandCenter@InfestEnd" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\HybridF\HybridF_ConstrictingSlimeLaunch2.wav"/>
+        <Pitch value="-5.000000,-4.000000"/>
+        <Volume value="-6.000000,-4.000000"/>
+        <NonLocalVolumeAdjustment value="5.000000,5.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWInfestCommandCenter@LaunchSound" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Start01.wav"/>
+        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Start02.wav"/>
+        <Pitch value="5.000000,5.000000"/>
+        <Volume value="-6.000000,-6.000000"/>
+        <DupeDestroyCount value="6"/>
+        <DupeMaximumMethod value="Replace"/>
+        <DupeMuteCount value="3"/>
+        <DupePrioritization value="Oldest"/>
+    </CSound>
+    <CSound id="QueenSCBWInfestCommandCenter@LoopSound" parent="Combat">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Corruptor_CausticSpray_Attack_Loop01.wav"/>
+        <DupeMuteCount value="4"/>
+        <LoopCount value="-1"/>
+        <Pitch value="0.000000,3.000000"/>
+        <Volume value="-10.000000,-9.000000"/>
+        <DupeDestroyCount value="8"/>
+        <DupeThresholdPoints/>
+        <DupeThresholdPoints Count="4" Volume="-3.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWParasite@Impact" parent="Spell">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWParasite@Impact00.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBWParasite@Launch" parent="Spell">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\Infestor\Infestor_FungalGrowthLaunch2.wav"/>
+        <Volume value="-8.000000,-8.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWEnsnare@Impact" parent="Spell">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWEnsnare@Impact00.ogg"/>
+        <Volume value="2.000000,2.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWEnsnare@Launch" parent="Spell">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch0.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch1.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch2.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch3.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch4.wav"/>
+        <AssetArray File="Assets\Sounds\Zerg\NoxiousTurret\NoxiousTurret_AttackLaunch5.wav"/>
+        <Volume value="-4.000000,-4.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWSpawnBroodlings@Impact" parent="Spell">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\BroodlingSCBW\BroodlingSCBW@Ready00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\BroodlingSCBW\BroodlingSCBW@Death00.ogg"/>
+        <Volume value="3.000000,3.000000"/>
+        <LocalVolumeAdjustment value="5.000000,5.000000"/>
+    </CSound>
+    <CSound id="QueenSCBWSpawnBroodlings@Launch" parent="Spell">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBWSpawnBroodlings@Launch00.ogg"/>
+        <Volume value="3.000000,3.000000"/>
+        <LocalVolumeAdjustment value="3.000000,3.000000"/>
+    </CSound>
+    <CSound id="QueenSCBW@Attack" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes03.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@Death" parent="ZergDeathSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Death00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Death01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Death02.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@Help" parent="AlertZergSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Help00.ogg"/>
+        <Mode value="3DWorld"/>
+    </CSound>
+    <CSound id="QueenSCBW@Pissed" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Pissed03.ogg"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+    </CSound>
+    <CSound id="QueenSCBW@Ready" parent="ZergReadySCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Ready00.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@What" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@What03.ogg"/>
+    </CSound>
+    <CSound id="QueenSCBW@Yes" parent="ZergAckSCBW" Folder="QueenSCBW">
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes00.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes01.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes02.ogg"/>
+        <AssetArray File="Assets\Sounds\Zerg\QueenSCBW\QueenSCBW@Yes03.ogg"/>
+    </CSound>
+    <CDataCollectionUpgrade id="QueenSCBWEnergyUpgrade" parent="ZergUpgradeSCBW">
+        <DataRecord Entry="Abil,QueenSCBWEnergyUpgrade"/>
+        <DataRecord Entry="Button,QueenSCBWEnergyUpgrade"/>
+        <DataRecord Entry="Button,QueenSCBWEnergyUpgrade@Passive"/>
+        <DataRecord Entry="Requirement,QueenSCBWEnergyUpgrade"/>
+        <DataRecord Entry="Requirement,QueenSCBWEnergyUpgrade@Passive"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnergyUpgrade@Show"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnergyUpgrade@Count"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnergyUpgrade@Allow"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnergyUpgrade@NotQoB"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnergyUpgrade@QoB"/>
+        <DataRecord Entry="Upgrade,QueenSCBWEnergyUpgrade"/>
+    </CDataCollectionUpgrade>
+    <CDataCollectionUpgrade id="QueenSCBWEnsnareResearch" parent="ZergUpgradeSCBW">
+        <DataRecord Entry="Abil,QueenSCBWEnsnareResearch"/>
+        <DataRecord Entry="Button,QueenSCBWEnsnareResearch"/>
+        <DataRecord Entry="Requirement,QueenSCBWEnsnareResearch"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnareResearch"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnareResearch@Show"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnareResearch@Count"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnareResearch@NotCount"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnareResearch@NotQoB"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnareResearch@QoB"/>
+        <DataRecord Entry="Upgrade,QueenSCBWEnsnareResearch"/>
+    </CDataCollectionUpgrade>
+    <CDataCollectionUpgrade id="QueenSCBWParasiteResearch" parent="ZergUpgradeSCBW">
+        <DataRecord Entry="Abil,QueenSCBWParasiteResearch"/>
+        <DataRecord Entry="Button,QueenSCBWParasiteResearch"/>
+        <DataRecord Entry="Requirement,QueenSCBWParasiteResearch"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWParasiteResearch"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWParasiteResearch@Show"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWParasiteResearch@Count"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWParasiteResearch@NotCount"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWParasiteResearch@NotQoB"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWParasiteResearch@QoB"/>
+        <DataRecord Entry="Upgrade,QueenSCBWParasiteResearch"/>
+    </CDataCollectionUpgrade>
+    <CDataCollectionUpgrade id="QueenSCBWSpawnBroodlingsResearch" parent="ZergUpgradeSCBW">
+        <DataRecord Entry="Abil,QueenSCBWSpawnBroodlingsResearch"/>
+        <DataRecord Entry="Button,QueenSCBWSpawnBroodlingsResearch"/>
+        <DataRecord Entry="Requirement,QueenSCBWSpawnBroodlingsResearch"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlingsResearch"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlingsResearch@Show"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlingsResearch@Count"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlingsResearch@NotCount"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlingsResearch@NotQoB"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlingsResearch@QoB"/>
+        <DataRecord Entry="Upgrade,QueenSCBWSpawnBroodlingsResearch"/>
+    </CDataCollectionUpgrade>
+    <CDataCollectionAbil id="QueenSCBWEnsnare" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Abil,QueenSCBWEnsnare@Hardcore"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@CreepDummy"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Glaze"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Action"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@CursorSplat"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Impact"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@ImpactSound"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Missile"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Range"/>
+        <DataRecord Entry="Actor,QueenSCBWEnsnare@Slow"/>
+        <DataRecord Entry="Behavior,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Behavior,QueenSCBWEnsnare@Movement"/>
+        <DataRecord Entry="Behavior,QueenSCBWEnsnare@Attack"/>
+        <DataRecord Entry="Behavior,QueenSCBWEnsnare@CreepDummyTimedLife"/>
+        <DataRecord Entry="Behavior,QueenSCBWEnsnare@CreepDummy"/>
+        <DataRecord Entry="Button,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@ABSwitch"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@AB"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@AttackAB"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@MovementAB"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@Impact"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@Search"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@CreepDummyCreate"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@DamageDummy"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@LM"/>
+        <DataRecord Entry="Effect,QueenSCBWEnsnare@Set"/>
+        <DataRecord Entry="Footprint,QueenSCBWEnsnare@CreepGrown"/>
+        <DataRecord Entry="Footprint,QueenSCBWEnsnare@CreepStart"/>
+        <DataRecord Entry="Model,QueenSCBWEnsnare@Glaze"/>
+        <DataRecord Entry="Model,QueenSCBWEnsnare@Impact"/>
+        <DataRecord Entry="Model,QueenSCBWEnsnare@Missile"/>
+        <DataRecord Entry="Model,QueenSCBWEnsnare@Slow"/>
+        <DataRecord Entry="Requirement,QueenSCBWEnsnare"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Sound,QueenSCBWEnsnare@Launch"/>
+        <DataRecord Entry="Sound,QueenSCBWEnsnare@Impact"/>
+        <DataRecord Entry="Unit,QueenSCBWEnsnare@CreepDummy"/>
+        <DataRecord Entry="Unit,QueenSCBWEnsnare@Missile"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackSlowCaster"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AB"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MovementAB"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackAB"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@NotUnloader"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@IsUnloader"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@Caster"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackCaster"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@NotTurretUser"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@Attack"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@IsTurretUser"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@Movement"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@HaveAny"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@Not"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackNot"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MovementNot"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_Stimpack"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_AdrenalBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_Adrenal"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@AttackFactor_AdeptGlaives"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_HydraliskSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_OverlordSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ScoutSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ShuttleSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_UltraliskSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_VultureSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ZealotSCBW"/>
+        <DataRecord Entry="Validator,QueenSCBWEnsnare@MoveFactor_ZerglingSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackSpeedFactor"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveSpeedFactor"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_Stimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveDefault"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@Move"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_VultureSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ZerglingSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_OverlordSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_HydraliskSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_UltraliskSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ZealotSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ShuttleSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ObserverSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@MoveFactor_ScoutSCBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackAccum"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_MarineSCBWStimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_FirebatSCBWStimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_AdrenalBW"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_Stimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_MarauderStimpack"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_Adrenal"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_AdeptGlaives"/>
+        <DataRecord Entry="Accumulator,QueenSCBWEnsnare@AttackFactor_Default"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="QueenSCBWInfestCommandCenter" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWInfestCommandCenter"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@InfestStart"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@InfestEnd"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@InfestSpray"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@DummyAttackBeam"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@DummyAttack"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@Missile"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@LoopSound"/>
+        <DataRecord Entry="Actor,QueenSCBWInfestCommandCenter@LaunchSound"/>
+        <DataRecord Entry="Behavior,QueenSCBWInfestCommandCenter@InfestingCaster"/>
+        <DataRecord Entry="Behavior,QueenSCBWInfestCommandCenter@InfestingTarget"/>
+        <DataRecord Entry="Button,QueenSCBWInfestCommandCenter"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@Notify"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@ExpireSet"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@CancelOrbital"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@CancelPlanetary"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@ValidateMorph"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestingCasterTeleport"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestingStart"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestLM"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestImpact"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@PeriodicSet"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@SprayDummy"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestingCasterAB"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestingTargetAB"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestingTargetRB"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestingFinish"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InfestingCasterRB"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@CP"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@RecastMoveOrder"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@InitialSwitch"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@Recast"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@OrderInfest"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@Set"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@MUChangeAddonOwner"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@SearchAddon"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@SearchAddonDelay"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@Switch"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@MU"/>
+        <DataRecord Entry="Effect,QueenSCBWInfestCommandCenter@MUChangeOwner"/>
+        <DataRecord Entry="Model,QueenSCBWInfestCommandCenter@Impact"/>
+        <DataRecord Entry="Model,QueenSCBWInfestCommandCenter@Weapon"/>
+        <DataRecord Entry="Sound,QueenSCBWInfestCommandCenter@InfestStart"/>
+        <DataRecord Entry="Sound,QueenSCBWInfestCommandCenter@InfestEnd"/>
+        <DataRecord Entry="Sound,QueenSCBWInfestCommandCenter@LoopSound"/>
+        <DataRecord Entry="Sound,QueenSCBWInfestCommandCenter@LaunchSound"/>
+        <DataRecord Entry="Unit,QueenSCBWInfestCommandCenter@Missile"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter@InfestedTargetNot"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter@InfestRange"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter@PeriodicValidator"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter@LifeThreshold"/>
+        <DataRecord Entry="Validator,QueenSCBWInfestCommandCenter@IsCommandCenter"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="QueenSCBWParasite" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWParasite"/>
+        <DataRecord Entry="Abil,QueenSCBWParasite@Hardcore"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@DeathSound"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Parasite"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Action"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Missile"/>
+        <DataRecord Entry="Actor,QueenSCBWParasite@Range"/>
+        <DataRecord Entry="Behavior,QueenSCBWParasite"/>
+        <DataRecord Entry="Button,QueenSCBWParasite"/>
+        <DataRecord Entry="Effect,QueenSCBWParasite@AB"/>
+        <DataRecord Entry="Effect,QueenSCBWParasite@Detector"/>
+        <DataRecord Entry="Effect,QueenSCBWParasite@LM"/>
+        <DataRecord Entry="Effect,QueenSCBWParasite@Set"/>
+        <DataRecord Entry="Model,QueenSCBWParasite@Parasite"/>
+        <DataRecord Entry="Model,QueenSCBWParasite@Missile"/>
+        <DataRecord Entry="Sound,QueenSCBWParasite@Launch"/>
+        <DataRecord Entry="Sound,QueenSCBWParasite@Impact"/>
+        <DataRecord Entry="Unit,QueenSCBWParasite@Missile"/>
+        <DataRecord Entry="Validator,QueenSCBWParasite@Detector"/>
+        <DataRecord Entry="Validator,QueenSCBWParasite@Have"/>
+        <DataRecord Entry="Accumulator,QueenSCBWParasite@Detector"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="QueenSCBWSpawnBroodlings" parent="ZergAbilSCBW">
+        <DataRecord Entry="Abil,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Abil,QueenSCBWSpawnBroodlings@Hardcore"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@ActionShieldModelReaction"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@ActionShield"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@Action"/>
+        <DataRecord Entry="Actor,QueenSCBWSpawnBroodlings@Range"/>
+        <DataRecord Entry="Behavior,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Behavior,QueenSCBWSpawnBroodlings@BroodlingFate"/>
+        <DataRecord Entry="Button,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@DamageValidate"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@DamageInheritSet"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@DamageKill"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@CU"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@MissileDummy"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@LM"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@LMLaunch"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@MissileAB"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@MissileFate"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@TimedLife"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@Damage"/>
+        <DataRecord Entry="Effect,QueenSCBWSpawnBroodlings@Set"/>
+        <DataRecord Entry="Model,QueenSCBWSpawnBroodlings@MissilePenetrateShield"/>
+        <DataRecord Entry="Model,QueenSCBWSpawnBroodlings@MissilePenetrate"/>
+        <DataRecord Entry="Model,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Model,QueenSCBWSpawnBroodlings@ActionLaunch"/>
+        <DataRecord Entry="Mover,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Requirement,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="RequirementNode,QueenSCBWSpawnBroodlings"/>
+        <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@ActionShieldImpactShield"/>
+        <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@MissileDeath"/>
+        <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@Launch"/>
+        <DataRecord Entry="Sound,QueenSCBWSpawnBroodlings@Impact"/>
+        <DataRecord Entry="Unit,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Validator,QueenSCBWSpawnBroodlings@MissilePhase"/>
+        <DataRecord Entry="Validator,QueenSCBWSpawnBroodlings@Missile"/>
+        <DataRecord Entry="Validator,QueenSCBWSpawnBroodlings@CU"/>
+        <DataRecord Entry="Accumulator,QueenSCBWSpawnBroodlings@Damaged"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="QueenSCBW" parent="ZergFlyerUnitSCBW">
+        <DataRecord Entry="Actor,QueenSCBW@HardcoreMacro"/>
+        <DataRecord Entry="Button,QueenSCBW@Passive"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@NotCount"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@NotCountAtUnit"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@NotQoB"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,QueenSCBW@QoBAtUnit"/>
+        <DataRecord Entry="Sound,QueenSCBW@Death"/>
+        <DataRecord Entry="Sound,QueenSCBW@Help"/>
+        <DataRecord Entry="Sound,QueenSCBW@Yes"/>
+        <DataRecord Entry="Sound,QueenSCBW@Attack"/>
+        <DataRecord Entry="Sound,QueenSCBW@Pissed"/>
+        <DataRecord Entry="Validator,QueenSCBW@Is"/>
+        <DataRecord Entry="Validator,QueenSCBW@Not"/>
+        <TechInfoUpgradeUsed value="QueenSCBWEnergyUpgrade"/>
+    </CDataCollectionUnit>
+    <CUnit id="QueenSCBWInfestCommandCenter@Missile" parent="MISSILE_INVULNERABLE">
+        <Race value="Zerg"/>
+    </CUnit>
+    <CUnit id="QueenSCBWEnsnare@CreepDummy">
+        <DeathRevealRadius value="0"/>
+        <DeathRevealDuration value="0"/>
+        <Race value="BWZe"/>
+        <FlagArray index="Uncommandable" value="1"/>
+        <FlagArray index="Unselectable" value="1"/>
+        <FlagArray index="Untargetable" value="1"/>
+        <FlagArray index="Invulnerable" value="1"/>
+        <FlagArray index="NoDeathEvent" value="1"/>
+        <FlagArray index="NoPortraitTalk" value="1"/>
+        <EditorFlags index="NoPlacement" value="1"/>
+        <EditorFlags index="NoPalettes" value="1"/>
+        <EditorFlags index="BlockStructures" value="0"/>
+        <BehaviorArray Link="QueenSCBWEnsnare@CreepDummyTimedLife"/>
+        <BehaviorArray Link="QueenSCBWEnsnare@CreepDummy"/>
+        <MinimapRadius value="0"/>
+        <EditorCategories value="ObjectType:Other,ObjectFamily:Campaign"/>
+    </CUnit>
+    <CUnit id="QueenSCBWParasite@Missile" parent="MISSILE_INVULNERABLE">
+        <Race value="BWZe"/>
+        <Mover value="QueenSCBWSpawnBroodlings@Missile"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="QueenSCBWEnsnare@Missile" parent="MISSILE_INVULNERABLE">
+        <Race value="BWZe"/>
+        <Mover value="MissileDefault"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="QueenSCBWSpawnBroodlings@Missile" parent="MISSILE_INVULNERABLE">
+        <Race value="BWZe"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="QueenSCBW" parent="ZergUnitSCBW">
+        <DeathRevealRadius value="3"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="UseLineOfSight" value="0"/>
+        <FlagArray index="AlwaysThreatens" value="1"/>
+        <FlagArray index="AIThreatGround" value="1"/>
+        <FlagArray index="AIThreatAir" value="1"/>
+        <FlagArray index="AISplash" value="1"/>
+        <FlagArray index="AIHighPrioTarget" value="1"/>
+        <FlagArray index="AICaster" value="1"/>
+        <FlagArray index="AISupport" value="1"/>
+        <FlagArray index="AIPressForwardDisabled" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Air" value="1"/>
+        <Collide index="Flying" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <LifeStart value="120"/>
+        <LifeMax value="120"/>
+        <LifeArmorName value="Unit/LifeArmorName/ZergAirArmor"/>
+        <EnergyStart value="50"/>
+        <EnergyMax value="200"/>
+        <Mover value="Fly"/>
+        <Speed value="3.75"/>
+        <Acceleration value="4.1875"/>
+        <StationaryTurningRate value="799.9804"/>
+        <TurningRate value="799.9804"/>
+        <Sight value="10"/>
+        <Height value="3.75"/>
+        <VisionHeight value="4"/>
+        <Food value="-2"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="100"/>
+        <CostResource index="Vespene" value="100"/>
+        <BuildTime value="44"/>
+        <AttackTargetPriority value="20"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="QueenSCBWParasite"/>
+        <AbilArray Link="QueenSCBWEnsnare"/>
+        <AbilArray Link="QueenSCBWSpawnBroodlings"/>
+        <AbilArray Link="QueenSCBWInfestCommandCenter"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="QueenSCBWParasite" Type="AbilCmd" AbilCmd="QueenSCBWParasite,Execute" Row="2" Column="0"/>
+            <LayoutButtons Face="QueenSCBWSpawnBroodlings" Type="AbilCmd" AbilCmd="QueenSCBWSpawnBroodlings,Execute" Row="2" Column="1"/>
+            <LayoutButtons Face="QueenSCBWEnsnare" Type="AbilCmd" AbilCmd="QueenSCBWEnsnare,Execute" Row="2" Column="2"/>
+            <LayoutButtons Face="QueenSCBWInfestCommandCenter" Type="AbilCmd" AbilCmd="QueenSCBWInfestCommandCenter,Execute" Row="2" Column="3"/>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="QueenSCBWInfestCommandCenter,Cancel" Row="2" Column="4"/>
+            <LayoutButtons>
+                <Face value="QueenSCBWEnergyUpgrade@Passive"/>
+                <Type value="Passive"/>
+                <Requirements value="QueenSCBWEnergyUpgrade@Passive"/>
+                <ShowInGlossary value="0"/>
+                <Row value="2"/>
+                <Column value="4"/>
+            </LayoutButtons>
+        </CardLayouts>
+        <Radius value="0.75"/>
+        <SeparationRadius value="0.75"/>
+        <ScoreMake value="200"/>
+        <ScoreKill value="200"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="96"/>
+        <MinimapRadius value="0.75"/>
+        <EditorCategories value="ObjectType:Unit,ObjectFamily:Melee"/>
+        <TacticalAIThink value="AIThinkQueenSCBW"/>
+        <GlossaryPriority value="90"/>
+        <GlossaryStrongArray value="SiegeTankSCBW"/>
+        <GlossaryStrongArray value="LurkerSCBW"/>
+        <GlossaryStrongArray value="DragoonSCBW"/>
+        <GlossaryWeakArray value="ScienceVesselSCBW"/>
+        <GlossaryWeakArray value="ScourgeSCBW"/>
+        <GlossaryWeakArray value="DarkArchonSCBW"/>
+        <KillDisplay value="Always"/>
+        <RankDisplay value="Always"/>
+    </CUnit>
+    <CBehaviorBuff id="QueenSCBWSpawnBroodlings@Missile">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="CasterNotDead"/>
+        <FinalEffect value="QueenSCBWSpawnBroodlings@MissileFate"/>
+        <PeriodicEffect value="QueenSCBWSpawnBroodlings@MissileDummy"/>
+        <Period value="0.0625"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWInfestCommandCenter@InfestingCaster">
+        <InfoFlags index="Hidden" value="1"/>
+        <InfoFlags index="AlwaysUseGameText" value="1"/>
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-infestationsource.dds"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <DisplayDuration index="Self" value="1"/>
+        <DisplayDuration index="Ally" value="1"/>
+        <BuffFlags index="Countdown" value="0"/>
+        <Duration value="3.75"/>
+        <FinalEffect value="QueenSCBWInfestCommandCenter@InfestingCasterTeleport"/>
+        <Modification>
+            <StateFlags index="Invulnerable" value="1"/>
+            <StateFlags index="NoDraw" value="1"/>
+            <StateFlags index="Untargetable" value="1"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWInfestCommandCenter@InfestingTarget">
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-infestationsource.dds"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <BuffFlags index="Countdown" value="0"/>
+        <Modification>
+            <ModifyFlags index="Reveal" value="1"/>
+            <AbilTechAliasEnableArray value="_InfestMorph"/>
+        </Modification>
+        <BehaviorCategories index="User4" value="1"/>
+        <DisplayDuration index="Self" value="1"/>
+        <DisplayDuration index="Ally" value="1"/>
+        <DisplayDuration index="Neutral" value="1"/>
+        <DisplayDuration index="Enemy" value="1"/>
+        <Duration value="3.75"/>
+        <Alignment value="Negative"/>
+        <AcquirePlayer Effect="QueenSCBWInfestCommandCenter@InfestingStart" Value="Caster"/>
+    </CBehaviorBuff>
+    <CBehaviorCreepSource id="QueenSCBWEnsnare@CreepDummy">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Zerg"/>
+        <Period value="0.25"/>
+        <Start value="QueenSCBWEnsnare@CreepStart"/>
+        <Birth value="QueenSCBWEnsnare@CreepStart"/>
+        <Grown value="QueenSCBWEnsnare@CreepGrown"/>
+    </CBehaviorCreepSource>
+    <CBehaviorBuff id="QueenSCBWEnsnare@CreepDummyTimedLife">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <BuffFlags index="DisableWhileUnderConstruction" value="1"/>
+        <Duration value="20"/>
+        <ExpireEffect value="SuicideRemove"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWEnsnare">
+        <Alignment value="Negative"/>
+        <InfoIcon value="Assets\Textures\ClassicIcons\SC1_ZergEnsnare.dds"/>
+        <BehaviorCategories index="Restorable" value="1"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <TechAliasArray value="_Transfer"/>
+        <Duration value="35"/>
+        <Modification AccelerationMultiplier="0.75">
+            <ModifyFlags index="Detected" value="1"/>
+            <StateFlags index="SuppressCloak" value="1"/>
+            <AdditiveMoveSpeedFactor value="0">
+                <AccumulatorArray value="QueenSCBWEnsnare@Move"/>
+            </AdditiveMoveSpeedFactor>
+            <AdditiveAttackSpeedFactor value="0">
+                <AccumulatorArray value="QueenSCBWEnsnare@AttackAccum"/>
+            </AdditiveAttackSpeedFactor>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWEnsnare@Movement" parent="QueenSCBWEnsnare">
+        <Tooltip value="Behavior/Tooltip/QueenSCBWEnsnare@Movement"/>
+        <Modification>
+            <AdditiveAttackSpeedFactor value="0">
+                <AccumulatorArray index="0" removed="1"/>
+            </AdditiveAttackSpeedFactor>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWEnsnare@Attack" parent="QueenSCBWEnsnare">
+        <Tooltip value="Behavior/Tooltip/QueenSCBWEnsnare@Attack"/>
+        <Modification AccelerationMultiplier="1">
+            <AdditiveMoveSpeedFactor value="0">
+                <AccumulatorArray index="0" removed="1"/>
+            </AdditiveMoveSpeedFactor>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWSpawnBroodlings@BroodlingFate" parent="TimedLife">
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-explode.dds"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <Duration value="105"/>
+        <KillCredit Value="Unknown"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="QueenSCBWParasite">
+        <Alignment value="Negative"/>
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-parasite@scbw.dds"/>
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units"/>
+        <Period value="0.125"/>
+        <PeriodicEffect value="QueenSCBWParasite@Detector"/>
+        <Modification>
+            <ModifyFlags index="ShareSight" value="1"/>
+        </Modification>
+        <BehaviorCategories index="Restorable" value="1"/>
+        <TechAliasArray value="_Transfer"/>
+    </CBehaviorBuff>
+    <CUpgrade id="QueenSCBWEnergyUpgrade" parent="SCBW_EnergyUpgrade">
+        <Icon value="Assets\Textures\btn-upgrade-zerg-gametemeiosis@scbw.dds"/>
+        <AffectedUnitArray value="QueenSCBW"/>
+        <InfoTooltipPriority value="1"/>
+        <Race value="BWZe"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Zerg,UpgradeType:Talents"/>
+    </CUpgrade>
+    <CUpgrade id="QueenSCBWEnsnareResearch" parent="SCBW_Research">
+        <Icon value="Assets\Textures\btn-ability-zerg-ensnare@scbw.dds"/>
+        <AffectedUnitArray value="QueenSCBW"/>
+        <InfoTooltipPriority value="1"/>
+        <Race value="BWZe"/>
+        <ScoreAmount value="200"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Zerg,UpgradeType:SpellResearch"/>
+    </CUpgrade>
+    <CUpgrade id="QueenSCBWParasiteResearch" parent="SCBW_Research">
+        <Icon value="Assets\Textures\btn-ability-zerg-parasite@scbw.dds"/>
+        <InfoTooltipPriority value="1"/>
+        <Race value="BWZe"/>
+        <ScoreAmount value="200"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Zerg,UpgradeType:SpellResearch"/>
+        <Flags index="TechTreeCheat" value="0"/>
+    </CUpgrade>
+    <CUpgrade id="QueenSCBWSpawnBroodlingsResearch" parent="SCBW_Research">
+        <InfoTooltipPriority value="1"/>
+        <Icon value="Assets\Textures\btn-ability-zerg-swarmseeds-color.dds"/>
+        <Race value="BWZe"/>
+        <ScoreAmount value="200"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Zerg,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="QueenSCBW"/>
+    </CUpgrade>
+</Catalog>

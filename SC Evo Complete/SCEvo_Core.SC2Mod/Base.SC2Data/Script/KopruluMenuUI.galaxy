@@ -4,22 +4,35 @@ static int KopruluMenu;
 static int KopruluMenuToggleButton;
 static int KopruluMenuSkinsButton;
 static timer KopruluSkinsTimer;
+static int KopruluSkinsPanel;
+static int KopruluSkinsCalloutFrame;
+static int KopruluSkinsCalloutCloseButton;
+timer [c_maxPlayers] gv_KopruluSkinsCalloutTimer;
 int gv_KopruluSkinsCount = 0;
 trigger KopruluSkinsResponses_t;
 trigger KopruluSkinsTimerExpire_t;
+trigger KopruluSkinsCalloutResponses_t;
+trigger KopruluSkinsCalloutTimerExpire_t;
+bool gv_KopruluSkinsNewSkinsAvailable = false;
 const string c_KopruluSkinsUserType = "SCEV_KopruluSkins";
 const int c_KopruluSkinsMaxSkins = 32;
+
 struct KopruluSkinStruct{
     string id;
     bool BWExclusive;
     string race;
     string skin;
+    int skinsVersion;
     string function;
     int menuControl;
+    int menuLabel;
 };
 typedef structref <KopruluSkinStruct> KopruluSkin;
 
 KopruluSkinStruct[c_KopruluSkinsMaxSkins] gv_KopruluSkins;
+
+void KopruluSkinsNotificationStart (int player);
+void KopruluSkinsNotificationEnd (int player);
 
 static bool l_IntToBool(int i){
     if(i == 1) { return true; }
@@ -40,6 +53,11 @@ static void KopruluSkinsInitialize() {
         gv_KopruluSkins[count - 1].race = UserDataGetGameLink(c_KopruluSkinsUserType, instance, "Race", 1);
         gv_KopruluSkins[count - 1].skin = UserDataGetGameLink(c_KopruluSkinsUserType, instance, "Skin", 1);
         gv_KopruluSkins[count - 1].function = UserDataGetString(c_KopruluSkinsUserType, instance, "Function", 1);
+        gv_KopruluSkins[count - 1].skinsVersion = UserDataGetInt(c_KopruluSkinsUserType, instance, "SkinsVersion", 1);
+        if( gv_KopruluSkinsNewSkinsAvailable == false &&
+            gv_KopruluSkins[count - 1].skinsVersion >= c_extBankSkinsVersion ){
+            gv_KopruluSkinsNewSkinsAvailable = true;
+        }
 
         count += 1;
     }
@@ -84,6 +102,17 @@ bool KopruluSkinsResponses_Func(bool test_conds, bool run_actions){
         return false;
     }
     
+    if(EventDialogControl() == KopruluMenuSkinsButton){
+        DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), !DialogControlIsVisible(KopruluSkinsPanel, player));
+        return true;
+    }
+
+    if(EventDialogControl() == KopruluMenuToggleButton){
+        if(DialogControlIsVisible(KopruluSkinsPanel, player)){
+            DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), false);
+        }
+        return true;
+    }
     for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
         if(EventDialogControl() == gv_KopruluSkins[i].menuControl){
             checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
@@ -121,6 +150,50 @@ bool KopruluSkinsTimerExpire_Func(bool test_conds, bool run_actions){
     return true;
 }
 
+bool KopruluSkinsCalloutTimerExpire_Func(bool test_conds, bool run_actions){
+    int i;
+    int tmp_player;
+
+    for (i = 1; i <= PlayerGroupCount(PlayerGroupActive()); i += 1) {
+        tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
+
+        if(gv_KopruluSkinsCalloutTimer[tmp_player] == EventTimer()){
+            gv_KopruluSkinsCalloutTimer[tmp_player] = null;
+            if(DialogControlIsVisible(KopruluSkinsCalloutFrame, tmp_player)){
+                DialogControlSetPropertyAsBool(KopruluSkinsCalloutFrame, c_triggerControlPropertyVisible, PlayerGroupSingle(tmp_player), false);
+            }
+            if(DialogControlIsVisible(KopruluSkinsPanel, tmp_player)){
+                Extension_BankUpdateSkinVersion(tmp_player);
+            }
+            break;
+        }
+    }
+
+    return true;
+}
+
+bool KopruluSkinsCalloutResponses_Func(bool test_conds, bool run_actions){
+    playergroup players = PlayerGroupActive();
+    int i;
+    int player = EventPlayer();
+
+    if(!PlayerGroupHasPlayer(players, player) || (PlayerStatus(player) != c_playerStatusActive) ) {
+        return false;
+    }
+    
+    if(EventDialogControl() == KopruluMenuToggleButton){
+        if(DialogControlIsVisible(KopruluSkinsPanel, player) == true){
+            DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), false);
+            KopruluSkinsNotificationEnd(player);
+        }
+        return true;
+    }
+
+    KopruluSkinsNotificationEnd(player);
+    return true;
+}
+
+
 void KopruluMenuCreateUI(){
     int i;
     int k;
@@ -140,36 +213,43 @@ void KopruluMenuCreateUI(){
         // Toggle Menu Button
         // KopruluMenuToggle_t = TriggerCreate("KopruluMenuToggle_Func");
         // Toggle Buttons
-        // di = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "MenuBar/KopruluButton");
+        di = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "MenuBar/KopruluButton");
         // DialogControlSetPropertyAsBool(di, c_triggerControlPropertyVisible, pg, true);
-        // KopruluMenuToggleButton = DialogControlHookup(di, c_triggerControlTypeButton, "MenuButton");
-        // TriggerAddEventDialogControl(KopruluMenuToggle_t, c_playerAny, DialogControlLastCreated(), c_triggerControlEventTypeClick);
+        KopruluMenuToggleButton = DialogControlHookup(di, c_triggerControlTypeButton, "MenuButton");
 
         //---------------------------------------- Skins TAB ---------------------------------------- //
             KopruluSkinsResponses_t = TriggerCreate("KopruluSkinsResponses_Func");
             TriggerEnable(KopruluSkinsResponses_t, false);
+            KopruluSkinsPanel = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "KopruluMenu_SkinsPanel");
+            DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupAll(), false);
 
             for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
                 kopruluSkin = gv_KopruluSkins[i];
+                kopruluSkin.menuLabel = DialogControlHookup(fullscreenPanel, c_triggerControlTypeLabel, "KopruluMenu_SkinsPanel/CheckBoxLabel_" + l_IntToStringDoubleDigit(i));
                 di = DialogControlHookup(fullscreenPanel, c_triggerControlTypeCheckBox, "KopruluMenu_SkinsPanel/CheckBox_" + l_IntToStringDoubleDigit(i));
                 kopruluSkin.menuControl = di;
                 DialogControlSetPropertyAsBool(di, c_triggerControlPropertyChecked, pg, false);
                 DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, pg, false);
                 TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, di, c_triggerControlEventTypeChecked);
-
                 for (k = 1; k <= PlayerGroupCount(pg); k += 1) {
                     tmp_player = PlayerGroupPlayer(pg, k);
                     race = PlayerRace(tmp_player);
                     isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
-
                     if(kopruluSkin.BWExclusive && isBWRace){
                         DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
                     }
                 }
+                if(kopruluSkin.skinsVersion >= c_extBankSkinsVersion){
+                    DialogControlSetAnimationState(kopruluSkin.menuLabel, pg, "NewSkin", "True");
+                }
+
             }
 
             KopruluMenuSkinsButton = DialogControlHookup(KopruluMenu, c_triggerControlTypeButton, "KopruluTabControl/TabContainer/TabButton2");
             DialogControlSetPropertyAsBool(KopruluMenuSkinsButton, c_triggerControlPropertyEnabled, pg, true);
+            TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, KopruluMenuSkinsButton, c_triggerControlEventTypeClick);
+            TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, KopruluMenuToggleButton, c_triggerControlEventTypeClick);
+
 
         // ------------------------------------------------------------------------------------------ //
 
@@ -197,4 +277,51 @@ bool KopruluSkinsClassicIconsActivate_Func(bool test_conds, bool run_actions){
 
     TriggerDestroy(TriggerGetCurrent());
     return true;
+}
+
+void KopruluSkinsNotificationStart (int player) {
+    string race;
+    bool isBWRace;
+    race = PlayerRace(player);
+    isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
+
+    // No skins implemented for SC2 Races yet.
+    if(isBWRace == false){ return; }
+
+    if(KopruluSkinsCalloutFrame == 0){ 
+        KopruluSkinsCalloutResponses_t = TriggerCreate("KopruluSkinsCalloutResponses_Func");
+
+        DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer/FullscreenUpperContainer/SkinsCallout");
+        KopruluSkinsCalloutFrame = DialogControlLastCreated();
+        DialogControlHookup(KopruluSkinsCalloutFrame, c_triggerControlTypeButton, "IgnoreButton");
+        KopruluSkinsCalloutCloseButton = DialogControlLastCreated();
+        TriggerAddEventDialogControl(KopruluSkinsCalloutResponses_t, c_playerAny, DialogControlLastCreated(), c_triggerControlEventTypeClick);
+        // Menu button click
+        TriggerAddEventDialogControl(KopruluSkinsCalloutResponses_t, c_playerAny, KopruluMenuToggleButton, c_triggerControlEventTypeClick);
+
+        TriggerEnable(KopruluSkinsCalloutResponses_t, true);
+    }
+
+    DialogControlSetVisible(KopruluSkinsCalloutFrame, PlayerGroupSingle(player), true);
+
+    if(gv_KopruluSkinsCalloutTimer[player] == null){
+        TimerStart(TimerCreate(), 90, false, c_timeReal);
+        gv_KopruluSkinsCalloutTimer[player] = TimerLastStarted();
+        if(KopruluSkinsCalloutTimerExpire_t == null){
+            KopruluSkinsCalloutTimerExpire_t = TriggerCreate("KopruluSkinsCalloutTimerExpire_Func");
+        }
+        TriggerAddEventTimer(KopruluSkinsCalloutTimerExpire_t, TimerLastStarted());
+    }
+
+}
+
+void KopruluSkinsNotificationEnd (int player) {
+    if(DialogControlIsVisible(KopruluSkinsCalloutFrame, player)){
+        DialogControlSetVisible(KopruluSkinsCalloutFrame, PlayerGroupSingle(player), false);
+        Extension_BankUpdateSkinVersion(player);
+    }
+    if(gv_KopruluSkinsCalloutTimer[player] != null){
+        libNtve_gf_StopTimer(gv_KopruluSkinsCalloutTimer[player]);
+        gv_KopruluSkinsCalloutTimer[player]  = null;
+    }
 }

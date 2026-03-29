@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CAbilMorph id="LairSCBW@Morph">
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:MorphsandBurrows"/>
+        <CmdButtonArray index="Execute" DefaultButtonFace="LairSCBW" State="Suppressed" Requirements="LairSCBW"/>
+        <CmdButtonArray index="Cancel" DefaultButtonFace="CancelMutateMorph"/>
+        <ActorKey value="LairUpgrade"/>
+        <Flags index="BestUnit" value="1"/>
+        <Flags index="Birth" value="1"/>
+        <Flags index="DisableAbils" value="1"/>
+        <Flags index="FastBuild" value="1"/>
+        <Flags index="Interruptible" value="1"/>
+        <Flags index="Produce" value="1"/>
+        <Flags index="ShowProgress" value="1"/>
+        <Flags index="WaitUntilStopped" value="0"/>
+        <InfoArray Score="1" Unit="LairSCBW">
+            <SectionArray index="Abils">
+                <UseBuildTimeArray index="Delay" value="1"/>
+            </SectionArray>
+            <SectionArray index="Actor">
+                <UseBuildTimeArray index="Duration" value="1"/>
+                <EffectArray index="Start" value="ZergBuildingSCBW@MorphStart"/>
+            </SectionArray>
+            <SectionArray index="Stats">
+                <UseBuildTimeArray index="Delay" value="1"/>
+            </SectionArray>
+        </InfoArray>
+        <Alert value="MorphComplete_BWZe"/>
+        <Activity value="UI/Mutating"/>
+        <AbilityCategories index="User1" value="1"/>
+        <AbilityCategories index="User4" value="1"/>
+        <RefundFraction Cooldown="0"/>
+        <Cost>
+            <Cooldown TimeUse="1"/>
+        </Cost>
+    </CAbilMorph>
+    <CValidatorUnitType id="LairSCBW@Is" parent="SCBW_Unit" x="LairSCBW"/>
+    <CValidatorUnitType id="LairSCBW@Not" parent="SCBW_UnitNot" x="LairSCBW"/>
+    <CValidatorUnitCompareOrderCount id="LairSCBW@NotMorphing">
+        <AbilLink value="HiveSCBW@Morph"/>
+    </CValidatorUnitCompareOrderCount>
+    <CTacticalSet id="LairSCBW">
+        <Array value="HatcherySCBW@DefaultRally"/>
+        <Array value="HatcherySCBW@WorkerRally"/>
+    </CTacticalSet>
+    <CRequirement id="LairSCBW@SpawnLarva" parent="SCBW_AbilReqNoShow" Race="Zerg"/>
+    <CRequirement id="LairSCBW" parent="SCBW_UnitReq" Race="Zerg"/>
+    <CButton id="LairSCBW">
+        <Icon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CButton>
+    <CRequirementAnd id="LairSCBW@SpawnLarva">
+        <OperandArray value="LairSCBW@CountAtUnitNoTechtree"/>
+        <OperandArray value="LarvaSCBW@CountAtUnitLT5"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="LairSCBW">
+        <OperandArray value="SpawningPoolSCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementAllowUnit id="LairSCBW@AllowUnit" parent="SCBW_AllowUnit" x="LairSCBW"/>
+    <CRequirementCountUnit id="LairSCBW@Count" parent="SCBW_UnitCount" x="LairSCBW">
+        <Count Link="Alias_LairSCBW"/>
+    </CRequirementCountUnit>
+    <CRequirementCountUnit id="LairSCBW@CountAtUnit" parent="SCBW_UnitCountAtUnit" x="LairSCBW"/>
+    <CRequirementCountUnit id="LairSCBW@CountAtUnitNoTechtree" parent="SCBW_UnitCountAtUnit" x="LairSCBW">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUnit>
+    <CRequirementNot id="LairSCBW@NotCount" parent="SCBW_Not" x="LairSCBW@Count"/>
+    <CRequirementNot id="LairSCBW@NotCountAtUnit" parent="SCBW_Not" x="LairSCBW@CountAtUnit"/>
+    <CRequirementNot id="LairSCBW@NotQoB" parent="SCBW_Not" x="LairSCBW@QoB"/>
+    <CRequirementNot id="LairSCBW@NotQoBAtUnit" parent="SCBW_Not" x="LairSCBW@QoBAtUnit"/>
+    <CRequirementCountUnit id="LairSCBW@QoB" parent="SCBW_UnitQoB" x="LairSCBW">
+        <Count Link="Alias_LairSCBW"/>
+    </CRequirementCountUnit>
+    <CRequirementCountUnit id="LairSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="LairSCBW"/>
+    <CRequirementAnd id="LairSCBW@Show" parent="SCBW_BuildingShow" x="LairSCBW"/>
+    <CActorEventMacro id="LairSCBW@PlayerDecalMacro">
+        <On Terms="Behavior.CloakFieldEffect.On" Target="HatcheryPlayerDecal1" Send="AnimBracketStop BSD"/>
+        <On Terms="Behavior.CloakFieldEffect.Off" Send="Create HatcheryPlayerDecal1"/>
+        <On Terms="UnitBirth.LairSCBW; ValidateUnit NotCloaked" Send="Create HatcheryPlayerDecal1"/>
+        <On Terms="UnitBirth.LairSCBW.EditorPlaced" Send="Create HatcheryPlayerDecal1"/>
+    </CActorEventMacro>
+    <CActorUnit id="LairSCBW" parent="ZergBuildingSCBW" unitName="LairSCBW">
+        <Aliases value="_ZergHiveMorph"/>
+        <Aliases value="_UnitHuge"/>
+        <Macros value="MacroTownhallDeco_Zerg"/>
+        <Macros value="LairSCBW@PlayerDecalMacro"/>
+        <Macros value="HideWorkerCount"/>
+        <AcceptedHostedPropTransfers index="Decal" value="0"/>
+        <On Terms="ActorCreation" Send="AnimGroupApply B"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom HatcherySCBW; MorphTo LairSCBW" Send="Create"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="Create HiveSCBW@MorphProgress"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="AnimGroupRemove B"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="AnimGroupApply C"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="AnimGroupApply B"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="AnimGroupRemove C"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="AnimClearAllBut Stand"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="AnimBaselineStart"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="AnimPlay MorphCancel Cover,End,B"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom LairSCBW; MorphTo HiveSCBW" Send="Destroy"/>
+        <On Terms="UnitBirth.LairSCBW; PlayerHasClanDecal" Send="Create ZergClanFlag"/>
+        <On Terms="UnitBirth.LairSCBW; PlayerHasTrophy" Send="Create ZergPlayerTrophy"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached"/>
+        <DeathArray index="Normal" SoundLink=""/>
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached"/>
+        <BarOffset value="180"/>
+        <BarWidth value="230"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-zerg-lair@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
+        <NameOffset value="130"/>
+        <StatusHarvesterData Text="UI/HarvesterCountMinerals" SearchFilters="HarvestableResource;Player,Ally,Enemy" SearchRadius="8"/>
+        <UnitIcon value="Assets\Textures\btn-building-zerg-lair@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-zerg-lair@scbw.dds"/>
+        </Wireframe>
+    </CActorUnit>
+    <CActorProgress id="LairSCBW@MorphProgress">
+        <Supporter Subject="_ZergLairMorph"/>
+        <On Terms="AbilMorph.*.Finish; MorphFrom HatcherySCBW; MorphTo LairSCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Start; MorphFrom HatcherySCBW; MorphTo LairSCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.*.Cancel; MorphFrom HatcherySCBW; MorphTo LairSCBW" Send="Destroy"/>
+        <StageArray AnimProps="Morph,Start,A" BlendTime="0.000000"/>
+        <StageArray AnimProps="Stand,Morph,A"/>
+        <StageArray AnimProps="Morph,End,A"/>
+    </CActorProgress>
+    <CModel id="LairSCBW" parent="LairBase">
+        <Model value="Assets\Buildings\Zerg\HatcherySCBW\HatcherySCBW.m3"/>
+    </CModel>
+    <CModel id="LairSCBW@Death" parent="LairDeathBase">
+        <Model value="Assets\Buildings\Zerg\HatcherySCBW\LairSCBWDeath.m3"/>
+    </CModel>
+    <CModel id="LairSCBW@Portrait" parent="ZergAdvisorSCBW@PortraitBase" Race="Zerg"/>
+    <CSound id="LairSCBW@Ready" parent="Ready">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\LairSCBW\LairSCBW@What00.ogg"/>
+        <Volume value="-6.000000,-6.000000"/>
+    </CSound>
+    <CSound id="LairSCBW@What" parent="Voice">
+        <EditorCategories value="Race:Zerg"/>
+        <AssetArray File="Assets\Sounds\Zerg\LairSCBW\LairSCBW@What00.ogg"/>
+        <Volume value="-6.000000,-6.000000"/>
+    </CSound>
+    <CDataCollectionUnit id="LairSCBW" parent="ZergBuildingSCBW">
+        <DataRecord Entry="Abil,LairSCBW@Morph"/>
+        <DataRecord Entry="Actor,LairSCBW@PlayerDecalMacro"/>
+        <DataRecord Entry="Actor,LairSCBW@MorphProgress"/>
+        <DataRecord Entry="Requirement,LairSCBW@SpawnLarva"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@SpawnLarva"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@CountAtUnitNoTechtree"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@NotCount"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@NotCountAtUnit"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@NotQoB"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,LairSCBW@QoBAtUnit"/>
+        <DataRecord Entry="Tactical,LairSCBW"/>
+        <DataRecord Entry="Validator,LairSCBW@NotMorphing"/>
+        <DataRecord Entry="Validator,LairSCBW@Is"/>
+        <DataRecord Entry="Validator,LairSCBW@Not"/>
+    </CDataCollectionUnit>
+    <CUnit id="LairSCBW" parent="ZergUnitSCBW">
+        <DeathRevealRadius value="3"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="PreventReveal" value="1"/>
+        <FlagArray index="PreventDefeat" value="1"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="TownAlert" value="1"/>
+        <FlagArray index="NoPortraitTalk" value="1"/>
+        <FlagArray index="TownCamera" value="1"/>
+        <ResourceDropOff index="Minerals" value="1"/>
+        <ResourceDropOff index="Vespene" value="1"/>
+        <ResourceDropOff index="Terrazine" value="1"/>
+        <ResourceDropOff index="Custom" value="1"/>
+        <FogVisibility value="Snapshot"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Burrow" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="Structure" value="1"/>
+        <Collide index="RoachBurrow" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Biological" value="1"/>
+        <Attributes index="Structure" value="1"/>
+        <LifeStart value="1800"/>
+        <LifeMax value="1800"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/ZergBuildingArmor"/>
+        <StationaryTurningRate value="719.4726"/>
+        <TurningRate value="719.4726"/>
+        <Sight value="10"/>
+        <Food value="2"/>
+        <CostCategory value="Technology"/>
+        <CostResource index="Minerals" value="500"/>
+        <CostResource index="Vespene" value="100"/>
+        <BuildTime value="88"/>
+        <AttackTargetPriority value="11"/>
+        <AbilArray Link="HiveSCBW@Morph"/>
+        <AbilArray Link="MutateInProgressSCBW"/>
+        <AbilArray Link="que5CancelToSelection"/>
+        <AbilArray Link="HatcherySCBW@Rally"/>
+        <AbilArray Link="OverlordSCBWSightUpgrade"/>
+        <AbilArray Link="OverlordSCBWSpeedUpgrade"/>
+        <AbilArray Link="OverlordSCBWTransportResearch"/>
+        <AbilArray Link="ZergSCBWBurrowResearch"/>
+        <BehaviorArray Link="ZergBuildingSCBW@CreepGrowthLarge"/>
+        <BehaviorArray Link="HatcherySCBW@SpawnLarva"/>
+        <CardLayouts>
+            <LayoutButtons Face="LarvaSCBW" Type="SelectLarva" Row="0" Column="0"/>
+            <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="MutateInProgressSCBW,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5CancelToSelection,CancelLast" Row="2" Column="4"/>
+            <LayoutButtons Face="CancelMutateMorph" Type="AbilCmd" AbilCmd="HiveSCBW@Morph,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="HiveSCBW" Type="AbilCmd" AbilCmd="HiveSCBW@Morph,Execute" Row="2" Column="0"/>
+            <LayoutButtons Face="HatcherySCBW@RallyPointWorker" Type="AbilCmd" AbilCmd="HatcherySCBW@Rally,Rally2" Row="1" Column="3"/>
+            <LayoutButtons Face="HatcherySCBW@RallyPoint" Type="AbilCmd" AbilCmd="HatcherySCBW@Rally,Rally1" Row="1" Column="4"/>
+            <LayoutButtons>
+                <Face value="ZergSCBWBurrowResearch"/>
+                <Type value="AbilCmd"/>
+                <AbilCmd value="ZergSCBWBurrowResearch,Research1"/>
+                <ShowInGlossary value="0"/>
+                <Row value="0"/>
+                <Column value="4"/>
+            </LayoutButtons>
+            <LayoutButtons Face="OverlordSCBWTransportResearch" Type="AbilCmd" AbilCmd="OverlordSCBWTransportResearch,Research1" Row="1" Column="0"/>
+            <LayoutButtons Face="OverlordSCBWSightUpgrade" Type="AbilCmd" AbilCmd="OverlordSCBWSightUpgrade,Research1" Row="1" Column="1"/>
+            <LayoutButtons Face="OverlordSCBWSpeedUpgrade" Type="AbilCmd" AbilCmd="OverlordSCBWSpeedUpgrade,Research1" Row="1" Column="2"/>
+        </CardLayouts>
+        <Radius value="2"/>
+        <SeparationRadius value="2"/>
+        <Footprint value="Footprint6x5DropOffCreepSourceContour"/>
+        <PlacementFootprint value="Footprint6x5DropOffCreepSource"/>
+        <ScoreMake value="550"/>
+        <ScoreKill value="600"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="34"/>
+        <MinimapRadius value="2.5"/>
+        <EditorCategories value="ObjectType:Structure,ObjectFamily:Melee"/>
+        <TacticalAI value="HatcherySCBW"/>
+        <AIEvalFactor value="0"/>
+        <TechAliasArray value="Alias_HatcherySCBW"/>
+        <TechAliasArray value="Alias_LairSCBW"/>
+        <GlossaryCategory value=""/>
+        <GlossaryPriority value="14"/>
+        <TacticalAIThink value="AIThinkLairSCBW"/>
+    </CUnit>
+</Catalog>

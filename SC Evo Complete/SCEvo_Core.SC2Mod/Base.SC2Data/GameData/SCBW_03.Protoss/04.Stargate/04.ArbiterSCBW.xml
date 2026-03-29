@@ -1,0 +1,1364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectTeleport id="ArbiterSCBWRecall@TeleportInitial">
+        <ValidatorArray value="GroundUnitFilter"/>
+        <EditorCategories value="Race:Protoss"/>
+        <PlacementArc value="360"/>
+        <PlacementAround Effect="ArbiterSCBWRecall@SearchGroundFirst" Value="SourceUnitOrPoint"/>
+        <PlacementRange value="3"/>
+        <SourceLocation Effect="ArbiterSCBWRecall@SearchGroundFirst" Value="TargetPoint"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@SearchGroundFirst" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportEffect value="ArbiterSCBWRecall@SearchGround"/>
+    </CEffectTeleport>
+    <CEffectApplyBehavior id="ArbiterSCBWRecall@Success">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Value="Caster"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="ArbiterSCBWRecall@CPSet">
+        <ValidatorArray value="ArbiterSCBWRecall@CPSet"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecall@Search"/>
+        <EffectArray value="ArbiterSCBWRecall@SearchGroundFirst"/>
+    </CEffectSet>
+    <CEffectEnumTransport id="ArbiterSCBWStasisField@IterateTransport">
+        <EditorCategories value="Race:Protoss"/>
+        <Effect value="ArbiterSCBWStasisField@AB"/>
+    </CEffectEnumTransport>
+    <CEffectIssueOrder id="ArbiterSCBWStasisField@HaltIssueOrder">
+        <EditorCategories value="Race:Terran"/>
+        <AbilTechAlias value="_SCVBuild"/>
+        <AbilCmdIndex value="30"/>
+    </CEffectIssueOrder>
+    <CEffectSet id="ArbiterSCBWWeapon@Impact" parent="SCBW_WeaponImpactExplBase" Race="Protoss" x="ArbiterSCBWWeapon"/>
+    <CEffectUserData id="ArbiterSCBWWeapon@DamageApply" parent="DamageIncoming" Race="Protoss" x="ArbiterSCBWWeapon"/>
+    <CEffectDamage id="ArbiterSCBWWeapon@DamageAccum" parent="ExplosiveBaseDamageSCBW" Race="Protoss">
+        <Kind value="Ranged"/>
+    </CEffectDamage>
+    <CEffectLaunchMissile id="ArbiterSCBWWeapon@LM">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactEffect value="ArbiterSCBWWeapon@Impact"/>
+        <AmmoUnit value="ArbiterSCBWWeapon@Missile"/>
+        <Movers Link="MissileDefault" IfRangeLTE="1"/>
+        <Movers Link="ArbiterMPWeaponMissile" IfRangeLTE="4"/>
+    </CEffectLaunchMissile>
+    <CEffectDamage id="ArbiterSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Protoss">
+        <Kind value="Ranged"/>
+        <Amount value="7.5"/>
+        <DisplayFlags index="DisplayRounded" value="0"/>
+    </CEffectDamage>
+    <CEffectApplyBehavior id="ArbiterSCBWCloakField@AB">
+        <ValidatorArray index="0" value="ArbiterSCBWCloakField@AB"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWCloakField@Effect"/>
+    </CEffectApplyBehavior>
+    <CEffectEnumArea id="ArbiterSCBWCloakField@Search">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="CasterUnit"/>
+        <SearchFilters value="-;Self,Ally,Neutral,Enemy,Structure,Missile,Item,Dead,Hidden,Hallucination,Powerup,PowerupOrItem"/>
+        <AreaArray Radius="5" Effect="ArbiterSCBWCloakField@AB"/>
+        <SearchFlags index="ExtendByUnitRadius" value="1"/>
+    </CEffectEnumArea>
+    <CEffectDamage id="ArbiterSCBWStasisField@PhasedUnit">
+        <ValidatorArray value="SCBW_IsPhasedUnit"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Flags index="Kill" value="1"/>
+        <Flags index="NoKillCredit" value="1"/>
+        <Flags index="NoBehaviorResponse" value="1"/>
+    </CEffectDamage>
+    <CEffectTeleport id="ArbiterSCBWRecall@PlacementCheckTP">
+        <EditorCategories value="Race:Protoss"/>
+        <MinDistance value="0"/>
+        <SourceLocation Value="TargetUnit"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+    </CEffectTeleport>
+    <CEffectTeleport id="ArbiterSCBWRecall@PlacementCheckFail">
+        <EditorCategories value="Race:Protoss"/>
+        <SourceLocation Value="TargetUnit"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@SetInitial" Value="TargetPoint"/>
+        <TeleportFlags index="TestFog" value="0"/>
+    </CEffectTeleport>
+    <CEffectSwitch id="ArbiterSCBWRecall@PlacementCheck">
+        <EditorCategories value="Race:Protoss"/>
+        <CaseArray Validator="ArbiterSCBWRecall@SourceNotPathable" Effect="ArbiterSCBWRecall@PlacementCheckFail"/>
+        <CaseArray Validator="ArbiterSCBWRecall@CrossChasmOrCliff" Effect="ArbiterSCBWRecall@PlacementCheckTP"/>
+    </CEffectSwitch>
+    <CEffectTeleport id="ArbiterSCBWRecall@TeleportAir">
+        <ValidatorArray value="TargetIsAir"/>
+        <EditorCategories value="Race:Protoss"/>
+        <PlacementArc value="360"/>
+        <PlacementAround Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <PlacementRange value="15"/>
+        <SourceLocation Effect="ArbiterSCBWRecall@Search" Value="TargetPoint"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+        <TeleportEffect value="ArbiterSCBWRecall@PlacementCheckAir"/>
+    </CEffectTeleport>
+    <CEffectTeleport id="ArbiterSCBWRecall@PlacementCheckAir">
+        <ValidatorArray value="SCBW_LocationNotPlayable"/>
+        <EditorCategories value="Race:Protoss"/>
+        <SourceLocation Value="TargetUnit"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+    </CEffectTeleport>
+    <CEffectCreatePersistent id="ArbiterSCBWRecall@CP">
+        <EditorCategories value="Race:Protoss"/>
+        <Flags index="EffectSuccess" value="1"/>
+        <InitialDelay value="0.875"/>
+        <PeriodCount value="65535"/>
+        <PeriodicValidator value="ArbiterSCBWRecall@CPPeriodic"/>
+        <PeriodicEffectArray value="ArbiterSCBWRecall@CPSet"/>
+        <PeriodicPeriodArray value="0.5"/>
+    </CEffectCreatePersistent>
+    <CEffectRemoveBehavior id="ArbiterSCBWRecall@ClearRecalls">
+        <EditorCategories value="Race:Protoss"/>
+        <BehaviorCategories index="User7" value="1"/>
+    </CEffectRemoveBehavior>
+    <CEffectSet id="ArbiterSCBWRecall@EnumMagazineSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecall@ClearRecalls"/>
+        <EffectArray value="ArbiterSCBWRecall@Set"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="ArbiterSCBWStasisField@AB">
+        <ValidatorArray value="ArbiterSCBWStasisField@AB"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWStasisField"/>
+    </CEffectApplyBehavior>
+    <CEffectEnumArea id="ArbiterSCBWStasisField@Search">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <SearchFilters value="-;Self,Structure,User1,RawResource,HarvestableResource,Missile,Destructible,Item,Buried,Dead,Hidden,Powerup,PowerupOrItem"/>
+        <AreaArray Radius="1.6875" Effect="ArbiterSCBWStasisField@Set"/>
+        <AINotifyFlags index="HurtFriend" value="1"/>
+        <AINotifyFlags index="HurtEnemy" value="1"/>
+    </CEffectEnumArea>
+    <CEffectSet id="ArbiterSCBWStasisField@Set">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWStasisField@HaltIssueOrder"/>
+        <EffectArray value="SCBW_CarrierRecallSetSource"/>
+        <EffectArray value="ArbiterSCBWStasisField@AB"/>
+        <EffectArray value="ArbiterSCBWStasisField@ABTimedLife"/>
+        <EffectArray value="ArbiterSCBWStasisField@PhasedUnit"/>
+        <EffectArray value="ArbiterSCBWStasisField@IterateTransport"/>
+        <EffectArray value="HighTemplarSCBWHallucination@KillHallucination"/>
+        <ValidatorArray value="ArbiterSCBWStasisField@Set"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="ArbiterSCBWStasisField@ABTimedLife">
+        <ValidatorArray value="ArbiterSCBWStasisField@AB"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Chance value="0"/>
+        <Behavior value="ArbiterSCBWStasisField@TimedLife"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="ArbiterSCBWRecall@ABRecalled">
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWRecall@Recalled"/>
+    </CEffectApplyBehavior>
+    <CEffectCreatePersistent id="ArbiterSCBWRecall@CPFinal">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="SourcePoint"/>
+        <ExpireDelay value="2"/>
+    </CEffectCreatePersistent>
+    <CEffectTeleport id="ArbiterSCBWRecall@Teleport">
+        <ValidatorArray value="GroundUnitFilter"/>
+        <EditorCategories value="Race:Protoss"/>
+        <PlacementArc value="360"/>
+        <PlacementAround Effect="ArbiterSCBWRecall@TeleportInitial" Value="TargetUnit"/>
+        <PlacementRange value="10"/>
+        <SourceLocation Effect="ArbiterSCBWRecall@Teleport" Value="TargetPoint"/>
+        <TargetLocation Effect="ArbiterSCBWRecall@TeleportInitial" Value="TargetUnit"/>
+        <TeleportFlags index="TestCliff" value="1"/>
+        <TeleportFlags index="TestFog" value="0"/>
+        <TeleportFlags index="TestZone" value="1"/>
+    </CEffectTeleport>
+    <CEffectApplyBehavior id="ArbiterSCBWRecall@ABRecalling">
+        <ValidatorArray index="0" value="ArbiterSCBWRecall@ABRecalling"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Behavior value="ArbiterSCBWRecall@Recalling"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="ArbiterSCBWRecall@SetInitial">
+        <ValidatorArray value="ArbiterSCBWRecall@Set"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecall@ClearRecalls"/>
+        <EffectArray value="ArbiterSCBWRecall@EnumMagazine"/>
+        <EffectArray value="ArbiterSCBWRecall@Set"/>
+    </CEffectSet>
+    <CEffectSet id="ArbiterSCBWRecall@SetInitialGround" parent="ArbiterSCBWRecall@SetInitial">
+        <Name value="Effect/Name/ArbiterSCBWRecall@SetInitialGround"/>
+        <Marker Link="Effect/ArbiterSCBWRecall@SetInitialGround"/>
+        <EffectArray index="2" value="ArbiterSCBWRecall@SetGround"/>
+    </CEffectSet>
+    <CEffectEnumMagazine id="ArbiterSCBWRecall@EnumMagazine">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectExternal value="ArbiterSCBWRecall@EnumMagazineSet"/>
+    </CEffectEnumMagazine>
+    <CEffectEnumArea id="ArbiterSCBWRecall@Search">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ExcludeArray Effect="ArbiterSCBWRecall@CPSet"/>
+        <SearchFilters value="-;Self,Neutral,Enemy,Ground,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
+        <AreaArray Radius="2.25" Effect="ArbiterSCBWRecall@SetInitial"/>
+        <MinCount value="1"/>
+    </CEffectEnumArea>
+    <CEffectEnumArea id="ArbiterSCBWRecall@SearchGroundFirst">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="TargetPoint"/>
+        <ExcludeArray Effect="ArbiterSCBWRecall@CPSet"/>
+        <SearchFilters value="Ground;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
+        <AreaArray MaxCount="1" Radius="2.25" Effect="ArbiterSCBWRecall@SetInitial"/>
+        <MinCount value="1"/>
+    </CEffectEnumArea>
+    <CEffectEnumArea id="ArbiterSCBWRecall@SearchDummy" parent="ArbiterSCBWRecall@Search">
+        <Name value="Effect/Name/ArbiterSCBWRecall@SearchDummy"/>
+        <Marker Link="Effect/ArbiterSCBWRecall@SearchDummy"/>
+        <SearchFilters value="-;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
+    </CEffectEnumArea>
+    <CEffectEnumArea id="ArbiterSCBWRecall@SearchGround" parent="ArbiterSCBWRecall@SearchGroundFirst">
+        <Name value="Effect/Name/ArbiterSCBWRecall@SearchGround"/>
+        <Marker Link="Effect/ArbiterSCBWRecall@SearchGround"/>
+        <AreaArray index="0" MaxCount="4294967295" Radius="2.25" Effect="ArbiterSCBWRecall@SetInitialGround"/>
+        <LaunchLocation Effect="ArbiterSCBWRecall@CPSet"/>
+        <ImpactLocation Effect="ArbiterSCBWRecall@CPSet"/>
+        <ExcludeArray Value="Target"/>
+    </CEffectEnumArea>
+    <CEffectSet id="ArbiterSCBWRecall@Set">
+        <ValidatorArray value="ArbiterSCBWRecall@Set"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecall@TeleportInitial"/>
+        <EffectArray value="ArbiterSCBWRecall@TeleportAir"/>
+        <EffectArray value="ArbiterSCBWRecall@ABRecalled"/>
+        <EffectArray value="SCBW_CategoryRemoveTeleportRemove"/>
+        <EffectArray value="ArbiterSCBWRecall@Success"/>
+    </CEffectSet>
+    <CEffectSet id="ArbiterSCBWRecall@SetGround">
+        <ValidatorArray value="ArbiterSCBWRecall@Set"/>
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ArbiterSCBWRecall@Teleport"/>
+        <EffectArray value="ArbiterSCBWRecall@ABRecalled"/>
+        <EffectArray value="SCBW_CategoryRemoveTeleportRemove"/>
+        <EffectArray value="ArbiterSCBWRecall@Success"/>
+    </CEffectSet>
+    <CAbilResearch id="ArbiterSCBWEnergyUpgrade" parent="SCBW_Research" race="Protoss">
+        <InfoArray index="Research1" Time="146">
+            <Resource index="Minerals" value="150"/>
+            <Resource index="Vespene" value="150"/>
+        </InfoArray>
+        <AbilityCategories index="User1" value="1"/>
+        <Activity value="UI/Upgrading"/>
+    </CAbilResearch>
+    <CAbilResearch id="ArbiterSCBWRecallResearch" parent="SCBW_Research" race="Protoss">
+        <InfoArray index="Research1" Time="105">
+            <Resource index="Minerals" value="150"/>
+            <Resource index="Vespene" value="150"/>
+        </InfoArray>
+        <AbilityCategories index="User1" value="1"/>
+        <Activity value="UI/Developing"/>
+    </CAbilResearch>
+    <CAbilResearch id="ArbiterSCBWStasisFieldResearch" parent="SCBW_Research" race="Protoss">
+        <InfoArray index="Research1" Time="87.5">
+            <Resource index="Minerals" value="150"/>
+            <Resource index="Vespene" value="150"/>
+        </InfoArray>
+        <AbilityCategories index="User1" value="1"/>
+        <Activity value="UI/Developing"/>
+    </CAbilResearch>
+    <CAbilEffectTarget id="ArbiterSCBWStasisField" parent="SCBW_AbilTarget">
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <Effect index="0" value="ArbiterSCBWStasisField@Search"/>
+        <Flags index="AllowMovement" value="1"/>
+        <Cost>
+            <Vital index="Energy" value="100"/>
+        </Cost>
+        <Range value="9"/>
+        <CursorEffect value="ArbiterSCBWStasisField@Search"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="ArbiterSCBWStasisField@Hardcore" parent="ArbiterSCBWStasisField">
+        <Flags index="AllowMovement" value="0"/>
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="ArbiterSCBWRecall" parent="SCBW_AbilTarget">
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <Effect index="0" value="ArbiterSCBWRecall@CP"/>
+        <Cost>
+            <Vital index="Energy" value="150"/>
+            <Charge Link=""/>
+            <Cooldown Link=""/>
+        </Cost>
+        <Range value="500"/>
+        <Arc value="360"/>
+        <CursorEffect value="ArbiterSCBWRecall@SearchDummy"/>
+        <Flags index="Transient" value="1"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="ArbiterSCBWRecall@Hardcore" parent="ArbiterSCBWRecall">
+        <Flags index="BestUnit" value="0"/>
+    </CAbilEffectTarget>
+    <CValidatorUnitType id="ArbiterSCBW@Is" parent="SCBW_Unit" x="ArbiterSCBW"/>
+    <CValidatorUnitType id="ArbiterSCBW@Not" parent="SCBW_UnitNot" x="ArbiterSCBW"/>
+    <CValidatorCombine id="ArbiterSCBWRecall@CPSet">
+        <Type value="And"/>
+        <CombineArray value="CasterNotDead"/>
+        <CombineArray value="SCBW_CasterNotStasis"/>
+        <CombineArray value="SCBW_CasterNotStunned"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWRecall@CPPeriodic">
+        <Type value="And"/>
+        <CombineArray value="CasterNotDead"/>
+    </CValidatorCombine>
+    <CValidatorPlayerAlliance id="ArbiterSCBWRecall@SharedControl">
+        <WhichPlayer Value="Target"/>
+        <Find value="1"/>
+        <WithPlayer Value="Caster"/>
+        <Value value="Control"/>
+    </CValidatorPlayerAlliance>
+    <CValidatorCombine id="ArbiterSCBWRecall@TargetValidator">
+        <Type value="And"/>
+        <CombineArray value="TargetIsVisible"/>
+        <CombineArray value="ArbiterSCBWRecall@SharedControl"/>
+    </CValidatorCombine>
+    <CValidatorCondition id="ArbiterSCBWStasisField@InvulnerableHandler">
+        <IfArray Test="NotInvulnerable"/>
+        <IfArray Test="SCBW_IsPhasedUnit"/>
+        <Else value="False"/>
+    </CValidatorCondition>
+    <CValidatorCombine id="ArbiterSCBWStasisField@Set">
+        <Type value="And"/>
+        <CombineArray value="ArbiterSCBWStasisField@InvulnerableHandler"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWCloakField@Disable" parent="SCBW_Behavior">
+        <CombineArray value="IsHallucinationSCBW"/>
+        <Negate value="1"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWCloakField@Remove" parent="SCBW_Behavior"/>
+    <CValidatorCombine id="ArbiterSCBWCloakField@Effect@Disable" parent="SCBW_Behavior">
+        <CombineArray value="NotMothership"/>
+        <CombineArray value="NotArbiterMP"/>
+        <CombineArray value="ArbiterSCBW@Not"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWCloakField@Effect@Remove" parent="SCBW_Behavior"/>
+    <CValidatorCombine id="ArbiterSCBWCloakField@AB" parent="SCBW_Effect">
+        <CombineArray value="NotMothership"/>
+        <CombineArray value="NotMothershipCore"/>
+        <CombineArray value="NotArbiterMP"/>
+        <CombineArray value="ArbiterSCBW@Not"/>
+    </CValidatorCombine>
+    <CValidatorLocationCrossCliff id="ArbiterSCBWRecall@CrossCliff">
+        <ResultFailed value="Error,Error/CantCrossCliffs"/>
+        <WhichLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <Find value="1"/>
+    </CValidatorLocationCrossCliff>
+    <CValidatorLocationEnumArea id="ArbiterSCBWRecall@Enum">
+        <ResultFailed value="CantFindEnoughTargets"/>
+        <AreaArray Radius="2.25" Validator="ArbiterSCBWRecall@Set"/>
+        <SearchFilters value="-;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
+    </CValidatorLocationEnumArea>
+    <CValidatorLocationEnumArea id="ArbiterSCBWRecall@EnumAir">
+        <ResultFailed value="CantFindPlacementLocation"/>
+        <AreaArray Radius="2.25" Validator="ArbiterSCBWRecall@Set"/>
+        <SearchFilters value="Air;Self,Neutral,Enemy,Structure,Missile,Item,Uncommandable,Buried,Stasis,Dead,Hidden,Hallucination,Invulnerable"/>
+    </CValidatorLocationEnumArea>
+    <CValidatorCondition id="ArbiterSCBWRecall@ValidatorGround">
+        <ResultFailed value="CantFindPlacementLocation"/>
+        <IfArray Test="SCBW_SourceNotPathable" Return="ArbiterSCBWRecall@EnumAir"/>
+    </CValidatorCondition>
+    <CValidatorCombine id="ArbiterSCBWRecall@PlacementCheck">
+        <Type value="And"/>
+        <CombineArray value="ArbiterSCBWRecall@SourceNotPathable"/>
+        <CombineArray value="ArbiterSCBWRecall@CrossChasmOrCliff"/>
+    </CValidatorCombine>
+    <CValidatorLocationPathable id="ArbiterSCBWRecall@SourceNotPathable">
+        <WhichLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <Find value="0"/>
+    </CValidatorLocationPathable>
+    <CValidatorCombine id="ArbiterSCBWRecall@CrossChasmOrCliff">
+        <CombineArray value="ArbiterSCBWRecall@CrossChasm"/>
+        <CombineArray value="ArbiterSCBWRecall@CrossCliff"/>
+    </CValidatorCombine>
+    <CValidatorLocationCrossChasm id="ArbiterSCBWRecall@CrossChasm">
+        <ResultFailed value="Error,Error/CantCrossCliffs"/>
+        <WhichLocation Effect="ArbiterSCBWRecall@Search" Value="SourceUnitOrPoint"/>
+        <Find value="1"/>
+    </CValidatorLocationCrossChasm>
+    <CValidatorCombine id="ArbiterSCBWStasisField@AB" parent="SCBW_Effect">
+        <CombineArray value="NotFrenzied"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWRecall@Set" parent="SCBW_Effect">
+        <CombineArray value="NotLarvaEgg"/>
+        <CombineArray value="NotLarva"/>
+        <CombineArray value="NotAbducted"/>
+        <CombineArray value="LarvaSCBW@Not"/>
+        <CombineArray value="EggSCBW@Not"/>
+        <CombineArray value="LurkerSCBWEgg@Not"/>
+        <CombineArray value="ArbiterSCBWRecall@SharedControl"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="ArbiterSCBWRecall@ABRecalling" parent="SCBW_Effect">
+        <CombineArray value="NotLarvaEgg"/>
+        <CombineArray value="NotLarva"/>
+        <CombineArray value="NotAbducted"/>
+        <CombineArray value="LarvaSCBW@Not"/>
+        <CombineArray value="EggSCBW@Not"/>
+        <CombineArray value="LurkerSCBWEgg@Not"/>
+    </CValidatorCombine>
+    <CTacticalOrder id="ArbiterSCBW"/>
+    <CRequirement id="ArbiterSCBWEnergyUpgrade" parent="SCBW_AbilReqNoUse" Race="Protoss"/>
+    <CRequirement id="ArbiterSCBWRecallResearch" parent="SCBW_AbilReqNoUse" Race="Protoss"/>
+    <CRequirement id="ArbiterSCBWStasisFieldResearch" parent="SCBW_AbilReqNoUse" Race="Protoss"/>
+    <CRequirement id="ArbiterSCBWEnergyUpgrade@Passive" parent="SCBW_PassiveReq" Race="Protoss" x="ArbiterSCBWEnergyUpgrade"/>
+    <CRequirement id="ArbiterSCBWRecall" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
+    <CRequirement id="ArbiterSCBWStasisField" parent="SCBW_AbilReqNoShow" Race="Protoss"/>
+    <CRequirement id="ArbiterSCBW" parent="SCBW_UnitReq" Race="Protoss"/>
+    <CButton id="ArbiterSCBWEnergyUpgrade">
+        <Icon value="Assets\Textures\btn-upgrade-protoss-adeptshieldupgrade.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-adeptshieldupgrade.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Column="2"/>
+    </CButton>
+    <CButton id="ArbiterSCBWEnergyUpgrade@Passive" parent="SCBW_ResearchPassive" x="ArbiterSCBWEnergyUpgrade">
+        <Icon value="Assets\Textures\btn-upgrade-protoss-adeptshieldupgrade.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-protoss-adeptshieldupgrade.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CButton id="ArbiterSCBWRecallResearch">
+        <Icon value="Assets\Textures\btn-ability-protoss-recall.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-protoss-recall.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CButton id="ArbiterSCBWStasisFieldResearch">
+        <Icon value="Assets\Textures\btn-ability-protoss-stasisfield.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-protoss-stasisfield.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Column="1"/>
+    </CButton>
+    <CButton id="ArbiterSCBWCloakField">
+        <Icon value="Assets\Textures\btn-ability-protoss-cloakfield-color.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-protoss-cloakfield-color.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Row="2" Column="2"/>
+    </CButton>
+    <CButton id="ArbiterSCBWStasisField">
+        <Icon value="Assets\Textures\btn-ability-protoss-stasisfield.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-protoss-stasisfield.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Row="2" Column="1"/>
+        <HidesForSimpleText value="0"/>
+    </CButton>
+    <CButton id="ArbiterSCBWRecall">
+        <Icon value="Assets\Textures\btn-ability-protoss-recall.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-protoss-recall.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <DefaultButtonLayout Row="2"/>
+    </CButton>
+    <CButton id="ArbiterSCBW@Passive" parent="SCBW_UnitPassive" x="ArbiterSCBW">
+        <Icon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CButton id="ArbiterSCBW">
+        <Icon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
+        <AlertIcon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
+        <DefaultButtonLayout Column="3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CRequirementAllowUpgrade id="ArbiterSCBWEnergyUpgrade@Allow" parent="SCBW_AllowUpgrade" x="ArbiterSCBWEnergyUpgrade"/>
+    <CRequirementCountBehavior id="ArbiterSCBWStasisField@CountAtUnit" parent="SCBW_BehaviorCountAtUnitNoTech" x="ArbiterSCBWStasisField"/>
+    <CRequirementAnd id="ArbiterSCBWEnergyUpgrade@Show">
+        <OperandArray value="ArbiterSCBWEnergyUpgrade@NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementCountUpgrade id="ArbiterSCBWRecallResearch@Count" parent="SCBW_UpgradeCount" x="ArbiterSCBWRecallResearch"/>
+    <CRequirementNot id="ArbiterSCBWRecallResearch@NotQoB" parent="SCBW_Not" x="WraithSCBWCloakResearch@QoB">
+        <OperandArray index="0" value="ArbiterSCBWRecallResearch@QoB"/>
+    </CRequirementNot>
+    <CRequirementCountUpgrade id="ArbiterSCBWRecallResearch@QoB" parent="SCBW_UpgradeQoB" x="ArbiterSCBWRecallResearch"/>
+    <CRequirementAnd id="ArbiterSCBWRecallResearch@Show">
+        <OperandArray value="ArbiterSCBWRecallResearch@NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementCountUpgrade id="ArbiterSCBWStasisFieldResearch@Count" parent="SCBW_UpgradeCount" x="ArbiterSCBWStasisFieldResearch"/>
+    <CRequirementNot id="ArbiterSCBWStasisFieldResearch@NotQoB" parent="SCBW_Not" x="ArbiterSCBWStasisFieldResearch@QoB"/>
+    <CRequirementCountUpgrade id="ArbiterSCBWStasisFieldResearch@QoB" parent="SCBW_UpgradeQoB" x="ArbiterSCBWStasisFieldResearch"/>
+    <CRequirementAnd id="ArbiterSCBWStasisFieldResearch@Show">
+        <OperandArray value="ArbiterSCBWStasisFieldResearch@NotQoB"/>
+    </CRequirementAnd>
+    <CRequirementCountUpgrade id="ArbiterSCBWEnergyUpgrade@Count" parent="SCBW_UpgradeCount" x="ArbiterSCBWEnergyUpgrade"/>
+    <CRequirementNot id="ArbiterSCBWEnergyUpgrade@NotQoB" parent="SCBW_Not" x="MedicSCBWEnergyUpgrade@QoB">
+        <OperandArray index="0" value="ArbiterSCBWEnergyUpgrade@QoB"/>
+    </CRequirementNot>
+    <CRequirementCountUpgrade id="ArbiterSCBWEnergyUpgrade@QoB" parent="SCBW_UpgradeQoB" x="ArbiterSCBWEnergyUpgrade"/>
+    <CRequirementAnd id="ArbiterSCBWRecall">
+        <OperandArray value="ArbiterSCBWRecallResearch@Count"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="ArbiterSCBWStasisField">
+        <OperandArray value="ArbiterSCBWStasisFieldResearch@Count"/>
+    </CRequirementAnd>
+    <CRequirementAllowUnit id="ArbiterSCBW@AllowUnit" parent="SCBW_AllowUnit" x="ArbiterSCBW"/>
+    <CRequirementAnd id="ArbiterSCBW@Show">
+        <OperandArray value="ArbiterSCBW@AllowUnit"/>
+    </CRequirementAnd>
+    <CRequirementAnd id="ArbiterSCBW">
+        <OperandArray value="ArbiterTribunalSCBW@Count"/>
+    </CRequirementAnd>
+    <CRequirementCountUnit id="ArbiterSCBW@Count" parent="SCBW_UnitCount" x="ArbiterSCBW"/>
+    <CRequirementCountUnit id="ArbiterSCBW@QoB" parent="SCBW_UnitQoB" x="ArbiterSCBW"/>
+    <CRequirementCountUnit id="ArbiterSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="ArbiterSCBW"/>
+    <CRequirementNot id="ArbiterSCBW@NotQoBAtUnit" parent="SCBW_Not" x="ArbiterSCBW@QoBAtUnit"/>
+    <CRequirementNot id="ArbiterSCBW@NotQoB" parent="SCBW_Not" x="ArbiterSCBW@QoB"/>
+    <CLight id="ArbiterSCBW@Portrait" parent="default">
+        <ToDInfoArray index="0" Id="HybridProtossPortrait" AmbientColor="0.007843,0.035294,0.243137" OperatorHDR="3">
+            <Param index="HDRExposure" value="1.475000"/>
+            <Param index="HDRBloomThreshold" value="0.800000"/>
+            <Param index="HDREmisMultiplier" value="1.220000"/>
+            <DirectionalLight index="Key">
+                <Color value="0.909804,0.909804,0.909804"/>
+                <ColorMultiplier value="1.161000"/>
+                <SpecColorMultiplier value="1.000000"/>
+                <Direction value="0.855515,0.333552,0.396026"/>
+            </DirectionalLight>
+            <DirectionalLight index="Fill" Color="0.313726,0.756863,1.000000" ColorMultiplier="0.038000" Direction="0.667357,-0.731618,-0.139173"/>
+            <DirectionalLight index="Back" Color="0.313726,0.874510,0.992157" ColorMultiplier="0.056000" Direction="-0.851308,0.505872,0.139173"/>
+        </ToDInfoArray>
+        <EditorCategories value="LightGroup:PortraitsUnitsProtoss"/>
+    </CLight>
+    <CActorSound id="ArbiterSCBWRecall@CastSound" parent="SoundOneShot">
+        <On Terms="Abil.ArbiterSCBWRecall.SourceCastStart" Send="Create"/>
+        <Host Subject="_Unit"/>
+    </CActorSound>
+    <CActorQueryResponse id="ArbiterSCBWRecall@GuideRegionAdd" parent="GuideRegionAdd">
+        <Subject Terms="ValidateUnit ArbiterSCBWRecall@TargetValidator IncludeDerivedSnapshot System_Snapshot_Dummy"/>
+    </CActorQueryResponse>
+    <CActorRegionCircle id="ArbiterSCBWRecall@CursorRegion" parent="CursorRegion">
+        <On index="0" Terms="ActorCreation" Send="QueryPersistent ArbiterSCBWRecall@GuideRegionAdd GuideRegionRemove AgainstRadiusGame"/>
+    </CActorRegionCircle>
+    <CActorSound id="ArbiterSCBWWeapon@Launch" parent="SoundOneShot"/>
+    <CActorAction id="ArbiterSCBWWeapon@Action" parent="GenericAttackMissileWhiff" effectImpact="ArbiterSCBWWeapon@Impact" effectLaunch="ArbiterSCBWWeapon@LM">
+        <Missile value="ArbiterSCBWWeapon@Missile"/>
+        <ImpactMap index="None" Model="ArbiterSCBWWeapon@Impact" Sound="ArbiterSCBWWeapon@Impact"/>
+        <ImpactPhysics Name="DragoonSCBWWeapon" MatchKeys="Basic" Physics="DragoonSCBWWeapon@DeathForce"/>
+    </CActorAction>
+    <CActorMissile id="ArbiterSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="ArbiterSCBWWeapon@Missile">
+        <On Terms="ActorCreation" Send="Create ArbiterSCBWWeapon@Launch"/>
+    </CActorMissile>
+    <CActorSplat id="ArbiterSCBWStasisField@CursorSplat" parent="ProtossCursorSplatSCBW" abil="ArbiterSCBWStasisField">
+        <On Terms="Abil.ArbiterSCBWStasisField@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
+    <CActorModel id="ArbiterSCBWStasisField@CastModel" parent="ModelAnimationStyleOneShot">
+        <On Terms="Effect.ArbiterSCBWStasisField@Search.Start" Send="Create"/>
+        <Scale value="0.500000"/>
+    </CActorModel>
+    <CActorModel id="ArbiterSCBWStasisField@Impact" parent="ModelAnimationStyleContinuous">
+        <Inherits index="BaseModelScale" value="1"/>
+        <Inherits index="Scale" value="1"/>
+        <EditorCategories value=""/>
+        <On Terms="Behavior.ArbiterSCBWStasisField.On" Send="Create"/>
+        <On Terms="ActorCreation; ValidateUnit IsColossus" Send="SetScale 1.200000,1.200000,2.500000"/>
+        <On Terms="Behavior.ArbiterSCBWStasisField.Off" Send="AnimBracketStop BSD"/>
+        <On Terms="Behavior.ArbiterSCBWStasisField.On" Target="_Unit" Send="AnimSetPausedAll"/>
+        <On Terms="Behavior.ArbiterSCBWStasisField.Off" Target="_Unit" Send="AnimSetPausedAll 0"/>
+        <On Terms="ActorCreation; ValidateUnit SCBW_IsBrutalisk" Send="SetScale 2.000000"/>
+        <Host Subject="_Unit"/>
+        <HostSiteOps Ops="SOpAttachCenter"/>
+        <AutoScaleFactor value="0.900000"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+    </CActorModel>
+    <CActorSound id="ArbiterSCBWStasisField@ImpactSound" parent="SoundOneShot">
+        <On Terms="Behavior.ArbiterSCBWStasisField.On" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <Sound value="ArbiterSCBWStasisField@On"/>
+    </CActorSound>
+    <CActorSound id="ArbiterSCBWStasisField@OffSound" parent="SoundOneShot">
+        <On Terms="Behavior.ArbiterSCBWStasisField.Off" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <Sound value="ArbiterSCBWStasisField@Off"/>
+    </CActorSound>
+    <CActorRange id="ArbiterSCBWStasisField@Range" parent="SCBW_RangeAbilMultiple" abil2="ArbiterSCBWStasisField@Hardcore" abil="ArbiterSCBWStasisField">
+        <Icon value="Assets\Textures\radaricon1.dds"/>
+        <IconArcLength value="3.250000"/>
+        <On Terms="ActorCreation" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility"/>
+        <On Terms="ActorDestruction" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility 1"/>
+    </CActorRange>
+    <CActorSplat id="ArbiterSCBWRecall@CursorSplat" parent="ProtossCursorSplatSCBW" abil="ArbiterSCBWRecall">
+        <On index="1" Terms="ActorCreation" Send="Create ArbiterSCBWRecall@CursorRegion"/>
+        <On index="2" Terms="ActorDestruction" Target="ArbiterSCBWRecall@CursorRegion" Send="Destroy"/>
+        <On Terms="Abil.ArbiterSCBWRecall@Hardcore.Cursor" Send="Create"/>
+    </CActorSplat>
+    <CActorSound id="ArbiterSCBWStasisField@Shockwave" parent="SoundOneShot">
+        <On Terms="Effect.ArbiterSCBWStasisField@Search.Start" Send="Create"/>
+    </CActorSound>
+    <CActorModel id="ArbiterSCBWRecall@SearchEnd" parent="ModelAnimationStyleOneShot">
+        <Terms value="Cap 1"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CPFinal.Start" Send="Create"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CPFinal.Stop" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="AnimSetTimeScaleGlobal 3.000000"/>
+        <HostSiteOps Ops="SOpShadow"/>
+        <Model value="ArbiterSCBWRecall@SearchStart"/>
+        <AutoScaleFactor value="0.350000"/>
+        <VisibilityShape Shape="ArbiterSCBWRecall@Visibility"/>
+    </CActorModel>
+    <CActorModel id="ArbiterSCBWRecall@SearchStart" parent="ModelAnimationStyleOneShot">
+        <Terms value="Cap 1"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CP.Start" Send="Create"/>
+        <On Terms="Effect.ArbiterSCBWRecall@CP.Stop" Send="Destroy"/>
+        <On Terms="ActorCreation" Send="AnimSetTimeScaleGlobal 3.000000"/>
+        <HostSiteOps Ops="SOpShadow"/>
+        <AutoScaleFactor value="0.350000"/>
+        <VisibilityShape Shape="ArbiterSCBWRecall@Visibility"/>
+    </CActorModel>
+    <CActorRange id="ArbiterSCBWRecall@Range" parent="SCBW_RangeAbilMultiple" abil2="ArbiterSCBWRecall@Hardcore" abil="ArbiterSCBWRecall">
+        <On Terms="ActorCreation" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility"/>
+        <On Terms="ActorDestruction" Target="ArbiterSCBWCloakField@Range" Send="SetVisibility 1"/>
+        <Abil Link=""/>
+        <Range value="2.000000"/>
+        <Icon value="Assets\Textures\radaricon1.dds"/>
+        <IconArcLength value="1.500000"/>
+    </CActorRange>
+    <CActorSimple id="ArbiterSCBWRecall@Opacity">
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalling.On" Send="Create"/>
+        <On Terms="ActorCreation" Target="_Unit" Send="SetOpacity 0.400000 0.250000 MassRecallOpacity"/>
+        <On Terms="ActorCreation" Target="_Unit" Send="SetTintColor 100,100,255 0.250000 OneShot MassRecallTint"/>
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalled.Off" Send="TimerSet 0.150000 ClearRecallOpacity"/>
+        <On Terms="Behavior.Yoink.On" Target="_Unit" Send="ClearOpacity 0.250000 MassRecallOpacity"/>
+        <On Terms="Behavior.Yoink.On" Target="_Unit" Send="ClearTintColor 0.250000 MassRecallTint"/>
+        <On Terms="Behavior.Yoink.On" Send="Destroy"/>
+        <On Terms="TimerExpired; TimerName ClearRecallOpacity; ValidateUnit NoRecallingBehaviors" Target="_Unit" Send="ClearOpacity 0.250000 MassRecallOpacity"/>
+        <On Terms="TimerExpired; TimerName ClearRecallOpacity; ValidateUnit NoRecallingBehaviors" Target="_Unit" Send="ClearTintColor 0.250000 MassRecallTint"/>
+        <On Terms="TimerExpired; TimerName ClearRecallOpacity; ValidateUnit NoRecallingBehaviors" Send="Destroy"/>
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalling.Off" Send="TimerSet 0.150000 ClearRecallOpacity"/>
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalled.On" Send="TimerKill ClearRecallOpacity"/>
+    </CActorSimple>
+    <CActorModel id="ArbiterSCBWRecall@ImpactRecalled" parent="ModelAnimationStyleOneShot">
+        <Terms value="Cap 1"/>
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalled.On" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpShadow"/>
+        <AutoScaleFactor value="0.450000"/>
+    </CActorModel>
+    <!--CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalled" parent="SoundOneShot">-->
+    <!--        <Terms value="Cap 1"/>-->
+    <!--        <On Terms="Behavior.ArbiterSCBWRecall@Recalled.On" Send="Create"/>-->
+    <!--        <Host Subject="_Selectable"/>-->
+    <!--        <Sound value="ArbiterSCBWRecall@End"/>-->
+    <!--    </CActorSound-->
+    <CActorModel id="ArbiterSCBWRecall@ImpactRecalling" parent="ModelAnimationStyleOneShot">
+        <Terms value="Cap 1"/>
+        <On Terms="Behavior.ArbiterSCBWRecall@Recalling.On" Send="Create"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpShadow"/>
+        <AutoScaleFactor value="0.450000"/>
+    </CActorModel>
+    <!--CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalling" parent="SoundOneShot">-->
+    <!--        <Terms value="Cap 1"/>-->
+    <!--        <On Terms="Behavior.ArbiterSCBWRecall@Recalling.On" Send="Create"/>-->
+    <!--        <Host Subject="_Selectable"/>-->
+    <!--        <Sound value="ArbiterSCBWRecall@Start"/>-->
+    <!--    </CActorSound-->
+    <CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalling" parent="SoundOneShot">
+        <On Terms="Effect.ArbiterSCBWRecall@CP.Start; At Effect" Send="Create"/>
+        <Sound value="ArbiterSCBWRecall@Start"/>
+    </CActorSound>
+    <CActorSound id="ArbiterSCBWRecall@ImpactSoundRecalled" parent="SoundOneShot">
+        <On Terms="Effect.ArbiterSCBWRecall@CPFinal.Start; At Effect" Send="Create"/>
+        <Sound value="ArbiterSCBWRecall@End"/>
+    </CActorSound>
+    <CActorRange id="ArbiterSCBWCloakField@Range">
+        <On Terms="SelectionLocalUpdate.ArbiterSCBW.Start" Send="Create"/>
+        <On Terms="SelectionLocalUpdate.ArbiterSCBW.Stop" Send="Destroy"/>
+        <Range value="5.000000"/>
+        <Icon value="Assets\Textures\radaricon2.dds"/>
+        <IconTint value="225,128,255,255"/>
+    </CActorRange>
+    <CActorSound id="ArbiterSCBWCloakField@Off" parent="SoundOneShot">
+        <Terms value="ValidateUnit NotWorkerAndNotCloakedAndNotDead"/>
+        <On Terms="Behavior.ArbiterSCBWCloakField@Effect.Off" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="ArbiterSCBWCloakField@On" parent="SoundOneShot">
+        <Terms value="ValidateUnit NotWorkerAndNotCloaked"/>
+        <On Terms="Behavior.ArbiterSCBWCloakField@Effect.On" Send="Create"/>
+    </CActorSound>
+    <CActorSound id="ArbiterSCBW@LandSoundSweetener" parent="SoundOneShot"/>
+    <CActorSound id="ArbiterSCBW@Land" parent="SoundOneShot"/>
+    <CActorUnit id="ArbiterSCBW" parent="GenericUnitStandard" unitName="ArbiterSCBW">
+        <Aliases value="_UnitHuge"/>
+        <On Terms="Behavior.WarpInEffect.On" Send="ModelSwap ArbiterSCBW@WarpInStargate"/>
+        <On Terms="Behavior.WarpInEffect.On" Send="AnimPlay Birth Spell"/>
+        <On Terms="Behavior.WarpInEffect.Off" Send="ModelSwap ArbiterSCBW"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create ArbiterSCBW@LandSoundSweetener"/>
+        <On Terms="UnitHeightUpdate.*.Land" Send="Create ArbiterSCBW@Land"/>
+        <On Terms="AnimDone; AnimName Birth" Send="ModelSwap ArbiterSCBW"/>
+        <On Terms="AnimDone; AnimName Birth" Send="AnimBracketStart GL_BSD GLbirth GLstand GLdeath"/>
+        <On Terms="AnimDone; AnimName Birth" Send="AnimClear Birth"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="Abil.ArbiterSCBWRecall.SourceCastStart" Send="$Spell"/>
+        <On Terms="Abil.ArbiterSCBWRecall@Hardcore.SourceCastStart" Send="$Spell"/>
+        <On Terms="Abil.ArbiterSCBWStasisField.SourceCastStart" Send="AnimPlay Attack Attack"/>
+        <On Terms="Abil.ArbiterSCBWStasisField@Hardcore.SourceCastStart" Send="AnimPlay Attack Attack"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathLarge" Name="Hallucination"/>
+        <ModelFlags index="OutlineEmitter" value="1"/>
+        <BuildModel value="ArbiterSCBW@WarpIn"/>
+        <DeathArray index="Normal" ModelLink="ArbiterSCBW@Death" SoundLink="ArbiterSCBW@Death"/>
+        <PlacementModel value="ArbiterSCBW@Placement"/>
+        <PortraitModel value="ArbiterSCBW@Portrait"/>
+        <BarOffset value="40"/>
+        <BarWidth value="66"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-protoss-arbiter.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-airarmorlevel0.dds"/>
+        <NameOffset value="40"/>
+        <SoundArray index="Ready" value="ArbiterSCBW@Ready"/>
+        <SoundArray index="Help" value="ArbiterSCBW@Help"/>
+        <SoundArray index="What" value="ArbiterSCBW@What"/>
+        <SoundArray index="Yes" value="ArbiterSCBW@Yes"/>
+        <SoundArray index="Attack" value="ArbiterSCBW@Attack"/>
+        <SoundArray index="Pissed" value="ArbiterSCBW@Pissed"/>
+        <SoundArray index="Movement" value="ArbiterMP_MoveStart"/>
+        <UnitIcon value="Assets\Textures\btn-unit-protoss-arbiter.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-protoss-arbiter.dds"/>
+        </Wireframe>
+        <WireframeShield>
+            <Image value="Assets\Textures\wireframe-protoss-arbiter-shield01.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-arbiter-shield02.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-arbiter-shield03.dds"/>
+        </WireframeShield>
+    </CActorUnit>
+    <CActorModel id="ArbiterSCBW@WarpInStargate" parent="ModelAddition">
+        <On Terms="UnitDeathCustomize" Send="Destroy"/>
+        <HostSiteOps Ops="SOpAttachCenter"/>
+    </CActorModel>
+    <CModel id="ArbiterSCBWWeapon@Impact" parent="ImpactFX">
+        <Model value="Assets\Effects\Protoss\DragoonAttackImpact@SCBWEffect\DragoonAttackImpact@SCBWEffect.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CModel id="ArbiterSCBWWeapon@Missile" parent="MissileFX">
+        <Model value="Assets\Effects\Protoss\DragoonAttackMissile@SCBWEffect\DragoonAttackMissile@SCBWEffect.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CModel id="ArbiterSCBWStasisField@CastModel" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Protoss\Arbiter_StasisField_Shockwave\Arbiter_StasisField_Shockwave.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Radius value="5.000000"/>
+        <RadiusLoose value="5.000000"/>
+    </CModel>
+    <CModel id="ArbiterSCBWStasisField@Impact" parent="RaceImpactFX" Race="Protoss">
+        <Model value="Assets\Effects\Protoss\Arbiter_StasisField_Impact\Arbiter_StasisField_Impact.m3"/>
+    </CModel>
+    <CModel id="ArbiterSCBWRecall@ImpactRecalled" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Protoss\RecallImpactIn\RecallImpactIn.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.750000,0.750000,0.750000"/>
+        <ScaleMin value="0.750000,0.750000,0.750000"/>
+    </CModel>
+    <CModel id="ArbiterSCBWRecall@ImpactRecalling" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Protoss\RecallImpactOut\RecallImpactOut.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.750000,0.750000,0.750000"/>
+        <ScaleMin value="0.750000,0.750000,0.750000"/>
+    </CModel>
+    <CModel id="ArbiterSCBWRecall@SearchStart" parent="OneShotSpellFX">
+        <Model value="Assets\Effects\Protoss\ArbiterSCBWRecall\ArbiterSCBWRecall.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.700000,0.700000,0.700000"/>
+        <ScaleMin value="0.700000,0.700000,0.700000"/>
+    </CModel>
+    <CModel id="ArbiterSCBW@Death" parent="UnitDeath" Race="Protoss">
+        <Model value="Assets\Units\Protoss\ArbiterEX2_Death\ArbiterEX2_Death.m3"/>
+        <LowQualityModel value="ProtossMediumUnitDeathLow"/>
+        <Occlusion value="Show"/>
+        <Radius value="0.750000"/>
+        <SelectionRadius value="0.750000"/>
+        <ShadowRadius value="0.750000"/>
+    </CModel>
+    <CModel id="ArbiterSCBW@WarpInStargate" parent="PersistentSpellFX">
+        <Model value="Assets\Units\Protoss\Arbiter_WarpIn_StarGate\Arbiter_WarpIn_StarGate.m3"/>
+        <LowQualityModel value="ProtossUnitBirth"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Occlusion value="Show"/>
+        <Radius value="0.750000"/>
+        <SelectionRadius value="0.666500"/>
+        <ShadowRadius value="0.666500"/>
+        <SquibTypeDefault value="Metal"/>
+    </CModel>
+    <CModel id="ArbiterSCBW@Placement" parent="Placement" Race="Protoss">
+        <Model value="Assets\Units\Protoss\ArbiterEX2_Placement\ArbiterEX2_Placement.m3"/>
+        <Occlusion value="Show"/>
+        <Radius value="-1.000000"/>
+        <ScaleMax value="0.850000,0.850000,0.850000"/>
+        <ScaleMin value="0.850000,0.850000,0.850000"/>
+        <SelectionRadius value="0.588100"/>
+        <ShadowRadius value="0.588100"/>
+    </CModel>
+    <CModel id="ArbiterSCBW@WarpIn" parent="OneShotSpellFX">
+        <Model value="Assets\Units\Protoss\ArbiterEX2_WarpIn\ArbiterEX2_WarpIn.m3"/>
+        <LowQualityModel value="ProtossUnitBirth"/>
+        <EditorCategories value="Race:Protoss"/>
+        <Occlusion value="Show"/>
+        <SelectionRadius value="0.666500"/>
+        <ShadowRadius value="0.666500"/>
+    </CModel>
+    <CModel id="ArbiterSCBW" parent="Unit" Race="Protoss">
+        <Model value="Assets\Units\Protoss\Arbiter_EX2\Arbiter_EX2.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraMid05"/>
+        <Radius value="1.000000"/>
+        <SelectionOffset value="0.000000,0.000000,-0.750000"/>
+        <SelectionRadius value="1.000000"/>
+        <ShadowRadius value="1.000000"/>
+        <TechPurchaseCamera value="Star2CameraMid05"/>
+        <UnitGlossaryCamera value="Star2CameraMid05"/>
+        <SquibTypeDefault value="Metal"/>
+    </CModel>
+    <CModel id="ArbiterSCBW@Portrait" parent="Portrait" Race="Protoss">
+        <Model value="Assets\Portraits\Protoss\ArbiterEx2Portrait\ArbiterEx2Portrait.m3"/>
+    </CModel>
+    <CWeaponLegacy id="ArbiterSCBWWeapon">
+        <EditorCategories value="Race:Protoss"/>
+        <Icon value="Assets\Textures\btn-upgrade-protoss-airweaponslevel0.dds"/>
+        <DisplayEffect value="ArbiterSCBWWeapon@DamageExpl"/>
+        <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="2.625"/>
+        <Effect value="ArbiterSCBWWeapon@LM"/>
+        <AllowedMovement value="Slowing"/>
+        <Options index="NeverMiss" value="0"/>
+        <Tip value="Weapon/Tip/ExplosiveWeapon"/>
+    </CWeaponLegacy>
+    <CShapeArc id="ArbiterSCBWRecall@Visibility">
+        <Arc value="360"/>
+        <Radius value="2.5"/>
+    </CShapeArc>
+    <CMoverMissile id="ArbiterSCBWWeapon@Mover">
+        <MotionPhases>
+            <Driver value="Guidance"/>
+            <Acceleration value="3200"/>
+            <MaxSpeed value="20"/>
+            <YawPitchRoll value="MAX"/>
+        </MotionPhases>
+    </CMoverMissile>
+    <CAccumulatorConstant id="ArbiterSCBWWeapon@Damage">
+        <Amount value="10"/>
+    </CAccumulatorConstant>
+    <CSound id="ArbiterSCBWRecall@CastSound" parent="Spell">
+        <AssetArray File="Assets\Sounds\Protoss\HighTemplarSCBW\HighTemplarSCBW@mov00.ogg"/>
+        <Pitch value="-5.000000,-5.000000"/>
+        <Volume value="5.000000,5.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBWWeapon@Launch" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Launch00.ogg"/>
+    </CSound>
+    <CSound id="ArbiterSCBWWeapon@Impact" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\DragoonSCBW\DragoonSCBWWeapon@Impact00.ogg"/>
+    </CSound>
+    <CSound id="ArbiterSCBWCloakField@Off" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Terran\GhostSCBW\GhostSCBWCloak@Off00.ogg"/>
+        <DupeDestroyCount value="1"/>
+    </CSound>
+    <CSound id="ArbiterSCBWCloakField@On" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Terran\GhostSCBW\GhostSCBWCloak@On00.ogg"/>
+        <DupeDestroyCount value="1"/>
+    </CSound>
+    <CSound id="ArbiterSCBWStasisField@Off" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArbiterSCBW\ArbiterSCBWStasisField@On00.ogg"/>
+        <DupeDestroyCount value="3"/>
+    </CSound>
+    <CSound id="ArbiterSCBWStasisField@On" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArbiterSCBW\ArbiterSCBWStasisField@On00.ogg"/>
+        <DupeMuteCount value="3"/>
+    </CSound>
+    <CSound id="ArbiterSCBWStasisField@Shockwave" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Spell_Entomb_Impact_00.wav"/>
+        <AssetArray File="Assets\Sounds\Spell_Entomb_Impact_01.wav"/>
+        <DupeDestroyCount value="8"/>
+        <DupeMuteCount value="3"/>
+        <Pitch value="-1.000000,1.000000"/>
+        <Spread value="10.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBWRecall@End" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArbiterSCBW\ArbiterSCBWRecall@End00.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArbiterSCBW\ArbiterSCBWRecall@End01.ogg"/>
+    </CSound>
+    <CSound id="ArbiterSCBWRecall@Start" parent="Spell">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArbiterSCBW\ArbiterSCBWRecall@Start00.ogg"/>
+        <AssetArray File="Assets\Sounds\Protoss\ArbiterSCBW\ArbiterSCBWRecall@Start01.ogg"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@LandSoundSweetener" parent="Land">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\ArbiterMP_LandSweetener00.wav"/>
+        <Pitch value="-1.000000,1.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@Land" parent="FlyingUnit_Land">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_00.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_01.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_02.wav"/>
+        <AssetArray File="Assets\Sounds\VoidRay_YoinkImpact_03.wav"/>
+        <Pitch value="-2.000000,1.000000"/>
+        <Volume value="-1.000000,1.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@Attack" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
+        <AssetArray TemplateParam="ArbiterSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes02"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes03"/>
+        <Volume value="-5.000000,-5.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@Death" parent="ProtossDeathSCBW" Folder="ArbiterSCBW">
+        <AssetArray TemplateParam="ArbiterSCBW@Death00"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@Help" parent="AlertProtossSCBW" Folder="ArbiterSCBW">
+        <AssetArray TemplateParam="ArbiterSCBW@Help00"/>
+        <Mode value="3DWorld"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@Pissed" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed02"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed03"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Pissed04"/>
+        <Flags index="Download" value="0"/>
+        <Select value="Sequential"/>
+        <Volume value="-5.000000,-5.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@Ready" parent="ProtossReadySCBW" Folder="ArbiterSCBW">
+        <AssetArray TemplateParam="ArbiterSCBW@Ready00"/>
+        <Volume value="-5.000000,-5.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@What" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
+        <AssetArray TemplateParam="ArbiterSCBW@What00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@What01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@What02"/>
+        <AssetArray TemplateParam="ArbiterSCBW@What03"/>
+        <Volume value="-5.000000,-5.000000"/>
+    </CSound>
+    <CSound id="ArbiterSCBW@Yes" parent="ProtossAckSCBW" Folder="ArbiterSCBW">
+        <AssetArray TemplateParam="ArbiterSCBW@Yes00"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes01"/>
+        <AssetArray TemplateParam="ArbiterSCBW@Yes02"/>
+        <Volume value="-5.000000,-5.000000"/>
+    </CSound>
+    <CDataCollectionUpgrade id="ArbiterSCBWEnergyUpgrade" parent="ProtossUpgradeSCBW">
+        <DataRecord Entry="Abil,ArbiterSCBWEnergyUpgrade"/>
+        <DataRecord Entry="Button,ArbiterSCBWEnergyUpgrade"/>
+        <DataRecord Entry="Button,ArbiterSCBWEnergyUpgrade@Passive"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWEnergyUpgrade"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWEnergyUpgrade@Passive"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@Show"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@Count"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@Allow"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@NotQoB"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWEnergyUpgrade@QoB"/>
+        <DataRecord Entry="Upgrade,ArbiterSCBWEnergyUpgrade"/>
+    </CDataCollectionUpgrade>
+    <CDataCollectionUpgrade id="ArbiterSCBWRecallResearch" parent="ProtossUpgradeSCBW">
+        <DataRecord Entry="Abil,ArbiterSCBWRecallResearch"/>
+        <DataRecord Entry="Button,ArbiterSCBWRecallResearch"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWRecallResearch"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWRecallResearch@Show"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWRecallResearch@Count"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWRecallResearch@NotQoB"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWRecallResearch@QoB"/>
+        <DataRecord Entry="Upgrade,ArbiterSCBWRecallResearch"/>
+    </CDataCollectionUpgrade>
+    <CDataCollectionUpgrade id="ArbiterSCBWStasisFieldResearch" parent="ProtossUpgradeSCBW">
+        <DataRecord Entry="Abil,ArbiterSCBWStasisFieldResearch"/>
+        <DataRecord Entry="Button,ArbiterSCBWStasisFieldResearch"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWStasisFieldResearch"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisFieldResearch@Show"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisFieldResearch@Count"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisFieldResearch@NotQoB"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisFieldResearch@QoB"/>
+        <DataRecord Entry="Upgrade,ArbiterSCBWStasisFieldResearch"/>
+    </CDataCollectionUpgrade>
+    <CDataCollectionAbil id="ArbiterSCBWWeapon" parent="ProtossShipWeaponSCBW">
+        <DataRecord Entry="Actor,ArbiterSCBWWeapon@Launch"/>
+        <DataRecord Entry="Actor,ArbiterSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,ArbiterSCBWWeapon@Missile"/>
+        <DataRecord Entry="Effect,ArbiterSCBWWeapon@Impact"/>
+        <DataRecord Entry="Effect,ArbiterSCBWWeapon@DamageApply"/>
+        <DataRecord Entry="Effect,ArbiterSCBWWeapon@DamageAccum"/>
+        <DataRecord Entry="Effect,ArbiterSCBWWeapon@LM"/>
+        <DataRecord Entry="Effect,ArbiterSCBWWeapon@DamageExpl"/>
+        <DataRecord Entry="Model,ArbiterSCBWWeapon@Impact"/>
+        <DataRecord Entry="Model,ArbiterSCBWWeapon@Missile"/>
+        <DataRecord Entry="Mover,ArbiterSCBWWeapon@Mover"/>
+        <DataRecord Entry="Sound,ArbiterSCBWWeapon@Launch"/>
+        <DataRecord Entry="Sound,ArbiterSCBWWeapon@Impact"/>
+        <DataRecord Entry="Unit,ArbiterSCBWWeapon@Missile"/>
+        <DataRecord Entry="Weapon,ArbiterSCBWWeapon"/>
+        <DataRecord Entry="Accumulator,ArbiterSCBWWeapon@Damage"/>
+        <Pattern value="SCBW_Weapon_Accumulator"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="ArbiterSCBWCloakField" parent="ProtossAbilSCBW">
+        <Name value="DataCollection/Name/ArbiterSCBWCloakField"/>
+        <DataRecord Entry="Actor,ArbiterSCBWCloakField@Range"/>
+        <DataRecord Entry="Actor,ArbiterSCBWCloakField@Off"/>
+        <DataRecord Entry="Actor,ArbiterSCBWCloakField@On"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWCloakField"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWCloakField@Effect"/>
+        <DataRecord Entry="Button,ArbiterSCBWCloakField"/>
+        <DataRecord Entry="Effect,ArbiterSCBWCloakField@AB"/>
+        <DataRecord Entry="Effect,ArbiterSCBWCloakField@Search"/>
+        <DataRecord Entry="Sound,ArbiterSCBWCloakField@Off"/>
+        <DataRecord Entry="Sound,ArbiterSCBWCloakField@On"/>
+        <DataRecord Entry="Validator,ArbiterSCBWCloakField@AB"/>
+        <DataRecord Entry="Validator,ArbiterSCBWCloakField@Disable"/>
+        <DataRecord Entry="Validator,ArbiterSCBWCloakField@Remove"/>
+        <DataRecord Entry="Validator,ArbiterSCBWCloakField@Effect@Disable"/>
+        <DataRecord Entry="Validator,ArbiterSCBWCloakField@Effect@Remove"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="ArbiterSCBWRecall" parent="ProtossAbilSCBW">
+        <DataRecord Entry="Abil,ArbiterSCBWRecall"/>
+        <DataRecord Entry="Abil,ArbiterSCBWRecall@Hardcore"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@CastSound"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@GuideRegionAdd"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@CursorRegion"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@CursorSplat"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchEnd"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@SearchStart"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@Range"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@Opacity"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactRecalled"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactRecalling"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactSoundRecalling"/>
+        <DataRecord Entry="Actor,ArbiterSCBWRecall@ImpactSoundRecalled"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWRecall@Success"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWRecall@Recalled"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWRecall@Recalling"/>
+        <DataRecord Entry="Button,ArbiterSCBWRecall"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@TeleportInitial"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@SearchGroundFirst"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@SearchGround"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@Success"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPSet"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@Search"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheckTP"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheckFail"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@SetInitial"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheck"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@TeleportAir"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@PlacementCheckAir"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@CP"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@ClearRecalls"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@EnumMagazineSet"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@Set"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalled"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@CPFinal"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@Teleport"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@ABRecalling"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@EnumMagazine"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@SetInitialGround"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@SetGround"/>
+        <DataRecord Entry="Effect,ArbiterSCBWRecall@SearchDummy"/>
+        <DataRecord Entry="Model,ArbiterSCBWRecall@SearchStart"/>
+        <DataRecord Entry="Model,ArbiterSCBWRecall@ImpactRecalled"/>
+        <DataRecord Entry="Model,ArbiterSCBWRecall@ImpactRecalling"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWRecall"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWRecall"/>
+        <DataRecord Entry="Shape,ArbiterSCBWRecall@Visibility"/>
+        <DataRecord Entry="Sound,ArbiterSCBWRecall@CastSound"/>
+        <DataRecord Entry="Sound,ArbiterSCBWRecall@Start"/>
+        <DataRecord Entry="Sound,ArbiterSCBWRecall@End"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@CPSet"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@SourceNotPathable"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@CrossChasmOrCliff"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@CPPeriodic"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@ABRecalling"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@Set"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@SharedControl"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@TargetValidator"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@CrossCliff"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@Enum"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@EnumAir"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@ValidatorGround"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@PlacementCheck"/>
+        <DataRecord Entry="Validator,ArbiterSCBWRecall@CrossChasm"/>
+    </CDataCollectionAbil>
+    <CDataCollectionAbil id="ArbiterSCBWStasisField" parent="ProtossAbilSCBW">
+        <DataRecord Entry="Abil,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="Abil,ArbiterSCBWStasisField@Hardcore"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@CursorSplat"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@CastModel"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@Impact"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@ImpactSound"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@OffSound"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@Range"/>
+        <DataRecord Entry="Actor,ArbiterSCBWStasisField@Shockwave"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="Behavior,ArbiterSCBWStasisField@TimedLife"/>
+        <DataRecord Entry="Button,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@IterateTransport"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@AB"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@HaltIssueOrder"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@PhasedUnit"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@Search"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@Set"/>
+        <DataRecord Entry="Effect,ArbiterSCBWStasisField@ABTimedLife"/>
+        <DataRecord Entry="Model,ArbiterSCBWStasisField@CastModel"/>
+        <DataRecord Entry="Model,ArbiterSCBWStasisField@Impact"/>
+        <DataRecord Entry="Requirement,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisField@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBWStasisField"/>
+        <DataRecord Entry="Sound,ArbiterSCBWStasisField@On"/>
+        <DataRecord Entry="Sound,ArbiterSCBWStasisField@Off"/>
+        <DataRecord Entry="Sound,ArbiterSCBWStasisField@Shockwave"/>
+        <DataRecord Entry="Validator,ArbiterSCBWStasisField@AB"/>
+        <DataRecord Entry="Validator,ArbiterSCBWStasisField@Set"/>
+        <DataRecord Entry="Validator,ArbiterSCBWStasisField@InvulnerableHandler"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="ArbiterSCBW" parent="ProtossAirUnitSCBW">
+        <TechInfoUpgradeUsed value="ArbiterSCBWEnergyUpgrade"/>
+        <DataRecord Entry="Actor,ArbiterSCBW@LandSoundSweetener"/>
+        <DataRecord Entry="Actor,ArbiterSCBW@Land"/>
+        <DataRecord Entry="Actor,ArbiterSCBW@WarpInStargate"/>
+        <DataRecord Entry="Button,ArbiterSCBW@Passive"/>
+        <DataRecord Entry="Model,ArbiterSCBW@WarpInStargate"/>
+        <DataRecord Entry="Model,ArbiterSCBW@WarpIn"/>
+        <DataRecord Entry="Model,ArbiterSCBW@Placement"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ArbiterSCBW@NotQoB"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@LandSoundSweetener"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Land"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Death"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Help"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Yes"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Attack"/>
+        <DataRecord Entry="Sound,ArbiterSCBW@Pissed"/>
+        <DataRecord Entry="Tactical,ArbiterSCBW"/>
+        <DataRecord Entry="Validator,ArbiterSCBW@Is"/>
+        <DataRecord Entry="Validator,ArbiterSCBW@Not"/>
+    </CDataCollectionUnit>
+    <CUnit id="ArbiterSCBWWeapon@Missile" parent="MISSILE">
+        <Race value="BWPr"/>
+        <Mover value="ArbiterSCBWWeapon@Mover"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+    </CUnit>
+    <CUnit id="ArbiterSCBW" parent="ProtossUnitSCBW">
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="AIThreatAir" value="1"/>
+        <FlagArray index="AIHighPrioTarget" value="1"/>
+        <FlagArray index="AICaster" value="1"/>
+        <FlagArray index="AISupport" value="1"/>
+        <FlagArray index="ArmySelect" value="1"/>
+        <PlaneArray index="Air" value="1"/>
+        <Collide index="Flying" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Mechanical" value="1"/>
+        <LifeStart value="200"/>
+        <LifeMax value="200"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossPlating"/>
+        <EnergyStart value="50"/>
+        <EnergyMax value="200"/>
+        <ShieldsStart value="150"/>
+        <ShieldsMax value="150"/>
+        <Mover value="Fly"/>
+        <Speed value="2.8125"/>
+        <Acceleration value="2.0625"/>
+        <StationaryTurningRate value="539.4726"/>
+        <TurningRate value="539.4726"/>
+        <Sight value="9"/>
+        <Height value="3.75"/>
+        <VisionHeight value="4"/>
+        <Food value="-4"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="100"/>
+        <CostResource index="Vespene" value="350"/>
+        <BuildTime value="140"/>
+        <AttackTargetPriority value="20"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <AbilArray Link="Warpable"/>
+        <AbilArray Link="ArbiterSCBWRecall"/>
+        <AbilArray Link="ArbiterSCBWStasisField"/>
+        <AbilArray Link="ProgressRally"/>
+        <BehaviorArray Link="ArbiterSCBWCloakField"/>
+        <WeaponArray Link="ArbiterSCBWWeapon"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+            <LayoutButtons Face="ArbiterSCBWCloakField" Type="Passive" Behavior="ArbiterSCBWCloakField" Row="2" Column="2"/>
+            <LayoutButtons Face="ArbiterSCBWRecall" Type="AbilCmd" AbilCmd="ArbiterSCBWRecall,Execute" Row="2" Column="0"/>
+            <LayoutButtons Face="ArbiterSCBWStasisField" Type="AbilCmd" AbilCmd="ArbiterSCBWStasisField,Execute" Row="2" Column="1"/>
+            <LayoutButtons>
+                <Face value="ArbiterSCBWEnergyUpgrade@Passive"/>
+                <Type value="Passive"/>
+                <Requirements value="ArbiterSCBWEnergyUpgrade@Passive"/>
+                <ShowInGlossary value="0"/>
+                <Row value="2"/>
+                <Column value="3"/>
+            </LayoutButtons>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="ProgressRally,Rally1" Row="2" Column="4"/>
+        </CardLayouts>
+        <Radius value="0.6875"/>
+        <SeparationRadius value="1"/>
+        <SubgroupPriority value="96"/>
+        <MinimapRadius value="0.75"/>
+        <GlossaryPriority value="170"/>
+        <GlossaryStrongArray value="SiegeTankSCBW"/>
+        <GlossaryStrongArray value="CarrierSCBW"/>
+        <GlossaryStrongArray value="MutaliskSCBW"/>
+        <GlossaryWeakArray value="ScienceVesselSCBW"/>
+        <GlossaryWeakArray value="DefilerSCBW"/>
+        <GlossaryWeakArray value="DarkArchonSCBW"/>
+        <TacticalAIThink value="AIThinkArbiterSCBW"/>
+        <ScoreMake value="450"/>
+        <ScoreKill value="450"/>
+        <ScoreResult value="BuildOrder"/>
+        <RepairTime value="160"/>
+    </CUnit>
+    <CBehaviorBuff id="ArbiterSCBWRecall@Success">
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <Duration value="0.5"/>
+        <InitialEffect value="ArbiterSCBWRecall@CPFinal"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ArbiterSCBWCloakField">
+        <Alignment value="Positive"/>
+        <InfoFlags index="Hidden" value="1"/>
+        <InfoIcon value="Assets\Textures\BTN-Ability-Protoss-CloakField.dds"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <BuffFlags index="DisableWhileUnderConstruction" value="1"/>
+        <DisableValidatorArray value="ArbiterSCBWCloakField@Disable"/>
+        <Period value="0.2"/>
+        <PeriodicEffect value="ArbiterSCBWCloakField@Search"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ArbiterSCBWCloakField@Effect">
+        <Alignment value="Positive"/>
+        <InfoIcon value="Assets\Textures\btn-ability-protoss-cloakfield.dds"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <DisableValidatorArray value="ArbiterSCBWCloakField@Effect@Disable"/>
+        <TimeScaleSource Value="Global"/>
+        <Duration value="0.5"/>
+        <Modification>
+            <StateFlags index="Cloak" value="1"/>
+        </Modification>
+        <RemoveValidatorArray value="ArbiterSCBWCloakField@Effect@Remove"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ArbiterSCBWStasisField">
+        <Alignment value="Negative"/>
+        <InfoIcon value="Assets\Textures\ClassicIcons\SC1_ProtossArbiterStasisField.dds"/>
+        <BehaviorCategories index="Magic" value="1"/>
+        <BehaviorCategories index="User4" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <DisplayDuration index="Self" value="1"/>
+        <DisplayDuration index="Ally" value="1"/>
+        <DisplayDuration index="Neutral" value="1"/>
+        <DisplayDuration index="Enemy" value="1"/>
+        <Duration value="61.125"/>
+        <Modification>
+            <ModifyFlags index="DisableAbils" value="1"/>
+            <ModifyFlags index="Detected" value="1"/>
+            <ModifyFlags index="SuppressMoving" value="1"/>
+            <ModifyFlags index="SuppressTurning" value="1"/>
+            <StateFlags index="Invulnerable" value="1"/>
+            <StateFlags index="Stasis" value="1"/>
+            <StateFlags index="Stun" value="1"/>
+            <StateFlags index="SuppressAttack" value="1"/>
+            <StateFlags index="SuppressDetection" value="1"/>
+            <StateFlags index="SuppressPassenger" value="1"/>
+            <StateFlags index="SuppressRadar" value="1"/>
+            <AbilClassEnableArray index="CAbilHarvest" value="1"/>
+            <AbilClassDisableArray index="CAbilAttack" value="1"/>
+            <AbilLinkEnableArray value="move"/>
+            <AbilLinkEnableArray value="stop"/>
+            <BehaviorLinkDisableArray value="GhostSCBWCloak"/>
+            <BehaviorLinkDisableArray value="WraithSCBWCloak"/>
+            <BehaviorLinkDisableArray value="GhostCloak"/>
+            <BehaviorLinkDisableArray value="BansheeCloak"/>
+            <BehaviorLinkDisableArray value="ArbiterSCBWCloakField"/>
+            <BehaviorLinkDisableArray value="CloakField"/>
+            <RateMultiplierArray index="Cooldown" value="0.001"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ArbiterSCBWStasisField@TimedLife">
+        <InfoFlags index="Hidden" value="1"/>
+        <BehaviorCategories index="Magic" value="1"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <DisplayDuration index="Enemy" value="1"/>
+        <Duration value="61.125"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ArbiterSCBWRecall@Recalled">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <Duration value="0.0625"/>
+        <Modification>
+            <ModifyFlags index="DisableAbils" value="1"/>
+            <ModifyFlags index="SuppressMoving" value="1"/>
+            <StateFlags index="SuppressAttack" value="1"/>
+            <StateFlags index="Uncommandable" value="1"/>
+            <AbilClassDisableArray index="CAbilAttack" value="1"/>
+            <AbilClassDisableArray index="CAbilMove" value="1"/>
+            <AbilLinkEnableArray value="VolatileBurstBuilding"/>
+            <AbilLinkEnableArray value="GhostCloak"/>
+            <AbilLinkEnableArray value="BansheeCloak"/>
+            <AbilLinkEnableArray value="BroodLordHangar"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ArbiterSCBWRecall@Recalling">
+        <InfoFlags index="Hidden" value="1"/>
+        <BehaviorCategories index="User7" value="1"/>
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
+        <RemoveValidatorArray value="CasterNotDead"/>
+        <RemoveValidatorArray value="SCBW_CasterNotStasis"/>
+        <RemoveValidatorArray value="GhostSCBWLockdown@NotCaster"/>
+        <Duration value="2"/>
+        <ExpireEffect value="ArbiterSCBWRecall@Set"/>
+        <Modification>
+            <ModifyFlags index="DisableAbils" value="1"/>
+            <StateFlags index="SuppressAttack" value="1"/>
+            <StateFlags index="Uncommandable" value="1"/>
+            <AbilClassDisableArray index="CAbilAttack" value="1"/>
+            <AbilClassDisableArray index="CAbilMove" value="1"/>
+            <AbilLinkEnableArray value="VolatileBurstBuilding"/>
+            <AbilLinkEnableArray value="GhostCloak"/>
+            <AbilLinkEnableArray value="BansheeCloak"/>
+            <AbilLinkEnableArray value="BroodLordHangar"/>
+        </Modification>
+    </CBehaviorBuff>
+    <CUpgrade id="ArbiterSCBWEnergyUpgrade" parent="SCBW_EnergyUpgrade">
+        <Icon value="Assets\Textures\btn-upgrade-protoss-adeptshieldupgrade.dds"/>
+        <InfoTooltipPriority value="1"/>
+        <Race value="BWPr"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="UpgradeType:Talents,Race:Protoss"/>
+        <AffectedUnitArray value="ArbiterSCBW"/>
+    </CUpgrade>
+    <CUpgrade id="ArbiterSCBWRecallResearch" parent="SCBW_Research">
+        <InfoTooltipPriority value="1"/>
+        <Icon value="Assets\Textures\btn-ability-protoss-recall.dds"/>
+        <Race value="BWPr"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="UpgradeType:SpellResearch,Race:Protoss"/>
+        <AffectedUnitArray value="ArbiterSCBW"/>
+    </CUpgrade>
+    <CUpgrade id="ArbiterSCBWStasisFieldResearch" parent="SCBW_Research">
+        <InfoTooltipPriority value="1"/>
+        <Icon value="Assets\Textures\btn-ability-protoss-stasisfield.dds"/>
+        <Race value="BWPr"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="UpgradeType:SpellResearch,Race:Protoss"/>
+        <AffectedUnitArray value="ArbiterSCBW"/>
+    </CUpgrade>
+</Catalog>

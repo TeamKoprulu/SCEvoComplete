@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CAbilTrain id="RoboticsFacilitySCBW@Train" parent="ProtossSCBWTrain">
+        <InfoArray index="Train1" Effect="WarpInEffect15">
+            <Button DefaultButtonFace="ShuttleSCBW" Requirements="ShuttleSCBW"/>
+            <Unit value="ShuttleSCBW"/>
+        </InfoArray>
+        <InfoArray index="Train2" Effect="WarpInEffect15">
+            <Button DefaultButtonFace="ObserverSCBW" Requirements="ObserverSCBW"/>
+            <Unit value="ObserverSCBW"/>
+        </InfoArray>
+        <InfoArray index="Train3">
+            <Button DefaultButtonFace="ReaverSCBW" Requirements="ReaverSCBW"/>
+            <Unit value="ReaverSCBW"/>
+        </InfoArray>
+        <Activity value="UI/Building"/>
+    </CAbilTrain>
+    <CValidatorUnitType id="RoboticsFacilitySCBW@Is" parent="SCBW_Unit" x="RoboticsFacilitySCBW"/>
+    <CValidatorUnitType id="RoboticsFacilitySCBW@Not" parent="SCBW_UnitNot" x="RoboticsFacilitySCBW"/>
+    <CTacticalOrder id="RoboticsFacilitySCBW">
+        <Abil value="Rally"/>
+        <TargetFind value="DefaultRallyPoint"/>
+    </CTacticalOrder>
+    <CRequirement id="RoboticsFacilitySCBW" parent="SCBW_UnitReq" Race="Protoss"/>
+    <CButton id="RoboticsFacilitySCBW">
+        <Icon value="Assets\Textures\btn-building-protoss-roboticsfacility@scbw.dds"/>
+        <AlertIcon value="Assets\Textures\btn-building-protoss-roboticsfacility@scbw.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CRequirementAllowUnit id="RoboticsFacilitySCBW@AllowUnit" parent="SCBW_AllowUnit" x="RoboticsFacilitySCBW"/>
+    <CRequirementAnd id="RoboticsFacilitySCBW@Show" parent="SCBW_BuildingShow" x="RoboticsFacilitySCBW"/>
+    <CRequirementCountUnit id="RoboticsFacilitySCBW@Count" parent="SCBW_UnitCount" x="RoboticsFacilitySCBW"/>
+    <CRequirementCountUnit id="RoboticsFacilitySCBW@QoB" parent="SCBW_UnitQoB" x="RoboticsFacilitySCBW"/>
+    <CRequirementCountUnit id="RoboticsFacilitySCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="RoboticsFacilitySCBW"/>
+    <CRequirementNot id="RoboticsFacilitySCBW@NotQoBAtUnit" parent="SCBW_Not" x="RoboticsFacilitySCBW@QoBAtUnit"/>
+    <CRequirementNot id="RoboticsFacilitySCBW@NotQoB" parent="SCBW_Not" x="RoboticsFacilitySCBW@QoB"/>
+    <CRequirementAnd id="RoboticsFacilitySCBW">
+        <OperandArray value="CyberneticsCoreSCBW@Count"/>
+    </CRequirementAnd>
+    <CActorModel id="RoboticsFacilitySCBW@Death" parent="UnitDeathModel">
+        <CopySource value="RoboticsFacilitySCBW"/>
+        <Inherits index="BaseModelScale" value="0"/>
+        <AcceptedTransfers index="Textures" value="1"/>
+        <Host Subject="_Selectable"/>
+        <HostSiteOps Ops="SOpAttachOriginStationary SOpShadow"/>
+    </CActorModel>
+    <CActorModel id="RoboticsFacilitySCBW@Build" parent="ProtossBuildingSCBW@Build"/>
+    <CActorUnit id="RoboticsFacilitySCBW" parent="ProtossBuildingSCBW" unitName="RoboticsFacilitySCBW">
+        <Aliases value="_UnitHuge"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit CasterIsUnpoweredAndNotUnderConstruction" Send="DeathCustomize Variation2"/>
+        <On Terms="ActorCreation" Send="AnimGroupRemove Work"/>
+        <AnimBlendTime value="0.000000"/>
+        <ModelFlags index="AutomateGlobalLoops" value="0"/>
+        <CreepHeightClass value="Small"/>
+        <DeathActorModel value="RoboticsFacilitySCBW@Death"/>
+        <BarOffset value="110"/>
+        <BarWidth value="160"/>
+        <GroupIcon>
+            <Image value="Assets\Textures\wireframe-protoss-roboticsfacility@scbw.dds"/>
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-protoss-roboticsfacility@scbw.dds"/>
+        <NameOffset value="110"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+        <UnitIcon value="Assets\Textures\btn-building-protoss-roboticsfacility@scbw.dds"/>
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-protoss-roboticsfacility@scbw.dds"/>
+        </Wireframe>
+        <WireframeShield>
+            <Image value="Assets\Textures\wireframe-protoss-roboticsfacility-shield01@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-roboticsfacility-shield02@scbw.dds"/>
+            <Image value="Assets\Textures\wireframe-protoss-roboticsfacility-shield03@scbw.dds"/>
+        </WireframeShield>
+        <Macros value="RoboticsFacilitySCBW@WarpInMacro"/>
+    </CActorUnit>
+    <CActorSplat id="RoboticsFacilitySCBW@Splat" parent="GenericUnitSplat" unitName="RoboticsFacilitySCBW"/>
+    <CActorEventMacro id="RoboticsFacilitySCBW@WarpInMacro">
+        <On Terms="ActorCreation" Send="StatusSet WarpingIn 0"/>
+        <!-- Shuttle -->
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Start; AbilTrainProduced ShuttleSCBW; !ValidateUnit HasNoPower" Send="Create ShuttleSCBW@WarpInRobotics"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Start; AbilTrainProduced ShuttleSCBW" Send="StatusSet WarpingIn 1"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 1" Send="Create ShuttleSCBW@WarpInRobotics"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="ShuttleSCBW@WarpInRobotics" Send="Destroy"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Cancel" Target="ShuttleSCBW@WarpInRobotics" Send="Destroy"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Finish" Target="ShuttleSCBW@WarpInRobotics" Send="Destroy"/>
+        <!-- Observer -->
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Start; AbilTrainProduced ObserverSCBW; !ValidateUnit HasNoPower" Send="Create ObserverSCBW@WarpInRobotics"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Start; AbilTrainProduced ObserverSCBW" Send="StatusSet WarpingIn 1"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 1" Send="Create ObserverSCBW@WarpInRobotics"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="ObserverSCBW@WarpInRobotics" Send="Destroy"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Cancel" Target="ObserverSCBW@WarpInRobotics" Send="Destroy"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Finish" Target="ObserverSCBW@WarpInRobotics" Send="Destroy"/>
+        <!-- Reaver -->
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Start; AbilTrainProduced ReaverSCBW; !ValidateUnit HasNoPower" Send="Create ReaverSCBW@WarpInRobotics"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Start; AbilTrainProduced ReaverSCBW" Send="StatusSet WarpingIn 1"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Stop; Level 0; IsStatus WarpingIn 1" Send="Create ReaverSCBW@WarpInRobotics"/>
+        <On Terms="BehaviorLevel.PowerUserQueue.Start; Level 0" Target="ReaverSCBW@WarpInRobotics" Send="Destroy"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Cancel" Target="ReaverSCBW@WarpInRobotics" Send="Destroy"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Finish" Target="ReaverSCBW@WarpInRobotics" Send="Destroy"/>
+        <!--  -->
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Cancel" Send="StatusSet WarpingIn 0"/>
+        <On Terms="AbilTrain.RoboticsFacilitySCBW@Train.Finish" Send="StatusSet WarpingIn 0"/>
+    </CActorEventMacro>
+    <CModel id="RoboticsFacilitySCBW@Build" parent="ProtossBuildingBuildBase"/>
+    <CModel id="RoboticsFacilitySCBW@DeathUnpowered" parent="RoboticsFacilityUnpoweredDeathBase">
+        <Model value="Assets\Buildings\Protoss\RoboticsFacilitySCBW\RoboticsFacilitySCBW@Death.m3"/>
+    </CModel>
+    <CModel id="RoboticsFacilitySCBW@Portrait" parent="ProtossAdvisorSCBW@PortraitBase" Race="Protoss"/>
+    <CModel id="RoboticsFacilitySCBW@DeathUnderConstruction" parent="ProtossBuildingBuildDeath"/>
+    <CModel id="RoboticsFacilitySCBW@Death" parent="BuildingDeathEx" Race="Protoss" low="ProtossBuildingDeathLow">
+        <Model value="Assets\Buildings\Protoss\RoboticsFacilitySCBW\RoboticsFacilitySCBW@Death.m3"/>
+    </CModel>
+    <CModel id="RoboticsFacilitySCBW" parent="RoboticsFacilityBase"/>
+    <CModel id="RoboticsFacilitySCBW@Birth" parent="RoboticsFacilityWarpInBase">
+        <Model value="Assets\Buildings\Protoss\RoboticsFacilitySCBW\RoboticsFacilitySCBW@Birth.m3"/>
+    </CModel>
+    <CModel id="RoboticsFacilitySCBW@Placement" parent="PlacementEx" Race="Protoss" low="RoboticsFacilitySCBW">
+        <Model value="Assets\Buildings\Protoss\RoboticsFacilitySCBW\RoboticsFacilitySCBW@Placement.m3"/>
+        <ScaleMax value="0.900000,0.900000,0.900000"/>
+        <ScaleMin value="0.900000,0.900000,0.900000"/>
+    </CModel>
+    <CModel id="RoboticsFacilitySCBW@Splat" parent="Splat">
+        <Model value="Assets\Splats\Splat_RoboticsFacilitySCBW\Splat_RoboticsFacilitySCBW.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+        <ScaleMax value="0.890000,0.890000,0.890000"/>
+        <ScaleMin value="0.890000,0.890000,0.890000"/>
+    </CModel>
+    <CModel id="RoboticsFacilitySCBW@WarpInEnemy" parent="PersistentSpellFX">
+        <Model value="Assets\Units\Test\InvisibleUnit\InvisibleUnit.m3"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CModel>
+    <CSound id="RoboticsFacilitySCBW@Explode" parent="Combat">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge0.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge1.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge2.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge3.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge4.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge5.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge6.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge7.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge8.wav" Pitch="-3.000000,3.000000"/>
+        <AssetArray File="Assets\Sounds\Protoss\SharedEffects\Explosions\Protoss_ExplosionLarge9.wav" Pitch="-3.000000,3.000000"/>
+        <DupeDestroyCount value="5"/>
+        <Pitch value="-1.000000,1.000000"/>
+        <Volume value="-1.000000,0.000000"/>
+    </CSound>
+    <CSound id="RoboticsFacilitySCBW@Ready" parent="Ready">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\RoboticsFacilitySCBW\RoboticsFacilitySCBW@What00.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CSound id="RoboticsFacilitySCBW@What" parent="Voice">
+        <EditorCategories value="Race:Protoss"/>
+        <AssetArray File="Assets\Sounds\Protoss\RoboticsFacilitySCBW\RoboticsFacilitySCBW@What00.ogg"/>
+        <Volume value="-3.000000,-3.000000"/>
+    </CSound>
+    <CDataCollectionUnit id="RoboticsFacilitySCBW" parent="ProtossBuildingSCBW">
+        <DataRecord Entry="Abil,RoboticsFacilitySCBW@Train"/>
+        <DataRecord Entry="Actor,RoboticsFacilitySCBW@Death"/>
+        <DataRecord Entry="Actor,RoboticsFacilitySCBW@Build"/>
+        <DataRecord Entry="Actor,RoboticsFacilitySCBW@Splat"/>
+        <DataRecord Entry="Actor,RoboticsFacilitySCBW@WarpInMacro"/>
+        <DataRecord Entry="Model,RoboticsFacilitySCBW@WarpInEnemy"/>
+        <DataRecord Entry="Model,RoboticsFacilitySCBW@Build"/>
+        <DataRecord Entry="Model,RoboticsFacilitySCBW@Birth"/>
+        <DataRecord Entry="Model,RoboticsFacilitySCBW@DeathUnderConstruction"/>
+        <DataRecord Entry="Model,RoboticsFacilitySCBW@DeathUnpowered"/>
+        <DataRecord Entry="Model,RoboticsFacilitySCBW@Placement"/>
+        <DataRecord Entry="Model,RoboticsFacilitySCBW@Splat"/>
+        <DataRecord Entry="RequirementNode,RoboticsFacilitySCBW@Show"/>
+        <DataRecord Entry="RequirementNode,RoboticsFacilitySCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,RoboticsFacilitySCBW@Count"/>
+        <DataRecord Entry="RequirementNode,RoboticsFacilitySCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,RoboticsFacilitySCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,RoboticsFacilitySCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,RoboticsFacilitySCBW@NotQoB"/>
+        <DataRecord Entry="Sound,RoboticsFacilitySCBW@Explode"/>
+        <DataRecord Entry="Tactical,RoboticsFacilitySCBW"/>
+        <DataRecord Entry="Validator,RoboticsFacilitySCBW@Is"/>
+        <DataRecord Entry="Validator,RoboticsFacilitySCBW@Not"/>
+    </CDataCollectionUnit>
+    <CUnit id="RoboticsFacilitySCBW">
+        <DeathRevealRadius value="3"/>
+        <Facing value="315"/>
+        <Race value="BWPr"/>
+        <Mob value="Multiplayer"/>
+        <FlagArray index="Turnable" value="0"/>
+        <FlagArray index="Unhighlightable" value="0"/>
+        <FlagArray index="PreventDefeat" value="1"/>
+        <FlagArray index="PreventDestroy" value="1"/>
+        <FlagArray index="PenaltyRevealed" value="1"/>
+        <FlagArray index="UseLineOfSight" value="1"/>
+        <FlagArray index="TownAlert" value="1"/>
+        <FlagArray index="NoPortraitTalk" value="1"/>
+        <FogVisibility value="Snapshot"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Burrow" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="Structure" value="1"/>
+        <Collide index="RoachBurrow" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <Attributes index="Armored" value="1"/>
+        <Attributes index="Structure" value="1"/>
+        <LifeStart value="500"/>
+        <LifeMax value="500"/>
+        <LifeArmor value="1"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossBuildingPlating"/>
+        <ShieldsStart value="500"/>
+        <ShieldsMax value="500"/>
+        <ShieldRegenRate value="0.4375"/>
+        <ShieldArmorName value="Unit/ShieldArmorName/ProtossPlasmaShields"/>
+        <StationaryTurningRate value="719.4726"/>
+        <TurningRate value="719.4726"/>
+        <Sight value="10"/>
+        <CostCategory value="Technology"/>
+        <CostResource index="Minerals" value="200"/>
+        <CostResource index="Vespene" value="200"/>
+        <AttackTargetPriority value="11"/>
+        <AbilArray Link="WarpInProgressSCBW"/>
+        <AbilArray Link="que5"/>
+        <AbilArray Link="RoboticsFacilitySCBW@Train"/>
+        <AbilArray Link="Rally"/>
+        <BehaviorArray Link="PowerUserQueue"/>
+        <CardLayouts>
+            <LayoutButtons Face="Cancel" Type="AbilCmd" AbilCmd="que5,CancelLast" Row="2" Column="4"/>
+            <LayoutButtons Face="CancelBuilding" Type="AbilCmd" AbilCmd="WarpInProgressSCBW,Cancel" Row="2" Column="4"/>
+            <LayoutButtons Face="Rally" Type="AbilCmd" AbilCmd="Rally,Rally1" Row="1" Column="4"/>
+        </CardLayouts>
+        <Radius value="1.5"/>
+        <SeparationRadius value="1.5"/>
+        <Footprint value="Footprint3x3Contour"/>
+        <PlacementFootprint value="Footprint3x3"/>
+        <ScoreMake value="400"/>
+        <ScoreKill value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <SubgroupPriority value="22"/>
+        <MinimapRadius value="1.5"/>
+        <EditorCategories value="ObjectType:Structure,ObjectFamily:Melee"/>
+        <TechAliasArray value="Alias_RoboticsFacility"/>
+        <GlossaryPriority value="211"/>
+        <HotkeyCategory value="Unit/Category/ProtossUnitsSCBW"/>
+        <TechTreeProducedUnitArray value="ShuttleSCBW"/>
+        <TechTreeProducedUnitArray value="ReaverSCBW"/>
+        <TechTreeProducedUnitArray value="ObserverSCBW"/>
+        <BuildTime value="70"/>
+        <TacticalAIThink value="AIThinkRoboticsFacilitySCBW"/>
+    </CUnit>
+</Catalog>

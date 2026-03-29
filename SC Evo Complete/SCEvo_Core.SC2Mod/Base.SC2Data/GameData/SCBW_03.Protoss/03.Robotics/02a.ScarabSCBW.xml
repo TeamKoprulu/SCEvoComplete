@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectSet id="ScarabSCBWWeapon@ImpactUpgraded">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ScarabSCBWWeapon@DamageUpgraded"/>
+        <EffectArray value="ScarabSCBWWeapon@DamageUpgradedFallback"/>
+        <EffectArray value="Suicide"/>
+        <ValidatorArray value="ScarabSCBWWeapon@ImpactUpgraded"/>
+    </CEffectSet>
+    <CEffectSet id="ScarabSCBWWeapon@ImpactSet">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ScarabSCBWWeapon@Impact"/>
+        <EffectArray value="ScarabSCBWWeapon@ImpactUpgraded"/>
+    </CEffectSet>
+    <CEffectCreatePersistent id="ScarabSCBWWeapon@ImpactLocation">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichLocation Value="SourcePoint"/>
+        <InitialEffect value="ScarabSCBWWeapon@ImpactSet"/>
+    </CEffectCreatePersistent>
+    <CEffectDamage id="ScarabSCBWWeapon@Damage" parent="SCBW_WeaponDamage">
+        <EditorCategories value="Race:Protoss"/>
+        <ImpactLocation Value="SourcePoint"/>
+        <Kind value="Splash"/>
+        <KindSplash value="Splash"/>
+        <Amount value="100"/>
+        <Death value="Blast"/>
+        <AreaArray Radius="0.625" Fraction="1"/>
+        <AreaArray Radius="1.25" Fraction="0.5" Validator="SCBW_NotBurrowed"/>
+        <AreaArray Radius="1.875" Fraction="0.25" Validator="SCBW_NotBurrowed"/>
+        <ExcludeArray Effect="ScarabSCBWWeapon@ImpactSet"/>
+        <ExcludeArray Value="Outer"/>
+        <IncludeArray Effect="ScarabSCBWWeapon@ImpactSet" Value="Target"/>
+        <SearchFilters value="Ground;Self,Player,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <SearchFlags index="OffsetByUnitRadius" value="0"/>
+    </CEffectDamage>
+    <CEffectDamage id="ScarabSCBWWeapon@DamageFallback" parent="ScarabSCBWWeapon@Damage">
+        <Name value="Effect/Name/ScarabSCBWWeapon@DamageFallback"/>
+        <ValidatorArray value="SCBW_CliffLevelNotEqual"/>
+        <ValidatorArray value="noMarkers"/>
+        <ImpactLocation Value="TargetUnit"/>
+        <AreaArray index="0" removed="1"/>
+        <AreaArray index="1" removed="1"/>
+        <AreaArray index="2" removed="1"/>
+        <ExcludeArray index="0" removed="1"/>
+        <ExcludeArray index="1" removed="1"/>
+        <IncludeArray index="0" removed="1"/>
+        <SearchFilters value="-;-"/>
+        <SearchFlags index="SameCliff" value="0"/>
+    </CEffectDamage>
+    <CEffectDamage id="ScarabSCBWWeapon@DamageUpgraded" parent="ScarabSCBWWeapon@Damage">
+        <Name value="Effect/Name/ScarabSCBWWeapon@DamageUpgraded"/>
+        <Amount value="125"/>
+    </CEffectDamage>
+    <CEffectDamage id="ScarabSCBWWeapon@DamageUpgradedFallback" parent="ScarabSCBWWeapon@DamageFallback">
+        <Name value="Effect/Name/ScarabSCBWWeapon@DamageUpgradedFallback"/>
+        <Amount value="125"/>
+    </CEffectDamage>
+    <CEffectSet id="ScarabSCBWWeapon@Impact">
+        <EditorCategories value="Race:Protoss"/>
+        <EffectArray value="ScarabSCBWWeapon@Damage"/>
+        <EffectArray value="ScarabSCBWWeapon@DamageFallback"/>
+        <EffectArray value="Suicide"/>
+        <ValidatorArray value="ScarabSCBWWeapon@ImpactNormal"/>
+    </CEffectSet>
+    <CValidatorUnitType id="ScarabSCBW@Not" parent="SCBW_UnitNot" x="ScarabSCBW"/>
+    <CValidatorEffectTreeUserData id="ScarabSCBWWeapon@ImpactUpgraded">
+        <Key value="ImpactUpgraded"/>
+        <Value value="1"/>
+        <BehaviorScope Behavior="ReaverSCBWWeapon@ScarabTimedLife"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorEffectTreeUserData id="ScarabSCBWWeapon@ImpactNormal">
+        <CheckExistence value="0"/>
+        <Key value="ImpactUpgraded"/>
+        <BehaviorScope Behavior="ReaverSCBWWeapon@ScarabTimedLife"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorCondition id="ScarabSCBWWeapon@TargetCondition">
+        <IfArray Test="UnderDarkSwarmCombine" Return="CasterAttackingTargetSCBW"/>
+        <Else value="TargetIsEnemyORNeutralSCBW"/>
+    </CValidatorCondition>
+    <CTacticalOrder id="ScarabSCBW"/>
+    <CRequirement id="ScarabSCBW" parent="SCBW_UnitReq" Race="Protoss"/>
+    <CButton id="ScarabSCBW">
+        <Icon value="Assets\Textures\BTN-Ability-Protoss-ScarabShot.dds"/>
+        <AlertIcon value="Assets\Textures\BTN-Ability-Protoss-ScarabShot.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+        <HidesForSimpleText value="0"/>
+    </CButton>
+    <CRequirementAllowUnit id="ScarabSCBW@AllowUnit" parent="SCBW_AllowUnit" x="ScarabSCBW@Dummy"/>
+    <CRequirementAnd id="ScarabSCBW@Show">
+        <OperandArray value="ScarabSCBW@AllowUnit"/>
+    </CRequirementAnd>
+    <CRequirementGT id="ScarabSCBW@CountAtUnitGT0">
+        <OperandArray index="0" value="ScarabSCBW@CountAtUnit"/>
+        <OperandArray index="1" value="0"/>
+    </CRequirementGT>
+    <CRequirementLT id="ScarabSCBW@QoBAtUnitLT10">
+        <OperandArray index="0" value="ScarabSCBW@QoBAtUnit"/>
+        <OperandArray index="1" value="10"/>
+    </CRequirementLT>
+    <CRequirementGT id="ScarabSCBW@QoBAtUnitGT0">
+        <OperandArray index="0" value="ScarabSCBW@QoBAtUnit"/>
+        <OperandArray index="1" value="0"/>
+    </CRequirementGT>
+    <CRequirementLT id="ScarabSCBW@QoBAtUnitLT5">
+        <OperandArray index="0" value="ScarabSCBW@QoBAtUnit"/>
+        <OperandArray index="1" value="5"/>
+    </CRequirementLT>
+    <CRequirementAnd id="ScarabSCBW"/>
+    <CRequirementCountUnit id="ScarabSCBW@Count" parent="SCBW_UnitCount" x="ScarabSCBW@Dummy"/>
+    <CRequirementCountUnit id="ScarabSCBW@CountAtUnit" parent="SCBW_UnitCountAtUnit" x="ScarabSCBW@Dummy"/>
+    <CRequirementCountUnit id="ScarabSCBW@QoB" parent="SCBW_UnitQoB" x="ScarabSCBW@Dummy"/>
+    <CRequirementCountUnit id="ScarabSCBW@QoBAtUnit" parent="SCBW_UnitQoBAtUnit" x="ScarabSCBW@Dummy">
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUnit>
+    <CRequirementNot id="ScarabSCBW@NotQoBAtUnit" parent="SCBW_Not" x="ScarabSCBW@QoBAtUnit"/>
+    <CRequirementNot id="ScarabSCBW@NotQoB" parent="SCBW_Not" x="ScarabSCBW@QoB"/>
+    <CRequirementNot id="ScarabSCBW@NotCount" parent="SCBW_Not" x="ScarabSCBW@Count"/>
+    <CRequirementNot id="ScarabSCBW@NotCountAtUnit" parent="SCBW_Not" x="ScarabSCBW@CountAtUnit"/>
+    <CActorAction id="ScarabSCBWWeapon@Action" parent="GenericAttack" effectAttack="ScarabSCBWWeapon@ImpactSet">
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide"/>
+        <ImpactMap index="None" Model="" Sound=""/>
+        <ImpactPhysics Name="Explosion" MatchKeys="Basic" Physics="ScarabExplosionForce"/>
+        <DamagePhysics Name="Explosion" MatchKeys="Basic" Physics="ScarabExplosionUpForce"/>
+        <ShieldFlashType value="Header"/>
+    </CActorAction>
+    <CActorForceSphere id="ScarabSCBWWeapon@ExplosionForce">
+        <On Terms="Effect.ScarabSCBWWeapon@ImpactSet.Start; At Effect" Send="Create"/>
+        <On Terms="ActorCreation" Send="Create ScarabSCBWWeapon@ExplosionForceUp"/>
+        <HostSiteOps Ops="SOpShadow SOpRandomPointInCircleDot25"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="25.000000,12.000000"/>
+        <Radius value="2.150000,0.200000"/>
+    </CActorForceSphere>
+    <CActorForceSphere id="ScarabSCBWWeapon@ExplosionForceUp">
+        <HostSiteOps Ops="SOpShadow SOpRotVariancerUp35"/>
+        <Field value="Directional"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="19.500000,10.000000"/>
+        <Radius value="2.150000,0.200000"/>
+    </CActorForceSphere>
+    <CActorUnit id="ScarabSCBW@Dummy" parent="GenericUnitMinimal" unitName="ScarabSCBW@Dummy">
+        <On Terms="ActorCreation" Send="TimerSet 60.000000 A"/>
+        <On Terms="TimerExpired; TimerName A" Send="Destroy"/>
+        <Model value="Invisible"/>
+        <BarOffset value="25"/>
+        <BarWidth value="36"/>
+        <HeroIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
+        <ShieldArmorIcon value="Assets\Textures\btn-upgrade-protoss-shieldslevel0.dds"/>
+        <StatusBarFlags index="Shields" value="0"/>
+        <StatusBarFlags index="Life" value="0"/>
+        <StatusBarFlags index="Energy" value="0"/>
+        <StatusBarFlags index="Cargo" value="0"/>
+        <StatusBarFlags index="Progress" value="0"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+        <UnitIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+        <ModelFlags index="AutomateGlobalLoops" value="0"/>
+        <ModelFlags index="NeedsVolumeMonitoring" value="0"/>
+    </CActorUnit>
+    <CActorUnit id="ScarabSCBW" parent="GenericUnitStandard" unitName="ScarabSCBW">
+        <On Terms="UnitDeathCustomize; ValidateUnit ScarabSCBWWeaponDamageUpgrade" Send="DeathCustomize Upgrade"/>
+        <On Terms="ActorCreation; ValidateUnit ScarabSCBWWeaponDamageUpgrade" Send="ModelSwap ScarabSCBW@Upgraded"/>
+        <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
+        <On Terms="UnitDeathCustomize; KilledByEffect ReaverSCBWWeapon@SuicideDud" Send="DeathCustomize Detached"/>
+        <On Terms="Effect.ReaverSCBWWeapon@CUSet.Start; At Target" Send="SetScale 0.010000"/>
+        <On Terms="Effect.ReaverSCBWWeapon@CUSet.Start; At Target" Send="SetScale 1.000000 0.350000"/>
+        <DeathArray index="Normal" ModelLink="ReaverSCBWWeapon@Impact" SoundLink="ReaverSCBWWeapon@Explode"/>
+        <BarOffset value="25"/>
+        <BarWidth value="36"/>
+        <HeroIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-protoss-groundarmorlevel0.dds"/>
+        <SoundArray index="Birth" value=""/>
+        <StatusBarFlags index="Shields" value="0"/>
+        <StatusBarFlags index="Life" value="0"/>
+        <StatusBarFlags index="Energy" value="0"/>
+        <StatusBarFlags index="Cargo" value="0"/>
+        <StatusBarFlags index="Progress" value="0"/>
+        <UnitFlags index="ShowBlobShadow" value="0"/>
+        <UnitIcon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
+        <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactUpgraded" Name="Upgrade"/>
+        <DeathCustoms ModelLink="HallucinationDeath" SoundLink="Sentry_HallucinationDeathSmall" Name="Hallucination"/>
+        <DeathCustoms ModelLink="ReaverSCBWWeapon@ImpactDud" SoundLink="ReaverSCBWWeapon@ExplodeDud" Name="Detached"/>
+        <Preload value="ReaverSCBWWeapon@Impact"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit NotStructure; IsStatus InAir 1" Send="DeathCustomize AntiGravGeneric"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit IsProtossUnit; IsStatus InAir 1" Send="DeathCustomize AntiGravProtoss"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit IsTerranUnit; IsStatus InAir 1" Send="DeathCustomize AntiGravTerran"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit IsZergUnit; IsStatus InAir 1" Send="DeathCustomize AntiGravZerg"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit HasForceLowDeathProtoss" Send="DeathCustomize AntiGravProtoss"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit HasForceLowDeathZerg" Send="DeathCustomize AntiGravZerg"/>
+        <Remove Terms="UnitDeathCustomize; ValidateUnit HasForceLowDeathTerran" Send="DeathCustomize AntiGravTerran"/>
+    </CActorUnit>
+    <CModel id="ScarabSCBW@Upgraded" parent="Unit" Race="Protoss">
+        <Model value="Assets\Effects\Protoss\ReaverSCBWWeapon@Missile\ReaverSCBWWeapon@Missile.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraLow03"/>
+        <Radius value="0.250000"/>
+        <SelectionRadius value="0.294000"/>
+        <ShadowRadius value="0.250000"/>
+        <SquibTypeDefault value="Metal"/>
+        <TechPurchaseCamera value="Star2CameraLow03"/>
+        <UnitGlossaryCamera value="Star2CameraLow03"/>
+    </CModel>
+    <CModel id="ScarabSCBW" parent="Unit" Race="Protoss">
+        <Model value="Assets\Effects\Protoss\ReaverSCBWWeapon@Missile\ReaverSCBWWeapon@Missile.m3"/>
+        <Occlusion value="Show"/>
+        <PlanetPanelCamera value="Star2CameraLow03"/>
+        <Radius value="0.250000"/>
+        <SelectionRadius value="0.294000"/>
+        <ShadowRadius value="0.250000"/>
+        <SquibTypeDefault value="Metal"/>
+        <TechPurchaseCamera value="Star2CameraLow03"/>
+        <UnitGlossaryCamera value="Star2CameraLow03"/>
+    </CModel>
+    <CWeaponLegacy id="ScarabSCBWWeapon">
+        <EditorCategories value="Race:Protoss"/>
+        <Tip value="Weapon/Tip/ExplosiveWeapon"/>
+        <Options index="Hidden" value="1"/>
+        <Options index="Melee" value="1"/>
+        <Options index="LinkedCooldown" value="0"/>
+        <Options index="RequireEnabledAttackAbil" value="0"/>
+        <Icon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
+        <DisplayEffect value="ScarabSCBWWeapon@Damage"/>
+        <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <MinScanRange value="0"/>
+        <Range value="0.1"/>
+        <TeleportResetRange value="0"/>
+        <Arc value="360"/>
+        <Marker>
+            <MatchFlags index="Id" value="1"/>
+        </Marker>
+        <Period value="3.5"/>
+        <DamagePoint value="0"/>
+        <Effect value="ScarabSCBWWeapon@ImpactSet"/>
+        <LegacyOptions index="Uninterruptible" value="1"/>
+        <LegacyOptions index="NoDeceleration" value="1"/>
+        <AllowedMovement value="Moving"/>
+        <RandomDelayMin value="0"/>
+        <RandomDelayMax value="0"/>
+        <AcquireScanFilters value="-;Player,Ally,Neutral,Enemy"/>
+    </CWeaponLegacy>
+    <CDataCollectionAbil id="ScarabSCBWWeapon" parent="ProtossRoboticWeaponSCBW">
+        <DataRecord Entry="Actor,ScarabSCBWWeapon@Action"/>
+        <DataRecord Entry="Actor,ScarabSCBWWeapon@ExplosionForce"/>
+        <DataRecord Entry="Actor,ScarabSCBWWeapon@ExplosionForceUp"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@Damage"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@DamageUpgraded"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@ImpactUpgraded"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@DamageUpgradedFallback"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@ImpactSet"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@Impact"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@ImpactLocation"/>
+        <DataRecord Entry="Effect,ScarabSCBWWeapon@DamageFallback"/>
+        <DataRecord Entry="Validator,ScarabSCBWWeapon@ImpactUpgraded"/>
+        <DataRecord Entry="Validator,ScarabSCBWWeapon@ImpactNormal"/>
+        <DataRecord Entry="Validator,ScarabSCBWWeapon@TargetCondition"/>
+        <DataRecord Entry="Weapon,ScarabSCBWWeapon"/>
+    </CDataCollectionAbil>
+    <CDataCollectionUnit id="ScarabSCBW" parent="ProtossUnitSCBW">
+        <DataRecord Entry="Actor,ScarabSCBW@Dummy"/>
+        <DataRecord Entry="Behavior,ScarabSCBW@Height"/>
+        <DataRecord Entry="Model,ScarabSCBW@Upgraded"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitLT5"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@CountAtUnitGT0"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@NotCountAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitLT10"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@Show"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@AllowUnit"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@CountAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@QoBAtUnitGT0"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@Count"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@QoB"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@NotQoBAtUnit"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@NotQoB"/>
+        <DataRecord Entry="RequirementNode,ScarabSCBW@NotCount"/>
+        <DataRecord Entry="Tactical,ScarabSCBW"/>
+        <DataRecord Entry="Unit,ScarabSCBW@Dummy"/>
+        <DataRecord Entry="Validator,ScarabSCBW@Not"/>
+        <TechInfoUpgradeUsed value="ScarabSCBWWeaponDamageUpgrade"/>
+    </CDataCollectionUnit>
+    <CUnit id="ScarabSCBW" parent="ProtossUnitSCBW">
+        <FlagArray index="Uncommandable" value="1"/>
+        <FlagArray index="Unselectable" value="1"/>
+        <FlagArray index="Untargetable" value="1"/>
+        <FlagArray index="KillCredit" value="0"/>
+        <FlagArray index="Invulnerable" value="1"/>
+        <FlagArray index="NoScore" value="1"/>
+        <FlagArray index="NoPortraitTalk" value="1"/>
+        <FlagArray index="AILifetime" value="1"/>
+        <FlagArray index="AISplash" value="1"/>
+        <FlagArray index="AICantAddToWave" value="1"/>
+        <FlagArray index="Unstoppable" value="1"/>
+        <FlagArray index="IgnoreAttackAlert" value="1"/>
+        <FlagArray index="PlayerRevivable" value="0"/>
+        <FlagArray index="CameraFollow" value="0"/>
+        <EditorFlags index="NoPlacement" value="1"/>
+        <EditorFlags index="BlockStructures" value="0"/>
+        <PlaneArray index="Ground" value="1"/>
+        <Collide index="Ground" value="1"/>
+        <Collide index="ForceField" value="1"/>
+        <Collide index="Locust" value="1"/>
+        <Collide index="Small" value="1"/>
+        <DefaultAcquireLevel value="None"/>
+        <Attributes index="Light" value="1"/>
+        <Attributes index="Mechanical" value="1"/>
+        <LifeStart value="20"/>
+        <LifeMax value="20"/>
+        <LifeArmorName value="Unit/LifeArmorName/ProtossPlating"/>
+        <ShieldsStart value="10"/>
+        <ShieldsMax value="10"/>
+        <Speed value="9"/>
+        <Acceleration value="1000"/>
+        <CostCategory value="Army"/>
+        <AttackTargetPriority value="20"/>
+        <AbilArray Link="stop"/>
+        <AbilArray Link="attack"/>
+        <AbilArray Link="move"/>
+        <WeaponArray Link="ScarabSCBWWeapon"/>
+        <CardLayouts>
+            <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
+            <LayoutButtons Face="Stop" Type="AbilCmd" AbilCmd="stop,Stop" Row="0" Column="1"/>
+            <LayoutButtons Face="MoveHoldPosition" Type="AbilCmd" AbilCmd="move,HoldPos" Row="0" Column="2"/>
+            <LayoutButtons Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Row="0" Column="4"/>
+            <LayoutButtons Face="MovePatrol" Type="AbilCmd" AbilCmd="move,Patrol" Row="0" Column="3"/>
+        </CardLayouts>
+        <Radius value="0.1875"/>
+        <SeparationRadius value="0.1875"/>
+        <SubgroupPriority value="19"/>
+        <MinimapRadius value="0"/>
+        <AIEvalFactor value="0"/>
+        <Mass value="0.2"/>
+        <GlossaryPriority value="180"/>
+        <CostResource index="Minerals" value="15"/>
+        <BuildTime value="6.125"/>
+        <GlossaryCategory value=""/>
+        <HotkeyCategory value=""/>
+        <Sight value="5"/>
+        <PushPriority value="0"/>
+        <LateralAcceleration value="46.0625"/>
+        <BehaviorArray Link="ReaverSCBWWeapon@ScarabTimedLife"/>
+        <BehaviorArray Link="ReaverSCBWWeapon@NoOrders"/>
+        <BehaviorArray Link="ScarabSCBW@Height"/>
+        <InnerRadius value="0.1875"/>
+        <Response value="Nothing"/>
+        <RankDisplay value="Never"/>
+        <RepairTime value="7.25"/>
+    </CUnit>
+    <CUnit id="ScarabSCBW@Dummy" parent="MISSILE_INVULNERABLE">
+        <Name value="Unit/Name/ScarabSCBW"/>
+        <Race value="BWPr"/>
+        <FlagArray index="Movable" value="0"/>
+        <FlagArray index="NoDraw" value="1"/>
+        <FlagArray index="Missile" value="0"/>
+        <FlagArray index="ClearRallyOnTargetLost" value="0"/>
+        <FlagArray index="IgnoreAttackAlert" value="1"/>
+        <FlagArray index="PlayerRevivable" value="0"/>
+        <CostCategory value="Army"/>
+        <CostResource index="Minerals" value="15"/>
+        <ScoreMake value="15"/>
+        <EditorCategories value="ObjectType:Projectile,ObjectFamily:Melee"/>
+        <LeaderAlias value="ScarabSCBW"/>
+        <AIEvaluateAlias value="ScarabSCBW"/>
+        <SubgroupPriority value="73"/>
+    </CUnit>
+    <CBehaviorBuff id="ScarabSCBW@Height">
+        <EditorCategories value="AbilityorEffectType:Units,Race:Protoss"/>
+        <Modification Height="0.5">
+            <HeightTime index="Start" value="0.35"/>
+        </Modification>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
+</Catalog>
