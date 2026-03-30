@@ -1,0 +1,1303 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Desc>
+
+    <Frame type="Frame" name="PlayerHeaderTemplate">
+        <Anchor side="Top" relative="$parent/Header" pos="Max" offset="0"/>
+
+        <Frame type="Label" name="pName">
+            <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Bottom" relative="$parent" pos="Max" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Max" offset="0"/>
+            <Style val="BattleReportPlayerName"/>
+            <RenderPriority val="513"/>
+        </Frame>
+
+        <Frame type="PlayerLogoTextFrame" name="PlayerLogoTextFrame">
+            <Anchor relative="$parent"/>
+            <FrameLogoAlias val="PlayerName"/>
+
+            <Frame type="Label" name="LogoLabel">
+                <Anchor relative="$parent"/>
+                <IgnoreParentColor val="true"/>
+                <Visible val="false"/>
+            </Frame>
+        </Frame>
+
+        <Frame type="DataRefFrame" name="RefPlayerName">
+            <Argument name="GameValue" val="PlayerName"/>
+            <PlayerId val="{$parent/pId/@Text}"/>
+        </Frame>
+
+        <StateGroup name="DeterminePlayerName">
+            <DefaultState val="Default"/>
+
+            <State name="LogoStuff">
+                <When type="Property" frame="PlayerLogoTextFrame/LogoLabel" operator="NotEqual" Text=""/>
+                <Action type="SetProperty" frame="pName" Text="{$parent/PlayerLogoTextFrame/LogoLabel/@Text}"/>
+            </State>
+
+            <State name="Default">
+                <Action type="SetProperty" frame="pName" Text="{$parent/RefPlayerName/@StringValue}"/>
+            </State>
+        </StateGroup>
+
+        <Frame type="Frame" name="Blur">
+            <Anchor relative="$parent"/>
+
+            <Frame type="Image" name="Header">
+                <Anchor relative="$parent"/>
+                <RenderType val="LDR"/>
+                <Texture val="Assets\Textures\ui_battlenet_glues_standardtabs_lefttab_mask.dds"/>
+                <TextureType val="EndCap"/>
+                <Color val="{$parent/$parent/PlayerRaceIcon/@Color}"/>
+                <Alpha val="128"/>
+            </Frame>
+        </Frame>
+
+        <Frame type="PlayerRaceIconFrame" name="PlayerRaceIcon">
+            <Anchor side="Left" relative="$parent" pos="Min" offset="20"/>
+            <Anchor side="Top" relative="$parent/pName" pos="Mid" offset="-26"/>
+            <Width val="48"/>
+            <Height val="52"/>
+            <BaseTexture val="@UI/BattleReportRaceIcon"/>
+
+            <Frame type="Image" name="RaceImage">
+                <Anchor relative="$parent"/>
+                <IgnoreParentColor val="true"/>
+            </Frame>
+        </Frame>
+    </Frame>
+
+    <Frame type="Button" name="UnitLostButtonTemplate">
+        <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+        <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+        <Width val="52"/>
+        <Height val="52"/>
+
+        <!-- Mouse over -->
+        <Animation name="ShowBG">
+            <Event event="OnMouseEnter" action="Reset,Play"/>
+            <Controller type="Event" end="Stop" frame="$this/BackgroundImage">
+                <Key type="Event" time="0" event="FadeIn" />
+            </Controller>
+        </Animation>
+
+        <!-- Mouse exit -->
+        <Animation name="HideBG">
+            <Event event="OnMouseExit" action="Reset,Play"/>
+            <Controller type="Event" end="Stop" frame="$this/BackgroundImage">
+                <Key type="Event" time="0" event="FadeOut"/>
+            </Controller>
+        </Animation>
+
+        <Frame type="Image" name="NormalImage">
+            <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Texture val="Assets\Textures\black.dds"/>
+            <Width val="52"/>
+            <Height val="52"/>
+        </Frame>
+
+        <Frame type="Image" name="BackgroundImage">
+            <Anchor relative="$parent"/>
+            <Color val="255,255,255,255"/>
+            <Alpha val="64"/>
+            <RenderPriority val="511"/>
+            <Texture val="color_accents\battleReportBtn.dds"/>
+
+            <!-- Show on mouse over -->
+            <Animation name="FadeInAnim">
+                <Event event="FadeIn" action="Reset,Play"/> 
+                <Controller type="Fade" end="Pause">
+                    <Key type="Curve" time="0" value="255" in="Smooth"/>
+                </Controller>
+            </Animation>
+
+            <!-- Hide on mouse exit -->
+            <Animation name="FadeOutAnim">
+                <Event event="FadeOut" action="Reset,Play"/>    
+                <Controller type="Fade" end="Pause">
+                    <Key type="Curve" time="0" value="255" out="Smooth"/>
+                    <Key type="Curve" time=".2" value="64" in="Smooth"/>
+                </Controller>
+            </Animation>
+        </Frame>
+
+        <Frame type="Image" name="HoverImage">
+            <Anchor relative="$parent"/>
+            <Color val="255,255,255,255"/>
+            <RenderPriority val="511"/>
+            <Texture val="color_accents\battleReportBtn.dds"/>
+            <Desaturated val="true"/>
+        </Frame>
+
+        <!-- Blur -->
+        <Frame type="BlurFrame" name="Blur">
+            <Anchor relative="$parent"/>
+            <BlurAmount val="0.5"/>
+            <RenderType val="LDR"/>
+
+            <!-- Number Background -->
+            <Frame type="Image" name="NumberBackground">
+                <Anchor side="Left" relative="$parent" pos="0.3333" offset="0"/>
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-1"/>
+                <Anchor side="Bottom" relative="$parent" pos="Max" offset="-1"/>
+                <Height val="24"/>
+                <Color val="255,0,0,0"/>
+                <Alpha val="128"/>
+                <Visible val="false"/>
+            </Frame>
+        </Frame>
+
+        <Frame type="Label" name="Label">
+            <Anchor side="Right" relative="$parent" pos="Max" offset="-4"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Bottom" relative="$parent" pos="Max" offset="5"/>
+            <Height val="32"/>
+            <Style val="BattleReportButtonCount"/>
+            <Options val="ScaleToPreventTruncation"/>
+        </Frame>
+
+        <StateGroup name="LabelBgVisibility">
+            <State name="Visible">
+                <When type="Property" frame="Label" operator="NotEqual" text=""/>
+                <Action type="SetProperty" frame="Blur/NumberBackground" Visible="true"/>
+            </State>
+        </StateGroup>
+    </Frame>
+
+    <Frame type="Frame" name="StatsTemplate">
+        <Anchor side="Top" relative="$parent/PlayerNameL" pos="Max" offset="0"/>
+        <Anchor side="Bottom" relative="$parent" pos="Max" offset="0"/>
+
+        <Frame type="Frame" name="ResourcesLostFrame">
+            <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/ResourcesLostLabel" pos="Max" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+            <Height val="150"/>
+            <Width val="500"/>
+
+            <Frame type="Image" name="ResourcesLostMinerals">
+                <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                <Anchor side="Left" relative="$parent" pos="Min" offset="100"/>
+                <Width val="42"/>
+                <Height val="42"/>
+                <Texture val="Assets\Textures\icon-mineral-nobg.dds"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="ResourcesLostMineralsValue">
+                <Anchor side="Top" relative="$parent/ResourcesLostMinerals" pos="Mid" offset="2"/>
+                <Anchor side="Bottom" relative="$parent/ResourcesLostMinerals" pos="Mid" offset="0"/>
+                <Anchor side="Left" relative="$parent/ResourcesLostMinerals" pos="Max" offset="10"/>
+                <Width val="120"/>
+                <Height val="30"/>
+                
+                <Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+                    <Anchor relative="$parent"/>
+                    <ScoreValueLink val="BattleReportMineralsDestroyed"/>
+                    
+                    <Frame type="Label" name="Label">
+                        <Anchor relative="$parent"/>
+                        <Options val="NoWrapping|ScaleToPreventTruncation"/>
+                        <Style val="BattleReportResourceValueL"/>
+                        <IgnoreParentColor val="true"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+            <Frame type="PlayerRaceIconFrame" name="ResourcesLostGas">
+                <Anchor side="Top" relative="$parent/ResourcesLostMinerals" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/ResourcesLostMinerals" pos="Min" offset="0"/>
+                <Width val="42"/>
+                <Height val="42"/>
+                <BaseTexture val="@UI/BattleReportVespeneIcon"/>
+
+                <Frame type="Image" name="RaceImage">
+                    <Anchor relative="$parent"/>
+                    <IgnoreParentColor val="true"/>
+                </Frame>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="ResourcesLostGasValue">
+                <Anchor side="Top" relative="$parent/ResourcesLostGas" pos="Mid" offset="2"/>
+                <Anchor side="Bottom" relative="$parent/ResourcesLostGas" pos="Mid" offset="0"/>
+                <Anchor side="Left" relative="$parent/ResourcesLostGas" pos="Max" offset="10"/>
+                <Width val="120"/>
+                <Height val="30"/>
+
+                <Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+                    <Anchor relative="$parent"/>
+                    <ScoreValueLink val="BattleReportVespeneDestroyed"/>
+                    
+                    <Frame type="Label" name="Label">
+                        <Anchor relative="$parent"/>
+                        <Options val="NoWrapping|ScaleToPreventTruncation"/>
+                        <Style val="BattleReportResourceValueL"/>
+                        <IgnoreParentColor val="true"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+        </Frame>
+
+        <Frame type="Frame" name="DmgValue">
+            <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/DmgLabel" pos="Max" offset="5"/>
+            <Anchor side="Left" relative="$parent/ResourcesLostFrame/ResourcesLostGas" pos="Min" offset="0"/>
+            <Width val="150"/>        
+            <Height val="30"/>
+
+            <Frame type="PlayerScoreValueFrame" name="FormattedScoreText">
+                <Anchor relative="$parent"/>
+
+                <Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+                    <Anchor relative="$parent"/>
+                    <ScoreValueLink val="BattleReportDamageDealt"/>
+                    
+                    <Frame type="Label" name="Label">
+                        <Anchor relative="$parent"/>
+                        <IgnoreParentColor val="true"/>
+                        <Alpha val="0"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+            <Frame type="DataRefFrame" name="Value_Percent">
+                <Argument name="Score" val="BattleReportDamageDealtPercent"/>
+            </Frame>
+
+            <Frame type="TextFormatFrame" name="FormattedText">
+                <Anchor relative="$parent"/>
+                <FormatText val="%0% (%1%%)"/>
+                <Replacement index="0" val="{$parent/FormattedScoreText/ScoreValueFrame0/Label/@Text}"/>
+                <Replacement index="1" val="{$parent/Value_Percent/@StringValue}"/>
+            </Frame>
+
+            <Frame type="Label" name="Label">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/FormattedText/@Text}"/>
+                <Style val="BattleReportStatL"/>
+                <Options val="NoWrapping|ScaleToPreventTruncation"/>
+            </Frame>
+        </Frame>
+    </Frame>
+
+    <Frame type="Frame" name="ButtonsTemplate">
+
+        <Frame type="Frame" name="UnitButtons">
+            <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/UnitsKilledLabel" pos="Max" offset="5"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="25"/>
+            <Anchor side="Right" relative="$parent" pos="Max" offset="-15"/>
+            <Height val="120"/>
+
+            <Frame type="Button" name="Unit0" template="AHLI_BattleReport/UnitLostButtonTemplate"/>
+            <Frame type="Button" name="Unit1" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Unit0" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit2" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Unit1" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit3" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Unit2" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit4" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Unit3" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit5" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Unit4" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit6" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit0" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit0" pos="Min" offset="0"/>
+            </Frame>
+            <Frame type="Button" name="Unit7" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit0" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit6" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit8" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit0" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit7" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit9" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit0" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit8" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit10" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit0" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit9" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit11" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit0" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit10" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Unit12" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit6" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit6" pos="Min" offset="0"/>
+                <Visible val="false"/>
+            </Frame>
+            <Frame type="Button" name="Unit13" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit6" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit12" pos="Max" offset="5"/>
+                <Visible val="{$parent/Unit12/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Unit14" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit6" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit13" pos="Max" offset="5"/>
+                <Visible val="{$parent/Unit12/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Unit15" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit6" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit14" pos="Max" offset="5"/>
+                <Visible val="{$parent/Unit12/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Unit16" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit6" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit15" pos="Max" offset="5"/>
+                <Visible val="{$parent/Unit12/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Unit17" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Unit6" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Unit16" pos="Max" offset="5"/>
+                <Visible val="{$parent/Unit12/@Visible}"/>
+            </Frame>
+        </Frame>
+
+        <Frame type="Frame" name="AbilityButtons">
+            <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/AbilitiesUsedLabel" pos="Max" offset="5"/>
+            <Anchor side="Left" relative="$parent/UnitButtons" pos="Min" offset="0"/>
+            <Anchor side="Right" relative="$parent/UnitButtons" pos="Max" offset="0"/>
+            <Height val="52"/>
+
+            <Frame type="Button" name="Abil0" template="AHLI_BattleReport/UnitLostButtonTemplate"/>
+            <Frame type="Button" name="Abil1" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Abil0" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Abil2" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Abil1" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Abil3" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Abil2" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Abil4" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Abil3" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Abil5" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Left" relative="$parent/Abil4" pos="Max" offset="5"/>
+            </Frame>
+            <Frame type="Button" name="Abil6" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Abil0" pos="Max" offset="5"/>
+                <Anchor side="Left" relative="$parent/Abil0" pos="Min" offset="0"/>
+                <Visible val="false"/>
+            </Frame>
+            <Frame type="Button" name="Abil7" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Abil6" pos="Min" offset="0"/>
+                <Anchor side="Left" relative="$parent/Abil6" pos="Max" offset="5"/>
+                <Visible val="{$parent/Abil6/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Abil8" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Abil6" pos="Min" offset="0"/>
+                <Anchor side="Left" relative="$parent/Abil7" pos="Max" offset="5"/>
+                <Visible val="{$parent/Abil6/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Abil9" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Abil6" pos="Min" offset="0"/>
+                <Anchor side="Left" relative="$parent/Abil8" pos="Max" offset="5"/>
+                <Visible val="{$parent/Abil6/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Abil10" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Abil6" pos="Min" offset="0"/>
+                <Anchor side="Left" relative="$parent/Abil9" pos="Max" offset="5"/>
+                <Visible val="{$parent/Abil6/@Visible}"/>
+            </Frame>
+            <Frame type="Button" name="Abil11" template="AHLI_BattleReport/UnitLostButtonTemplate">
+                <Anchor side="Top" relative="$parent/Abil6" pos="Min" offset="0"/>
+                <Anchor side="Left" relative="$parent/Abil10" pos="Max" offset="5"/>
+                <Visible val="{$parent/Abil6/@Visible}"/>
+            </Frame>
+        </Frame>
+    </Frame>
+
+    <Frame type="Frame" name="ComparisonBarTemplate">
+        <Frame type="DataRefFrame" name="ValueL">
+        </Frame>
+        <Frame type="DataRefFrame" name="ValueTotal">
+        </Frame>
+
+        <Frame type="ProgressBar" name="ProgressBarL">
+            <Anchor relative="$parent"/>
+            <AcceptsMouse val="false"/>
+            <UseFillContainer val="true"/>
+            <Vertical val="false"/>
+            <MinValue val="0"/>
+            <!--<MaxValue val="{$parent/ValueTotal/@RealValue}"/>
+                   This has issues when MaxValue was 0
+                      => first update causes progressbar's value to always be 0
+                         => calc percentage in triggers instead -->
+            <MaxValue val="100"/>
+            <Value val="{$parent/ValueL/@RealValue}"/>
+
+            <Frame type="Frame" name="FillImageContainer">
+                <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+                <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+                <Anchor side="Bottom" relative="$parent" pos="Max" offset="0"/>
+
+                <Frame type="Image" name="FillImage">
+                    <Anchor relative="$parent/$parent"/>
+                    <Texture val="Assets\Textures\ui_mission_leaderboard_healthbar_red.dds"/>
+                    <TextureType val="Border"/>
+                    <Desaturated val="true"/>
+					<Blur val="true"/>
+					<BlurAmount val="0.5"/>
+					<Alpha val="224"/>
+                </Frame>
+            </Frame>
+        </Frame>
+
+        <Frame type="Image" name="FillImageR">
+            <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Max" offset="0"/>
+            <Anchor side="Bottom" relative="$parent" pos="Max" offset="0"/>
+            <Anchor side="Left" relative="$parent/ProgressBarL/FillImageContainer" pos="Max" offset="0"/>
+            <Texture val="Assets\Textures\ui_mission_leaderboard_healthbar_red.dds"/>
+            <TextureType val="Border"/>
+            <Desaturated val="true"/>
+			<Blur val="true"/>
+			<BlurAmount val="0.5"/>
+			<Alpha val="224"/>
+        </Frame>
+
+        <StateGroup name="ValueTotalState">
+            <State name="0">
+                <When type="Property" frame="ValueTotal" RealValue="0"/>
+                <Action type="SetProperty" frame="ProgressBarL/FillImageContainer/FillImage" visible="false"/>
+                <Action type="SetProperty" frame="FillImageR" visible="false"/>
+            </State>
+        </StateGroup>
+		
+		<Frame type="PlayerScoreValueFrame" name="DeltaL">
+            <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Bottom" relative="$parent" pos="Max" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+			
+			<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+				<Anchor relative="$parent"/>
+				<ScoreValueLink val=""/>
+				
+				<Frame type="Label" name="Label">
+					<Anchor relative="$parent"/>
+					<Options val="NoWrapping|ScaleToPreventTruncation"/>
+					<IgnoreParentColor val="true"/>
+					<Style val="BattleReportComparisonDelta"/>
+					<Alpha val="0"/>
+				</Frame>
+			</Frame>
+		</Frame>
+		
+		<Frame type="PlayerScoreValueFrame" name="DeltaR">
+            <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+            <Anchor side="Bottom" relative="$parent" pos="Max" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Max" offset="0"/>
+			
+			<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+				<Anchor relative="$parent"/>
+				<ScoreValueLink val=""/>
+				
+				<Frame type="Label" name="Label">
+					<Anchor relative="$parent"/>
+					<Options val="NoWrapping|ScaleToPreventTruncation"/>
+					<IgnoreParentColor val="true"/>
+					<Style val="BattleReportComparisonDelta"/>
+					<Alpha val="0"/>
+				</Frame>
+			</Frame>
+		</Frame>
+        <StateGroup name="DeltaVis">
+            <State name="L">
+                <When type="Property" frame="ValueL" operator="GreaterThan" RealValue="50"/>
+                <Action type="SetProperty" frame="DeltaL/ScoreValueFrame0/Label" alpha="255"/>
+            </State>
+            <State name="R">
+                <When type="Property" frame="ValueL" operator="LessThan" RealValue="50"/>
+                <When type="Property" frame="ValueTotal" operator="NotEqual" RealValue="0"/>
+                <Action type="SetProperty" frame="DeltaR/ScoreValueFrame0/Label" alpha="255"/>
+            </State>
+        </StateGroup>
+		
+    </Frame>
+
+    <Frame type="PlayerScoreValueFrame" name="VersusModeSideDetectorTemplate">
+        <Anchor relative="$parent"/>
+        
+        <Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+            <Anchor relative="$parent"/>
+            <ScoreValueLink val="VersusModePlayerSide"/>
+            
+            <Frame type="Label" name="Label">
+                <Anchor relative="$parent"/>
+                <Visible val="false"/>
+                <Alpha val="0"/>
+            </Frame>
+        </Frame>
+    </Frame>
+
+    <Frame type="Frame" name="GameUI/UIContainer/FullscreenUpperContainer" file="GameUI">
+
+        <Frame type="Frame" name="BattleReport2">
+            <Anchor side="Top" relative="$parent" pos="Mid" offset="-370"/>
+            <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+            <Anchor side="Bottom" relative="ButtonsL" pos="Max" offset="0"/>
+            <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+            <Width val="790"/>
+            <Handle val="BattleReport2"/>
+            <Visible val="false"/>
+
+            <Frame type="Frame" name="Background" template="StandardExtendedExperienceTemplates/StandardSizeExtendedExperienceTemplate">
+                <Anchor side="Bottom" relative="$parent/ButtonsL" pos="Max" offset="40"/>
+                <Alpha val="224"/>
+                <Frame type="Image" name="FullscreenBlackoutImage">
+                    <Visible val="false"/>
+                </Frame>
+                <Frame type="Image" name="ScanlinesLeft">
+                    <Unclipped val="true"/>
+                </Frame>
+                <Frame type="Image" name="ScanlinesRight">
+                    <Unclipped val="true"/>
+                </Frame>
+                <Frame type="Frame" name="BackgroundContainer">
+                    <Unclipped val="true"/>
+                </Frame>
+                <Frame type="Frame" name="AnchorFrame">
+                    <Anchor side="Top" relative="$parent/$parent" pos="Min" offset="0"/>
+                    <Anchor side="Bottom" relative="$parent/$parent/ButtonsL" pos="Max" offset="40"/>
+                    <Width val="800"/>
+                    <AcceptsMouse val="true"/>
+                </Frame>
+            </Frame>
+
+            <Frame type="Frame" name="Header">
+                <Anchor side="Top" relative="$parent" pos="Min" offset="20"/>
+                <Anchor side="Left" relative="$parent" pos="Min" offset="15"/>
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-15"/>
+                <Height val="55" />
+
+                <Frame type="Frame" name="BackgroundFrame">
+                    <Anchor relative="$parent"/>
+
+                    <Frame type="Image" name="Fill">
+                        <Anchor side="Top" relative="$parent" pos="Min" offset="7"/>
+                        <Anchor side="Bottom" relative="$parent" pos="Max" offset="-7"/>
+                        <Anchor side="Left" relative="$parent" pos="Min" offset="7"/>
+                        <Anchor side="Right" relative="$parent" pos="Max" offset="-7"/>
+                        <Color val="000000"/>
+                        <Alpha val="200"/>
+                    </Frame>
+
+                    <Frame type="Image" name="Border">
+                        <Anchor relative="$parent"/>
+                        <Texture val="Assets\Textures\ui_glues_pageassets_listheaderbackground.dds"/>
+                        <TextureType val="NineSlice"/>
+                    </Frame>
+                </Frame>
+
+                <Frame type="Label" name="Title">
+                    <Anchor side="Top" relative="$parent" pos="Min" offset="2"/>
+                    <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Height val="50"/>
+                    <Style val="BattleReportTitle"/>
+                    <Text val="@UI/BattleReport/Title"/>
+                </Frame>
+
+                <Frame type="Image" name="BattleActiveIndicator">
+                    <Anchor side="Top" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Bottom" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Left" relative="$parent" pos="Min" offset="14"/>
+                    <Width val="20"/>
+                    <Height val="20"/>
+                    <Texture val="Assets\Textures\ui_glues_igr_icon_active_bg.dds"/>
+                    <Desaturated val="true"/>
+                    <DesaturationColor val="22CC22"/>
+                    <OnDisableDesaturationColor val="777777"/>
+                    <Enabled val="false"/>
+                </Frame>
+
+                <Frame type="Label" name="BattleLengthLabel">
+                    <Anchor side="Top" relative="$parent" pos="Min" offset="15"/>
+                    <Anchor side="Left" relative="$parent/BattleActiveIndicator" pos="Max" offset="5"/>
+                    <Width val="100"/>
+                    <Text val="0:00" />
+                    <Style val="BattleReportDuration"/>
+                </Frame>
+            </Frame>
+
+            <Frame type="PlayerFrame" name="PlayerA">
+                <Anchor relative="$parent"/>
+                <PlayerId val="{PlayerIdInput/@Text}"/>
+
+                <Frame type="Label" name="PlayerIdInput">
+                    <Anchor relative="$parent"/>
+                    <Visible val="false"/>
+                </Frame>
+            </Frame>
+            <Frame type="PlayerFrame" name="PlayerB">
+                <Anchor relative="$parent"/>
+                <PlayerId val="{PlayerIdInput/@Text}"/>
+
+                <Frame type="Label" name="PlayerIdInput">
+                    <Anchor relative="$parent"/>
+                    <Visible val="false"/>
+                </Frame>
+            </Frame>
+
+            <Frame type="PlayerFrame" name="PlayerL">
+                <Anchor relative="$parent"/>
+                <PlayerId val="{$parent/PlayerA/@PlayerId}"/>
+            </Frame>
+            <Frame type="PlayerFrame" name="PlayerR">
+                <Anchor relative="$parent"/>
+                <PlayerId val="{$parent/PlayerB/@PlayerId}"/>
+            </Frame>
+
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP0" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="0"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP1" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="1"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP2" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="2"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP3" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="3"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP4" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="4"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP5" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="5"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP6" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="6"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP7" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="7"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP8" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="8"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP9" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="9"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP10" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="10"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP11" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="11"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP12" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="12"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP13" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="13"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP14" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="14"/>
+            </Frame>
+            <Frame type="PlayerScoreValueFrame" name="VersusModeSlotDetectorP15" template="AHLI_BattleReport/VersusModeSideDetectorTemplate">
+                <PlayerId val="15"/>
+            </Frame>
+
+            <Frame type="PlayerScoreValueFrame" name="DetectPlayerFrameLeft0">
+                <Anchor relative="$parent"/>
+                <VersusModePlayerSide val="Left"/>
+
+                <Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+                    <Anchor relative="$parent"/>
+                    <ScoreValueLink val="PlayerId"/>
+
+                    <Frame type="Label" name="Label">
+                        <Anchor relative="$parent"/>
+                        <Visible val="false"/>
+                        <Alpha val="0"/>
+                    </Frame>
+                </Frame>
+
+                <StateGroup name="Position">
+                    <State name="2a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="2"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP2/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="1a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="1"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP1/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="3a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="3"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP3/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="4a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="4"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP4/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="5a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="5"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP5/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="6a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="6"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP6/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="7a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="7"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP7/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="8a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="8"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP8/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="9a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="9"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP9/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="10a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="10"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP10/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="11a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="11"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP11/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="12a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="12"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP12/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="13a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="13"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP13/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="14a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="14"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP14/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="0a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="0"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP0/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                    <State name="15a">
+                        <When type="Property" frame="ScoreValueFrame0/Label" text="15"/>
+                        <When type="AnimationState" frame="$ancestor[@type=GameUI]" VersusMode="1v1"/>
+                        <When type="Property" frame="$parent/VersusModeSlotDetectorP15/ScoreValueFrame0/Label" text="2"/>
+                        <Action type="SetProperty" frame="$parent/PlayerL" PlayerId="{$parent/PlayerB/@PlayerId}"/>
+                        <Action type="SetProperty" frame="$parent/PlayerR" PlayerId="{$parent/PlayerA/@PlayerId}"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Left" relative="$parent" pos="Mid" offset="0"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsL" side="Right" relative="$parent" pos="Max" offset="-15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Left" relative="$parent" pos="Min" offset="15"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR" side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    </State>
+                </StateGroup>
+            </Frame>
+
+            <Frame type="Frame" name="PlayerNameL" template="AHLI_BattleReport/PlayerHeaderTemplate">
+                <Anchor side="Left" relative="$parent" pos="Min" offset="15"/>
+                <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                <Height val="40"/>
+
+                <Frame type="Label" name="pName">
+                    <Anchor side="Left" relative="$parent/PlayerRaceIcon" pos="Max" offset="5"/>
+                </Frame>
+
+                <Frame type="Frame" name="Blur">
+                    <Frame type="Image" name="Header">
+                        <Texture val="color_accents\ui_battlenet_glues_standardtabs_righttab_mask.dds"/>
+                    </Frame>
+                </Frame>
+
+                <Frame type="PlayerLogoTextFrame" name="PlayerLogoTextFrame">
+                    <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                </Frame>
+                <Frame type="DataRefFrame" name="RefPlayerName">
+                    <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                </Frame>
+                <Frame type="PlayerRaceIconFrame" name="PlayerRaceIcon">
+                    <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                </Frame>
+            </Frame>
+            <Frame type="Frame" name="PlayerNameR" template="AHLI_BattleReport/PlayerHeaderTemplate">
+                <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-15"/>
+                <Height val="40"/>
+
+                <Frame type="Label" name="pName">
+                    <Anchor side="Right" relative="$parent/PlayerRaceIcon" pos="Min" offset="-5"/>
+                </Frame>
+
+                <Frame type="PlayerRaceIconFrame" name="PlayerRaceIcon">
+                    <Anchor side="Left" relative="$this" pos="Min" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Max" offset="-20"/>
+                    <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+                </Frame>
+                <Frame type="PlayerLogoTextFrame" name="PlayerLogoTextFrame">
+                    <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+                </Frame>
+                <Frame type="DataRefFrame" name="RefPlayerName">
+                    <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+                </Frame>
+            </Frame>
+
+            <Frame type="Frame" name="StatsL" template="AHLI_BattleReport/StatsTemplate">
+                <Anchor side="Left" relative="$parent" pos="Min" offset="15"/>
+                <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+
+                <Frame type="Frame" name="ResourcesLostFrame">
+                    <Frame type="PlayerScoreValueFrame" name="ResourcesLostMineralsValue">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="PlayerRaceIconFrame" name="ResourcesLostGas">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="PlayerScoreValueFrame" name="ResourcesLostGasValue">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                </Frame>
+                <Frame type="Frame" name="DmgValue">
+                    <Frame type="PlayerScoreValueFrame" name="FormattedScoreText">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="DataRefFrame" name="Value_Percent">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+            <Frame type="Frame" name="StatsR" template="AHLI_BattleReport/StatsTemplate">
+                <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-15"/>
+
+                <Frame type="Frame" name="ResourcesLostFrame">
+                    <Frame type="Image" name="ResourcesLostMinerals">
+                        <Anchor side="Left" relative="$this" pos="Min" offset="0"/>
+                        <Anchor side="Right" relative="$parent" pos="Max" offset="-100"/>
+                    </Frame>
+                    <Frame type="PlayerScoreValueFrame" name="ResourcesLostMineralsValue">
+                        <Anchor side="Left" relative="$this" pos="Min" offset="0"/>
+                        <Anchor side="Right" relative="$parent/ResourcesLostMinerals" pos="Min" offset="-10"/>
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+
+                        <Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+                            <Frame type="Label" name="Label">
+                                <Style val="BattleReportResourceValueR"/>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+                    <Frame type="PlayerRaceIconFrame" name="ResourcesLostGas">
+                        <Anchor side="Left" relative="$this" pos="Min" offset="0"/>
+                        <Anchor side="Right" relative="$parent/ResourcesLostMinerals" pos="Max" offset="0"/>
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="PlayerScoreValueFrame" name="ResourcesLostGasValue">
+                        <Anchor side="Left" relative="$this" pos="Min" offset="0"/>
+                        <Anchor side="Right" relative="$parent/ResourcesLostGas" pos="Min" offset="-10"/>
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+                        
+                        <Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+                            <Frame type="Label" name="Label">
+                                <Style val="BattleReportResourceValueR"/>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+                </Frame>
+
+                <Frame type="Frame" name="DmgValue">
+                    <Anchor side="Left" relative="$this" pos="Min" offset="0"/>
+                    <Anchor side="Right" relative="$parent/ResourcesLostFrame/ResourcesLostGas" pos="Max" offset="0"/>
+                    
+                    <Frame type="Label" name="Label">
+                        <Style val="BattleReportStatR"/>
+                    </Frame>
+                    <Frame type="PlayerScoreValueFrame" name="FormattedScoreText">
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="DataRefFrame" name="Value_Percent">
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+            <Frame type="Frame" name="ButtonsL" template="AHLI_BattleReport/ButtonsTemplate">
+                <Anchor side="Top" relative="$parent/PlayerNameL" pos="Max" offset="0"/>
+                <Anchor side="Bottom" relative="AbilityButtons" pos="Max" offset="0"/>
+                <Anchor side="Left" relative="$parent" pos="Min" offset="15"/>
+                <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+
+                <StateGroup name="UnitThirdRowVis">
+                    <State name="L">
+                        <When type="Property" frame="UnitButtons/Unit12/Label" operator="NotEqual" text=""/>
+                        <Action type="SetAnchor" frame="UnitButtons" side="Bottom" relative="$this" pos="Min" offset="166"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR/UnitButtons" side="Bottom" relative="$this" pos="Min" offset="166"/>
+                        <Action type="SetProperty" frame="UnitButtons/Unit12" visible="true"/>
+                        <Action type="SetProperty" frame="$parent/ButtonsR/UnitButtons/Unit12" visible="true"/>
+                    </State>
+                    <State name="R">
+                        <When type="Property" frame="$parent/ButtonsR/UnitButtons/Unit12/Label" operator="NotEqual" text=""/>
+                        <Action type="SetAnchor" frame="UnitButtons" side="Bottom" relative="$this" pos="Min" offset="166"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR/UnitButtons" side="Bottom" relative="$this" pos="Min" offset="166"/>
+                        <Action type="SetProperty" frame="UnitButtons/Unit12" visible="true"/>
+                        <Action type="SetProperty" frame="$parent/ButtonsR/UnitButtons/Unit12" visible="true"/>
+                    </State>
+                </StateGroup>
+
+                <StateGroup name="AbilSecondRowVis">
+                    <State name="L">
+                        <When type="Property" frame="AbilityButtons/Abil6/Label" operator="NotEqual" text=""/>
+                        <Action type="SetAnchor" frame="AbilityButtons" side="Bottom" relative="$this" pos="Min" offset="114"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR/AbilityButtons" side="Bottom" relative="$this" pos="Min" offset="114"/>
+                        <Action type="SetProperty" frame="AbilityButtons/Abil6" visible="true"/>
+                        <Action type="SetProperty" frame="$parent/ButtonsR/AbilityButtons/Abil6" visible="true"/>
+                    </State>
+                    <State name="R">
+                        <When type="Property" frame="$parent/ButtonsR/AbilityButtons/Abil6/Label" operator="NotEqual" text=""/>
+                        <Action type="SetAnchor" frame="AbilityButtons" side="Bottom" relative="$this" pos="Min" offset="114"/>
+                        <Action type="SetAnchor" frame="$parent/ButtonsR/AbilityButtons" side="Bottom" relative="$this" pos="Min" offset="114"/>
+                        <Action type="SetProperty" frame="AbilityButtons/Abil6" visible="true"/>
+                        <Action type="SetProperty" frame="$parent/ButtonsR/AbilityButtons/Abil6" visible="true"/>
+                    </State>
+                </StateGroup>
+            </Frame>
+            <Frame type="Frame" name="ButtonsR" template="AHLI_BattleReport/ButtonsTemplate">
+                <Anchor side="Top" relative="$parent/PlayerNameL" pos="Max" offset="0"/>
+                <Anchor side="Bottom" relative="AbilityButtons" pos="Max" offset="0"/>
+                <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                <Anchor side="Right" relative="$parent" pos="Max" offset="-15"/>
+            </Frame>
+
+            <Frame type="Frame" name="GraphsFrame">
+                <Anchor relative="$parent"/>
+
+                <Frame type="Frame" name="DamageDealtBarGraph" template="AHLI_BattleReport/ComparisonBarTemplate">
+                    <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/DmgLabel" pos="Max" offset="5"/>
+                    <Anchor side="Left" relative="$parent/$parent/StatsL/DmgValue" pos="Max" offset="10"/>
+                    <Anchor side="Right" relative="$parent/$parent/StatsR/DmgValue" pos="Min" offset="-15"/>
+                    <Height val="30"/>
+
+                    <Frame type="DataRefFrame" name="ValueL">
+                        <Argument name="Score" val="BattleReportDamageDealtPercent"/>
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="DataRefFrame" name="ValueTotal">
+                        <Argument name="Score" val="BattleReportDamageDealtTotal"/>
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+
+                    <Frame type="ProgressBar" name="ProgressBarL">
+                        <Frame type="Frame" name="FillImageContainer">
+                            <Frame type="Image" name="FillImage">
+                                <DesaturationColor val="{$BattleReport2/PlayerL/@Color}"/>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+
+                    <Frame type="Image" name="FillImageR">
+                        <DesaturationColor val="{$BattleReport2/PlayerR/@Color}"/>
+                    </Frame>
+					
+					<Frame type="PlayerScoreValueFrame" name="DeltaL">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+						<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+							<ScoreValueLink val="BattleReportDamageDealtDelta"/>
+						</Frame>
+                    </Frame>
+					<Frame type="PlayerScoreValueFrame" name="DeltaR">
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+						<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+							<ScoreValueLink val="BattleReportDamageDealtDelta"/>
+						</Frame>
+                    </Frame>
+                </Frame>
+
+                <Frame type="Frame" name="MineralsLostBarGraph" template="AHLI_BattleReport/ComparisonBarTemplate">
+                    <Anchor side="Top" relative="$parent/$parent/SubtitlesFrame/ResourcesLostLabel" pos="Max" offset="5"/>
+                    <Anchor side="Left" relative="$parent/DamageDealtBarGraph" pos="Min" offset="0"/>
+                    <Anchor side="Right" relative="$parent/DamageDealtBarGraph" pos="Max" offset="0"/>
+                    <Height val="30"/>
+
+                    <Frame type="DataRefFrame" name="ValueL">
+                        <Argument name="Score" val="BattleReportMineralsDestroyedPercent"/>
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="DataRefFrame" name="ValueTotal">
+                        <Argument name="Score" val="BattleReportMineralsDestroyedTotal"/>
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+
+                    <Frame type="ProgressBar" name="ProgressBarL">
+                        <Frame type="Frame" name="FillImageContainer">
+                            <Frame type="Image" name="FillImage">
+                                <DesaturationColor val="{$BattleReport2/PlayerL/@Color}"/>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+
+                    <Frame type="Image" name="FillImageR">
+                        <DesaturationColor val="{$BattleReport2/PlayerR/@Color}"/>
+                    </Frame>
+					
+					<Frame type="PlayerScoreValueFrame" name="DeltaL">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+						<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+							<ScoreValueLink val="BattleReportMineralsDestroyedDelta"/>
+						</Frame>
+                    </Frame>
+					<Frame type="PlayerScoreValueFrame" name="DeltaR">
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+						<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+							<ScoreValueLink val="BattleReportMineralsDestroyedDelta"/>
+						</Frame>
+                    </Frame>
+                </Frame>
+
+                <Frame type="Frame" name="GasLostBarGraph" template="AHLI_BattleReport/ComparisonBarTemplate">
+                    <Anchor side="Top" relative="$parent/MineralsLostBarGraph" pos="Max" offset="15"/>
+                    <Anchor side="Left" relative="$parent/DamageDealtBarGraph" pos="Min" offset="0"/>
+                    <Anchor side="Right" relative="$parent/DamageDealtBarGraph" pos="Max" offset="0"/>
+                    <Height val="30"/>
+
+                    <Frame type="DataRefFrame" name="ValueL">
+                        <Argument name="Score" val="BattleReportVespeneDestroyedPercent"/>
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+                    <Frame type="DataRefFrame" name="ValueTotal">
+                        <Argument name="Score" val="BattleReportVespeneDestroyedTotal"/>
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+                    </Frame>
+
+                    <Frame type="ProgressBar" name="ProgressBarL">
+                        <Frame type="Frame" name="FillImageContainer">
+                            <Frame type="Image" name="FillImage">
+                                <DesaturationColor val="{$BattleReport2/PlayerL/@Color}"/>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+
+                    <Frame type="Image" name="FillImageR">
+                        <DesaturationColor val="{$BattleReport2/PlayerR/@Color}"/>
+                    </Frame>
+					
+					<Frame type="PlayerScoreValueFrame" name="DeltaL">
+                        <PlayerId val="{$BattleReport2/PlayerL/@PlayerId}"/>
+						<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+							<ScoreValueLink val="BattleReportVespeneDestroyedDelta"/>
+						</Frame>
+                    </Frame>
+					<Frame type="PlayerScoreValueFrame" name="DeltaR">
+                        <PlayerId val="{$BattleReport2/PlayerR/@PlayerId}"/>
+						<Frame type="ScoreValueLabelFrame" name="ScoreValueFrame0">
+							<ScoreValueLink val="BattleReportVespeneDestroyedDelta"/>
+						</Frame>
+                    </Frame>
+                </Frame>
+            </Frame>
+
+            <Frame type="Frame" name="SubtitlesFrame">
+                <Anchor relative="$parent"/>
+                <RenderPriority val="515"/>
+
+                <Frame type="Label" name="UnitsKilledLabel">
+                    <Anchor side="Top" relative="$parent/$parent/PlayerNameL" pos="Max" offset="15"/>
+                    <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Width val="250"/>
+                    <Height val="30"/>
+                    <Text val="@UI/BattleReport/UnitsKilled"/>
+                    <Style val="BattleReportSectionTitle"/>
+                </Frame>
+
+                <Frame type="Label" name="ResourcesLostLabel">
+                    <Anchor side="Top" relative="$parent/$parent/ButtonsL/UnitButtons" pos="Max" offset="15"/>
+                    <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Width val="250"/>
+                    <Height val="30"/>
+                    <Style val="BattleReportSectionTitle"/>
+                    <Text val="@UI/BattleReport/ResourcesDestroyed"/>
+                </Frame>
+
+                <Frame type="Label" name="DmgLabel">
+                    <Anchor side="Top" relative="$parent/$parent/StatsL/ResourcesLostFrame/ResourcesLostGas" pos="Max" offset="15"/>
+                    <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Width val="250"/>
+                    <Height val="30"/>
+                    <Style val="BattleReportSectionTitle"/>
+                    <Text val="@UI/BattleReport/DamageDealt"/>
+                </Frame>
+
+                <Frame type="Label" name="AbilitiesUsedLabel">
+                    <Anchor side="Top" relative="$parent/DmgLabel" pos="Max" offset="55"/>
+                    <Anchor side="Left" relative="$parent" pos="Mid" offset="0"/>
+                    <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
+                    <Width val="250"/>
+                    <Height val="30"/>
+                    <Text val="@UI/BattleReport/AbilitesUsed"/>
+                    <Style val="BattleReportSectionTitle"/>
+                </Frame>
+            </Frame>
+            <Frame type="Button" name="CloseButton" template="StandardBattlenetTemplates/CloseButton">
+                <Anchor side="Top" relative="$parent/Header" pos="Min" offset="-10"/>
+                <Anchor side="Right" relative="$parent/Header" pos="Max" offset="6"/>
+                <Shortcut val="Escape"/>
+                <Enabled val="{$parent/@Visible}"/>
+                <Animation name="ToggleVisibility" flags="NoEventsWhileHidden">
+                    <Event event="OnClick" action="Reset,Play" frame="$this"/>
+                    <Controller type="Visibility" end="Stop" frame="$parent/$parent/BattleReportToggle">
+                        <Key type="Bool" time="0.0" value="False"/>
+                    </Controller>
+                </Animation>
+            </Frame>
+        </Frame>
+        <Frame type="ToggleControl" name="BattleReportToggle">
+            <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Height val="0"/>
+            <Width val="0"/>
+            <Enabled val="False"/>
+            <Shortcut val="Shift+B"/>
+            <ShortcutEnabledForParticipants val="false"/>
+            <ShortcutEnabledForObservers val="true"/>
+            <Visible val="false"/>
+
+            <Animation name="Show">
+                <Event event="OnShown" action="Reset,Play" />
+                <Controller type="Fade" end="Pause" frame="$BattleReport2">
+                    <Key type="Curve" time="0" value="0" />
+                    <Key type="Curve" time="0.125" value="255"/>
+                </Controller>
+                <Controller type="Anchor" end="Pause" side="Top" relative="true" frame="$BattleReport2">
+                    <Key type="Curve" time="0" value="30" inout="Linear" />
+                    <Key type="Curve" time="0.125" value="0" inout="Slow,Linear"/>
+                </Controller>
+                <Controller type="Visibility" end="Pause" frame="$BattleReport2">
+                    <Key type="Bool" time="0" value="true"/>
+                </Controller>
+            </Animation>
+
+            <Animation name="Hide">
+                <Event event="OnHidden" action="Reset,Play"/>
+                <Controller type="Fade" end="Pause" frame="$BattleReport2">
+                    <Key type="Curve" time="0" value="255"/>
+                    <Key type="Curve" time="0.125" value="0"/>
+                </Controller>
+                <Controller type="Anchor" end="Pause" side="Top" relative="true" frame="$BattleReport2">
+                    <Key type="Curve" time="0" value="0" inout="Linear"/>
+                    <Key type="Curve" time="0.125" value="30" inout="Slow,Linear"/>
+                </Controller>
+                <Controller type="Visibility" end="Pause" frame="$BattleReport2">
+                    <Key type="Bool" time="0" value="true"/>
+                    <Key type="Bool" time="0.125" value="false"/>
+                </Controller>
+            </Animation>
+        </Frame>
+    </Frame>
+</Desc>

@@ -1,0 +1,351 @@
+include "TriggerLibs/natives"
+
+//--------------------------------------------------------------------------------------------------
+// Library: EvoObs
+//--------------------------------------------------------------------------------------------------
+// Preset Declarations
+const int libEvOb_ge_ProductionTabCategory_Structure = 0;
+const int libEvOb_ge_ProductionTabCategory_Unit = 1;
+const int libEvOb_ge_ProductionTabCategory_Upgrade = 2;
+const int libEvOb_ge_PlayerStatusScoreValue_UnusedNotPlaying = 0;
+const int libEvOb_ge_PlayerStatusScoreValue_Playing = 1;
+const int libEvOb_ge_PlayerStatusScoreValue_LeftGameinVictory = 2;
+const int libEvOb_ge_PlayerStatusScoreValue_LeftGameinTie = 3;
+const int libEvOb_ge_PlayerStatusScoreValue_LeftGameinDefeat = 4;
+const int libEvOb_ge_PlayerStatusScoreValue_DroppedbeforeMapInitialization = 5;
+const int libEvOb_ge_GraphStyle_Comparative = 0;
+const int libEvOb_ge_GraphStyle_Differential = 1;
+const int libEvOb_ge_UpgradeNotificationsSlotStatus_HiddenOccupiedwithrunningUpgrade = 0;
+const int libEvOb_ge_UpgradeNotificationsSlotStatus_VisibleOccupiedwithrunningUpgrade = 1;
+const int libEvOb_ge_UpgradeNotificationsSlotStatus_OccupiedwithdestroyedcompletedUpgrade = 2;
+const int libEvOb_ge_UpgradeNotificationsSlotStatus_NoUpgrade = 3;
+const int libEvOb_ge_WorkersKilledNotificationsSlotStatus_Hidden = 0;
+const int libEvOb_ge_WorkersKilledNotificationsSlotStatus_Visible = 1;
+
+// Constants
+const int libEvOb_gv_productionTabMAX_VISIBLE_SLOTS = 17;
+const int libEvOb_gv_productionTabMAX_SLOTS = 50;
+const int libEvOb_gv_graphsMaxNode = 100;
+const int libEvOb_gv_graphsMaxGraphId = 3;
+const int libEvOb_gv_graphsIntervalLength = 6;
+const string libEvOb_gv_labelsSlot1 = "-slot1";
+const string libEvOb_gv_labelsSlot2 = "-slot2";
+const string libEvOb_gv_labelsIconBG1 = "IconBG1-";
+const string libEvOb_gv_labelsIconBG2 = "IconBG2-";
+const string libEvOb_gv_labelsIconBG3 = "IconBG3-";
+const string libEvOb_gv_labelsIcon1 = "Icon1-";
+const string libEvOb_gv_labelsIcon2 = "Icon2-";
+const string libEvOb_gv_labelsIcon3 = "Icon3-";
+const string libEvOb_gv_labelsDisruptIconBG1 = "db1-";
+const string libEvOb_gv_labelsDisruptIcon1 = "di1-";
+const int libEvOb_gv_upgradeNotificationsMaxUISlots = 50;
+const int libEvOb_gv_upgradeNotificationsMaxFacilitySlots = 100;
+const fixed libEvOb_gv_upgradeNotificationsVisibleTime = 15.0;
+const int libEvOb_gv_workersKilledNotificationsMaxUISlots = 15;
+const fixed libEvOb_gv_battleReportBattleEndingTimerGameTimeDuration = 12.0;
+const fixed libEvOb_gv_battleReportAfterBattleEndedNoUiUpdateTimerGameTimeDuration = 25.0;
+const int libEvOb_gv_battleReportMaxAbilitySlot = 11;
+const int libEvOb_gv_battleReportMaxKilledUnitTypeSlot = 17;
+
+// Structures
+struct libEvOb_gs_ProductionTabGeneral {
+    int lv_selectionIndexRaw;
+    int lv_selectionIndexTimed;
+};
+
+struct libEvOb_gs_ProductionTabPlayer {
+    int[libEvOb_gv_productionTabMAX_VISIBLE_SLOTS + 1] lv_slotImage;
+    int[libEvOb_gv_productionTabMAX_VISIBLE_SLOTS + 1] lv_slotCountLabel;
+    int[libEvOb_gv_productionTabMAX_VISIBLE_SLOTS + 1] lv_slotProgressBar;
+    int[libEvOb_gv_productionTabMAX_VISIBLE_SLOTS + 1] lv_slotUnitTargetFrame;
+    int[libEvOb_gv_productionTabMAX_VISIBLE_SLOTS + 1] lv_slotPanel;
+    int[libEvOb_gv_productionTabMAX_VISIBLE_SLOTS + 1] lv_slotChronoBoostedIcon;
+    int[libEvOb_gv_productionTabMAX_VISIBLE_SLOTS + 1] lv_slotContaminatedIcon;
+    int lv_moreSlotsLabel;
+    string[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotContent;
+    string[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotIconFile;
+    int[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotCount;
+    text[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotName;
+    unitgroup[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotSelection;
+    bool[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotUseCurrentOrderProgress;
+    int[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotCategory;
+    fixed[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotBuildDurationMax;
+    bool[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotIsChronoBoosted;
+    bool[libEvOb_gv_productionTabMAX_SLOTS + 1] lv_slotIsContaminated;
+    int lv_lastUsedSlot;
+    unitgroup lv_contanimated;
+    unitgroup lv_chronoBoosted;
+    unitgroup lv_ignoreArmingCompletedEvents;
+    unitgroup lv_morphingUnitsWithoutMorphDelay;
+};
+
+struct libEvOb_gs_GraphsGeneral {
+    bool lv_active;
+    int lv_playerLeft;
+    int lv_playerRight;
+    int lv_teamLeft;
+    int lv_teamRight;
+    int lv_currentInterval;
+    int lv_container;
+    int lv_currentNode;
+};
+
+struct libEvOb_gs_GraphsData {
+    int lv_graph;
+    int lv_title;
+    string lv_scoreType;
+    int lv_style;
+    fixed lv_minimumValue;
+    fixed lv_rangeBase;
+    fixed lv_rangeIncrement;
+    int lv_maxValue;
+    int[3][libEvOb_gv_graphsIntervalLength + 1] lv_tempValues;
+    int[3] lv_value;
+    int lv_team;
+    bool lv_averageValues;
+};
+
+struct libEvOb_gs_Labels {
+    bool lv_active;
+};
+
+struct libEvOb_gs_UpgradeNotifications {
+    bool lv_active;
+    bool lv_updateThreadRunning;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemIcon;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemName;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemPanel;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemPlayerIdLabel;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemProgressBar;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemTimerStatus;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemTimerLabel;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_itemUnitTargetFrame;
+    timer[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_timerDestruction;
+    int[libEvOb_gv_upgradeNotificationsMaxUISlots + 1] lv_slotStatus;
+    unit[libEvOb_gv_upgradeNotificationsMaxFacilitySlots + 1] lv_slotFacility;
+    int lv_slotLastUsed;
+    int lv_slotLastClearedInputForUpdateThread;
+};
+
+struct libEvOb_gs_WorkersKilledNotifications {
+    bool lv_active;
+    int[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_slotStatus;
+    int[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_intKilledAmount;
+    int[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_itemPanel;
+    int[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_itemKillerPlayerIdLabel;
+    int[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_itemWorkerPlayerIdLabel;
+    int[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_itemIcon;
+    int[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_itemCountLabel;
+    timer[libEvOb_gv_workersKilledNotificationsMaxUISlots + 1] lv_timerDestruction;
+    int lv_slotLastUsed;
+};
+
+struct libEvOb_gs_MapNotifications {
+    fixed lv_minimumPickupSpacing;
+    fixed lv_scannerSweepDuration;
+    fixed lv_pingDuration;
+    point lv_mostRecentPingLocation;
+    timer lv_mostRecentTimer;
+};
+
+struct libEvOb_gs_MinimapFrustum {
+    int[3] lv_ping;
+    bool lv_active;
+    int lv_playerOne;
+    int lv_playerTwo;
+};
+
+struct libEvOb_gs_BattleReport {
+    bool lv_active;
+    bool lv_battleActive;
+    int lv_battleNr;
+    fixed lv_battleGameTimeDuration;
+    timer lv_battleEndingTimer;
+    int[2] lv_playerIdSide;
+    bool lv_updateDueToDamage;
+    bool lv_updateDueToDeathAll;
+    bool lv_updateDueToDeathOnlyLabels;
+    bool lv_updateDueToDeathResources;
+    bool lv_updateDueToAbilityAll;
+    bool lv_updateDueToAbilityOnlyLabels;
+    bool lv_resetBattleEndingTimer;
+    bool lv_resetUnusedSlots;
+    int lv_uiBattleDurationLabel;
+    int lv_uiBattleActiveIndicator;
+    timer lv_noUiUpdateTimer;
+    bool lv_noUiUpdates;
+};
+
+struct libEvOb_gs_BattleReportSide {
+    int lv_killedUnitTypeLastUsedSlot;
+    string[libEvOb_gv_battleReportMaxKilledUnitTypeSlot + 1] lv_killedUnitType;
+    int[libEvOb_gv_battleReportMaxKilledUnitTypeSlot + 1] lv_killedUnitTypeCount;
+    string[libEvOb_gv_battleReportMaxKilledUnitTypeSlot + 1] lv_killedUnitTypeIcon;
+    text[libEvOb_gv_battleReportMaxKilledUnitTypeSlot + 1] lv_killedUnitTypeName;
+    int lv_abilitiesCastedLastUsedSlot;
+    abilcmd[libEvOb_gv_battleReportMaxAbilitySlot + 1] lv_abilitiesCasted;
+    int[libEvOb_gv_battleReportMaxAbilitySlot + 1] lv_abilitiesCastedCount;
+    string[libEvOb_gv_battleReportMaxAbilitySlot + 1] lv_abilitiesCastedIcon;
+    text[libEvOb_gv_battleReportMaxAbilitySlot + 1] lv_abilitiesCastedName;
+    fixed lv_damageDealt;
+    int[2] lv_resourcesDestroyed;
+    int[libEvOb_gv_battleReportMaxKilledUnitTypeSlot + 1] lv_uiUnitTypeButton;
+    int[libEvOb_gv_battleReportMaxAbilitySlot + 1] lv_uiAbilityButton;
+    int lv_uiDamageLabel;
+    int lv_uiMineralsLabel;
+    int lv_uiVespeneLabel;
+};
+
+// Variable Declarations
+playergroup libEvOb_gv_all_Players;
+playergroup libEvOb_gv_initial_Active_Players;
+int libEvOb_gv_obsID;
+playergroup libEvOb_gv_obs;
+fixed libEvOb_gv_gameSpeedFactor;
+libEvOb_gs_ProductionTabGeneral libEvOb_gv_productionTabGeneral;
+libEvOb_gs_ProductionTabPlayer[16] libEvOb_gv_productionTabPlayer;
+int libEvOb_gv_productionTabMAX_VISIBLE_SLOTS__1;
+libEvOb_gs_GraphsGeneral libEvOb_gv_graphsGeneral;
+libEvOb_gs_GraphsData[libEvOb_gv_graphsMaxGraphId + 1] libEvOb_gv_graphsData;
+libEvOb_gs_Labels libEvOb_gv_labels;
+libEvOb_gs_UpgradeNotifications libEvOb_gv_upgradeNotifications;
+libEvOb_gs_WorkersKilledNotifications libEvOb_gv_workersKilledNotifications;
+fixed libEvOb_gv_workersKilledNotificationsVisibleGameTime;
+libEvOb_gs_MapNotifications libEvOb_gv_mapNotifications;
+libEvOb_gs_MinimapFrustum libEvOb_gv_minimapFrustum;
+libEvOb_gs_BattleReport libEvOb_gv_battleReport;
+libEvOb_gs_BattleReportSide[2] libEvOb_gv_battleReportSide;
+
+// Function Declarations
+string libEvOb_gf_IconofProduction (string lp_item, bool lp_isUnit, int lp_player);
+string libEvOb_gf_IconofUnit (string lp_unitType, int lp_player);
+string libEvOb_gf_IconofUpgrade (string lp_upgrade, int lp_player);
+text libEvOb_gf_NameofProduction (string lp_item, bool lp_isUnit, int lp_player);
+void libEvOb_gf_RegisterCameraMoveEvent (trigger lp_trigger, int lp_playerId, int lp_cameraMoveReason);
+void libEvOb_gf_RegisterPeriodicEvent (trigger lp_trigger, fixed lp_interval, int lp_time);
+void libEvOb_gf_RegisterTimerRunsOutEvent (trigger lp_trigger, timer lp_timer);
+void libEvOb_gf_RegisterUnitCreatedEvent (trigger lp_trigger, unit lp_unit, string lp_ability, string lp_behavior);
+void libEvOb_gf_RegisterUnitTrainingProgressEvent (trigger lp_trigger, unit lp_unit, int lp_progressStage);
+void libEvOb_gf_RegisterUnitArmingProgressEvent (trigger lp_trigger, unit lp_unit, int lp_progressStage);
+void libEvOb_gf_RegisterUnitResearchProgressEvent (trigger lp_trigger, unit lp_unit, int lp_progressStage);
+void libEvOb_gf_RegisterUnitDiesEvent (trigger lp_trigger, unit lp_unit);
+void libEvOb_gf_RegisterPlayerLeavesEvent (trigger lp_trigger, int lp_player, int lp_gameResult);
+void libEvOb_gf_RegisterAbilityUsedEvent (trigger lp_trigger, unit lp_unit, abilcmd lp_abilityCommand, int lp_stage, bool lp_includeSharedAbilities);
+void libEvOb_gf_RegisterUnitTakesDamageEvent (trigger lp_trigger, unit lp_unit, int lp_damageType, int lp_fatal, string lp_effect);
+void libEvOb_gf_RegisterTimerExpiresEvent (trigger lp_trigger, timer lp_timer);
+void libEvOb_gf_ProductionTabRegisterProduction (int lp_player, string lp_item, int lp_productionCategory, unit lp_relatedUnit, bool lp_useCurrentOrderProgress, bool lp_isMorphAbility, string lp_constructorUnitTypeonlyForConstructionsLikeProbe, abilcmd lp_morphAbilCmd);
+void libEvOb_gf_ProductionTabRemoveProduction (int lp_player, string lp_item, int lp_productionType, unit lp_relatedUnit);
+void libEvOb_gf_ProductionTabSwapSlots (int lp_player, int lp_slotA, int lp_slotB);
+fixed libEvOb_gf_ProductionTabGetMaxDurationOfConstruction (string lp_constructor, string lp_constructed, int lp_player);
+fixed libEvOb_gf_ProductionTabGetMaxDurationOfMorph (abilcmd lp_abilCmd, int lp_player);
+void libEvOb_gf_ProductionTabUpdateUIProgressSelectionthreadedinfinite ();
+void libEvOb_gf_ProductionTabUpdateUICurrentProgressPercentAndTooltip (int lp_player, int lp_slot);
+void libEvOb_gf_ProductionTabRegisterChronoBoost (unit lp_structure);
+void libEvOb_gf_ProductionTabUnregisterChronoBoost (unit lp_boostedStructure);
+void libEvOb_gf_ProductionTabRegisterContaminate (unit lp_haltedStructure);
+void libEvOb_gf_ProductionTabUnregisterContaminate (unit lp_haltedStructure);
+void libEvOb_gf_ObserverUiAssistSetPlayerIdScore (int lp_player);
+void libEvOb_gf_ObserverUiAssistSetPlayerStatusScore (int lp_player, int lp_status);
+int libEvOb_gf_GetFixedUnitResourceCost (unit lp_unit, int lp_resource, int lp_player);
+void libEvOb_gf_GraphsDefineGraph (int lp_id, text lp_title, string lp_frameName, string lp_scoreType, int lp_style, fixed lp_minimumValue, fixed lp_rangeBase, fixed lp_rangeIncrement, bool lp_averageValues);
+void libEvOb_gf_GraphsUpdateDataDifferential (int lp_graphIndex);
+void libEvOb_gf_GraphsUpdateDataComparative (int lp_graphIndex);
+void libEvOb_gf_LabelsHookUpUnitsProductionTag (unit lp_producingUnit, string lp_unitTagString);
+bool libEvOb_gf_LabelsUnitCanProduceUnitsinParallel (string lp_unitType);
+bool libEvOb_gf_LabelsUnitUsesCustomStatusBarforProduction (string lp_unitType);
+void libEvOb_gf_LabelsPylonPowerSetPoweredDown (unit lp_unit);
+void libEvOb_gf_UpgradeNotificationsRemoveRunningUpgrade (int lp_slot);
+int libEvOb_gf_UpgradeNotificationsSearchFacilitySlot (unit lp_facility);
+text libEvOb_gf_UpgradeNotificationsUpgradeName (string lp_upgrade);
+bool libEvOb_gf_UpgradeNotificationsUpgradeNeedsToBeVisible (fixed lp_remainingTime);
+void libEvOb_gf_UpgradeNotificationsUpdateUIthreaded ();
+void libEvOb_gf_UpgradeNotificationsSetStatusLabel (int lp_slot, text lp_status);
+void libEvOb_gf_UpgradeNotificationsSetSlotData (int lp_slot, text lp_name, string lp_icon, int lp_player, bool lp_visible, unit lp_facility);
+int libEvOb_gf_UpgradeNotificationsSwapSlotWithLowestInvisibleOne (int lp_minUncheckedSlot, int lp_slot);
+void libEvOb_gf_UpgradeNotificationsSwapSlotInformation (int lp_slotA, int lp_slotB);
+void libEvOb_gf_UpgradeNotificationsUpdateProgressData (int lp_slot);
+bool libEvOb_gf_WorkersKilledNotificationsIsinDistanceofMainBuilding (point lp_point, int lp_player, fixed lp_distance);
+bool libEvOb_gf_MapNotificationsCargoUnitshaveFullHealth (unit lp_transportunit);
+void libEvOb_gf_BattleReportMorphCanceled (string lp_morphTargetUnitType, string lp_baseOrIntermediatehUnitType, int lp_player, string lp_ability);
+int libEvOb_gf_BattleReportGetPlayerSideIndex (int lp_player);
+int libEvOb_gf_BattleReportGetOpposingPlayerSideIndex (int lp_player);
+bool libEvOb_gf_BattleReportHasBattleStarted ();
+bool libEvOb_gf_BattleReportIsTrackedUnitType (unit lp_unit, string lp_unitType, bool lp_deathTypeIsTimeout);
+void libEvOb_gf_BattleReportStartBattle ();
+void libEvOb_gf_BattleReportStartBattleActiveDurationCounterthreaded (int lp_battleNr);
+void libEvOb_gf_BattleReportUpdateUIthreaded (int lp_battleNr);
+void libEvOb_gf_BattleReportUpdateUI ();
+void libEvOb_gf_BattleReportResetBattleEndingTimer ();
+void libEvOb_gf_BattleReportIncrementDamage (int lp_sideIndex, fixed lp_damage);
+void libEvOb_gf_BattleReportIncrementAbilityUsage (int lp_sideIndex, abilcmd lp_abilityCommand);
+void libEvOb_gf_BattleReportIncrementUnitTypeKill (int lp_sideIndex, string lp_unitType);
+void libEvOb_gf_BattleReportIncrementResourceDamage (int lp_sideIndex, int lp_minerals, int lp_vespene);
+void libEvOb_gf_BattleReportEndBattle ();
+void libEvOb_gf_BattleReportClearBattleData ();
+
+// Trigger Declarations
+trigger libEvOb_gt_GameHeartInitialization;
+trigger libEvOb_gt_GameHeartRevealDebrisFromDestructubleTowers;
+trigger libEvOb_gt_ProductionTabInit;
+trigger libEvOb_gt_ProductionTabConstructionUnitWarpMergeStarted;
+trigger libEvOb_gt_ProductionTabConstructionUnitWarpMergeEnded;
+trigger libEvOb_gt_ProductionTabTrainingStarted;
+trigger libEvOb_gt_ProductionTabTrainingCancelled;
+trigger libEvOb_gt_ProductionTabTrainingCompleted;
+trigger libEvOb_gt_ProductionTabResearchStarted;
+trigger libEvOb_gt_ProductionTabResearchEnded;
+trigger libEvOb_gt_ProductionTabArmingStarted;
+trigger libEvOb_gt_ProductionTabArmingCancelled;
+trigger libEvOb_gt_ProductionTabArmingEnded;
+trigger libEvOb_gt_ProductionTabMorphStarted;
+trigger libEvOb_gt_ProductionTabMorphFinished;
+trigger libEvOb_gt_ProductionTabMorphCanceled;
+trigger libEvOb_gt_ProductionTabChronoBoostActivates;
+trigger libEvOb_gt_ProductionTabChronoBoostDeactivates;
+trigger libEvOb_gt_ProductionTabContaminateActivates;
+trigger libEvOb_gt_ProductionTabContaminateDeactivates;
+trigger libEvOb_gt_ObserverUiAssistInitialization;
+trigger libEvOb_gt_ObserverUiAssistPlayerLeavesGameDefeat;
+trigger libEvOb_gt_ObserverUiAssistPlayerLeavesGameTie;
+trigger libEvOb_gt_ObserverUiAssistPlayerLeavesGameVictory;
+trigger libEvOb_gt_ArchonMergeSaveResourceOffset;
+trigger libEvOb_gt_ArchonDuplicatedTemplarsDied;
+trigger libEvOb_gt_OverlordTransportMorphCompleted;
+trigger libEvOb_gt_OverseerFromOverlordTransportDied;
+trigger libEvOb_gt_GraphsInitialization;
+trigger libEvOb_gt_GraphsTimer;
+trigger libEvOb_gt_LabelsInitialization;
+trigger libEvOb_gt_LabelsUnitTrainingStarted;
+trigger libEvOb_gt_LabelsResearchStarted;
+trigger libEvOb_gt_LabelsUnitTrainingStopped;
+trigger libEvOb_gt_LabelsResearchStopped;
+trigger libEvOb_gt_LabelsReactorDestroyed;
+trigger libEvOb_gt_LabelsPylonPowerUp;
+trigger libEvOb_gt_LabelsPylonPowerDown;
+trigger libEvOb_gt_LabelsPylonPowerConstructionFinished;
+trigger libEvOb_gt_LabelsContaminateActivate;
+trigger libEvOb_gt_LabelsContaminateDeactivate;
+trigger libEvOb_gt_UpgradeNotificationsInitialization;
+trigger libEvOb_gt_UpgradeNotificationsDestructionTimerRunsOut;
+trigger libEvOb_gt_UpgradeNotificationsResearchCancelled;
+trigger libEvOb_gt_UpgradeNotificationsResearchCompleted;
+trigger libEvOb_gt_UpgradeNotificationsResearchStarted;
+trigger libEvOb_gt_WorkersKilledNotificationsInitialization;
+trigger libEvOb_gt_WorkersKilledNotificationsTimerRunsOut;
+trigger libEvOb_gt_WorkersKilledNotificationsWorkerKilled;
+trigger libEvOb_gt_MapNotificationsDrop;
+trigger libEvOb_gt_MapNotificationsScannerSweep;
+trigger libEvOb_gt_MinimapFrustumInitialization;
+trigger libEvOb_gt_MinimapFrustumPlayerCameraMoved;
+trigger libEvOb_gt_MinimapFrustumPlayerLeaves;
+trigger libEvOb_gt_BattleReportInitialization;
+trigger libEvOb_gt_BattleReportUnitIsDamaged;
+trigger libEvOb_gt_BattleReportUnitDies;
+trigger libEvOb_gt_BattleReportTrackedAbilityUsedAbattlestarting;
+trigger libEvOb_gt_BattleReportTrackedAbilityUsedBnobattlestart;
+trigger libEvOb_gt_BattleReportBattleEndingTimerExpires;
+trigger libEvOb_gt_BattleReportNoUiUpdateTimerExpires;
+
+// Library Initialization
+void libEvOb_InitVariables ();
+
