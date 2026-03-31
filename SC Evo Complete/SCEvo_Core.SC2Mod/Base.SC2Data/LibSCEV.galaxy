@@ -62,6 +62,7 @@ void libSCEV_InitVariables () {
     for (init_i = 0; init_i <= 1; init_i += 1) {
         libSCEV_gv_raceSupplyLabel[init_i] = c_invalidDialogControlId;
     }
+    libSCEV_gv_queenInfestDuration = (libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "InitialDelay", c_playerAny) + (libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "PeriodicPeriodArray[" + IntToString(0) + "]", c_playerAny) * CatalogFieldValueGetAsInt(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "PeriodCount", c_playerAny)));
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
             libSCEV_gv_minimapAllyViewPings[init_i][init_j] = c_invalidPingId;
@@ -3126,6 +3127,83 @@ void libSCEV_gf_MergeStatusEffectsInitialize () {
             TriggerAddEventUnitAbility(lv_trigger, null, lv_abilCmd, lv_abilStage, lv_includeSharedAbils);
         }
 
+    }
+}
+
+void libSCEV_gf_ScoreFixForStolenUnit (string lp_unitType, int lp_owner) {
+    // Variable Declarations
+    string lv_unitType;
+    int[2] lv_cost;
+    fixed lv_foodCost;
+    string lv_costCategory;
+    string lv_mineralsUsedTotalScore;
+    string lv_vespeneUsedTotalScore;
+    string lv_mineralsLostScore;
+    string lv_vespeneLostScore;
+
+    // Automatic Variable Declarations
+    string auto4C37ABA8_val;
+
+    // Variable Initialization
+    lv_unitType = lp_unitType;
+    lv_costCategory = "";
+
+    // Implementation
+    if ((UnitTypeTestFlag(lv_unitType, c_unitFlagNoScore) == true)) {
+        return ;
+    }
+
+    lv_cost[0] = CatalogFieldValueGetAsInt(c_gameCatalogUnit, lv_unitType, "CostResource[" + IntToString(0) + "]", lp_owner);
+    lv_cost[1] = CatalogFieldValueGetAsInt(c_gameCatalogUnit, lv_unitType, "CostResource[" + IntToString(1) + "]", lp_owner);
+    lv_foodCost = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogUnit, lv_unitType, "Food", lp_owner);
+    lv_costCategory = CatalogFieldValueGet(c_gameCatalogUnit, lv_unitType, "CostCategory", lp_owner);
+    auto4C37ABA8_val = lv_costCategory;
+    if (auto4C37ABA8_val == "Economy") {
+        lv_mineralsUsedTotalScore = "MineralsUsedTotalEconomy";
+        lv_vespeneUsedTotalScore = "VespeneUsedTotalEconomy";
+        lv_mineralsLostScore = "MineralsLostEconomy";
+        lv_vespeneLostScore = "VespeneLostEconomy";
+    }
+    else if (auto4C37ABA8_val == "Army") {
+        lv_mineralsUsedTotalScore = "MineralsUsedTotalArmy";
+        lv_vespeneUsedTotalScore = "VespeneUsedTotalArmy";
+        lv_mineralsLostScore = "MineralsLostArmy";
+        lv_vespeneLostScore = "VespeneLostArmy";
+    }
+    else if (auto4C37ABA8_val == "Technology") {
+        lv_mineralsUsedTotalScore = "MineralsUsedTotalTechnology";
+        lv_vespeneUsedTotalScore = "VespeneUsedTotalTechnology";
+        lv_mineralsLostScore = "MineralsLostTechnology";
+        lv_vespeneLostScore = "VespeneLostTechnology";
+    }
+    else if (auto4C37ABA8_val == "Upgrade") {
+        lv_mineralsUsedTotalScore = "MineralsUsedTotalUpgrade";
+        lv_vespeneUsedTotalScore = "VespeneUsedTotalUpgrade";
+        lv_mineralsLostScore = "MineralsLostUpgrade";
+        lv_vespeneLostScore = "VespeneLostUpgrade";
+    }
+    else {
+        lv_mineralsUsedTotalScore = "";
+        lv_vespeneUsedTotalScore = "";
+        lv_mineralsLostScore = "MineralsLostNone";
+        lv_vespeneLostScore = "VespeneLostNone";
+    }
+    PlayerScoreValueSetFromInt(lp_owner, "UnitsLostCount", (PlayerScoreValueGetAsInt(lp_owner, "UnitsLostCount") + 1));
+    if ((lv_mineralsUsedTotalScore != "")) {
+        PlayerScoreValueSetFromInt(lp_owner, lv_mineralsUsedTotalScore, (PlayerScoreValueGetAsInt(lp_owner, lv_mineralsUsedTotalScore) + lv_cost[0]));
+    }
+
+    if ((lv_vespeneUsedTotalScore != "")) {
+        PlayerScoreValueSetFromInt(lp_owner, lv_vespeneUsedTotalScore, (PlayerScoreValueGetAsInt(lp_owner, lv_vespeneUsedTotalScore) + lv_cost[1]));
+    }
+
+    PlayerScoreValueSetFromInt(lp_owner, lv_mineralsLostScore, (PlayerScoreValueGetAsInt(lp_owner, lv_mineralsLostScore) + lv_cost[0]));
+    PlayerScoreValueSetFromInt(lp_owner, lv_vespeneLostScore, (PlayerScoreValueGetAsInt(lp_owner, lv_vespeneLostScore) + lv_cost[1]));
+    if ((lv_foodCost > 0.0)) {
+        PlayerScoreValueSetFromFixed(lp_owner, "FoodMadeLost", (PlayerScoreValueGetAsFixed(lp_owner, "FoodMadeLost") + lv_foodCost));
+    }
+    else {
+        PlayerScoreValueSetFromFixed(lp_owner, "FoodUsedLost", (PlayerScoreValueGetAsFixed(lp_owner, "FoodUsedLost") + AbsF(lv_foodCost)));
     }
 }
 
@@ -8179,6 +8257,7 @@ bool libSCEV_gt_MindControlStealTech_Func (bool testConds, bool runActions) {
         lv_unitLink = (UnitGetType(lv_target));
         lv_leaderAlias = CatalogFieldValueGet(c_gameCatalogUnit, lv_unitLink, "LeaderAlias", c_playerAny);
         lv_continue = false;
+        libSCEV_gf_ScoreFixForStolenUnit(UnitTypeFromString(lv_unitLink), lv_targetOwner);
         auto0F44F30A_userType = "DarkArchonSCBWMindControl@StealTable";
         auto0F44F30A_i = 1;
         for ( ; auto0F44F30A_i <= UserDataInstanceCount(auto0F44F30A_userType) ; auto0F44F30A_i += 1 ) {
@@ -8216,6 +8295,60 @@ bool libSCEV_gt_MindControlStealTech_Func (bool testConds, bool runActions) {
 void libSCEV_gt_MindControlStealTech_Init () {
     libSCEV_gt_MindControlStealTech = TriggerCreate("libSCEV_gt_MindControlStealTech_Func");
     TriggerAddEventUnitAbility(libSCEV_gt_MindControlStealTech, null, AbilityCommand("DarkArchonSCBWMindControl", 0), c_abilEffectStageCast, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: QueenInfestScoreFix
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_QueenInfestScoreFix_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_originalOwner;
+    string lv_originalUnitType;
+    unit lv_target;
+    unit lv_caster;
+    fixed lv_infestDuration;
+    fixed lv_timer;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_target = EventPlayerEffectUsedUnit(c_effectUnitTarget);
+    lv_caster = EventPlayerEffectUsedUnit(c_effectUnitCaster);
+    lv_infestDuration = libSCEV_gv_queenInfestDuration;
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsValid(lv_caster) == true))) {
+            return false;
+        }
+
+        if (!((UnitIsValid(lv_target) == true))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_originalOwner = EventPlayerEffectUsedUnitOwner(c_effectPlayerTarget);
+    lv_originalUnitType = UnitGetType(lv_target);
+    while ((UnitIsValid(lv_caster) == true) && (UnitIsValid(lv_target) == true) && (UnitGetOwner(lv_target) == lv_originalOwner) && (lv_timer <= lv_infestDuration)) {
+        lv_originalUnitType = UnitGetType(lv_target);
+        Wait(0.0625, c_timeGame);
+        lv_timer += 0.0625;
+    }
+    if ((UnitIsValid(lv_target) == true) && (UnitGetOwner(lv_target) != lv_originalOwner)) {
+        libSCEV_gf_ScoreFixForStolenUnit(lv_originalUnitType, lv_originalOwner);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_QueenInfestScoreFix_Init () {
+    libSCEV_gt_QueenInfestScoreFix = TriggerCreate("libSCEV_gt_QueenInfestScoreFix_Func");
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_QueenInfestScoreFix, c_playerAny, "QueenSCBWInfestCommandCenter@CP");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -9325,6 +9458,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MergeStatusEffectsTrack_Init();
     libSCEV_gt_MergeStatusEffectsBegin_Init();
     libSCEV_gt_MindControlStealTech_Init();
+    libSCEV_gt_QueenInfestScoreFix_Init();
     libSCEV_gt_MinimapAllyViewCameraSnap_Init();
     libSCEV_gt_MinimapAllyViewCameraUpdate_Init();
     libSCEV_gt_MinimapAllyViewAllianceUpdate_Init();

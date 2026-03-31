@@ -14,12 +14,28 @@ static unit PeerNydusGet(unit u){
     }
     else{return null;}
 }
+
+static void NydusScoreFix(int owner, bool isDeath){
+    int[2] cost;
+    cost[0] = CatalogFieldValueGetAsInt(c_gameCatalogUnit, NYDUS_TYPE, "CostResource[0]", owner);
+    cost[1] = CatalogFieldValueGetAsInt(c_gameCatalogUnit, NYDUS_TYPE, "CostResource[1]", owner);
+    if(isDeath){
+        cost[0] = -cost[0];
+        cost[1] = -cost[1];
+    }
+    PlayerScoreValueSetFromInt(owner, "MineralsUsedTotalTechnology", PlayerScoreValueGetAsInt(owner, "MineralsUsedTotalTechnology") - cost[0]);
+    PlayerScoreValueSetFromInt(owner, "VespeneUsedTotalTechnology", PlayerScoreValueGetAsInt(owner, "VespeneUsedTotalTechnology") - cost[1]);
+    PlayerScoreValueSetFromInt(owner, "MineralsUsedCurrentTechnology", PlayerScoreValueGetAsInt(owner, "MineralsUsedCurrentTechnology") - cost[0]);
+    PlayerScoreValueSetFromInt(owner, "VespeneUsedCurrentTechnology", PlayerScoreValueGetAsInt(owner, "VespeneUsedCurrentTechnology") - cost[1]);
+}
+
 static void PeerNydusSet(unit u1, unit u2){
     if(UnitGetType(u1)!=NYDUS_TYPE){return;}
     else if(UnitGetType(u2)!=NYDUS_TYPE){return;}
     else{
         DataTableSetUnit(true,PeerNydusKey(u1),u2);
         DataTableSetUnit(true,PeerNydusKey(u2),u1);
+        NydusScoreFix(UnitGetOwner(u1), false);
     }
 }
 
@@ -36,6 +52,9 @@ static void RegisterNydus(unit u){
 bool NydusCanalSCBW_DeathTrig(bool a, bool b){
     unit source= EventUnit();
     unit target = PeerNydusGet(source);
+    if(UnitIsAlive(target)){
+        NydusScoreFix(UnitGetOwner(target), true);
+    }
     UnitKill(target);
     return true;
 }
