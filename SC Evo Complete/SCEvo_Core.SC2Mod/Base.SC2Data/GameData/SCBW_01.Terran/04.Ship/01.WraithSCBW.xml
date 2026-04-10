@@ -43,6 +43,10 @@
         <Kind value="Ranged"/>
         <Amount value="15"/>
     </CEffectDamage>
+    <CEffectMorph id="WraithSCBW@AirStack@Morph" parent="AirStackingMorphBase" morphTo="WraithSCBW@AirStack"/>
+    <CEffectCreatePersistent id="WraithSCBW@AirStack@MorphDelay" parent="AirStackingMorphDelayBase" morphTo="WraithSCBW@AirStack"/>
+    <CEffectMorph id="WraithSCBW@Morph" parent="AirStackingMorphBase" morphTo="WraithSCBW"/>
+    <CEffectCreatePersistent id="WraithSCBW@MorphDelay" parent="AirStackingMorphDelayBase" morphTo="WraithSCBW"/>
     <CAbilResearch id="WraithSCBWCloakResearch" parent="SCBW_Research" race="Terran">
         <InfoArray index="Research1" Time="87.5">
             <Resource index="Minerals" value="150"/>
@@ -78,8 +82,14 @@
         </Cost>
         <BehaviorArray value="WraithSCBWCloak"/>
     </CAbilBehavior>
-    <CValidatorUnitType id="WraithSCBW@Is" parent="SCBW_Unit" x="WraithSCBW"/>
-    <CValidatorUnitType id="WraithSCBW@Not" parent="SCBW_UnitNot" x="WraithSCBW"/>
+    <CAbilMorph id="WraithSCBW@AirStack@Morph" parent="AirStackingMorphBase" morphTo="WraithSCBW@AirStack" Race="Zerg"/>
+    <CAbilMorph id="WraithSCBW@Morph" parent="AirStackingMorphBase" morphTo="WraithSCBW" Race="Zerg"/>
+    <CValidatorUnitType id="WraithSCBW@Is" parent="SCBW_Unit" x="Alias_WraithSCBW">
+        <Type value="TechAlias"/>
+    </CValidatorUnitType>
+    <CValidatorUnitType id="WraithSCBW@Not" parent="SCBW_UnitNot" x="Alias_WraithSCBW">
+        <Type value="TechAlias"/>
+    </CValidatorUnitType>
     <CValidatorCombine id="WraithSCBWCloak@Disable" parent="SCBW_Behavior"/>
     <CValidatorCombine id="WraithSCBWCloak@Remove" parent="SCBW_Behavior">
         <CombineArray value="CanSpendEnergy"/>
@@ -233,6 +243,7 @@
         <On Terms="WeaponStop.*.AttackStart" Send="AnimBracketStop Attack"/>
         <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack"/>
         <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready"/>
+        <On Terms="UnitBirth.WraithSCBW@AirStack" Send="Create"/>
         <HostSiteOps Ops="WraithSCBW@SOpBanker"/>
         <AnimBlendTime value="0.300000"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
@@ -545,9 +556,17 @@
         <DataRecord Entry="Validator,WraithSCBWCloak@Remove"/>
     </CDataCollectionAbil>
     <CDataCollectionUnit id="WraithSCBW" parent="TerranShipSCBW">
+        <DataRecord Entry="Abil,WraithSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Abil,WraithSCBW@Morph"/>
         <DataRecord Entry="Actor,WraithSCBW@DeathRagdollDetonationForce"/>
         <DataRecord Entry="Actor,WraithSCBW@DeathRagdoll"/>
         <DataRecord Entry="Actor,WraithSCBW@SOpBanker"/>
+        <DataRecord Entry="Behavior,WraithSCBW@AirStackUndo"/>
+        <DataRecord Entry="Behavior,WraithSCBW@AirStack"/>
+        <DataRecord Entry="Effect,WraithSCBW@AirStack@MorphDelay"/>
+        <DataRecord Entry="Effect,WraithSCBW@MorphDelay"/>
+        <DataRecord Entry="Effect,WraithSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Effect,WraithSCBW@Morph"/>
         <DataRecord Entry="Model,WraithSCBW@DeathRagdoll"/>
         <DataRecord Entry="Model,WraithSCBW@Evade"/>
         <DataRecord Entry="RequirementNode,WraithSCBW@Show"/>
@@ -559,9 +578,23 @@
         <DataRecord Entry="Sound,WraithSCBW@Pissed"/>
         <DataRecord Entry="Sound,WraithSCBW@Movement"/>
         <DataRecord Entry="Tactical,WraithSCBW"/>
+        <DataRecord Entry="Unit,WraithSCBW@AirStack"/>
         <DataRecord Entry="Validator,WraithSCBW@Is"/>
         <DataRecord Entry="Validator,WraithSCBW@Not"/>
         <UpgradeInfoWeapon index="1" DamagePerDice="2"/>
+        <TechInfoUpgradeUsed value="WraithSCBWEnergyUpgrade"/>
+    </CDataCollectionUnit>
+    <CDataCollectionUnit id="WraithSCBW@AirStack">
+        <EditorCategories value="DataGroup:Unit,DataFamily:Melee,Race:Zerg"/>
+        <DataRecord Entry="Abil,WraithSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Behavior,WraithSCBW@AirStack"/>
+        <DataRecord Entry="Effect,WraithSCBW@AirStack@MorphDelay"/>
+        <DataRecord Entry="Effect,WraithSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Unit,WraithSCBW@AirStack"/>
+        <UpgradeInfoUnitLifeArmorPerLevel value="1"/>
+        <TechInfoUpgradeUsed value="TerranShipPlatingSCBW_Lvl1"/>
+        <TechInfoUpgradeUsed value="TerranShipPlatingSCBW_Lvl2"/>
+        <TechInfoUpgradeUsed value="TerranShipPlatingSCBW_Lvl3"/>
         <TechInfoUpgradeUsed value="WraithSCBWEnergyUpgrade"/>
     </CDataCollectionUnit>
     <CUnit id="WraithSCBWWeaponAir@MissileLeft" parent="MISSILE">
@@ -637,6 +670,12 @@
         <GlossaryWeakArray value="DevourerSCBW"/>
         <GlossaryWeakArray value="CorsairSCBW"/>
         <ScoreResult value="BuildOrder"/>
+        <BehaviorArray Link="WraithSCBW@AirStack"/>
+        <TechAliasArray value="Alias_WraithSCBW"/>
+    </CUnit>
+    <CUnit id="WraithSCBW@AirStack" parent="WraithSCBW">
+        <BehaviorArray index="0" Link="WraithSCBW@AirStackUndo"/>
+        <SeparationRadius value="0.1"/>
     </CUnit>
     <CBehaviorBuff id="WraithSCBWCloak">
         <Alignment value="Positive"/>
@@ -649,6 +688,8 @@
         </Modification>
         <DisableValidatorArray value="WraithSCBWCloak@Disable"/>
     </CBehaviorBuff>
+    <CBehaviorBuff id="WraithSCBW@AirStack" parent="AirStackingBase" morphTo="WraithSCBW@AirStack"/>
+    <CBehaviorBuff id="WraithSCBW@AirStackUndo" parent="AirStackingUndoBase" morphTo="WraithSCBW"/>
     <CUpgrade id="WraithSCBWCloakResearch" parent="SCBW_Research">
         <Icon value="Assets\Textures\btn-upgrade-terran-cloakingfield@scbw.dds"/>
         <Race value="BWTe"/>
@@ -656,6 +697,7 @@
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
         <AffectedUnitArray value="WraithSCBW"/>
+        <AffectedUnitArray value="WraithSCBW@AirStack"/>
     </CUpgrade>
     <CUpgrade id="WraithSCBWEnergyUpgrade" parent="SCBW_EnergyUpgrade">
         <Icon value="Assets\Textures\btn-upgrade-terran-apolloreactor@scbw.dds"/>
@@ -664,5 +706,6 @@
         <ScoreResult value="BuildOrder"/>
         <EditorCategories value="Race:Terran,UpgradeType:Talents"/>
         <AffectedUnitArray value="WraithSCBW"/>
+        <AffectedUnitArray value="WraithSCBW@AirStack"/>
     </CUpgrade>
 </Catalog>

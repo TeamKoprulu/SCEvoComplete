@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectSet id="SpawnLarvaSet">
+        <ValidatorArray index="0" value="SCBW_IsZergCommandStructure"/>
+    </CEffectSet>
+    <CEffectApplyBehavior id="SpawnMutantLarvaApplyTimerBehavior">
+        <ValidatorArray index="0" value="SCBW_IsZergCommandStructure"/>
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="SpawnMutantLarvaHiddenAB">
+        <ValidatorArray index="0" value="SCBW_IsZergCommandStructure"/>
+    </CEffectApplyBehavior>
+    <CEffectSet id="AssaultMode@Finish">
+        <EffectArray value="SCBW_MissChance@AB"/>
+    </CEffectSet>
+    <CEffectSet id="FighterMode@Start">
+        <EffectArray value="SCBW_MissChance@ClearBuffs"/>
+    </CEffectSet>
     <CEffectSet id="FeedbackSet">
         <EffectArray value="HighTemplarSCBWHallucination@KillHallucination"/>
     </CEffectSet>
@@ -678,6 +693,83 @@
         <ValidatorArray value="IsNotRecallingNexus"/>
         <ValidatorArray value="IsStrategicWarpOut"/>
     </CEffectCreateUnit>
+    <CAbilMorph id="FactoryLiftOff">
+        <InfoArray index="0">
+            <SectionArray index="Collide">
+                <EffectArray index="Start" value="TerranBuildingSCBW@LiftOffStart"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorph>
+    <CAbilMorph id="FighterMode">
+        <InfoArray index="0">
+            <SectionArray index="Mover">
+                <EffectArray index="Start" value="FighterMode@Start"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorph>
+    <CAbilMorphPlacement id="BarracksLand">
+        <InfoArray index="0">
+            <SectionArray index="Stats">
+                <EffectArray index="Finish" value="TerranBuildingSCBW@LandFinish"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorphPlacement>
+    <CAbilMorph id="BarracksLiftOff">
+        <InfoArray index="0">
+            <SectionArray index="Collide">
+                <EffectArray index="Start" value="TerranBuildingSCBW@LiftOffStart"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorph>
+    <CAbilMorphPlacement id="CommandCenterLand">
+        <InfoArray index="0">
+            <SectionArray index="Stats">
+                <EffectArray index="Finish" value="CommandCenterLand@Finish"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorphPlacement>
+    <CAbilMorph id="CommandCenterLiftOff">
+        <InfoArray index="0">
+            <SectionArray index="Collide">
+                <EffectArray index="Start" value="TerranBuildingSCBW@LiftOffStart"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorph>
+    <CAbilMorphPlacement id="FactoryLand">
+        <InfoArray index="0">
+            <SectionArray index="Stats">
+                <EffectArray index="Finish" value="TerranBuildingSCBW@LandFinish"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorphPlacement>
+    <CAbilMorph id="OrbitalLiftOff">
+        <InfoArray index="0">
+            <SectionArray index="Collide">
+                <EffectArray index="Start" value="TerranBuildingSCBW@LiftOffStart"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorph>
+    <CAbilMorphPlacement id="StarportLand">
+        <InfoArray index="0">
+            <SectionArray index="Stats">
+                <EffectArray index="Finish" value="TerranBuildingSCBW@LandFinish"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorphPlacement>
+    <CAbilMorph id="StarportLiftOff">
+        <InfoArray index="0">
+            <SectionArray index="Collide">
+                <EffectArray index="Start" value="TerranBuildingSCBW@LiftOffStart"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorph>
+    <CAbilMorph id="AssaultMode">
+        <InfoArray index="0">
+            <SectionArray index="Stats">
+                <EffectArray index="Finish" value="AssaultMode@Finish"/>
+            </SectionArray>
+        </InfoArray>
+    </CAbilMorph>
     <CAbilEffectTarget id="PsiStorm">
         <AbilSetId value="Storm"/>
         <CmdButtonArray index="Execute">
@@ -755,6 +847,15 @@
         <TechAliasArray value="_Disruptable"/>
         <AutoCastValidatorArray value="EggSCBW@Not"/>
     </CAbilEffectTarget>
+    <CValidatorCombine id="IsWarpGateorNexus">
+        <CombineArray value="NexusSCBW@Is"/>
+    </CValidatorCombine>
+    <CValidatorCombine id="TimeWarpViableTargets">
+        <CombineArray index="0" value="CanTrain"/>
+        <CombineArray index="1" value="CanWarpTrain"/>
+        <CombineArray value="CanResearch"/>
+        <CombineArray value="CanArmMagazine"/>
+    </CValidatorCombine>
     <CValidatorUnitAbil id="CanArmMagazine">
         <Find value="1"/>
         <AbilClass value="CAbilArmMagazine"/>
@@ -1493,6 +1594,9 @@
         <Remove Terms="UnitDeathCustomize; ValidateUnit IsHallucination" Send="DeathCustomize Hallucination"/>
         <On Terms="UnitDeathCustomize; ValidateUnit IsHallucinationSCBW" Send="DeathCustomize Hallucination"/>
     </CActorUnit>
+    <CActorAction id="LarvaRelease">
+        <On Terms="MissilePreHost; ValidateUnit SCBW_IsHatcheryLairOrHive" Target="::Sender" Send="ModelSwap LarvaSCBW@ReleaseMissile"/>
+    </CActorAction>
     <CWeaponLegacy id="LurkerMP">
         <Tip value="Weapon/Tip/PierceWeapon"/>
         <AttackType value="Chaos"/>
@@ -1766,6 +1870,279 @@
     <CUnit id="WidowMineBurrowed">
         <Attributes index="Robotic" value="1"/>
     </CUnit>
+    <CUnit id="CollapsiblePurifierTowerDebris">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsiblePurifierTowerDiagonal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerDebrisRampLeftGreen">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerDebrisRampRightGreen">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerRampLeftGreen">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerRampRightGreen">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleExpeditionGate6x6">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleGarage">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleGarageLarge">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleZergInfestation3x3">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="BraxisAlphaDestructible1x1">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="BraxisAlphaDestructible2x2">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTower">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerDebris">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerDebrisRampLeft">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerDebrisRampRight">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerDiagonal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerRampLeft">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleRockTowerRampRight">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleTerranTower">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleTerranTowerDebris">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleTerranTowerDiagonal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleTerranTowerRampLeft">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="CollapsibleTerranTowerRampRight">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DebrisRampLeft">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DebrisRampRight">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebris2x4Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebris2x4Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebris2x6Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebris2x6Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebris4x4">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebris6x6">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebrisHugeDiagonalBLUR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleCityDebrisHugeDiagonalULBR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleDebris4x4">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleDebris6x6">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleDebrisRampDiagonalHugeBLUR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleDebrisRampDiagonalHugeULBR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIce2x4Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIce2x4Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIce2x6Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIce2x6Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIce4x4">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIce6x6">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIceDiagonalHugeBLUR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIceDiagonalHugeULBR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIceHorizontalHuge">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleIceVerticalHuge">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRampDiagonalHugeBLUR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRampDiagonalHugeULBR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRampHorizontalHuge">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRampVerticalHuge">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRock2x4Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRock2x4Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRock2x6Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRock2x6Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRock4x4">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRock6x6">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRock6x6Weak">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx12x4Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx12x4Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx12x6Horizontal">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx12x6Vertical">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx14x4">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx16x6">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx1DiagonalHugeBLUR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx1DiagonalHugeULBR">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx1HorizontalHuge">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="DestructibleRockEx1VerticalHuge">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="UnbuildableBricksDestructible">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="UnbuildablePlatesDestructible">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="UnbuildableRocksDestructible">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6E">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6N">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6NE">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6NW">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6S">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6SE">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6SW">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker6W">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8E">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8N">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8NE">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8NW">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8S">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8SE">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8SW">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CUnit id="XelNagaDestructibleRampBlocker8W">
+        <UserFlagArray index="Destructible" value="1"/>
+    </CUnit>
+    <CBehaviorBuff id="GravitonBeam">
+        <Modification>
+            <BehaviorLinkDisableArray value="SCBW_MissChance"/>
+            <BehaviorLinkDisableArray value="SCBW_MissChance@Shrub"/>
+            <BehaviorLinkDisableArray value="SCBW_MissChance@ShrubCheck"/>
+            <BehaviorLinkDisableArray value="SCBW_MissChance@HighGroundFake"/>
+            <BehaviorLinkDisableArray value="SCBW_MissChance@HighGroundShrub"/>
+        </Modification>
+    </CBehaviorBuff>
     <CBehaviorPowerSource id="WarpPrismPowerSourceFast">
         <Requirements value="WarpPrismPowerSourceFastRequirement"/>
     </CBehaviorPowerSource>

@@ -988,9 +988,13 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
     unitgroup auto17A0307A_g;
     int auto17A0307A_u;
     unit auto17A0307A_var;
+    playergroup auto33F18BAD_g;
+    int auto33F18BAD_var;
     unitgroup autoCF381F81_g;
     int autoCF381F81_u;
     unit autoCF381F81_var;
+    playergroup autoD6A49F84_g;
+    int autoD6A49F84_var;
 
     // Variable Initialization
 
@@ -1020,10 +1024,13 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
             autoCF381F81_var = UnitGroupUnitFromEnd(autoCF381F81_g, autoCF381F81_u);
             if (autoCF381F81_var == null) { break; }
             UnitBehaviorAdd(autoCF381F81_var, "SCBW_MissChance", autoCF381F81_var, 1);
-            if ((UnitFilterMatch(autoCF381F81_var, UnitGetOwner(autoCF381F81_var), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(autoCF381F81_var), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
-                UnitBehaviorAdd(autoCF381F81_var, "SCBW_MissChance@ShrubCheck", autoCF381F81_var, 1);
-            }
-
+        }
+        autoD6A49F84_g = PlayerGroupAll();
+        autoD6A49F84_var = -1;
+        while (true) {
+            autoD6A49F84_var = PlayerGroupNextPlayer(autoD6A49F84_g, autoD6A49F84_var);
+            if (autoD6A49F84_var < 0) { break; }
+            libNtve_gf_SetUpgradeLevelForPlayer(autoD6A49F84_var, "SCBW_MissChance", 1);
         }
     }
     else {
@@ -1043,6 +1050,13 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
             UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@HighGroundFake", 1);
             UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@NotInShrub", 1);
             UnitBehaviorRemove(auto17A0307A_var, "SCBW_MissChance@ShrubCheck", 1);
+        }
+        auto33F18BAD_g = PlayerGroupAll();
+        auto33F18BAD_var = -1;
+        while (true) {
+            auto33F18BAD_var = PlayerGroupNextPlayer(auto33F18BAD_g, auto33F18BAD_var);
+            if (auto33F18BAD_var < 0) { break; }
+            libNtve_gf_SetUpgradeLevelForPlayer(auto33F18BAD_var, "SCBW_MissChance", 0);
         }
     }
 }
@@ -4483,12 +4497,21 @@ void libSCEV_gt_FractionalArmorPlayerDamage_Init () {
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_FractionalArmorGodCheat_Func (bool testConds, bool runActions) {
     // Automatic Variable Declarations
+    playergroup auto94724C64_g;
+    int auto94724C64_var;
+
     // Actions
     if (!runActions) {
         return true;
     }
 
-    libSCEV_gf_FractionalArmorUpdatePlayerDamage(EventPlayer());
+    auto94724C64_g = PlayerGroupAll();
+    auto94724C64_var = -1;
+    while (true) {
+        auto94724C64_var = PlayerGroupNextPlayer(auto94724C64_g, auto94724C64_var);
+        if (auto94724C64_var < 0) { break; }
+        libSCEV_gf_FractionalArmorUpdatePlayerDamage(auto94724C64_var);
+    }
     return true;
 }
 
@@ -4604,7 +4627,7 @@ bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
             return false;
         }
 
-        if (!((UnitFilterMatch(lv_unit, lv_owner, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
+        if (!((UnitFilterMatch(lv_unit, lv_owner, UnitFilter(0, 0, (1 << c_targetFilterAir) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
             return false;
         }
     }
@@ -4615,10 +4638,6 @@ bool libSCEV_gt_MissChanceAdd_Func (bool testConds, bool runActions) {
     }
 
     UnitBehaviorAdd(lv_unit, "SCBW_MissChance", lv_unit, 1);
-    if ((UnitFilterMatch(lv_unit, lv_owner, UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterDestructible) | (1 << c_targetFilterItem), 0)) == true) && (StringContains(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(lv_unit), "EditorCategories", c_playerAny), "Destructible", c_stringAnywhere, c_stringNoCase) == false)) {
-        UnitBehaviorAdd(lv_unit, "SCBW_MissChance@ShrubCheck", lv_unit, 1);
-    }
-
     return true;
 }
 
@@ -4646,7 +4665,7 @@ bool libSCEV_gt_MissChanceShrubCheck_Func (bool testConds, bool runActions) {
             return false;
         }
 
-        if (!((UnitFilterMatch(lv_target, UnitGetOwner(lv_target), UnitFilter(0, 0, (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
+        if (!((UnitFilterMatch(lv_target, UnitGetOwner(lv_target), UnitFilter(0, 0, (1 << c_targetFilterAir) | (1 << c_targetFilterRawResource) | (1 << c_targetFilterHarvestableResource) | (1 << c_targetFilterMissile) | (1 << c_targetFilterDestructible), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32)))) == true))) {
             return false;
         }
 

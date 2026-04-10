@@ -100,8 +100,18 @@
         <FinalEffect value="MutaliskSCBWWeapon@LMMiss"/>
         <FinalOffset value="0,-1,0"/>
     </CEffectCreatePersistent>
-    <CValidatorUnitType id="MutaliskSCBW@Is" parent="SCBW_Unit" x="MutaliskSCBW"/>
-    <CValidatorUnitType id="MutaliskSCBW@Not" parent="SCBW_UnitNot" x="MutaliskSCBW"/>
+    <CEffectMorph id="MutaliskSCBW@AirStack@Morph" parent="AirStackingMorphBase" morphTo="MutaliskSCBW@AirStack"/>
+    <CEffectCreatePersistent id="MutaliskSCBW@AirStack@MorphDelay" parent="AirStackingMorphDelayBase" morphTo="MutaliskSCBW@AirStack"/>
+    <CEffectMorph id="MutaliskSCBW@Morph" parent="AirStackingMorphBase" morphTo="MutaliskSCBW"/>
+    <CEffectCreatePersistent id="MutaliskSCBW@MorphDelay" parent="AirStackingMorphDelayBase" morphTo="MutaliskSCBW"/>
+    <CAbilMorph id="MutaliskSCBW@AirStack@Morph" parent="AirStackingMorphBase" morphTo="MutaliskSCBW@AirStack" Race="Zerg"/>
+    <CAbilMorph id="MutaliskSCBW@Morph" parent="AirStackingMorphBase" morphTo="MutaliskSCBW" Race="Zerg"/>
+    <CValidatorUnitType id="MutaliskSCBW@Is" parent="SCBW_Unit" x="Alias_MutaliskSCBW">
+        <Type value="TechAlias"/>
+    </CValidatorUnitType>
+    <CValidatorUnitType id="MutaliskSCBW@Not" parent="SCBW_UnitNot" x="Alias_MutaliskSCBW">
+        <Type value="TechAlias"/>
+    </CValidatorUnitType>
     <CValidatorEffectTreeUserData id="MutaliskSCBWWeapon@BounceCount0">
         <Key value="HitCount"/>
         <Value value="1"/>
@@ -179,11 +189,18 @@
     </CActorAction>
     <CActorMissile id="MutaliskSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="MutaliskSCBWWeapon@Missile"/>
     <CActorUnit id="MutaliskSCBW" parent="GenericUnitStandard" unitName="MutaliskSCBW">
-        <Macros value="PhysicsDeathsSwarmAir"/>
-        <Macros value="PhysicsDeathsVoidAir"/>
-        <On Terms="AbilMorph.*.Finish; MorphTo MutaliskSCBW" Send="Create"/>
-        <On Terms="AbilMorph.*.Start; MorphFrom MutaliskSCBW" Send="Destroy"/>
+        <!--Macros value="PhysicsDeathsSwarmAir"/>
+        <Macros value="PhysicsDeathsVoidAir"/-->
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Mutalisk_Land"/>
+        <On Terms="AbilMorph.DevourerSCBW@Morph.Finish; MorphTo MutaliskSCBW" Send="Create"/>
+        <On Terms="AbilMorph.DevourerSCBW@Morph.Start; MorphFrom MutaliskSCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.DevourerSCBW@Morph.Finish; MorphTo MutaliskSCBW@AirStack" Send="Create"/>
+        <On Terms="AbilMorph.DevourerSCBW@Morph.Start; MorphFrom MutaliskSCBW@AirStack" Send="Destroy"/>
+        <On Terms="AbilMorph.GuardianSCBW@Morph.Finish; MorphTo MutaliskSCBW" Send="Create"/>
+        <On Terms="AbilMorph.GuardianSCBW@Morph.Start; MorphFrom MutaliskSCBW" Send="Destroy"/>
+        <On Terms="AbilMorph.GuardianSCBW@Morph.Finish; MorphTo MutaliskSCBW@AirStack" Send="Create"/>
+        <On Terms="AbilMorph.GuardianSCBW@Morph.Start; MorphFrom MutaliskSCBW@AirStack" Send="Destroy"/>
+        <On Terms="UnitBirth.MutaliskSCBW@AirStack" Send="Create"/>
         <!--DeathCustoms>
             <ActorModel value="MutaliskDeathRagdoll"/>
             <ModelLink value="MutaliskSCBW@DeathRagdoll"/>
@@ -430,8 +447,16 @@
         <DataRecord Entry="Accumulator,MutaliskSCBWWeapon@MaxTargets"/>
     </CDataCollectionAbil>
     <CDataCollectionUnit id="MutaliskSCBW" parent="ZergFlyerUnitSCBW">
+        <DataRecord Entry="Abil,MutaliskSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Abil,MutaliskSCBW@Morph"/>
         <DataRecord Entry="Actor,MutaliskSCBW@Death"/>
+        <DataRecord Entry="Behavior,MutaliskSCBW@AirStack"/>
+        <DataRecord Entry="Behavior,MutaliskSCBW@AirStackUndo"/>
         <DataRecord Entry="Button,MutaliskSCBW@Passive"/>
+        <DataRecord Entry="Effect,MutaliskSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Effect,MutaliskSCBW@Morph"/>
+        <DataRecord Entry="Effect,MutaliskSCBW@MorphDelay"/>
+        <DataRecord Entry="Effect,MutaliskSCBW@AirStack@MorphDelay"/>
         <DataRecord Entry="Model,MutaliskSCBW@DeathRagdoll"/>
         <DataRecord Entry="RequirementNode,MutaliskSCBW@Show"/>
         <DataRecord Entry="RequirementNode,MutaliskSCBW@AllowUnit"/>
@@ -448,10 +473,23 @@
         <DataRecord Entry="Sound,MutaliskSCBW@Attack"/>
         <DataRecord Entry="Sound,MutaliskSCBW@Pissed"/>
         <DataRecord Entry="Sound,MutaliskSCBW@Death"/>
+        <DataRecord Entry="Unit,MutaliskSCBW@AirStack"/>
         <DataRecord Entry="Validator,MutaliskSCBW@Is"/>
         <DataRecord Entry="Validator,MutaliskSCBW@Not"/>
         <UpgradeInfoWeapon DamagePerDice="3"/>
         <UpgradeInfoWeapon DamagePerDice="9"/>
+    </CDataCollectionUnit>
+    <CDataCollectionUnit id="MutaliskSCBW@AirStack">
+        <EditorCategories value="DataGroup:Unit,DataFamily:Melee,Race:Zerg"/>
+        <DataRecord Entry="Abil,MutaliskSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Behavior,MutaliskSCBW@AirStack"/>
+        <DataRecord Entry="Effect,MutaliskSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Effect,MutaliskSCBW@AirStack@MorphDelay"/>
+        <DataRecord Entry="Unit,MutaliskSCBW@AirStack"/>
+        <UpgradeInfoUnitLifeArmorPerLevel value="1"/>
+        <TechInfoUpgradeUsed value="ZergFlyerCarapaceSCBW_Lvl1"/>
+        <TechInfoUpgradeUsed value="ZergFlyerCarapaceSCBW_Lvl2"/>
+        <TechInfoUpgradeUsed value="ZergFlyerCarapaceSCBW_Lvl3"/>
     </CDataCollectionUnit>
     <CUnit id="MutaliskSCBWWeapon@Missile" parent="MISSILE">
         <Race value="BWZe"/>
@@ -516,5 +554,13 @@
         <Radius value="0.6875"/>
         <SeparationRadius value="0.6875"/>
         <Deceleration value="3.25"/>
+        <BehaviorArray Link="MutaliskSCBW@AirStack"/>
+        <TechAliasArray value="Alias_MutaliskSCBW"/>
     </CUnit>
+    <CUnit id="MutaliskSCBW@AirStack" parent="MutaliskSCBW">
+        <BehaviorArray index="0" Link="MutaliskSCBW@AirStackUndo"/>
+        <SeparationRadius value="0.1"/>
+    </CUnit>
+    <CBehaviorBuff id="MutaliskSCBW@AirStack" parent="AirStackingBase" morphTo="MutaliskSCBW@AirStack"/>
+    <CBehaviorBuff id="MutaliskSCBW@AirStackUndo" parent="AirStackingUndoBase" morphTo="MutaliskSCBW"/>
 </Catalog>

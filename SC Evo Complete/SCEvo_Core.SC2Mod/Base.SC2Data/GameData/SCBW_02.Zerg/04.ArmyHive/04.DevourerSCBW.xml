@@ -2,6 +2,7 @@
 <Catalog>
     <CEffectApplyBehavior default="1" id="DevourerSCBWWeapon@SporeBase">
         <ValidatorArray index="0" value="##id##"/>
+        <ValidatorArray value="QueenSCBWEnsnare@NotUnloader"/>
         <EditorCategories value="Race:Zerg"/>
     </CEffectApplyBehavior>
     <CEffectCreatePersistent id="DevourerSCBWWeapon@ImpactRedirect">
@@ -17,6 +18,10 @@
         <StackAlias value="AcidSpore"/>
     </CEffectRemoveBehavior>
     <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore1" parent="DevourerSCBWWeapon@SporeBase"/>
+    <CEffectApplyBehavior id="DevourerSCBWWeapon@SporeUnloader">
+        <ValidatorArray index="0" value="QueenSCBWEnsnare@IsUnloader"/>
+        <EditorCategories value="Race:Zerg"/>
+    </CEffectApplyBehavior>
     <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore2" parent="DevourerSCBWWeapon@SporeBase"/>
     <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore3" parent="DevourerSCBWWeapon@SporeBase"/>
     <CEffectApplyBehavior id="DevourerSCBWWeapon@Spore4" parent="DevourerSCBWWeapon@SporeBase"/>
@@ -28,7 +33,7 @@
     <CEffectCreatePersistent id="DevourerSCBWWeapon@SporesCP">
         <EditorCategories value="Race:Zerg"/>
         <WhichLocation Value="SourceUnit"/>
-        <PeriodCount value="9"/>
+        <PeriodCount value="10"/>
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore1"/>
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore2"/>
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore3"/>
@@ -38,6 +43,7 @@
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore7"/>
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore8"/>
         <PeriodicEffectArray value="DevourerSCBWWeapon@Spore9"/>
+        <PeriodicEffectArray value="DevourerSCBWWeapon@SporeUnloader"/>
         <PeriodicPeriodArray value="0"/>
         <InitialEffect value="DevourerSCBWWeapon@RBSpores"/>
     </CEffectCreatePersistent>
@@ -69,7 +75,7 @@
         <EditorCategories value="Race:Zerg"/>
         <SearchFilters value="Air;Player,Ally,Neutral,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <AreaArray Radius="2.25" Effect="DevourerSCBWWeapon@AB"/>
-        <ImpactLocation Value="TargetPoint"/>
+        <ImpactLocation Value="SourceUnit"/>
     </CEffectEnumArea>
     <CEffectDamage id="DevourerSCBWWeapon@DamageExpl" parent="ExplosiveDamageUISCBW" Race="Zerg">
         <Visibility value="Visible"/>
@@ -216,6 +222,24 @@
     <CLight id="DevourerSCBWEgg@Portrait" parent="default">
         <EditorCategories value="LightGroup:PortraitsUnitsZerg"/>
     </CLight>
+    <CActorForceSphere id="DevourerSCBWWeapon@DeathForce">
+        <On Terms="Effect.DevourerSCBWWeapon@Search.Start" Send="Create"/>
+        <HostSiteOps Ops="SOpRandomPointInSphereDot15"/>
+        <Duration value="0.150000"/>
+        <Magnitude value="15.000000,18.000000"/>
+        <Radius value="1.300000,0.600000"/>
+    </CActorForceSphere>
+    <CActorEventMacro id="DevourerSCBWWeapon@SporesScaleMacro">
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore1" Send="SetScale 0.700000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore2" Send="SetScale 0.750000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore3" Send="SetScale 0.800000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore4" Send="SetScale 0.850000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore5" Send="SetScale 0.900000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore6" Send="SetScale 0.950000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore7" Send="SetScale 1.000000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore8" Send="SetScale 1.050000 0.100000"/>
+        <On Terms="Effect.DevourerSCBWWeapon@SporesCP.Start; ValidateEffect DevourerSCBWWeapon@Spore9" Send="SetScale 1.100000 0.100000"/>
+    </CActorEventMacro>
     <CActorSound id="DevourerSCBWWeapon@Launch" parent="SoundOneShot"/>
     <CActorAction id="DevourerSCBWWeapon@ShieldHitter" parent="AoEAttackShieldHitter" effectHit="DevourerSCBWWeapon@Set"/>
     <CActorModel id="DevourerSCBWWeapon@SporesModelSmall" parent="ModelAnimationStyleContinuousUNIT">
@@ -224,6 +248,7 @@
         <On Terms="Behavior.DevourerSCBWWeapon.Off" Send="AnimBracketStop BSD"/>
         <Host Subject="_Unit"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
+        <Macros value="DevourerSCBWWeapon@SporesScaleMacro"/>
     </CActorModel>
     <CActorModel id="DevourerSCBWWeapon@SporesModelMedium" parent="ModelAnimationStyleContinuousUNIT">
         <Inherits index="Visibility" value="1"/>
@@ -231,12 +256,12 @@
         <On Terms="Behavior.DevourerSCBWWeapon.Off" Send="AnimBracketStop BSD"/>
         <Host Subject="_Unit"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
+        <Macros value="DevourerSCBWWeapon@SporesScaleMacro"/>
     </CActorModel>
     <CActorAction id="DevourerSCBWWeapon@Action" parent="GenericAttack" effectImpact="DevourerSCBWWeapon@Search" effectLaunch="DevourerSCBWWeapon@LM">
         <Missile value="DevourerSCBWWeapon@Missile"/>
         <ImpactMap index="None" Model="DevourerSCBWWeapon@Impact" Sound="DevourerSCBWWeapon@Impact"/>
         <ImpactModel value="GenericAttackImpactModelInheritOnce"/>
-        <ImpactPhysics Name="AcidSpewImpact" MatchKeys="Basic" Physics="SporeCrawlerAttackForce"/>
         <ShieldFlashType value="None"/>
     </CActorAction>
     <CActorModel id="DevourerSCBWWeapon@SporesModel" parent="ModelAnimationStyleContinuousUNIT">
@@ -247,6 +272,7 @@
         <On Terms="ActorCreation; ScopeContains _UnitMedium" Send="Destroy"/>
         <Host Subject="_Unit"/>
         <HostSiteOps Ops="SOpAttachCenter"/>
+        <Macros value="DevourerSCBWWeapon@SporesScaleMacro"/>
     </CActorModel>
     <CActorMissile id="DevourerSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="DevourerSCBWWeapon@Missile"/>
     <CActorModel id="DevourerSCBWEgg@Death">
@@ -553,6 +579,8 @@
         <DataRecord Entry="Actor,DevourerSCBWWeapon@Action"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@SporesModel"/>
         <DataRecord Entry="Actor,DevourerSCBWWeapon@Missile"/>
+        <DataRecord Entry="Actor,DevourerSCBWWeapon@SporesScaleMacro"/>
+        <DataRecord Entry="Actor,DevourerSCBWWeapon@DeathForce"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore1"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore2"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore3"/>
@@ -563,6 +591,7 @@
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore8"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon@Spore9"/>
         <DataRecord Entry="Behavior,DevourerSCBWWeapon"/>
+        <DataRecord Entry="Behavior,DevourerSCBWWeapon@SporeUnloader"/>
         <DataRecord Entry="Button,DevourerSCBWWeapon@Info"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageAccum"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@ImpactRedirect"/>
@@ -583,6 +612,7 @@
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageApply"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@AB"/>
         <DataRecord Entry="Effect,DevourerSCBWWeapon@DamageExpl"/>
+        <DataRecord Entry="Effect,DevourerSCBWWeapon@SporeUnloader"/>
         <DataRecord Entry="Model,DevourerSCBWWeapon@SporesModelSmall"/>
         <DataRecord Entry="Model,DevourerSCBWWeapon@SporesModelMedium"/>
         <DataRecord Entry="Model,DevourerSCBWWeapon@Impact"/>
@@ -759,6 +789,7 @@
         <RemoveValidatorArray value="QueenSCBWEnsnare@NotUnloader"/>
         <Tooltip value="Behavior/Tooltip/DevourerSCBWWeapon"/>
         <StackAlias value="AcidSpore"/>
+        <SortIndex value="1"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="DevourerSCBWWeapon@Spore1" parent="DevourerSCBWWeapon@Base">
         <Modification AttackSpeedMultiplier="0.889"/>
@@ -811,5 +842,16 @@
         </DamageResponse>
         <InfoFlags index="Hidden" value="1"/>
         <InfoFlags index="AlwaysUseGameText" value="1"/>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DevourerSCBWWeapon@SporeUnloader">
+        <Name value="Behavior/Name/DevourerSCBWWeapon"/>
+        <Tooltip value="Behavior/Tooltip/DevourerSCBWWeapon"/>
+        <Alignment value="Negative"/>
+        <InfoIcon value="Assets\Textures\btn-ability-zerg-acidspores.dds"/>
+        <EditorCategories value="AbilityorEffectType:Units,Race:Zerg"/>
+        <SortIndex value="1"/>
+        <RemoveValidatorArray value="DevourerSCBWWeapon"/>
+        <RemoveValidatorArray value="QueenSCBWEnsnare@IsUnloader"/>
+        <StackAlias value="AcidSpore"/>
     </CBehaviorBuff>
 </Catalog>

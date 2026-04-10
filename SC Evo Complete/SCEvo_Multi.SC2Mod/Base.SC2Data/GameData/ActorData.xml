@@ -6,17 +6,6 @@
     <CActorAction id="DevourerSCBWWeapon@Action">
         <LaunchAssets Sound="DevourerSCBWWeapon@Launch"/>
     </CActorAction>
-    <CActorUnit id="MutaliskSCBW">
-        <On index="69" Terms="AbilMorph.DevourerSCBW@Morph.Finish; MorphTo MutaliskSCBW"/>
-        <On index="70" Terms="AbilMorph.DevourerSCBW@Morph.Start; MorphFrom MutaliskSCBW"/>
-        <On Terms="AbilMorph.DevourerSCBW@Morph.Finish; MorphTo MutaliskSCBW@AirStack" Send="Create"/>
-        <On Terms="AbilMorph.DevourerSCBW@Morph.Start; MorphFrom MutaliskSCBW@AirStack" Send="Destroy"/>
-        <On Terms="AbilMorph.GuardianSCBW@Morph.Finish; MorphTo MutaliskSCBW" Send="Create"/>
-        <On Terms="AbilMorph.GuardianSCBW@Morph.Start; MorphFrom MutaliskSCBW" Send="Destroy"/>
-        <On Terms="AbilMorph.GuardianSCBW@Morph.Finish; MorphTo MutaliskSCBW@AirStack" Send="Create"/>
-        <On Terms="AbilMorph.GuardianSCBW@Morph.Start; MorphFrom MutaliskSCBW@AirStack" Send="Destroy"/>
-        <On Terms="UnitBirth.MutaliskSCBW@AirStack" Send="Create"/>
-    </CActorUnit>
     <CActorEventMacro id="PhysicsDeathsSwarmGround">
         <On Terms="UnitDeathCustomize; KilledByEffect SiegeTankSiegedWeapon@DamageCliff" Send="DeathCustomize RagdollSiegeTank"/>
     </CActorEventMacro>
@@ -106,4 +95,29 @@
     <CActorUnit id="VespeneGeyser">
         <On index="73" Send="AnimPlay CoverStart Cover,Start 0 0.000000 0.300000 30.200001 AsDuration"/>
     </CActorUnit>
+    <CActorAction id="InterceptorSCBWWeaponAlt@Action" parent="GenericAttackBase">
+        <On Terms="EffectActionCommence" Target="::HostImpactInternal" Send="Signal Impact"/>
+        <On Terms="Effect.InterceptorSCBWWeaponAlt@CP.Start; At Caster" Send="Create"/>
+        <On Terms="Effect.InterceptorSCBWWeaponAlt@Damage.Start; At Caster; FromEffectTreeDescendant" Send="ActionDamage"/>
+        <On Terms="Effect.InterceptorSCBWWeaponAlt@Damage.Stop; At Caster; FromEffectTreeDescendant" Send="ActionDamagePhysics"/>
+        <LaunchAttachQuery Methods="AMFilterWeapon"/>
+        <LaunchAssets Sound="InterceptorSCBWWeapon@Launch"/>
+        <Beam value="InterceptorSCBWWeaponAlt@Beam"/>
+        <BeamScope value="Caster"/>
+        <ImpactSite value="GenericAttackImpactSiteWhiff"/>
+        <ImpactMap index="None" Model="InterceptorSCBWWeapon@Impact" Sound="InterceptorSCBWWeapon@Impact"/>
+        <ImpactModel value="InterceptorAttackImpactModel"/>
+        <ImpactModelReaction value="GenericAttackImpactModelReactionWhiff"/>
+        <DamagePhysics Name="InterceptorSCBWWeaponAlt@Impact" MatchKeys="Basic" Physics="InterceptorAttackDeathForce"/>
+        <DamagePhysics Name="InterceptorSCBWWeaponAlt@Impact" MatchKeys="BasicAir" Physics="InterceptorAttackAirDeathForce"/>
+        <ActionFlags index="ImpactMonitorsTeleports" value="1"/>
+    </CActorAction>
+    <CActorBeamSimple id="InterceptorSCBWWeaponAlt@Beam">
+        <Macros value="ActionTargetTeleportDestroy"/>
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <On Terms="ActorCreation" Send="AnimBracketStart BSD Birth Stand Death ContentPlayOnce"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="AnimBracketState.*.AfterClosing; AnimName BSD" Send="Destroy"/>
+        <Model value="InterceptorSCBWWeapon@Beam"/>
+    </CActorBeamSimple>
 </Catalog>
