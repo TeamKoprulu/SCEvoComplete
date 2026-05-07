@@ -103,24 +103,24 @@ bool KopruluSkinsResponses_Func(bool test_conds, bool run_actions){
     }
     
     if(EventDialogControl() == KopruluMenuSkinsButton){
-        DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), !DialogControlIsVisible(KopruluSkinsPanel, player));
+        libSCEV_gf_CustomizeMenuToggleVisibility(player);
+        // DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), !DialogControlIsVisible(KopruluSkinsPanel, player));
         return true;
     }
 
     if(EventDialogControl() == KopruluMenuToggleButton){
-        if(DialogControlIsVisible(KopruluSkinsPanel, player)){
-            DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), false);
-        }
+        // if(DialogControlIsVisible(KopruluSkinsPanel, player)){
+        //     DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), false);
+        // }
         return true;
     }
-    for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
-        if(EventDialogControl() == gv_KopruluSkins[i].menuControl){
-            checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
-            KopruluSkinsToggleSkin(player, gv_KopruluSkins[i], checked);
-            break;
-        }
-
-    }
+    // for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
+    //     if(EventDialogControl() == gv_KopruluSkins[i].menuControl){
+    //         checked = DialogControlGetPropertyAsBool(EventDialogControl(), c_triggerControlPropertyChecked, player);
+    //         KopruluSkinsToggleSkin(player, gv_KopruluSkins[i], checked);
+    //         break;
+    //     }
+    // }
 
     return true;
 }
@@ -134,21 +134,21 @@ static string l_IntToStringDoubleDigit (int value) {
     return s;
 }
 
-bool KopruluSkinsTimerExpire_Func(bool test_conds, bool run_actions){
-    int i;
-    int tmp_player;
-    for (i = 1; i <= PlayerGroupCount(PlayerGroupActive()); i += 1) {
-        tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
-        if(DialogControlIsVisible(KopruluMenu, tmp_player)){
-            DialogControlSetPropertyAsBool(KopruluMenu, c_triggerControlPropertyVisible, PlayerGroupSingle(tmp_player), false);
-        }
-        DialogControlSetPropertyAsBool(KopruluMenuSkinsButton, c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), false);
-    }
-    TriggerEnable(KopruluSkinsResponses_t, false);
-    KopruluSkinsTimer = null;
-    TriggerDestroy(TriggerGetCurrent());
-    return true;
-}
+// bool KopruluSkinsTimerExpire_Func(bool test_conds, bool run_actions){
+//     int i;
+//     int tmp_player;
+//     for (i = 1; i <= PlayerGroupCount(PlayerGroupActive()); i += 1) {
+//         tmp_player = PlayerGroupPlayer(PlayerGroupActive(), i);
+//         if(DialogControlIsVisible(KopruluMenu, tmp_player)){
+//             DialogControlSetPropertyAsBool(KopruluMenu, c_triggerControlPropertyVisible, PlayerGroupSingle(tmp_player), false);
+//         }
+//         DialogControlSetPropertyAsBool(KopruluMenuSkinsButton, c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), false);
+//     }
+//     TriggerEnable(KopruluSkinsResponses_t, false);
+//     KopruluSkinsTimer = null;
+//     TriggerDestroy(TriggerGetCurrent());
+//     return true;
+// }
 
 bool KopruluSkinsCalloutTimerExpire_Func(bool test_conds, bool run_actions){
     int i;
@@ -162,9 +162,9 @@ bool KopruluSkinsCalloutTimerExpire_Func(bool test_conds, bool run_actions){
             if(DialogControlIsVisible(KopruluSkinsCalloutFrame, tmp_player)){
                 DialogControlSetPropertyAsBool(KopruluSkinsCalloutFrame, c_triggerControlPropertyVisible, PlayerGroupSingle(tmp_player), false);
             }
-            if(DialogControlIsVisible(KopruluSkinsPanel, tmp_player)){
-                Extension_BankUpdateSkinVersion(tmp_player);
-            }
+            // if(DialogControlIsVisible(KopruluSkinsPanel, tmp_player)){
+            //     Extension_BankUpdateSkinVersion(tmp_player);
+            // }
             break;
         }
     }
@@ -182,10 +182,10 @@ bool KopruluSkinsCalloutResponses_Func(bool test_conds, bool run_actions){
     }
     
     if(EventDialogControl() == KopruluMenuToggleButton){
-        if(DialogControlIsVisible(KopruluSkinsPanel, player) == true){
-            DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), false);
-            KopruluSkinsNotificationEnd(player);
-        }
+        // if(DialogControlIsVisible(KopruluSkinsPanel, player) == true){
+        //     DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupSingle(player), false);
+        //     KopruluSkinsNotificationEnd(player);
+        // }
         return true;
     }
 
@@ -220,30 +220,30 @@ void KopruluMenuCreateUI(){
         //---------------------------------------- Skins TAB ---------------------------------------- //
             KopruluSkinsResponses_t = TriggerCreate("KopruluSkinsResponses_Func");
             TriggerEnable(KopruluSkinsResponses_t, false);
-            KopruluSkinsPanel = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "KopruluMenu_SkinsPanel");
-            DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupAll(), false);
+            // KopruluSkinsPanel = DialogControlHookup(fullscreenPanel, c_triggerControlTypePanel, "KopruluMenu_SkinsPanel");
+            // DialogControlSetVisible(KopruluSkinsPanel, PlayerGroupAll(), false);
 
-            for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
-                kopruluSkin = gv_KopruluSkins[i];
-                kopruluSkin.menuLabel = DialogControlHookup(fullscreenPanel, c_triggerControlTypeLabel, "KopruluMenu_SkinsPanel/CheckBoxLabel_" + l_IntToStringDoubleDigit(i));
-                di = DialogControlHookup(fullscreenPanel, c_triggerControlTypeCheckBox, "KopruluMenu_SkinsPanel/CheckBox_" + l_IntToStringDoubleDigit(i));
-                kopruluSkin.menuControl = di;
-                DialogControlSetPropertyAsBool(di, c_triggerControlPropertyChecked, pg, false);
-                DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, pg, false);
-                TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, di, c_triggerControlEventTypeChecked);
-                for (k = 1; k <= PlayerGroupCount(pg); k += 1) {
-                    tmp_player = PlayerGroupPlayer(pg, k);
-                    race = PlayerRace(tmp_player);
-                    isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
-                    if(kopruluSkin.BWExclusive && isBWRace){
-                        DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
-                    }
-                }
-                if(kopruluSkin.skinsVersion >= c_extBankSkinsVersion){
-                    DialogControlSetAnimationState(kopruluSkin.menuLabel, pg, "NewSkin", "True");
-                }
+            // for (i = 0; i < gv_KopruluSkinsCount - 1; i += 1) {
+            //     kopruluSkin = gv_KopruluSkins[i];
+            //     kopruluSkin.menuLabel = DialogControlHookup(fullscreenPanel, c_triggerControlTypeLabel, "KopruluMenu_SkinsPanel/CheckBoxLabel_" + l_IntToStringDoubleDigit(i));
+            //     di = DialogControlHookup(fullscreenPanel, c_triggerControlTypeCheckBox, "KopruluMenu_SkinsPanel/CheckBox_" + l_IntToStringDoubleDigit(i));
+            //     kopruluSkin.menuControl = di;
+            //     DialogControlSetPropertyAsBool(di, c_triggerControlPropertyChecked, pg, false);
+            //     DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, pg, false);
+            //     TriggerAddEventDialogControl(KopruluSkinsResponses_t, c_playerAny, di, c_triggerControlEventTypeChecked);
+            //     for (k = 1; k <= PlayerGroupCount(pg); k += 1) {
+            //         tmp_player = PlayerGroupPlayer(pg, k);
+            //         race = PlayerRace(tmp_player);
+            //         isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
+            //         if(kopruluSkin.BWExclusive && isBWRace){
+            //             DialogControlSetPropertyAsBool(di, c_triggerControlPropertyEnabled, PlayerGroupSingle(tmp_player), true);
+            //         }
+            //     }
+            //     if(kopruluSkin.skinsVersion >= c_extBankSkinsVersion){
+            //         DialogControlSetAnimationState(kopruluSkin.menuLabel, pg, "NewSkin", "True");
+            //     }
 
-            }
+            // }
 
             KopruluMenuSkinsButton = DialogControlHookup(KopruluMenu, c_triggerControlTypeButton, "KopruluTabControl/TabContainer/TabButton2");
             DialogControlSetPropertyAsBool(KopruluMenuSkinsButton, c_triggerControlPropertyEnabled, pg, true);
@@ -253,10 +253,10 @@ void KopruluMenuCreateUI(){
 
         // ------------------------------------------------------------------------------------------ //
 
-        TimerStart(TimerCreate(), 420, false, c_timeGame);
-        KopruluSkinsTimer = TimerLastStarted();
-        KopruluSkinsTimerExpire_t = TriggerCreate("KopruluSkinsTimerExpire_Func");
-        TriggerAddEventTimer(KopruluSkinsTimerExpire_t, KopruluSkinsTimer);
+        // TimerStart(TimerCreate(), 420, false, c_timeGame);
+        // KopruluSkinsTimer = TimerLastStarted();
+        // KopruluSkinsTimerExpire_t = TriggerCreate("KopruluSkinsTimerExpire_Func");
+        // TriggerAddEventTimer(KopruluSkinsTimerExpire_t, KopruluSkinsTimer);
 
         return;
     }
@@ -282,6 +282,11 @@ bool KopruluSkinsClassicIconsActivate_Func(bool test_conds, bool run_actions){
 void KopruluSkinsNotificationStart (int player) {
     string race;
     bool isBWRace;
+
+    ////
+    return;
+    ///
+
     race = PlayerRace(player);
     isBWRace = (race == "BWTe" || race == "BWPr" || race == "BWZe");
 

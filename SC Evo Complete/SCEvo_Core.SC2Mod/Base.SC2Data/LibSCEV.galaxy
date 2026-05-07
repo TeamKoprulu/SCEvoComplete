@@ -63,6 +63,13 @@ void libSCEV_InitVariables () {
         libSCEV_gv_raceSupplyLabel[init_i] = c_invalidDialogControlId;
     }
     libSCEV_gv_queenInfestDuration = (libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "InitialDelay", c_playerAny) + (libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "PeriodicPeriodArray[" + IntToString(0) + "]", c_playerAny) * CatalogFieldValueGetAsInt(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "PeriodCount", c_playerAny)));
+    libSCEV_gv_observerIDPlayer = CatalogFieldValueGetAsInt(c_gameCatalogGameUI, "Dflt", "DefaultObservedPlayerId", c_playerAny);
+    for (init_i = 0; init_i <= libSCEV_gv_segmentedWireframesMaxSegments; init_i += 1) {
+        for (init_j = 0; init_j <= 1; init_j += 1) {
+            libSCEV_gv_segmentedWireframesDataPointers[init_i][init_j] = "";
+        }
+    }
+    libSCEV_gv_takeCommandDetector = c_invalidDialogControlId;
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
             libSCEV_gv_minimapAllyViewPings[init_i][init_j] = c_invalidPingId;
@@ -72,12 +79,57 @@ void libSCEV_InitVariables () {
     libSCEV_gv_difficultyOptionsSection = "";
     libSCEV_gv_difficultyOptionsKey = "";
     libSCEV_gv_customizeMenuRestoreButton = c_invalidDialogControlId;
+    libSCEV_gv_customizeMenuPanel = c_invalidDialogControlId;
     libSCEV_gv_customizeMenuCloseButton = c_invalidDialogControlId;
     for (init_i = 0; init_i <= 4; init_i += 1) {
         libSCEV_gv_difficultyOptionsPresetButton[init_i] = c_invalidDialogControlId;
     }
     libSCEV_gv_difficultyOptionsPresetLoaded = "";
+    libSCEV_gv_difficultyOptionsMenuButton = c_invalidDialogControlId;
     libSCEV_gv_difficultyOptionsLimitedRallyPlayers = PlayerGroupEmpty();
+    libSCEV_gv_skinsMenuButton = c_invalidDialogControlId;
+    for (init_i = 0; init_i <= 3; init_i += 1) {
+        libSCEV_gv_skinsRaceButtons[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= libSCEV_gv_skinsActiveButtons; init_i += 1) {
+        libSCEV_gv_skinsUnitListboxItem[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= libSCEV_gv_skinsActiveButtons; init_i += 1) {
+        libSCEV_gv_skinsUnitListboxItem_UnitFrame[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= 9; init_i += 1) {
+        libSCEV_gv_skinsSkinButtons[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= 9; init_i += 1) {
+        libSCEV_gv_skinsSkinButtons_SkinModelLink[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= 9; init_i += 1) {
+        libSCEV_gv_skinsSkinButtons_SkinEntryLink[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= 9; init_i += 1) {
+        libSCEV_gv_skinsSkinButtons_UnitLink[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= 9; init_i += 1) {
+        libSCEV_gv_skinsSkinButtons_Label[init_i] = c_invalidDialogControlId;
+    }
+    for (init_i = 0; init_i <= 9; init_i += 1) {
+        libSCEV_gv_skinsSkinButtons_State[init_i] = libSCEV_ge_SkinsSkinState_Empty;
+    }
+    libSCEV_gv_skinsPreview_Panel = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_UnitModel = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_UnitLink = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_Title = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_Description = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_UnlockPanel = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_UnlockPanel_ProgressBar = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_EquipButton = c_invalidDialogControlId;
+    libSCEV_gv_skinsPreview_SelectedSkin = "";
+    libSCEV_gv_collectionsMenuButton = c_invalidDialogControlId;
+    for (init_i = 0; init_i <= libSCEV_gv_collectionsMaxButtons; init_i += 1) {
+        for (init_j = 0; init_j <= libSCEV_gv_collectionsActiveCategories; init_j += 1) {
+            libSCEV_gv_collectionsSkinButton[init_i][init_j] = c_invalidDialogControlId;
+        }
+    }
 }
 
 // Custom Script
@@ -864,6 +916,9 @@ void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate
         TriggerEnable(libSCEV_gt_LegacyStopMovementSuppressWalk, lv_onOff);
         TriggerEnable(libSCEV_gt_LegacyStartMovementSuppressWalk, lv_onOff);
     }
+    else if ((lp_feature == libSCEV_ge_SCEvoFeatures_SegmentedWireframes)) {
+        libSCEV_gf_SegmentedWireframesActivate(lp_activateDeactivate);
+    }
     else if (true) {
     }
     libSCEV_gv_sCEvoFeatureEnabled[(lp_feature)] = lv_onOff;
@@ -1018,7 +1073,7 @@ void libSCEV_gf_MissChanceActivate (bool lp_activateDeactivate) {
             TriggerEnable(libSCEV_gt_MissChanceRevealAttacker, true);
         }
 
-        autoCF381F81_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32))), 0);
+        autoCF381F81_g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterAir) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterInvulnerable - 32))), 0);
         autoCF381F81_u = UnitGroupCount(autoCF381F81_g, c_unitCountAll);
         for (;; autoCF381F81_u -= 1) {
             autoCF381F81_var = UnitGroupUnitFromEnd(autoCF381F81_g, autoCF381F81_u);
@@ -3397,6 +3452,26 @@ bool auto_libSCEV_gf_UpdateErrorSounds_TriggerFunc (bool testConds, bool runActi
     return true;
 }
 
+void libSCEV_gf_ClassicMineralsSkinActivate (playergroup lp_playerGroup, bool lp_activateDeactivate) {
+    // Automatic Variable Declarations
+    playergroup autoE7A65B97_g;
+    int autoE7A65B97_var;
+
+    // Implementation
+    autoE7A65B97_g = lp_playerGroup;
+    autoE7A65B97_var = -1;
+    while (true) {
+        autoE7A65B97_var = PlayerGroupNextPlayer(autoE7A65B97_g, autoE7A65B97_var);
+        if (autoE7A65B97_var < 0) { break; }
+        if ((lp_activateDeactivate == true)) {
+            PlayerAddLabel(autoE7A65B97_var, "ClassicMinerals");
+        }
+        else {
+            PlayerRemoveLabel(autoE7A65B97_var, "ClassicMinerals");
+        }
+    }
+}
+
 bool libSCEV_gf_StringOnlyNumbers (string lp_string) {
     // Variable Declarations
     int lv_i;
@@ -3460,6 +3535,283 @@ playergroup libSCEV_gf_HumanPlayers () {
 
     }
     return lv_result;
+}
+
+bool libSCEV_gf_GameIsOnline () {
+    // Automatic Variable Declarations
+    // Implementation
+    if (((GameIsOnline() == true) || (libSCEV_gv_ONLINE_TEST == true))) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+int libSCEV_gf_UnitTagRecycle (unit lp_u) {
+    // Automatic Variable Declarations
+    // Implementation
+    return UnitGetTag(lp_u) & 0x0003ffff;
+}
+
+int libSCEV_gf_UnitTagIndex (unit lp_u) {
+    // Automatic Variable Declarations
+    // Implementation
+    return (UnitGetTag(lp_u) >> 18) & 0x00003ff;
+}
+
+string libSCEV_gf_GetUnitTagString (unit lp_unit) {
+    // Automatic Variable Declarations
+    // Implementation
+    return (IntToString(libSCEV_gf_UnitTagIndex(lp_unit)) + "#" + IntToString(libSCEV_gf_UnitTagRecycle(lp_unit)));
+}
+
+int libSCEV_gf_MakeUnitTag (int lp_index, int lp_recycle) {
+    // Automatic Variable Declarations
+    // Implementation
+    return (lp_index << 18) | (lp_recycle & 0x0003ffff);
+}
+
+void libSCEV_gf_TriggerAddEventDialogControl (trigger lp_trigger, int lp_player, int lp_dialogItem, int lp_eventType) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventDialogControl(lp_trigger, lp_player, lp_dialogItem, lp_eventType);
+}
+
+void libSCEV_gf_SegmentedWireframesInitialize (int lp_globalSeed) {
+    int init_i;
+
+    // Variable Declarations
+    int lv_x;
+    int lv_y;
+    int lv_i;
+    int lv_unitListIndex;
+    string lv_unitType;
+    int lv_segmentCount;
+    int lv_segmentCountMax;
+    string[3] lv_countOverrideList;
+
+    // Automatic Variable Declarations
+    const int autoD30ED675_ae = libSCEV_gv_segmentedWireframesMaxSegments;
+    const int autoD30ED675_ai = 1;
+    const int auto8522483B_ae = 1;
+    const int auto8522483B_ai = 1;
+    const int autoECD3B1D9_ae = 2;
+    const int autoECD3B1D9_ai = 1;
+
+    // Variable Initialization
+    lv_unitType = "";
+    lv_segmentCountMax = (libSCEV_gv_segmentedWireframesMaxSegments + 1);
+    for (init_i = 0; init_i <= 2; init_i += 1) {
+        lv_countOverrideList[init_i] = "";
+    }
+
+    // Implementation
+    if ((libSCEV_gv_segmentedWireframesUnits == null)) {
+        libSCEV_gv_segmentedWireframesUnits = UnitGroupEmpty();
+        libSCEV_gv_segmentedWireframesGlobalSeed = lp_globalSeed;
+        lv_x = 0;
+        for ( ; ( (autoD30ED675_ai >= 0 && lv_x <= autoD30ED675_ae) || (autoD30ED675_ai < 0 && lv_x >= autoD30ED675_ae) ) ; lv_x += autoD30ED675_ai ) {
+            lv_y = 0;
+            for ( ; ( (auto8522483B_ai >= 0 && lv_y <= auto8522483B_ae) || (auto8522483B_ai < 0 && lv_y >= auto8522483B_ae) ) ; lv_y += auto8522483B_ai ) {
+                libSCEV_gv_segmentedWireframesDataPointers[lv_x][lv_y] = ("Unit/WFSeg" + IntToString(lv_x) + "_" + IntToString(lv_y));
+            }
+        }
+        lv_countOverrideList[0] = UserDataGetString("SegmentedWireframes", "5Segments", "UnitList", 1);
+        lv_countOverrideList[1] = UserDataGetString("SegmentedWireframes", "4Segments", "UnitList", 1);
+        lv_countOverrideList[2] = UserDataGetString("SegmentedWireframes", "3Segments", "UnitList", 1);
+        lv_segmentCount = lv_segmentCountMax;
+        lv_i = 0;
+        for ( ; ( (autoECD3B1D9_ai >= 0 && lv_i <= autoECD3B1D9_ae) || (autoECD3B1D9_ai < 0 && lv_i >= autoECD3B1D9_ae) ) ; lv_i += autoECD3B1D9_ai ) {
+            lv_segmentCount = (lv_segmentCountMax - (lv_i + 1));
+            lv_unitListIndex = 1;
+            lv_unitType = StringWord(lv_countOverrideList[lv_i], lv_unitListIndex);
+            while ((lv_unitType != "")) {
+                DataTableSetInt(true, ("WFSegCount_" + lv_unitType), lv_segmentCount);
+                lv_unitListIndex += 1;
+                lv_unitType = StringWord(lv_countOverrideList[lv_i], lv_unitListIndex);
+            }
+        }
+    }
+
+}
+
+void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate) {
+    // Variable Declarations
+    int lv_panel;
+
+    // Automatic Variable Declarations
+    unitgroup auto6862E83F_g;
+    int auto6862E83F_u;
+    unit auto6862E83F_var;
+
+    // Variable Initialization
+    lv_panel = c_invalidDialogControlId;
+
+    // Implementation
+    DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer");
+    lv_panel = DialogControlLastCreated();
+    if ((lp_activateDeactivate == true)) {
+        DialogControlSetAnimationState(lv_panel, PlayerGroupAll(), "UseSegmentedWireframes", "True");
+        libSCEV_gf_SegmentedWireframesInitialize(RandomInt(0, 326767));
+    }
+    else {
+        DialogControlSetAnimationState(lv_panel, PlayerGroupAll(), "UseSegmentedWireframes", "False");
+        auto6862E83F_g = libSCEV_gv_segmentedWireframesUnits;
+        auto6862E83F_u = UnitGroupCount(auto6862E83F_g, c_unitCountAll);
+        for (;; auto6862E83F_u -= 1) {
+            auto6862E83F_var = UnitGroupUnitFromEnd(auto6862E83F_g, auto6862E83F_u);
+            if (auto6862E83F_var == null) { break; }
+            UnitAbilityRemove(auto6862E83F_var, "SegmentedWireframes");
+        }
+    }
+}
+
+void libSCEV_gf_SegmentedWireframesStoreUnit (unit lp_unit) {
+    // Variable Declarations
+    const int lv_SEGMENT_COUNT = 6;
+    const int lv_YELLOW_MIN = 14;
+    const int lv_YELLOW_MAX = 96;
+    const int lv_RED_MIN = 13;
+    const int lv_RED_MAX = 85;
+    const int lv_SEED_MOD = 256;
+    int[libSCEV_gv_segmentedWireframesMaxSegments + 1] lv_order;
+    int[libSCEV_gv_segmentedWireframesMaxSegments + 1] lv_yellowT;
+    int[libSCEV_gv_segmentedWireframesMaxSegments + 1] lv_redT;
+    int lv_index;
+    int lv_jindex;
+    int lv_tmp;
+    int lv_rank;
+    int lv_seedLocal;
+    int lv_seed;
+    int lv_segmentCount;
+    int lv_segmentCountMinus1;
+    string lv_segmentCountDataTable;
+    int[libSCEV_gv_segmentedWireframesMaxSegments + 1] lv_lifeStage;
+    const int lv_lifeMax = 100;
+    int lv_minLife;
+    int lv_maxLife;
+    int lv_bandSize;
+    int lv_jitter;
+    int lv_lowestRedIndex;
+    int lv_lowestRed;
+    int lv_lowestYellowIndex;
+    int lv_lowestYellow;
+    int lv_highestYellowIndex;
+    int lv_highestYellow;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_segmentCountDataTable = "";
+    lv_lowestRed = 1000;
+    lv_lowestYellowIndex = 1;
+    lv_lowestYellow = 1000;
+    lv_highestYellow = -1;
+
+    // Implementation
+    UnitGroupAdd(libSCEV_gv_segmentedWireframesUnits, lp_unit);
+    if ((UnitGroupCount(libSCEV_gv_segmentedWireframesUnits, c_unitCountAlive) >= 1024)) {
+        libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_SegmentedWireframes, false);
+        return ;
+    }
+
+    if ((ValidatorExecute("SegmentedWireframes@Use", lp_unit, lp_unit) == 2)) {
+        return ;
+    }
+
+    UnitAbilityAdd(lp_unit, "SegmentedWireframes");
+    lv_segmentCountDataTable = ("WFSegCount_" + CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(lp_unit), "LeaderAlias", c_playerAny));
+    if ((DataTableValueExists(true, lv_segmentCountDataTable) == true)) {
+        lv_segmentCount = DataTableGetInt(true, lv_segmentCountDataTable);
+    }
+    else {
+        lv_segmentCount = lv_SEGMENT_COUNT;
+    }
+    lv_segmentCountMinus1 = (lv_segmentCount - 1);
+    UnitAddChargeUsed(lp_unit, "Unit/WFSegCount", (lv_SEGMENT_COUNT - lv_segmentCount));
+    lv_seed = UnitGetTag(lp_unit);
+    lv_seed = lv_seed ^ (lv_seed >> 16);
+    lv_seed = ModI((lv_seed + libSCEV_gv_segmentedWireframesGlobalSeed), lv_SEED_MOD);
+    lv_bandSize = (lv_lifeMax / lv_segmentCount);
+    lv_index = 0;
+    while ((lv_index < lv_segmentCount)) {
+        lv_order[lv_index] = lv_index;
+        lv_index += 1;
+    }
+    lv_seedLocal = lv_seed;
+    lv_index = lv_segmentCountMinus1;
+    while ((lv_index > 0)) {
+        lv_seedLocal = (lv_seedLocal * 1103515245 + 12345);
+        lv_jindex = AbsI(ModI(lv_seedLocal, (lv_index + 1)));
+        lv_tmp = lv_order[lv_index];
+        lv_order[lv_index] = lv_order[lv_jindex];
+        lv_order[lv_jindex] = lv_tmp;
+        lv_index -= 1;
+    }
+    lv_rank = 0;
+    lv_seedLocal = lv_seed;
+    while ((lv_rank < lv_segmentCount)) {
+        lv_index = lv_order[lv_rank];
+        lv_maxLife = (100 - (lv_rank * lv_bandSize));
+        lv_minLife = (lv_maxLife - lv_bandSize);
+        lv_seedLocal = (lv_seedLocal * 1664525 + 1013904223);
+        lv_jitter = ModI(lv_seedLocal, lv_bandSize);
+        lv_lifeStage[lv_index] = (lv_minLife + lv_jitter);
+        lv_yellowT[lv_index] = (lv_lifeStage[lv_index] + 10);
+        lv_redT[lv_index] = (lv_lifeStage[lv_index] - 10);
+        if ((lv_yellowT[lv_index] > lv_YELLOW_MAX)) {
+            lv_yellowT[lv_index] = lv_YELLOW_MAX;
+        }
+
+        if ((lv_yellowT[lv_index] < lv_YELLOW_MIN)) {
+            lv_yellowT[lv_index] = lv_YELLOW_MIN;
+        }
+
+        if ((lv_yellowT[lv_index] > lv_highestYellow)) {
+            lv_highestYellow = lv_yellowT[lv_index];
+            lv_highestYellowIndex = lv_index;
+        }
+        else {
+            if ((lv_yellowT[lv_index] < lv_lowestYellow)) {
+                lv_lowestYellow = lv_yellowT[lv_index];
+                lv_lowestYellowIndex = lv_index;
+            }
+
+        }
+        if ((lv_redT[lv_index] > lv_RED_MAX)) {
+            lv_redT[lv_index] = lv_RED_MAX;
+        }
+
+        if ((lv_redT[lv_index] >= lv_yellowT[lv_index])) {
+            lv_redT[lv_index] = (lv_yellowT[lv_index] - (1 + AbsI(ModI(lv_seedLocal, 7))));
+        }
+
+        if ((lv_redT[lv_index] < lv_RED_MIN)) {
+            lv_redT[lv_index] = lv_RED_MIN;
+        }
+
+        if ((lv_redT[lv_index] < lv_lowestRed)) {
+            lv_lowestRed = lv_redT[lv_index];
+            lv_lowestRedIndex = lv_index;
+        }
+
+        lv_rank += 1;
+    }
+    lv_yellowT[lv_highestYellowIndex] = 99;
+    lv_yellowT[lv_lowestYellowIndex] = lv_YELLOW_MIN;
+    lv_redT[lv_lowestRedIndex] = 11;
+    lv_index = 0;
+    while ((lv_index < lv_segmentCount)) {
+        UnitAddChargeUsed(lp_unit, libSCEV_gv_segmentedWireframesDataPointers[lv_index][0], (100 - lv_yellowT[lv_index]));
+        UnitAddChargeUsed(lp_unit, libSCEV_gv_segmentedWireframesDataPointers[lv_index][1], (100 - lv_redT[lv_index]));
+        lv_index += 1;
+    }
+}
+
+void libSCEV_gf_TakeCommandDetected (trigger t) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventGeneric(t, "ReplayTakeCommand");
 }
 
 void libSCEV_gf_MinimapAllyViewCameraSnapPointersListUpdate (int lp_p) {
@@ -3574,25 +3926,81 @@ void libSCEV_gf_RegisterCameraMoveEvent (trigger lp_trigger, int lp_playerId, in
 }
 
 void libSCEV_gf_CustomizeMenuDisplay (bool lp_showHide, playergroup lp_players) {
-    // Automatic Variable Declarations
-    // Implementation
-    if ((GameIsOnline() == true)) {
-        return ;
-    }
+    // Variable Declarations
+    bool lv_gameIsOnline;
+    playergroup lv_menuVisibleGroup;
 
+    // Automatic Variable Declarations
+    playergroup autoA32A632F_g;
+    int autoA32A632F_var;
+
+    // Variable Initialization
+    lv_gameIsOnline = libSCEV_gf_GameIsOnline();
+    lv_menuVisibleGroup = PlayerGroupEmpty();
+
+    // Implementation
     if ((libSCEV_gv_customizeMenuDialog == c_invalidDialogId)) {
         libSCEV_gf_CustomizeMenuCreate();
     }
 
-    DialogSetVisible(libSCEV_gv_customizeMenuDialog, PlayerGroupAll(), lp_showHide);
+    DialogSetVisible(libSCEV_gv_customizeMenuDialog, lp_players, lp_showHide);
+    if ((libSCEV_gv_customizeMenuObserverID_IsPlayer == false)) {
+        DialogSetVisible(libSCEV_gv_customizeMenuDialog, PlayerGroupSingle(libSCEV_gv_observerIDPlayer), false);
+    }
+
+    if ((lv_gameIsOnline == true)) {
+        DialogControlSetAnimationState(libSCEV_gv_customizeMenuPanel, PlayerGroupAll(), "CustomizeMenuIsOnline", "True");
+    }
+
     if ((lp_showHide == true)) {
+        DialogControlSetAnimationState(libSCEV_gv_customizeMenuPanel, lp_players, "CustomizeMenuVisible", "True");
         TriggerSendEvent("EvoCustomizeMenuOpen");
         TriggerEnable(libSCEV_gt_CustomizeMenuClose, true);
-        TriggerEnable(libSCEV_gt_DifficultyOptionsResponses, true);
+        TriggerEnable(libSCEV_gt_SkinsSkinsMenuToggle, true);
+        TriggerEnable(libSCEV_gt_SkinsRaceButtonToggles, true);
+        TriggerEnable(libSCEV_gt_SkinsUnitListboxToggles, true);
+        TriggerEnable(libSCEV_gt_SkinsSkinListItemButtonResponses, true);
+        TriggerEnable(libSCEV_gt_SkinsEquipButtonResponses, true);
+        if ((lv_gameIsOnline == true)) {
+            UISetCommandAllowed(lp_players, c_uiCommandAllowSmartClick, false);
+            UISetCommandAllowed(lp_players, c_uiCommandAllowHotkeys, false);
+            UISetCommandAllowed(lp_players, c_uiCommandAllowButtons, false);
+            libSCEV_gf_SkinsInitializeSkinsMenu(lp_players);
+        }
+        else {
+            TriggerEnable(libSCEV_gt_DifficultyOptionsResponses, true);
+        }
     }
     else {
+        DialogControlSetAnimationState(libSCEV_gv_customizeMenuPanel, lp_players, "CustomizeMenuVisible", "False");
+        if ((lv_gameIsOnline == true)) {
+            UISetCommandAllowed(lp_players, c_uiCommandAllowSmartClick, true);
+            UISetCommandAllowed(lp_players, c_uiCommandAllowHotkeys, true);
+            UISetCommandAllowed(lp_players, c_uiCommandAllowButtons, true);
+            autoA32A632F_g = PlayerGroupActive();
+            autoA32A632F_var = -1;
+            while (true) {
+                autoA32A632F_var = PlayerGroupNextPlayer(autoA32A632F_g, autoA32A632F_var);
+                if (autoA32A632F_var < 0) { break; }
+                if ((PlayerStatus(autoA32A632F_var) == c_playerStatusActive) && (DialogIsVisible(libSCEV_gv_customizeMenuDialog, autoA32A632F_var) == true)) {
+                    PlayerGroupAdd(lv_menuVisibleGroup, autoA32A632F_var);
+                }
+
+            }
+            libNtve_gf_RemovePlayerGroupFromPlayerGroup(lp_players, lv_menuVisibleGroup);
+            if ((PlayerGroupCount(lv_menuVisibleGroup) > 0)) {
+                return ;
+            }
+
+        }
+
         TriggerSendEvent("EvoCustomizeMenuClose");
         TriggerEnable(libSCEV_gt_CustomizeMenuClose, false);
+        TriggerEnable(libSCEV_gt_SkinsSkinsMenuToggle, false);
+        TriggerEnable(libSCEV_gt_SkinsRaceButtonToggles, false);
+        TriggerEnable(libSCEV_gt_SkinsUnitListboxToggles, false);
+        TriggerEnable(libSCEV_gt_SkinsSkinListItemButtonResponses, false);
+        TriggerEnable(libSCEV_gt_SkinsEquipButtonResponses, false);
         TriggerEnable(libSCEV_gt_DifficultyOptionsResponses, false);
     }
 }
@@ -3617,12 +4025,20 @@ void libSCEV_gf_CustomizeMenuCreate () {
     int lv_groupingPanelSizeX;
     int lv_groupingPanelSizeY;
     int lv_i;
+    int lv_skinsMenuContainer;
+    int lv_collectionMenuContainer;
+    bool lv_gameIsOnline;
+    int lv_indexCategory;
 
     // Automatic Variable Declarations
     string autoD89A0AA7_userType;
     int autoD89A0AA7_i;
     string auto89C222D1_userType;
     int auto89C222D1_i;
+    const int auto12758DF7_ae = libSCEV_gv_skinsActiveButtons;
+    int auto12758DF7_var;
+    const int autoFD318405_ae = 9;
+    int autoFD318405_var;
     const int auto284708DD_ae = 3;
     const int auto284708DD_ai = 1;
 
@@ -3637,13 +4053,19 @@ void libSCEV_gf_CustomizeMenuCreate () {
     lv_optionPanelSizeY = 45;
     lv_groupingPanelSizeX = 1100;
     lv_groupingPanelSizeY = 400;
+    lv_skinsMenuContainer = c_invalidDialogControlId;
+    lv_collectionMenuContainer = c_invalidDialogControlId;
+    lv_gameIsOnline = libSCEV_gf_GameIsOnline();
 
     // Implementation
-    if (((GameIsOnline() == true) || (libSCEV_gv_customizeMenuDialog != c_invalidDialogId))) {
+    if ((libSCEV_gv_customizeMenuDialog != c_invalidDialogId)) {
         return ;
     }
 
-    libSCEV_gf_DifficultyOptionsBankLoad(false);
+    if ((lv_gameIsOnline == false)) {
+        libSCEV_gf_DifficultyOptionsBankLoad(false);
+    }
+
     DialogCreate(500, 400, c_anchorCenter, 0, 0, true);
     libSCEV_gv_customizeMenuDialog = DialogLastCreated();
     DialogSetImageVisible(DialogLastCreated(), false);
@@ -3652,111 +4074,184 @@ void libSCEV_gf_CustomizeMenuCreate () {
     DialogSetRenderPriority(DialogLastCreated(), 600);
     DialogControlCreateFromTemplate(libSCEV_gv_customizeMenuDialog, c_triggerControlTypePanel, "EvoClassic_OptionsMenu/OptionsContainerTemplate");
     lv_mainOptionsPanel = DialogControlLastCreated();
+    libSCEV_gv_customizeMenuPanel = DialogControlLastCreated();
     DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "CloseButton");
     libSCEV_gv_customizeMenuCloseButton = DialogControlLastCreated();
     DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "RestoreButton");
     libSCEV_gv_customizeMenuRestoreButton = DialogControlLastCreated();
-    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypePanel, "TabContainer/OptionsPanel_Difficulty");
-    lv_difficultyTabContainer = DialogControlLastCreated();
-    DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypePanel, "ScrollableFrame/ContainerFrame");
-    lv_difficultyTabScrollableFrameContainer = DialogControlLastCreated();
-    DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypePanel, "ScrollableFrame/ContainerFrameBottomAnchor");
-    lv_containerFrameBottomAnchor = DialogControlLastCreated();
-    autoD89A0AA7_userType = lv_difficultyGrouping;
-    autoD89A0AA7_i = 1;
-    for ( ; autoD89A0AA7_i <= UserDataInstanceCount(autoD89A0AA7_userType) ; autoD89A0AA7_i += 1 ) {
-        lv_groupingInstance = UserDataInstance(autoD89A0AA7_userType, autoD89A0AA7_i);
-        if ((lv_groupingPanelCount == 0)) {
-            DialogControlCreateInPanelFromTemplate(lv_difficultyTabScrollableFrameContainer, c_triggerControlTypePanel, "EvoClassic_OptionsMenu/DifficultyOptionsContainerTemplate");
-        }
-        else {
-            DialogControlCreateInPanelFromTemplate(lv_difficultyTabScrollableFrameContainer, c_triggerControlTypePanel, "EvoClassic_OptionsMenu/DifficultyOptionsContainerWithDividerTemplate");
-        }
-        libSCEV_gf_DifficultyOptionsSetGroupingPanel(DialogControlLastCreated(), lv_groupingInstance);
-        lv_groupingPanelSizeY = 135;
-        if ((lv_groupingPanelCount > 0)) {
-            DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, lv_groupingPanel, c_anchorBottomLeft, 0, 5);
-        }
-        else {
-            DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, 50, 0);
-        }
-        lv_groupingPanel = DialogControlLastCreated();
-        lv_groupingPanelCount += 1;
-        DialogControlHookup(lv_groupingPanel, c_triggerControlTypeLabel, "Title");
-        libNtve_gf_SetDialogItemText(DialogControlLastCreated(), UserDataGetText(lv_difficultyGrouping, lv_groupingInstance, "Title", 1), PlayerGroupAll());
-        DialogControlHookup(lv_groupingPanel, c_triggerControlTypeLabel, "TitleDescription");
-        libNtve_gf_SetDialogItemText(DialogControlLastCreated(), UserDataGetText(lv_difficultyGrouping, lv_groupingInstance, "Description", 1), PlayerGroupAll());
-        lv_optionCount = 0;
-        auto89C222D1_userType = lv_difficultyOptions;
-        auto89C222D1_i = 1;
-        for ( ; auto89C222D1_i <= UserDataInstanceCount(auto89C222D1_userType) ; auto89C222D1_i += 1 ) {
-            lv_optionInstance = UserDataInstance(auto89C222D1_userType, auto89C222D1_i);
-            if (((UserDataGetInt(lv_difficultyOptions, lv_optionInstance, "Exists", 1) == 0) || (UserDataGetUserInstance(lv_difficultyOptions, lv_optionInstance, "Grouping", 1) != lv_groupingInstance) || (lv_optionCount > lv_optionsMaxCount))) {
-                continue;
-            }
-
-            DialogControlCreateInPanelFromTemplate(lv_groupingPanel, c_triggerControlTypePanel, "EvoClassic_OptionsMenu/DifficultyOption"+IntToString(lv_optionCount));
-            lv_optionPanel = DialogControlLastCreated();
-            DialogControlSetSize(lv_optionPanel, PlayerGroupAll(), lv_optionPanelSizeX, lv_optionPanelSizeY);
-            lv_optionCount += 1;
-            if ((lv_optionCount > 1) && (ModI(lv_optionCount, 2) == 1)) {
-                lv_groupingPanelSizeY += lv_optionPanelSizeY;
-            }
-
-            DialogControlHookup(lv_optionPanel, c_triggerControlTypeCheckBox, "CheckBox");
-            if ((UserDataGetInt("DifficultyOptions", lv_optionInstance, "Activated", 1) == 1)) {
-                libNtve_gf_SetDialogItemChecked(DialogControlLastCreated(), true, PlayerGroupAll());
+    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "DifficultyTab");
+    libSCEV_gv_difficultyOptionsMenuButton = DialogControlLastCreated();
+    if ((lv_gameIsOnline == true)) {
+        DialogControlSetEnabled(libSCEV_gv_difficultyOptionsMenuButton, PlayerGroupAll(), false);
+    }
+    else {
+        DialogControlSetEnabled(libSCEV_gv_difficultyOptionsMenuButton, PlayerGroupAll(), true);
+    }
+    if ((lv_gameIsOnline == false)) {
+        DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypePanel, "TabContainer/CustomizePanel_Difficulty");
+        lv_difficultyTabContainer = DialogControlLastCreated();
+        DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypePanel, "ScrollableFrame/ContainerFrame");
+        lv_difficultyTabScrollableFrameContainer = DialogControlLastCreated();
+        DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypePanel, "ScrollableFrame/ContainerFrameBottomAnchor");
+        lv_containerFrameBottomAnchor = DialogControlLastCreated();
+        autoD89A0AA7_userType = lv_difficultyGrouping;
+        autoD89A0AA7_i = 1;
+        for ( ; autoD89A0AA7_i <= UserDataInstanceCount(autoD89A0AA7_userType) ; autoD89A0AA7_i += 1 ) {
+            lv_groupingInstance = UserDataInstance(autoD89A0AA7_userType, autoD89A0AA7_i);
+            if ((lv_groupingPanelCount == 0)) {
+                DialogControlCreateInPanelFromTemplate(lv_difficultyTabScrollableFrameContainer, c_triggerControlTypePanel, "EvoClassic_OptionsMenu/DifficultyOptionsContainerTemplate");
             }
             else {
-                libNtve_gf_SetDialogItemChecked(DialogControlLastCreated(), false, PlayerGroupAll());
+                DialogControlCreateInPanelFromTemplate(lv_difficultyTabScrollableFrameContainer, c_triggerControlTypePanel, "EvoClassic_OptionsMenu/DifficultyOptionsContainerWithDividerTemplate");
             }
-            libSCEV_gf_CustomizeMenuTriggerAddEvent(libSCEV_gt_DifficultyOptionsResponses, c_playerAny, DialogControlLastCreated(), c_triggerControlEventTypeChecked);
-            libSCEV_gf_DifficultyOptionsSetOptionCheckBox(DialogControlLastCreated(), lv_optionInstance);
-            DialogControlHookup(lv_optionPanel, c_triggerControlTypeLabel, "Label");
-            libNtve_gf_SetDialogItemText(DialogControlLastCreated(), UserDataGetText(lv_difficultyOptions, lv_optionInstance, "Name", 1), PlayerGroupAll());
-            libNtve_gf_SetDialogItemTooltip(DialogControlLastCreated(), UserDataGetText(lv_difficultyOptions, lv_optionInstance, "Description", 1), PlayerGroupAll());
+            libSCEV_gf_DifficultyOptionsSetGroupingPanel(DialogControlLastCreated(), lv_groupingInstance);
+            lv_groupingPanelSizeY = 135;
+            if ((lv_groupingPanelCount > 0)) {
+                DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, lv_groupingPanel, c_anchorBottomLeft, 0, 5);
+            }
+            else {
+                DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, 50, 0);
+            }
+            lv_groupingPanel = DialogControlLastCreated();
+            lv_groupingPanelCount += 1;
+            DialogControlHookup(lv_groupingPanel, c_triggerControlTypeLabel, "Title");
+            libNtve_gf_SetDialogItemText(DialogControlLastCreated(), UserDataGetText(lv_difficultyGrouping, lv_groupingInstance, "Title", 1), PlayerGroupAll());
+            DialogControlHookup(lv_groupingPanel, c_triggerControlTypeLabel, "TitleDescription");
+            libNtve_gf_SetDialogItemText(DialogControlLastCreated(), UserDataGetText(lv_difficultyGrouping, lv_groupingInstance, "Description", 1), PlayerGroupAll());
+            lv_optionCount = 0;
+            auto89C222D1_userType = lv_difficultyOptions;
+            auto89C222D1_i = 1;
+            for ( ; auto89C222D1_i <= UserDataInstanceCount(auto89C222D1_userType) ; auto89C222D1_i += 1 ) {
+                lv_optionInstance = UserDataInstance(auto89C222D1_userType, auto89C222D1_i);
+                if (((UserDataGetInt(lv_difficultyOptions, lv_optionInstance, "Exists", 1) == 0) || (UserDataGetUserInstance(lv_difficultyOptions, lv_optionInstance, "Grouping", 1) != lv_groupingInstance) || (lv_optionCount > lv_optionsMaxCount))) {
+                    continue;
+                }
+
+                DialogControlCreateInPanelFromTemplate(lv_groupingPanel, c_triggerControlTypePanel, "EvoClassic_OptionsMenu/DifficultyOption"+IntToString(lv_optionCount));
+                lv_optionPanel = DialogControlLastCreated();
+                DialogControlSetSize(lv_optionPanel, PlayerGroupAll(), lv_optionPanelSizeX, lv_optionPanelSizeY);
+                lv_optionCount += 1;
+                if ((lv_optionCount > 1) && (ModI(lv_optionCount, 2) == 1)) {
+                    lv_groupingPanelSizeY += lv_optionPanelSizeY;
+                }
+
+                DialogControlHookup(lv_optionPanel, c_triggerControlTypeCheckBox, "CheckBox");
+                if ((UserDataGetInt("DifficultyOptions", lv_optionInstance, "Activated", 1) == 1)) {
+                    libNtve_gf_SetDialogItemChecked(DialogControlLastCreated(), true, PlayerGroupAll());
+                }
+                else {
+                    libNtve_gf_SetDialogItemChecked(DialogControlLastCreated(), false, PlayerGroupAll());
+                }
+                libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_DifficultyOptionsResponses, c_playerAny, DialogControlLastCreated(), c_triggerControlEventTypeChecked);
+                libSCEV_gf_DifficultyOptionsSetOptionCheckBox(DialogControlLastCreated(), lv_optionInstance);
+                DialogControlHookup(lv_optionPanel, c_triggerControlTypeLabel, "Label");
+                libNtve_gf_SetDialogItemText(DialogControlLastCreated(), UserDataGetText(lv_difficultyOptions, lv_optionInstance, "Name", 1), PlayerGroupAll());
+                libNtve_gf_SetDialogItemTooltip(DialogControlLastCreated(), UserDataGetText(lv_difficultyOptions, lv_optionInstance, "Description", 1), PlayerGroupAll());
+            }
+            DialogControlSetSize(lv_groupingPanel, PlayerGroupAll(), lv_groupingPanelSizeX, lv_groupingPanelSizeY);
+            DialogControlSetPositionRelative(lv_containerFrameBottomAnchor, PlayerGroupAll(), c_anchorTop, lv_groupingPanel, c_anchorBottom, 0, 50);
         }
-        DialogControlSetSize(lv_groupingPanel, PlayerGroupAll(), lv_groupingPanelSizeX, lv_groupingPanelSizeY);
-        DialogControlSetPositionRelative(lv_containerFrameBottomAnchor, PlayerGroupAll(), c_anchorTop, lv_groupingPanel, c_anchorBottom, 0, 50);
+        DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetHardcore");
+        libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
+        libSCEV_gv_difficultyOptionsPresetButton[0] = DialogControlLastCreated();
+        DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetLegacy");
+        libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
+        libSCEV_gv_difficultyOptionsPresetButton[1] = DialogControlLastCreated();
+        DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetRemastered");
+        libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
+        libSCEV_gv_difficultyOptionsPresetButton[2] = DialogControlLastCreated();
+        DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetCustom");
+        libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
+        libSCEV_gv_difficultyOptionsPresetButton[3] = DialogControlLastCreated();
     }
-    DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetHardcore");
-    libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
-    libSCEV_gv_difficultyOptionsPresetButton[0] = DialogControlLastCreated();
-    DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetLegacy");
-    libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
-    libSCEV_gv_difficultyOptionsPresetButton[1] = DialogControlLastCreated();
-    DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetRemastered");
-    libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
-    libSCEV_gv_difficultyOptionsPresetButton[2] = DialogControlLastCreated();
-    DialogControlHookup(lv_difficultyTabContainer, c_triggerControlTypeButton, "PresetCustom");
-    libNtve_gf_SetDialogItemToggled(DialogControlLastCreated(), false, PlayerGroupAll());
-    libSCEV_gv_difficultyOptionsPresetButton[3] = DialogControlLastCreated();
-    libSCEV_gf_CustomizeMenuTriggerAddEvent(libSCEV_gt_CustomizeMenuClose, c_playerAny, libSCEV_gv_customizeMenuCloseButton, c_triggerControlEventTypeClick);
-    Wait(0.125, c_timeGame);
-    if ((libSCEV_gv_difficultyOptionsPresetLoaded == ("Hardcore"))) {
-        libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[0], true, PlayerGroupAll());
+
+    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypePanel, "TabContainer/CustomizePanel_Skins");
+    lv_skinsMenuContainer = DialogControlLastCreated();
+    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "SkinsTab");
+    libSCEV_gv_skinsMenuButton = DialogControlLastCreated();
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsSkinsMenuToggle, c_playerAny, libSCEV_gv_skinsMenuButton, c_triggerControlEventTypeClick);
+    DialogControlSetEnabled(libSCEV_gv_skinsMenuButton, PlayerGroupAll(), true);
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, "TerranButton");
+    libSCEV_gv_skinsRaceButtons[1] = DialogControlLastCreated();
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, "ProtossButton");
+    libSCEV_gv_skinsRaceButtons[2] = DialogControlLastCreated();
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, "ZergButton");
+    libSCEV_gv_skinsRaceButtons[3] = DialogControlLastCreated();
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsRaceButtonToggles, c_playerAny, libSCEV_gv_skinsRaceButtons[1], c_triggerControlEventTypeClick);
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsRaceButtonToggles, c_playerAny, libSCEV_gv_skinsRaceButtons[2], c_triggerControlEventTypeClick);
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsRaceButtonToggles, c_playerAny, libSCEV_gv_skinsRaceButtons[3], c_triggerControlEventTypeClick);
+    auto12758DF7_var = 1;
+    for ( ; auto12758DF7_var <= auto12758DF7_ae; auto12758DF7_var += 1 ) {
+        DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName(("UnitListboxPanel/ScrollableFrame/ContainerFrame/ListboxItem" + IntToString(auto12758DF7_var))));
+        libSCEV_gv_skinsUnitListboxItem[auto12758DF7_var] = DialogControlLastCreated();
+        libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsUnitListboxToggles, c_playerAny, libSCEV_gv_skinsUnitListboxItem[auto12758DF7_var], c_triggerControlEventTypeClick);
+        DialogControlHookup(libSCEV_gv_skinsUnitListboxItem[auto12758DF7_var], c_triggerControlTypeEditBox, libNtve_gf_ConvertStringToUILayoutFrameName("UnitLink"));
+        libSCEV_gv_skinsUnitListboxItem_UnitFrame[auto12758DF7_var] = DialogControlLastCreated();
     }
-    else if ((libSCEV_gv_difficultyOptionsPresetLoaded == ("Legacy"))) {
-        libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[1], true, PlayerGroupAll());
+    autoFD318405_var = 1;
+    for ( ; autoFD318405_var <= autoFD318405_ae; autoFD318405_var += 1 ) {
+        DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName(("SkinListboxPanel/SkinButton" + IntToString(autoFD318405_var))));
+        libSCEV_gv_skinsSkinButtons[autoFD318405_var] = DialogControlLastCreated();
+        libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsSkinListItemButtonResponses, c_playerAny, libSCEV_gv_skinsSkinButtons[autoFD318405_var], c_triggerControlEventTypeClick);
+        DialogControlHookup(libSCEV_gv_skinsSkinButtons[autoFD318405_var], c_triggerControlTypeEditBox, "CustomModelLink");
+        libSCEV_gv_skinsSkinButtons_SkinModelLink[autoFD318405_var] = DialogControlLastCreated();
+        DialogControlHookup(libSCEV_gv_skinsSkinButtons[autoFD318405_var], c_triggerControlTypeEditBox, "SkinEntryLink");
+        libSCEV_gv_skinsSkinButtons_SkinEntryLink[autoFD318405_var] = DialogControlLastCreated();
+        DialogControlHookup(libSCEV_gv_skinsSkinButtons[autoFD318405_var], c_triggerControlTypeLabel, "TitleLabel");
+        libSCEV_gv_skinsSkinButtons_Label[autoFD318405_var] = DialogControlLastCreated();
+        DialogControlHookup(libSCEV_gv_skinsSkinButtons[autoFD318405_var], c_triggerControlTypeEditBox, libNtve_gf_ConvertStringToUILayoutFrameName("UnitLink"));
+        libSCEV_gv_skinsSkinButtons_UnitLink[autoFD318405_var] = DialogControlLastCreated();
     }
-    else if ((libSCEV_gv_difficultyOptionsPresetLoaded == ("Remastered"))) {
-        libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[2], true, PlayerGroupAll());
-    }
-    else if (true) {
-        libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[3], true, PlayerGroupAll());
-    }
-    lv_i = 0;
-    for ( ; ( (auto284708DD_ai >= 0 && lv_i <= auto284708DD_ae) || (auto284708DD_ai < 0 && lv_i >= auto284708DD_ae) ) ; lv_i += auto284708DD_ai ) {
-        libSCEV_gf_CustomizeMenuTriggerAddEvent(libSCEV_gt_DifficultyOptionsResponses, c_playerAny, libSCEV_gv_difficultyOptionsPresetButton[lv_i], c_triggerControlEventTypeClick);
-    }
-    if ((GameIsTestMap(false) == true)) {
-        if ((UIFrameVisible(1, c_syncFrameTypeConsolePanel) == true)) {
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypePanel, libNtve_gf_ConvertStringToUILayoutFrameName("PreviewPanel"));
+    libSCEV_gv_skinsPreview_Panel = DialogControlLastCreated();
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeEditBox, libNtve_gf_ConvertStringToUILayoutFrameName("PreviewPanel/UnitLink"));
+    libSCEV_gv_skinsPreview_UnitLink = DialogControlLastCreated();
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeLabel, "PreviewPanel/PreviewDescription");
+    libSCEV_gv_skinsPreview_Description = DialogControlLastCreated();
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, "PreviewPanel/EquipButton");
+    libSCEV_gv_skinsPreview_EquipButton = DialogControlLastCreated();
+    DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupAll(), false);
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsEquipButtonResponses, c_playerAny, libSCEV_gv_skinsPreview_EquipButton, c_triggerControlEventTypeClick);
+    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypePanel, "PreviewPanel/UnlockCriteriaPanel");
+    libSCEV_gv_skinsPreview_UnlockPanel = DialogControlLastCreated();
+    DialogControlHookup(libSCEV_gv_skinsPreview_UnlockPanel, c_triggerControlTypePanel, "ProgressBar");
+    libSCEV_gv_skinsPreview_UnlockPanel_ProgressBar = DialogControlLastCreated();
+
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_CustomizeMenuClose, c_playerAny, libSCEV_gv_customizeMenuCloseButton, c_triggerControlEventTypeClick);
+    TriggerEnable(libSCEV_gt_CustomizeMenuTakeCommand, true);
+    if ((lv_gameIsOnline == false)) {
+        Wait(0.125, c_timeGame);
+        if ((libSCEV_gv_difficultyOptionsPresetLoaded == ("Hardcore"))) {
+            libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[0], true, PlayerGroupAll());
+        }
+        else if ((libSCEV_gv_difficultyOptionsPresetLoaded == ("Legacy"))) {
+            libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[1], true, PlayerGroupAll());
+        }
+        else if ((libSCEV_gv_difficultyOptionsPresetLoaded == ("Remastered"))) {
+            libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[2], true, PlayerGroupAll());
+        }
+        else if (true) {
+            libNtve_gf_SetDialogItemToggled(libSCEV_gv_difficultyOptionsPresetButton[3], true, PlayerGroupAll());
+        }
+        lv_i = 0;
+        for ( ; ( (auto284708DD_ai >= 0 && lv_i <= auto284708DD_ae) || (auto284708DD_ai < 0 && lv_i >= auto284708DD_ae) ) ; lv_i += auto284708DD_ai ) {
+            libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_DifficultyOptionsResponses, c_playerAny, libSCEV_gv_difficultyOptionsPresetButton[lv_i], c_triggerControlEventTypeClick);
+        }
+        if ((GameIsTestMap(false) == true) && (UIFrameVisible(1, c_syncFrameTypeConsolePanel) == true)) {
             TriggerEnable(libSCEV_gt_DifficultyOptionsEvents, true);
         }
 
-        TriggerEnable(libSCEV_gt_CustomizeMenuDebugToggle, true);
     }
+    else {
+        libSCEV_gv_customizeMenuEquipTimer = TimerCreate();
+        TimerStart(libSCEV_gv_customizeMenuEquipTimer, libSCEV_gv_customizeMenuEquipPeriod, false, c_timeGame);
+        TriggerEnable(libSCEV_gt_CustomizeMenuEquipDisable, true);
+        DialogControlSetAnimationState(libSCEV_gv_customizeMenuPanel, PlayerGroupAll(), "CustomizeMenuIsOnline", "True");
+        if ((libSCEV_gv_observerIDPlayer == 14) && (PlayerType(14) == c_playerTypeUser) && (PlayerStatus(14) == c_playerStatusActive)) {
+            libSCEV_gv_customizeMenuObserverID_IsPlayer = true;
+        }
 
+    }
 }
 
 void libSCEV_gf_CustomizeMenuShowHideEvent (trigger t, bool lp_showHide) {
@@ -3895,7 +4390,7 @@ void libSCEV_gf_DifficultyOptionsBankLoad (bool lp_sendEvent) {
         return ;
     }
 
-    if ((GameIsOnline() == false) && (lp_sendEvent == true)) {
+    if ((libSCEV_gf_GameIsOnline() == false) && (lp_sendEvent == true)) {
         TriggerEnable(libSCEV_gt_DifficultyOptionsEvents, true);
     }
 
@@ -3970,16 +4465,41 @@ void libSCEV_gf_DifficultyOptionsBankSave (int lp_player) {
     BankSave(libSCEV_gv_difficultyOptionsBank);
 }
 
-void libSCEV_gf_CustomizeMenuTriggerAddEvent (trigger lp_trigger, int lp_player, int lp_dialogItem, int lp_eventType) {
-    // Automatic Variable Declarations
-    // Implementation
-    TriggerAddEventDialogControl(lp_trigger, lp_player, lp_dialogItem, lp_eventType);
-}
-
 bool libSCEV_gf_CustomizeMenuPresetToggled (int lp_control, int lp_player) {
     // Automatic Variable Declarations
     // Implementation
     return DialogControlGetPropertyAsBool(lp_control, c_triggerControlPropertyToggled, lp_player);
+}
+
+void libSCEV_gf_CustomizeMenuToggleVisibility (int lp_player) {
+    // Variable Declarations
+    playergroup lv_pg;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_pg = PlayerGroupSingle(lp_player);
+
+    // Implementation
+    if (((libSCEV_gv_customizeMenuDialog == c_invalidDialogId) || (DialogIsVisible(libSCEV_gv_customizeMenuDialog, lp_player) == false))) {
+        if ((libSCEV_gf_GameIsOnline() == false)) {
+            libNtve_gf_AddRemoveUIFrameTypeForGlobalFilterList(true, c_syncFrameTypeMenuBar);
+            libNtve_gf_AddRemoveUIFrameTypeForGlobalFilterList(true, c_syncFrameTypeHelpMenuButton);
+            libNtve_gf_HideGameUI(false, lv_pg);
+        }
+
+        libSCEV_gf_CustomizeMenuDisplay(true, lv_pg);
+        DataTableSetBool(true, ("GameUIHidden#" + IntToString(lp_player)), true);
+    }
+    else {
+        libSCEV_gf_CustomizeMenuDisplay(false, lv_pg);
+        if ((libSCEV_gf_GameIsOnline() == false) && (DataTableValueExists(true, ("GameUIHidden#" + IntToString(lp_player))) == true)) {
+            libNtve_gf_HideGameUI(true, lv_pg);
+            libNtve_gf_AddRemoveUIFrameTypeForGlobalFilterList(false, c_syncFrameTypeMenuBar);
+            libNtve_gf_AddRemoveUIFrameTypeForGlobalFilterList(false, c_syncFrameTypeHelpMenuButton);
+            DataTableValueRemove(true, ("GameUIHidden#" + IntToString(lp_player)));
+        }
+
+    }
 }
 
 string libSCEV_gf_DifficultyOptionsGetPrefix () {
@@ -4183,6 +4703,372 @@ void libSCEV_gf_DifficultyOptionsBuildSingleSelectInit () {
     }
 }
 
+void libSCEV_gf_SkinsEquipSkinOnline (bool lp_equipUnequip, string lp_skin, int lp_player) {
+    // Variable Declarations
+    string lv_function;
+    string lv_skin;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_function = "";
+    lv_skin = UserDataGetGameLink("SCEV_KopruluSkins", lp_skin, "Skin", 1);
+
+    // Implementation
+    if ((UserDataGetInt("SCEV_KopruluSkins", lp_skin, "IsDefault", 1) == 0)) {
+        Extension_BankSaveSkinPointer(lp_player, lp_skin, BoolToInt(lp_equipUnequip));
+    }
+
+    lv_function = UserDataGetString("SCEV_KopruluSkins", lp_skin, "Function", 1);
+    DataTableSetBool(true, ((lp_skin) + "#" + IntToString(lp_player)), lp_equipUnequip);
+    if ((lv_function != "")) {
+        DataTableSetInt(true, "KopruluSkinsFunction_Player", lp_player);
+        DataTableSetBool(true, "KopruluSkinsFunction_State", lp_equipUnequip);
+        TriggerExecute(TriggerCreate(lv_function), false, false);
+    }
+    else {
+        if ((lp_equipUnequip == true)) {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, lv_skin, true);
+        }
+        else {
+            libNtve_gf_PlayerApplySkinReplacingExistingUnit(lp_player, lv_skin, false);
+        }
+    }
+}
+
+void libSCEV_gf_SkinsUpdateUnitListbox (int lp_usedItemIndex, int lp_player) {
+    // Variable Declarations
+    string lv_indexInstance;
+    int lv_buttonIndex;
+
+    // Automatic Variable Declarations
+    const int auto422505AB_ae = libSCEV_gv_skinsActiveButtons;
+    int auto422505AB_var;
+    string auto79758368_userType;
+    int auto79758368_i;
+
+    // Variable Initialization
+
+    // Implementation
+    auto422505AB_var = 1;
+    for ( ; auto422505AB_var <= auto422505AB_ae; auto422505AB_var += 1 ) {
+        libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsUnitListboxItem_UnitFrame[auto422505AB_var], "", PlayerGroupSingle(lp_player));
+        libSCEV_gv_skinsUnitListboxItem_UnitType[lv_buttonIndex][lp_player] = null;
+    }
+    auto79758368_userType = "SCEV_KopruluSkins";
+    auto79758368_i = 1;
+    for ( ; auto79758368_i <= UserDataInstanceCount(auto79758368_userType) ; auto79758368_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto79758368_userType, auto79758368_i);
+        if ((lv_indexInstance == null)) {
+            break;
+        }
+
+        if ((lp_usedItemIndex == 1) && (UserDataGetGameLink("SCEV_KopruluSkins", lv_indexInstance, "Race", 1) == "BWTe") && (libSCEV_gf_SkinsUnitAlreadyinList(UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1), lv_indexInstance, "BWTe", lp_player) == false)) {
+            lv_buttonIndex += 1;
+            libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsUnitListboxItem_UnitFrame[lv_buttonIndex], (UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1)), PlayerGroupSingle(lp_player));
+            libSCEV_gv_skinsUnitListboxItem_UnitType[lv_buttonIndex][lp_player] = UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1);
+        }
+        else if ((lp_usedItemIndex == 2) && (UserDataGetGameLink("SCEV_KopruluSkins", lv_indexInstance, "Race", 1) == "BWPr") && (libSCEV_gf_SkinsUnitAlreadyinList(UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1), lv_indexInstance, "BWPr", lp_player) == false)) {
+            lv_buttonIndex += 1;
+            libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsUnitListboxItem_UnitFrame[lv_buttonIndex], (UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1)), PlayerGroupSingle(lp_player));
+            libSCEV_gv_skinsUnitListboxItem_UnitType[lv_buttonIndex][lp_player] = UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1);
+        }
+        else if ((lp_usedItemIndex == 3) && (UserDataGetGameLink("SCEV_KopruluSkins", lv_indexInstance, "Race", 1) == "BWZe") && (libSCEV_gf_SkinsUnitAlreadyinList(UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1), lv_indexInstance, "BWZe", lp_player) == false)) {
+            lv_buttonIndex += 1;
+            libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsUnitListboxItem_UnitFrame[lv_buttonIndex], (UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1)), PlayerGroupSingle(lp_player));
+            libSCEV_gv_skinsUnitListboxItem_UnitType[lv_buttonIndex][lp_player] = UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1);
+        }
+    }
+}
+
+void libSCEV_gf_SkinsUpdateSkinListbox (int lp_usedItemIndex, int lp_player) {
+    // Variable Declarations
+    string lv_indexInstance;
+    int lv_skinButtonIndex;
+    string lv_skinGameLink;
+
+    // Automatic Variable Declarations
+    const int autoA0326D73_ae = 9;
+    int autoA0326D73_var;
+    string auto46A097E9_userType;
+    int auto46A097E9_i;
+
+    // Variable Initialization
+
+    // Implementation
+    autoA0326D73_var = 1;
+    for ( ; autoA0326D73_var <= autoA0326D73_ae; autoA0326D73_var += 1 ) {
+        libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsSkinButtons_UnitLink[autoA0326D73_var], "", PlayerGroupSingle(lp_player));
+        libNtve_gf_SetDialogItemText(libSCEV_gv_skinsSkinButtons_Label[autoA0326D73_var], StringToText(""), PlayerGroupSingle(lp_player));
+        libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsSkinButtons_SkinModelLink[autoA0326D73_var], "", PlayerGroupSingle(lp_player));
+        libSCEV_gf_SkinsSetSkinListboxItemState(autoA0326D73_var, libSCEV_ge_SkinsSkinState_Empty, lp_player);
+    }
+    auto46A097E9_userType = "SCEV_KopruluSkins";
+    auto46A097E9_i = 1;
+    for ( ; auto46A097E9_i <= UserDataInstanceCount(auto46A097E9_userType) ; auto46A097E9_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto46A097E9_userType, auto46A097E9_i);
+        if ((lv_indexInstance == null)) {
+            break;
+        }
+
+        if ((UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1) == libSCEV_gv_skinsUnitListboxItem_UnitType[lp_usedItemIndex][lp_player])) {
+            lv_skinButtonIndex += 1;
+            libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsSkinButtons_UnitLink[lv_skinButtonIndex], (libSCEV_gv_skinsUnitListboxItem_UnitType[lp_usedItemIndex][EventPlayer()]), PlayerGroupSingle(lp_player));
+            lv_skinGameLink = UserDataGetGameLink("SCEV_KopruluSkins", lv_indexInstance, "Skin", 1);
+            libSCEV_gv_skinsSkinButtons_SkinEntry[lv_skinButtonIndex] = lv_skinGameLink;
+            libSCEV_gv_skinsSkinButtons_SkinInstance[lv_skinButtonIndex] = lv_indexInstance;
+            libNtve_gf_SetDialogItemText(libSCEV_gv_skinsSkinButtons_Label[lv_skinButtonIndex], UserDataGetText("SCEV_SkinCollections", UserDataGetUserInstance("SCEV_KopruluSkins", lv_indexInstance, "Collection", 1), "Name", 1), PlayerGroupSingle(lp_player));
+            libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsSkinButtons_SkinModelLink[lv_skinButtonIndex], ((CatalogFieldValueGet(c_gameCatalogSkin, UserDataGetGameLink("SCEV_KopruluSkins", lv_indexInstance, "Skin", 1), "CollectionDisplayModel", lp_player))), PlayerGroupSingle(lp_player));
+            libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsSkinButtons_SkinEntryLink[lv_skinButtonIndex], (lv_skinGameLink), PlayerGroupSingle(lp_player));
+            libSCEV_gf_SkinsSetSkinListboxItemState(lv_skinButtonIndex, libSCEV_ge_SkinsSkinState_Normal, lp_player);
+            if ((libSCEV_gf_SkinsMenuIsSkinEquipped(lv_indexInstance, lp_player) == true)) {
+                libSCEV_gf_SkinsSetSkinListboxItemState(lv_skinButtonIndex, libSCEV_ge_SkinsSkinState_Equipped, lp_player);
+            }
+            if ((libSCEV_gf_GameIsOnline() == false) && (libSCEV_gf_SkinsIsSkinCampaignLocked(lv_indexInstance) == true)) {
+                libSCEV_gf_SkinsSetSkinListboxItemState(lv_skinButtonIndex, libSCEV_ge_SkinsSkinState_Locked, lp_player);
+            }
+
+        }
+
+    }
+    if ((libSCEV_gf_SkinsSkinEquippedforUnit(libSCEV_gv_skinsUnitListboxItem_UnitType[lp_usedItemIndex][lp_player], lp_player) == false)) {
+        libSCEV_gf_SkinsSetSkinListboxItemState(1, libSCEV_ge_SkinsSkinState_Equipped, lp_player);
+    }
+
+}
+
+void libSCEV_gf_SkinsSetSkinListboxItemState (int lp_listboxItemIndex, int lp_state, int lp_player) {
+    // Automatic Variable Declarations
+    int auto4DF1D54D_val;
+
+    // Implementation
+    DialogControlSetAnimationState(libSCEV_gv_skinsSkinButtons[lp_listboxItemIndex], PlayerGroupSingle(lp_player), "EquippedState", "NotEquipped");
+    DialogControlSetAnimationState(libSCEV_gv_skinsSkinButtons[lp_listboxItemIndex], PlayerGroupSingle(lp_player), "LockedState", "NotLocked");
+    DialogControlSetAnimationState(libSCEV_gv_skinsSkinButtons[lp_listboxItemIndex], PlayerGroupSingle(lp_player), "EmptyState", "Empty");
+    auto4DF1D54D_val = lp_state;
+    if (auto4DF1D54D_val == libSCEV_ge_SkinsSkinState_Equipped) {
+        libSCEV_gv_skinsSkinButtons_State[lp_listboxItemIndex] = libSCEV_ge_SkinsSkinState_Equipped;
+        DialogControlSetAnimationState(libSCEV_gv_skinsSkinButtons[lp_listboxItemIndex], PlayerGroupSingle(lp_player), "EquippedState", "Equipped");
+    }
+    else if (auto4DF1D54D_val == libSCEV_ge_SkinsSkinState_Locked) {
+        libSCEV_gv_skinsSkinButtons_State[lp_listboxItemIndex] = libSCEV_ge_SkinsSkinState_Locked;
+        DialogControlSetAnimationState(libSCEV_gv_skinsSkinButtons[lp_listboxItemIndex], PlayerGroupSingle(lp_player), "LockedState", "Locked");
+    }
+    else if (auto4DF1D54D_val == libSCEV_ge_SkinsSkinState_Empty) {
+        libSCEV_gv_skinsSkinButtons_State[lp_listboxItemIndex] = libSCEV_ge_SkinsSkinState_Empty;
+        DialogControlSetAnimationState(libSCEV_gv_skinsSkinButtons[lp_listboxItemIndex], PlayerGroupSingle(lp_player), "EmptyState", "Empty");
+    }
+    else {
+        libSCEV_gv_skinsSkinButtons_State[lp_listboxItemIndex] = libSCEV_ge_SkinsSkinState_Normal;
+        DialogControlSetAnimationState(libSCEV_gv_skinsSkinButtons[lp_listboxItemIndex], PlayerGroupSingle(lp_player), "EmptyState", "NotEmpty");
+    }
+    if ((libSCEV_gv_skinsUsedListboxItemIndex[lp_player] == lp_listboxItemIndex)) {
+        libSCEV_gf_SkinsSetSkinPreviewPanelState(lp_listboxItemIndex, lp_state, lp_player);
+    }
+
+}
+
+void libSCEV_gf_SkinsInitializeSkinsMenu (playergroup lp_player) {
+    // Automatic Variable Declarations
+    playergroup auto9801D1A3_g;
+    int auto9801D1A3_var;
+
+    // Implementation
+    auto9801D1A3_g = lp_player;
+    auto9801D1A3_var = -1;
+    while (true) {
+        auto9801D1A3_var = PlayerGroupNextPlayer(auto9801D1A3_g, auto9801D1A3_var);
+        if (auto9801D1A3_var < 0) { break; }
+        if ((libSCEV_gv_skinsMenuInitialized[auto9801D1A3_var] == false)) {
+            libSCEV_gv_skinsMenuInitialized[auto9801D1A3_var] = true;
+            libSCEV_gf_SkinsUpdateUnitListbox(1, auto9801D1A3_var);
+            libSCEV_gf_SkinsUpdateSkinListbox(1, auto9801D1A3_var);
+            libSCEV_gf_SkinsSetSkinPreviewPanelState(1, libSCEV_gv_skinsSkinButtons_State[1], auto9801D1A3_var);
+            libSCEV_gv_skinsUsedListboxItemIndex[auto9801D1A3_var] = 1;
+        }
+
+    }
+}
+
+void libSCEV_gf_SkinsSetSkinPreviewPanelState (int lp_usedItemIndex, int lp_state, int lp_player) {
+    // Automatic Variable Declarations
+    int auto36C6CDEA_val;
+
+    // Implementation
+    DialogControlSetAnimationState(libSCEV_gv_skinsPreview_Panel, PlayerGroupSingle(lp_player), "EmptyState", "NotEmpty");
+    DialogControlSetAnimationState(libSCEV_gv_skinsPreview_Panel, PlayerGroupSingle(lp_player), "LockedState", "NotLocked");
+    DialogControlSetAnimationState(libSCEV_gv_skinsPreview_Panel, PlayerGroupSingle(lp_player), "EquippedState", "NotEquipped");
+    auto36C6CDEA_val = libSCEV_gv_skinsSkinButtons_State[lp_usedItemIndex];
+    if (auto36C6CDEA_val == libSCEV_ge_SkinsSkinState_Empty) {
+        DialogControlSetAnimationState(libSCEV_gv_skinsPreview_Panel, PlayerGroupSingle(lp_player), "EmptyState", "Empty");
+        DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupSingle(lp_player), false);
+    }
+    else if (auto36C6CDEA_val == libSCEV_ge_SkinsSkinState_Equipped) {
+        DialogControlSetAnimationState(libSCEV_gv_skinsPreview_Panel, PlayerGroupSingle(lp_player), "EquippedState", "Equipped");
+        DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupSingle(lp_player), false);
+    }
+    else if (auto36C6CDEA_val == libSCEV_ge_SkinsSkinState_Locked) {
+        DialogControlSetAnimationState(libSCEV_gv_skinsPreview_Panel, PlayerGroupSingle(lp_player), "LockedState", "Locked");
+        DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupSingle(lp_player), false);
+    }
+    else {
+        if ((libSCEV_gv_customizeMenuEquipDisabled == false)) {
+            DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupSingle(lp_player), true);
+        }
+
+    }
+}
+
+int libSCEV_gf_SkinsUsedListboxItem (int lp_dialogItem) {
+    // Variable Declarations
+    int lv_dialogItem;
+
+    // Automatic Variable Declarations
+    const int auto94403E13_ae = libSCEV_gv_skinsActiveButtons;
+    int auto94403E13_var;
+
+    // Variable Initialization
+    lv_dialogItem = c_invalidDialogControlId;
+
+    // Implementation
+    auto94403E13_var = 1;
+    for ( ; auto94403E13_var <= auto94403E13_ae; auto94403E13_var += 1 ) {
+        if ((lp_dialogItem == libSCEV_gv_skinsUnitListboxItem[auto94403E13_var])) {
+            lv_dialogItem = libSCEV_gv_skinsUnitListboxItem[auto94403E13_var];
+            return lv_dialogItem;
+        }
+
+    }
+    return lv_dialogItem;
+}
+
+bool libSCEV_gf_SkinsUnitAlreadyinList (string lp_unit, string lp_instance, string lp_race, int lp_player) {
+    // Variable Declarations
+    int lv_usedCount;
+    string lv_indexInstance;
+
+    // Automatic Variable Declarations
+    const int autoB9ED82EF_ae = libSCEV_gv_skinsActiveButtons;
+    int autoB9ED82EF_var;
+
+    // Variable Initialization
+
+    // Implementation
+    autoB9ED82EF_var = 1;
+    for ( ; autoB9ED82EF_var <= autoB9ED82EF_ae; autoB9ED82EF_var += 1 ) {
+        if ((libSCEV_gv_skinsUnitListboxItem_UnitType[autoB9ED82EF_var][lp_player] == lp_unit) && (UserDataGetGameLink("SCEV_KopruluSkins", lp_instance, "Race", 1) == lp_race)) {
+            lv_usedCount += 1;
+        }
+
+    }
+    if ((lv_usedCount >= 1)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libSCEV_gf_SkinsSkinEquippedforUnit (string lp_unit, int lp_player) {
+    // Variable Declarations
+    int lv_equipCount;
+    string lv_indexInstance;
+
+    // Automatic Variable Declarations
+    string auto48A513A8_userType;
+    int auto48A513A8_i;
+
+    // Variable Initialization
+
+    // Implementation
+    auto48A513A8_userType = "SCEV_KopruluSkins";
+    auto48A513A8_i = 1;
+    for ( ; auto48A513A8_i <= UserDataInstanceCount(auto48A513A8_userType) ; auto48A513A8_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto48A513A8_userType, auto48A513A8_i);
+        if ((lp_unit == UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1)) && (libSCEV_gf_SkinsMenuIsSkinEquipped(lv_indexInstance, lp_player) == true)) {
+            lv_equipCount += 1;
+        }
+
+    }
+    if ((lv_equipCount >= 1)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+int libSCEV_gf_SkinsUsedListboxItemIndex (int lp_dialogItem) {
+    // Variable Declarations
+    int lv_index;
+
+    // Automatic Variable Declarations
+    const int autoB68F6236_ae = libSCEV_gv_skinsActiveButtons;
+    int autoB68F6236_var;
+
+    // Variable Initialization
+
+    // Implementation
+    autoB68F6236_var = 1;
+    for ( ; autoB68F6236_var <= autoB68F6236_ae; autoB68F6236_var += 1 ) {
+        if ((lp_dialogItem == libSCEV_gv_skinsUnitListboxItem[autoB68F6236_var])) {
+            lv_index = autoB68F6236_var;
+            return lv_index;
+        }
+
+    }
+    return lv_index;
+}
+
+int libSCEV_gf_SkinsUsedSkinItemIndex (int lp_dialogItem) {
+    // Variable Declarations
+    int lv_index;
+
+    // Automatic Variable Declarations
+    const int auto82BCCF19_ae = 9;
+    int auto82BCCF19_var;
+
+    // Variable Initialization
+
+    // Implementation
+    auto82BCCF19_var = 1;
+    for ( ; auto82BCCF19_var <= auto82BCCF19_ae; auto82BCCF19_var += 1 ) {
+        if ((lp_dialogItem == libSCEV_gv_skinsSkinButtons[auto82BCCF19_var])) {
+            lv_index = auto82BCCF19_var;
+            return lv_index;
+        }
+
+    }
+    return lv_index;
+}
+
+bool libSCEV_gf_SkinsIsSkinCampaignLocked (string lp_instance) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((UserDataGetInt("SCEV_KopruluSkins", lp_instance, "CampaignLocked", 1) == 0)) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+bool libSCEV_gf_SkinsMenuIsSkinEquipped (string lp_skin, int lp_player) {
+    // Variable Declarations
+    string lv_dataTable;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_dataTable = ((lp_skin) + "#" + IntToString(lp_player));
+
+    // Implementation
+    if ((DataTableValueExists(true, lv_dataTable) == true)) {
+        return DataTableGetBool(true, lv_dataTable);
+    }
+    else {
+        return false;
+    }
+}
+
 // Triggers
 //--------------------------------------------------------------------------------------------------
 // Trigger: MineralWalls:Update
@@ -4263,6 +5149,10 @@ bool libSCEV_gt_SCEvoFeatureInit_Func (bool testConds, bool runActions) {
 
     if ((libSCEV_gf_SCEvoFeatureActive(libSCEV_ge_SCEvoFeatures_FractionalArmor) == false)) {
         libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_FractionalArmor, true);
+        if ((libSCEV_gf_SCEvoFeatureActive(libSCEV_ge_SCEvoFeatures_SegmentedWireframes) == false)) {
+            libSCEV_gf_SCEvoActivateFeature(libSCEV_ge_SCEvoFeatures_SegmentedWireframes, true);
+        }
+
     }
 
     if ((libSCEV_gf_SCEvoFeatureActive(libSCEV_ge_SCEvoFeatures_RaceBasedSupply) == false)) {
@@ -4287,6 +5177,10 @@ bool libSCEV_gt_SCEvoFeatureInit_Func (bool testConds, bool runActions) {
 
     if ((UserDataGetInt("SCEV_LibraryVariables", "UpdateErrorSounds", "Enabled", 1) == 1)) {
         libSCEV_gf_UpdateErrorSounds();
+    }
+
+    if ((UserDataGetInt("SCEV_LibraryVariables", "UseClassicMinerals", "Enabled", 1) == 1)) {
+        libSCEV_gf_ClassicMineralsSkinActivate(PlayerGroupAll(), true);
     }
 
     return true;
@@ -4326,6 +5220,10 @@ bool libSCEV_gt_FractionalArmorAdd_Func (bool testConds, bool runActions) {
     }
 
     libSCEV_gf_FractionalArmorUpdate(lv_unit);
+    if ((libSCEV_gf_SCEvoFeatureActive(libSCEV_ge_SCEvoFeatures_SegmentedWireframes) == true)) {
+        libSCEV_gf_SegmentedWireframesStoreUnit(lv_unit);
+    }
+
     return true;
 }
 
@@ -8371,6 +9269,60 @@ void libSCEV_gt_QueenInfestScoreFix_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: TakeCommandDetector:Init
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_TakeCommandDetectorInit_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    trigger lv_trigger;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_trigger = libSCEV_gt_TakeCommandDetector;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    DialogControlHookupStandard(c_triggerControlTypeEditBox, "UIContainer/FullscreenUpperContainer/ReplayEditBox");
+    libSCEV_gv_takeCommandDetector = DialogControlLastCreated();
+    TriggerAddEventDialogControl(lv_trigger, c_playerAny, DialogControlLastCreated(), c_triggerControlEventTypeTextChanged);
+    TriggerEnable(libSCEV_gt_TakeCommandDetector, true);
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_TakeCommandDetectorInit_Init () {
+    libSCEV_gt_TakeCommandDetectorInit = TriggerCreate("libSCEV_gt_TakeCommandDetectorInit_Func");
+    TriggerAddEventMapInit(libSCEV_gt_TakeCommandDetectorInit);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: TakeCommandDetector
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_TakeCommandDetector_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((libNtve_gf_DialogItemEditValue(libSCEV_gv_takeCommandDetector, EventPlayer()) == "Started")) {
+        TriggerSendEvent("ReplayTakeCommand");
+        libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_takeCommandDetector, "", PlayerGroupAll());
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_TakeCommandDetector_Init () {
+    libSCEV_gt_TakeCommandDetector = TriggerCreate("libSCEV_gt_TakeCommandDetector_Func");
+    TriggerEnable(libSCEV_gt_TakeCommandDetector, false);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: MinimapAllyView:CameraSnap
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_MinimapAllyViewCameraSnap_Func (bool testConds, bool runActions) {
@@ -8552,6 +9504,32 @@ void libSCEV_gt_MinimapAllyViewInit_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: CustomizeMenu:DebugInit
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_CustomizeMenuDebugInit_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((GameIsOnline() == false) && (GameIsTestMap(false) == true)) {
+        TriggerEnable(libSCEV_gt_CustomizeMenuDebugToggle, true);
+    }
+    else {
+        TriggerDestroy(libSCEV_gt_CustomizeMenuDebugToggle);
+    }
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_CustomizeMenuDebugInit_Init () {
+    libSCEV_gt_CustomizeMenuDebugInit = TriggerCreate("libSCEV_gt_CustomizeMenuDebugInit_Func");
+    TriggerAddEventMapInit(libSCEV_gt_CustomizeMenuDebugInit);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: CustomizeMenu:DebugToggle
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_CustomizeMenuDebugToggle_Func (bool testConds, bool runActions) {
@@ -8572,16 +9550,7 @@ bool libSCEV_gt_CustomizeMenuDebugToggle_Func (bool testConds, bool runActions) 
         return true;
     }
 
-    if (((libSCEV_gv_customizeMenuDialog == c_invalidDialogId) || (DialogIsVisible(libSCEV_gv_customizeMenuDialog, EventPlayer()) == false))) {
-        libNtve_gf_HideGameUI(false, PlayerGroupAll());
-        libSCEV_gf_CustomizeMenuDisplay(true, PlayerGroupAll());
-        libSCEV_gv_customizeMenuGameUIHidden = true;
-    }
-    else {
-        libSCEV_gf_CustomizeMenuDisplay(false, PlayerGroupAll());
-        libNtve_gf_HideGameUI(true, PlayerGroupAll());
-        libSCEV_gv_customizeMenuGameUIHidden = false;
-    }
+    libSCEV_gf_CustomizeMenuToggleVisibility(EventPlayer());
     return true;
 }
 
@@ -8599,10 +9568,6 @@ bool libSCEV_gt_CustomizeMenuClose_Func (bool testConds, bool runActions) {
     // Automatic Variable Declarations
     // Conditions
     if (testConds) {
-        if (!((GameIsOnline() == false))) {
-            return false;
-        }
-
         if (!((DialogIsVisible(libSCEV_gv_customizeMenuDialog, EventPlayer()) == true))) {
             return false;
         }
@@ -8613,13 +9578,11 @@ bool libSCEV_gt_CustomizeMenuClose_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    libSCEV_gf_DifficultyOptionsBankSave(EventPlayer());
-    libSCEV_gf_CustomizeMenuDisplay(false, PlayerGroupAll());
-    if ((libSCEV_gv_customizeMenuGameUIHidden == true)) {
-        libNtve_gf_HideGameUI(true, PlayerGroupAll());
-        libSCEV_gv_customizeMenuGameUIHidden = false;
+    if ((GameIsOnline() == false)) {
+        libSCEV_gf_DifficultyOptionsBankSave(EventPlayer());
     }
 
+    libSCEV_gf_CustomizeMenuToggleVisibility(EventPlayer());
     return true;
 }
 
@@ -8627,6 +9590,52 @@ bool libSCEV_gt_CustomizeMenuClose_Func (bool testConds, bool runActions) {
 void libSCEV_gt_CustomizeMenuClose_Init () {
     libSCEV_gt_CustomizeMenuClose = TriggerCreate("libSCEV_gt_CustomizeMenuClose_Func");
     TriggerEnable(libSCEV_gt_CustomizeMenuClose, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: CustomizeMenu:TakeCommand
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_CustomizeMenuTakeCommand_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_CustomizeMenuDisplay(false, PlayerGroupAll());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_CustomizeMenuTakeCommand_Init () {
+    libSCEV_gt_CustomizeMenuTakeCommand = TriggerCreate("libSCEV_gt_CustomizeMenuTakeCommand_Func");
+    TriggerEnable(libSCEV_gt_CustomizeMenuTakeCommand, false);
+    libSCEV_gf_TakeCommandDetected(libSCEV_gt_CustomizeMenuTakeCommand);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: CustomizeMenu:EquipDisable
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_CustomizeMenuEquipDisable_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    TriggerEnable(libSCEV_gt_SkinsEquipButtonResponses, false);
+    DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupAll(), false);
+    libSCEV_gv_customizeMenuEquipDisabled = true;
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_CustomizeMenuEquipDisable_Init () {
+    libSCEV_gt_CustomizeMenuEquipDisable = TriggerCreate("libSCEV_gt_CustomizeMenuEquipDisable_Func");
+    TriggerEnable(libSCEV_gt_CustomizeMenuEquipDisable, false);
+    TriggerAddEventTimer(libSCEV_gt_CustomizeMenuEquipDisable, libSCEV_gv_customizeMenuEquipTimer);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -9311,6 +10320,207 @@ void libSCEV_gt_DifficultyOptionsBuildSingleQueue_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: Skins:SkinsMenuToggle
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SkinsSkinsMenuToggle_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_SkinsInitializeSkinsMenu(PlayerGroupSingle(EventPlayer()));
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SkinsSkinsMenuToggle_Init () {
+    libSCEV_gt_SkinsSkinsMenuToggle = TriggerCreate("libSCEV_gt_SkinsSkinsMenuToggle_Func");
+    TriggerEnable(libSCEV_gt_SkinsSkinsMenuToggle, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Skins:RaceButtonToggles
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SkinsRaceButtonToggles_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_indexInstance;
+    int lv_buttonIndex;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    if ((EventDialogControl() == libSCEV_gv_skinsRaceButtons[1])) {
+        libSCEV_gf_SkinsUpdateUnitListbox(1, EventPlayer());
+    }
+    else if ((EventDialogControl() == libSCEV_gv_skinsRaceButtons[2])) {
+        libSCEV_gf_SkinsUpdateUnitListbox(2, EventPlayer());
+    }
+    else if ((EventDialogControl() == libSCEV_gv_skinsRaceButtons[3])) {
+        libSCEV_gf_SkinsUpdateUnitListbox(3, EventPlayer());
+    }
+    libSCEV_gf_SkinsUpdateSkinListbox(1, EventPlayer());
+    libSCEV_gf_SkinsSetSkinPreviewPanelState(1, libSCEV_gv_skinsSkinButtons_State[1], EventPlayer());
+    libSCEV_gv_skinsUsedListboxItemIndex[EventPlayer()] = 1;
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SkinsRaceButtonToggles_Init () {
+    libSCEV_gt_SkinsRaceButtonToggles = TriggerCreate("libSCEV_gt_SkinsRaceButtonToggles_Func");
+    TriggerEnable(libSCEV_gt_SkinsRaceButtonToggles, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Skins:UnitListboxToggles
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SkinsUnitListboxToggles_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_indexInstance;
+    int lv_unitButtonIndex;
+    int lv_skinButtonIndex;
+    string lv_skinGameLink;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_skinButtonIndex = 1;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_SkinsUpdateSkinListbox(libSCEV_gf_SkinsUsedListboxItemIndex(EventDialogControl()), EventPlayer());
+    libSCEV_gf_SkinsSetSkinPreviewPanelState(1, libSCEV_gv_skinsSkinButtons_State[1], EventPlayer());
+    libSCEV_gv_skinsUsedListboxItemIndex[EventPlayer()] = 1;
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SkinsUnitListboxToggles_Init () {
+    libSCEV_gt_SkinsUnitListboxToggles = TriggerCreate("libSCEV_gt_SkinsUnitListboxToggles_Func");
+    TriggerEnable(libSCEV_gt_SkinsUnitListboxToggles, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Skins:SkinListItemButtonResponses
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SkinsSkinListItemButtonResponses_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_x;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gv_skinsUsedListboxItemIndex[EventPlayer()] = libSCEV_gf_SkinsUsedSkinItemIndex(EventDialogControl());
+    libSCEV_gf_SkinsSetSkinPreviewPanelState(libSCEV_gf_SkinsUsedSkinItemIndex(EventDialogControl()), libSCEV_gv_skinsSkinButtons_State[libSCEV_gf_SkinsUsedSkinItemIndex(EventDialogControl())], EventPlayer());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SkinsSkinListItemButtonResponses_Init () {
+    libSCEV_gt_SkinsSkinListItemButtonResponses = TriggerCreate("libSCEV_gt_SkinsSkinListItemButtonResponses_Func");
+    TriggerEnable(libSCEV_gt_SkinsSkinListItemButtonResponses, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Skins:EquipButtonResponses
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SkinsEquipButtonResponses_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    string lv_indexInstance;
+    string lv_newSkinInstance;
+    int lv_listboxResetIndex;
+
+    // Automatic Variable Declarations
+    string auto78B6D722_userType;
+    int auto78B6D722_i;
+    const int auto21B36656_ae = libSCEV_gv_skinsActiveButtons;
+    int auto21B36656_var;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_newSkinInstance = libSCEV_gv_skinsSkinButtons_SkinInstance[libSCEV_gv_skinsUsedListboxItemIndex[EventPlayer()]];
+    auto78B6D722_userType = "SCEV_KopruluSkins";
+    auto78B6D722_i = 1;
+    for ( ; auto78B6D722_i <= UserDataInstanceCount(auto78B6D722_userType) ; auto78B6D722_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto78B6D722_userType, auto78B6D722_i);
+        if ((UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1) == UserDataGetUnit("SCEV_KopruluSkins", lv_newSkinInstance, "ParentUnit", 1))) {
+            libSCEV_gf_SkinsEquipSkinOnline(false, lv_indexInstance, EventPlayer());
+        }
+
+    }
+    if (true) {
+        libSCEV_gf_SkinsEquipSkinOnline(true, lv_newSkinInstance, EventPlayer());
+        auto21B36656_var = 1;
+        for ( ; auto21B36656_var <= auto21B36656_ae; auto21B36656_var += 1 ) {
+            if ((UserDataGetUnit("SCEV_KopruluSkins", lv_newSkinInstance, "ParentUnit", 1) == libSCEV_gv_skinsUnitListboxItem_UnitType[auto21B36656_var][EventPlayer()])) {
+                lv_listboxResetIndex = auto21B36656_var;
+            }
+
+        }
+        libSCEV_gf_SkinsUpdateSkinListbox(lv_listboxResetIndex, EventPlayer());
+        libSCEV_gf_SkinsSetSkinPreviewPanelState(libSCEV_gv_skinsUsedListboxItemIndex[EventPlayer()], libSCEV_ge_SkinsSkinState_Equipped, EventPlayer());
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SkinsEquipButtonResponses_Init () {
+    libSCEV_gt_SkinsEquipButtonResponses = TriggerCreate("libSCEV_gt_SkinsEquipButtonResponses_Func");
+    TriggerEnable(libSCEV_gt_SkinsEquipButtonResponses, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Collection:CollectionMenuToggle
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_CollectionCollectionMenuToggle_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_CollectionCollectionMenuToggle_Init () {
+    libSCEV_gt_CollectionCollectionMenuToggle = TriggerCreate("libSCEV_gt_CollectionCollectionMenuToggle_Func");
+    TriggerEnable(libSCEV_gt_CollectionCollectionMenuToggle, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Collections:ListItemButtonResponses
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_CollectionsListItemButtonResponses_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_x;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_CollectionsListItemButtonResponses_Init () {
+    libSCEV_gt_CollectionsListItemButtonResponses = TriggerCreate("libSCEV_gt_CollectionsListItemButtonResponses_Func");
+    TriggerEnable(libSCEV_gt_CollectionsListItemButtonResponses, false);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: SCEvo: Events
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_SCEvoEvents_Func (bool testConds, bool runActions) {
@@ -9478,17 +10688,29 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MergeStatusEffectsBegin_Init();
     libSCEV_gt_MindControlStealTech_Init();
     libSCEV_gt_QueenInfestScoreFix_Init();
+    libSCEV_gt_TakeCommandDetectorInit_Init();
+    libSCEV_gt_TakeCommandDetector_Init();
     libSCEV_gt_MinimapAllyViewCameraSnap_Init();
     libSCEV_gt_MinimapAllyViewCameraUpdate_Init();
     libSCEV_gt_MinimapAllyViewAllianceUpdate_Init();
     libSCEV_gt_MinimapAllyViewInit_Init();
+    libSCEV_gt_CustomizeMenuDebugInit_Init();
     libSCEV_gt_CustomizeMenuDebugToggle_Init();
     libSCEV_gt_CustomizeMenuClose_Init();
+    libSCEV_gt_CustomizeMenuTakeCommand_Init();
+    libSCEV_gt_CustomizeMenuEquipDisable_Init();
     libSCEV_gt_DifficultyOptionsResponses_Init();
     libSCEV_gt_DifficultyOptionsEvents_Init();
     libSCEV_gt_DifficultyOptionsLimitedRally_Init();
     libSCEV_gt_DifficultyOptionsBuildSingleSelect_Init();
     libSCEV_gt_DifficultyOptionsBuildSingleQueue_Init();
+    libSCEV_gt_SkinsSkinsMenuToggle_Init();
+    libSCEV_gt_SkinsRaceButtonToggles_Init();
+    libSCEV_gt_SkinsUnitListboxToggles_Init();
+    libSCEV_gt_SkinsSkinListItemButtonResponses_Init();
+    libSCEV_gt_SkinsEquipButtonResponses_Init();
+    libSCEV_gt_CollectionCollectionMenuToggle_Init();
+    libSCEV_gt_CollectionsListItemButtonResponses_Init();
     libSCEV_gt_SCEvoEvents_Init();
 }
 

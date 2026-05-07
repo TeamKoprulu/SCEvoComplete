@@ -1,59 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Desc>
 
-    <!-- Scrollbar-->
-
-    <Frame type="Image" name="ScrollBarBackgroundTemplate">
-        <Anchor side="Top" relative="$parent/ScrollBar" pos="Min" offset="-4"/>
-        <Anchor side="Bottom" relative="$parent/ScrollBar" pos="Max" offset="4"/>
-        <Anchor side="Left" relative="$parent/ScrollBar" pos="Min" offset="-4"/>
-        <Anchor side="Right" relative="$parent/ScrollBar" pos="Max" offset="4"/>
-        <Texture val="@UI/Classic/OptionsMenu/ScrollBarBackground"/>
-        <TextureType val="NineSlice"/>
-        <Alpha val="255"/>
-        <Unclipped val="true"/>
-
-        <StateGroup name="AlphaState">
-            <DefaultState val="NotVisible"/>
-        
-            <State name="Visible">
-                <When type="Property" frame="$parent/ScrollBar" Visible="True"/>
-                <Action type="SetProperty" frame="$this" Alpha="255"/>
-            </State>
-        
-            <State name="NotVisible">
-                <Action type="SetProperty" frame="$this" Alpha="100"/>
-            </State>
-        </StateGroup>
-    </Frame>
-
-    <Frame type="ScrollBar" name="ScrollBarTemplate">
-        <Width val="12"/>
-        <Orientation val="Vertical"/>
-        <PreserveAnchorOffset val="True"/>
-        <StepValue val="25"/>
-        <Continuous val="true"/>
-
-        <Frame type="Button" name="Button">
-            <NormalImage val="NormalImage"/>
-            <HoverImage val="HoverImage"/>
-            <Frame type="Image" name="NormalImage">
-                <Anchor relative="$parent"/>
-                <LayerCount val="2"/>
-                
-                <Texture val="@UI/Classic/OptionsMenu/ScrollBarFill_Alt" layer="0"/>
-                <Texture val="@UI/Classic/OptionsMenu/ScrollBarFill_Alt" layer="1"/>
-                <TextureType val="NineSlice" layer="0"/>
-                <TextureType val="NineSlice" layer="1"/>
-            </Frame>
-
-            <Frame type="Image" name="HoverImage">
-                <Anchor relative="$parent"/>
-                <Texture val="@UI/Classic/OptionsMenu/ScrollBarFill_Over"/>
-                <TextureType val="NineSlice"/>
-            </Frame>
-        </Frame>
-    </Frame>
 
     <!-- CheckBox -->
 
@@ -414,12 +361,12 @@
                 <Anchor side="Bottom" relative="$parent/ContainerFrameBottomAnchor" pos="Min" offset="0"/>
                 <Anchor side="Right" relative="$parent/ScrollBarBackground" pos="Min" offset="0"/>
             </Frame>
-            <Frame type="Image" name="ScrollBarBackground" template="EvoClassic_OptionsMenu/ScrollBarBackgroundTemplate">
+            <Frame type="Image" name="ScrollBarBackground" template="EvoClassic_StandardTemplates/ScrollBarBackgroundTemplate">
                 <Visible val="{$parent/ScrollBar/@Visible}"/>
                 <CollapseLayout val="True"/>
             </Frame>
     
-            <Frame type="ScrollBar" name="ScrollBar" template="EvoClassic_OptionsMenu/ScrollBarTemplate">
+            <Frame type="ScrollBar" name="ScrollBar" template="EvoClassic_StandardTemplates/ScrollBarTemplate">
                 <Anchor side="Top" relative="$parent" pos="Min" offset="0"/>
                 <Anchor side="Bottom" relative="$parent" pos="Max" offset="-15"/>
                 <Anchor side="Right" relative="$parent" pos="Max" offset="-12"/>
@@ -436,9 +383,6 @@
 
     </Frame>
 
-    <Frame type="Frame" name="SkinsPanelTemplate">
-    </Frame>
-
     <Frame type="Button" name="TabButtonTemplate">
 
         <Width val="335"/>
@@ -450,6 +394,8 @@
         
         <Toggleable val="True"/>
         <Style val="Evo_Options_TabButtonLabel"/>
+        
+        <Enabled val="False"/>
 
         <Frame type="Frame" name="HitTestFrame">
             <Anchor relative="$parent"/>
@@ -521,6 +467,40 @@
         <Width val="1540"/>
         <Height val="1150"/>
         <!-- <Height val="984"/> -->
+        <StateGroup name="VisibilityState">
+            <DefaultState val="None"/>
+            <State name="Shown">
+                <When type="AnimationState" frame="$this" CustomizeMenuIsOnline="True"/>
+                <When type="AnimationState" frame="$this" CustomizeMenuVisible="True"/>
+                <When type="Property" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/ObserverPreviewFrame" Visible="False"/>
+                <When type="Property" frame="$ancestor[@name=UIContainer]/ConsolePanel" Visible="True"/>
+                <Action type="SetProperty" frame="BlackoutFrame" Alpha="200"/>
+                <Action type="SetProperty" frame="$this" Visible="True"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarFullscreenAnchor" pos="Min" offset="0" side="Top"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarFullscreenAnchor" pos="Min" offset="0" side="Left"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarFullscreenAnchor" pos="Max" offset="0" side="Bottom"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarFullscreenAnchor" pos="Max" offset="0" side="Right"/>
+            </State>
+            <State name="Hidden">
+                <When type="AnimationState" frame="$this" CustomizeMenuIsOnline="True"/>
+                <When type="AnimationState" frame="$this" CustomizeMenuVisible="False"/>
+                <When type="Property" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/ObserverPreviewFrame" Visible="False"/>
+                <When type="Property" frame="$ancestor[@name=UIContainer]/ConsolePanel" Visible="True"/>
+                <Action type="SetProperty" frame="$this" Visible="False"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarConsoleAnchor" pos="Min" offset="0" side="Top"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarConsoleAnchor" pos="Min" offset="0" side="Left"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarConsoleAnchor" pos="Max" offset="0" side="Bottom"/>
+                <Action type="SetAnchor" frame="$ancestor[@name=UIContainer]/FullscreenUpperContainer/MenuBar" relative="$parent/MenuBarConsoleAnchor" pos="Max" offset="0" side="Right"/>
+            </State>
+
+            <State name="NoneOnline">
+                <When type="AnimationState" frame="$this" CustomizeMenuIsOnline="True"/>
+                <Action type="SetProperty" frame="$this" Visible="False"/>
+            </State>
+
+            <State name="None">
+            </State>
+        </StateGroup>
 
         <Frame type="Image" name="BlackoutFrame">
             <Anchor relative="$parent/$parent"/>
@@ -616,7 +596,7 @@
         </Frame>
 
         <Frame type="Image" name="BottomContainer_LeftBarFill" template="EvoClassic_OptionsMenu/ImageTemplate">
-            <Anchor side="Top" relative="$parent/SkinsTab" pos="Max" offset="0"/>
+            <Anchor side="Top" relative="$parent/CollectionsTab" pos="Max" offset="0"/>
             <Anchor side="Left" relative="$parent/BottomContainer_BottomLeft" pos="Min" offset="0"/>
             <Anchor side="Bottom" relative="$parent/BottomContainer_BottomLeft" pos="Min" offset="0"/>
             <Texture val="@UI/Classic/OptionsMenu/FillerLeft"/>
@@ -665,6 +645,14 @@
             <Text val="@UI/Classic/OptionsMenu/Header"/>
             <Style val="Evo_Options_Header"/>
         </Frame>
+        <Frame type="Button" name="HiddenTab">
+            <Anchor side="Top" relative="$parent/TopContainer_BottomLeft" pos="Max" offset="-3"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Height val="1"/>
+            <Width val="1"/>
+            <Visible val="False"/>
+            <Enabled val="False"/>
+        </Frame>
 
         <Frame type="Button" name="DifficultyTab" template="EvoClassic_OptionsMenu/TabButtonTemplate">
             <Anchor side="Top" relative="$parent/TopContainer_BottomLeft" pos="Max" offset="-3"/>
@@ -676,32 +664,71 @@
         <Frame type="Button" name="SkinsTab" template="EvoClassic_OptionsMenu/TabButtonTemplate">
             <Anchor side="Top" relative="$parent/DifficultyTab" pos="Max" offset="-11"/>
             <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
-            <Enabled val="False"/>
             <Text val="@UI/Classic/OptionsMenu/SkinsTab"/>
             <Shortcut val="@UI/Classic/OptionsMenu/SkinsTab_Hotkey"/>
         </Frame>
+
+        <Frame type="Button" name="CollectionsTab" template="EvoClassic_OptionsMenu/TabButtonTemplate">
+            <Anchor side="Top" relative="$parent/SkinsTab" pos="Max" offset="-11"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="0"/>
+            <Text val="@UI/Classic/OptionsMenu/CollectionsTab"/>
+            <Shortcut val="@UI/Classic/OptionsMenu/CollectionsTab_Hotkey"/>
+
+            <Enabled val="False"/>
+        </Frame>
+
         <Frame type="Frame" name="TabContainer">
             <Anchor side="Top" relative="$parent" pos="Min" offset="11"/>
             <Anchor side="Left" relative="$parent" pos="Min" offset="333"/>
             <Anchor side="Bottom" relative="$parent" pos="Max" offset="-175"/>
             <Anchor side="Right" relative="$parent" pos="Max" offset="-9"/>
-            <Frame type="Frame" name="OptionsPanel_Difficulty" template="EvoClassic_OptionsMenu/DifficultyPanelTemplate">
+
+            <Frame type="Frame" name="CustomizePanel_Hidden">
                 <Anchor relative="$parent"/>
             </Frame>
 
-            <Frame type="Frame" name="OptionsPanel_Skins" template="EvoClassic_OptionsMenu/SkinsPanelTemplate">
+            <Frame type="Frame" name="CustomizePanel_Difficulty" template="EvoClassic_OptionsMenu/DifficultyPanelTemplate">
                 <Anchor relative="$parent"/>
             </Frame>
 
+            <Frame type="Frame" name="CustomizePanel_Skins" template="EvoClassic_SkinsMenuTemplates/SkinsPanelTemplate">
+                <Anchor relative="$parent"/>
+            </Frame>
+
+            <Frame type="Frame" name="CustomizePanel_Collections" template="EvoClassic_SkinsMenuTemplates/CollectionsPanelTemplate">
+                <Anchor relative="$parent"/>
+            </Frame>
         </Frame>
         <Frame type="TabControl" name="TabControl">
             <SelectedIndex val="0"/>
 
+            <TabListItem val="$parent/HiddenTab"/>
             <TabListItem val="$parent/DifficultyTab"/>
             <TabListItem val="$parent/SkinsTab"/>
+            <TabListItem val="$parent/CollectionsTab"/>
 
-            <PanelListItem val="$parent/TabContainer/OptionsPanel_Difficulty"/>
-            <PanelListItem val="$parent/TabContainer/OptionsPanel_Skins"/>
+            <PanelListItem val="$parent/TabContainer/CustomizePanel_Hidden"/>
+            <PanelListItem val="$parent/TabContainer/CustomizePanel_Difficulty"/>
+            <PanelListItem val="$parent/TabContainer/CustomizePanel_Skins"/>
+            <PanelListItem val="$parent/TabContainer/CustomizePanel_Collections"/>
+
+            <StateGroup name="InitialSelection">
+                <State name="DifficultyTab">
+                    <When type="Property" frame="$parent/DifficultyTab" Visible="True" />
+                    <When type="Property" frame="$parent/DifficultyTab" Enabled="True" />
+                    <Action type="SetProperty" frame="$this" SelectedIndex="1" on="Enter" undo="False"/>
+                </State>
+                <State name="SkinsTab">
+                    <When type="Property" frame="$parent/SkinsTab" Visible="True" />
+                    <When type="Property" frame="$parent/SkinsTab" Enabled="True" />
+                    <Action type="SetProperty" frame="$this" SelectedIndex="2" on="Enter" undo="False"/>
+                </State>
+                <State name="CollectionsTab">
+                    <When type="Property" frame="$parent/CollectionsTab" Visible="True" />
+                    <When type="Property" frame="$parent/CollectionsTab" Enabled="True" />
+                    <Action type="SetProperty" frame="$this" SelectedIndex="3" on="Enter" undo="False"/>
+                </State>
+            </StateGroup>
 
         </Frame>
         <Frame type="Button" name="CloseButton" template="EvoClassic_OptionsMenu/ButtonTemplate">

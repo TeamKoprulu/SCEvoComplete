@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Desc>
+
+        <Frame type="Frame" name="GameUI/UIContainer" file="GameUI">
+            <StateGroup name="UseSegmentedWireframes">
+                <DefaultState val="False"/>
+                <State name="True">
+                    <When type="AnimationState" frame="$this" UseSegmentedWireframes="True"/>
+                </State>
+                <State name="False"/>
+            </StateGroup>
+        </Frame>
+        <Frame type="Image" name="SegmentedWireframe0Template">
+            <LayerCount val="4"/>
+            <LayerVisible val="True" layer="0"/>
+            <LayerVisible val="True" layer="1"/>
+            <LayerVisible val="True" layer="2"/>
+            <LayerVisible val="True" layer="3"/>
+            <Visible val="False"/>
+            <Alpha      val="{$parent/UnitFrame/@Alpha}"/>
+            <Texture    val="{$parent/UnitFrame/Segment0_Data/GroupIcon/@Text}" layer="0"/>
+            <Texture    val="{$parent/UnitFrame/Segment1_Data/GroupIcon/@Text}" layer="1"/>
+            <Texture    val="{$parent/UnitFrame/Segment2_Data/GroupIcon/@Text}" layer="2"/>
+            <Texture    val="{$parent/UnitFrame/Segment3_Data/GroupIcon/@Text}" layer="3"/>
+            <LayerColor val="{$parent/UnitFrame/Segment0_Data/@Color}" layer="0"/>
+            <LayerColor val="{$parent/UnitFrame/Segment1_Data/@Color}" layer="1"/>
+            <LayerColor val="{$parent/UnitFrame/Segment2_Data/@Color}" layer="2"/>
+            <LayerColor val="{$parent/UnitFrame/Segment3_Data/@Color}" layer="3"/>
+        </Frame>
+        <Frame type="Image" name="SegmentedWireframe1Template">
+            <LayerCount val="2"/>
+            <Alpha val="0"/>
+            <Visible val="False"/>
+            <Texture    val="{$parent/UnitFrame/Segment4_Data/GroupIcon/@Text}" layer="0"/>
+            <Texture    val="{$parent/UnitFrame/Segment5_Data/GroupIcon/@Text}" layer="1"/>
+            <LayerColor val="{$parent/UnitFrame/Segment4_Data/@Color}" layer="0"/>
+            <LayerColor val="{$parent/UnitFrame/Segment5_Data/@Color}" layer="1"/>
+            <LayerVisible val="{$parent/UnitFrame/Segment4_Data/@Visible}" layer="0"/>
+            <LayerVisible val="{$parent/UnitFrame/Segment5_Data/@Visible}" layer="1"/>
+        </Frame>
+
+        <Frame type="UnitStatusAbilCharge" name="SegmentDataHolderTemplate">
+            <Anchor relative="$parent"/>
+            <ChargeLocation val="Unit"/>
+            <AbilityLink val="SegmentedWireframes"/>
+            <Visible val="False"/>
+            <Frame type="ProgressBar" name="ChargeFillProgress">
+                <Anchor relative="$parent"/>
+                <Alpha val="0"/>
+                <Visible val="False"/>
+            </Frame>
+        </Frame>
+
+        <Frame type="Frame" name="SegmentDataTemplate">
+            <Anchor side="Top" relative="$parent" pos="Max" offset="0"/>
+            <Anchor side="Left" relative="$parent" pos="Max" offset="0"/>
+            <Width val="1"/>
+            <Height val="1"/>
+            <Frame type="TextFormatFrame" name="GroupIcon">
+                <ReplacedName val="race" index="0"/>
+                <ReplacedName val="id" index="1"/>
+                <ReplacedName val="index" index="2"/>
+                <ReplacedName val="suffix" index="3"/>
+                <Replacement val="{$ancestor[@type=UnitFrame]/UnitRace/FullName/@Text}" index="0"/>
+                <Replacement val="{$ancestor[@type=UnitFrame]/@UnitLink[LeaderAlias]}" index="1"/>
+                <Replacement val="0" index="2"/>
+                <Replacement val="" index="3"/>
+                <FormatText val="Assets\Textures\wireframe-%race%-%id%%suffix%_0%index%.dds"/>
+            </Frame>    
+
+            <Frame type="MathFrame" name="YellowThreshold">
+                <A val="{$parent/$parent/HealthPercentScaled/@ResultInt}"/>
+                <B val="0"/>
+                <Operator val="Subtract"/>
+            </Frame>
+
+            <Frame type="MathFrame" name="RedThreshold">
+                <A val="{$parent/$parent/HealthPercentScaled/@ResultInt}"/>
+                <B val="0"/>
+                <Operator val="Subtract"/>
+            </Frame>
+
+            <IgnoreParentColor val="True"/>
+            <StateGroup name="ColorWireframe">
+                <DefaultState val="Red"/>
+                <State name="Green">
+                    <When type="Property" frame="YellowThreshold" operator="GreaterThan" Result="0"/>
+                    <Action type="SetProperty" frame="$this" Color="0,255,0"/>
+                </State>
+                <State name="Yellow">
+                    <When type="Property" frame="YellowThreshold" operator="LessThanOrEqual" Result="0"/>
+                    <When type="Property" frame="RedThreshold" operator="GreaterThan" Result="0"/>
+                    <Action type="SetProperty" frame="$this" Color="255,255,0"/>
+                </State>
+                <State name="Red">
+                    <When type="Property" frame="RedThreshold" operator="LessThanOrEqual" Result="0"/>
+                    <Action type="SetProperty" frame="$this" Color="255,0,0"/>
+                </State>
+            </StateGroup>
+
+        </Frame>
+
+        <Frame type="UnitFrame" name="UnitButton_UnitFrameTemplate">
+            <Anchor relative="$parent"/>
+            <UseSelectionLeader val="False"/>
+            <StateGroup name="VisibilityState">
+                <DefaultState val="Hidden"/>
+                <State name="Shown">
+                    <When type="Property" frame="$parent/$parent" Visible="True"/>
+                    <Action type="SetProperty" frame="$this" UnitTag="{$parent/@UnitTag}"/>
+                </State>
+                <State name="Hidden">
+                    <Action type="SetProperty" frame="$this" UnitTag="0#0"/>
+                </State>
+            </StateGroup>
+
+            <Frame type="UnitStatusFrame" name="UnitStatusFrame">
+                <UnitTag val="{$parent/@UnitTag}"/>
+                <Anchor relative="$parent"/>
+                <Visible val="False"/>
+                <RenderPriority val="450"/>
+                <StateGroup name="ValidUnitTag">
+                    <DefaultState val="Default"/>
+                    <State name="Valid">
+                        <When type="Property" frame="$parent" UnitTag="0#0" operator="NotEqual"/>
+                        <Action type="SetProperty" frame="$this" Visible="True"/>
+                    </State>
+                
+                    <State name="Default"/>
+                </StateGroup>
+
+                <Frame type="UnitStatusValidatorAnimElement" name="ParasiteValidator" template="SCBW_ParasiteTemplates/ParasiteValidatorTemplate"/>
+                <Frame type="UnitStatusAbilCharge" name="WFSeg0_0" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg0_0"/>
+                    <AbilityIndex val="0"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg0_1" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg0_1"/>
+                    <AbilityIndex val="1"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg1_0" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg1_0"/>
+                    <AbilityIndex val="2"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg1_1" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg1_1"/>
+                    <AbilityIndex val="3"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg2_0" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg2_0"/>
+                    <AbilityIndex val="4"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg2_1" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg2_1"/>
+                    <AbilityIndex val="5"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg3_0" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg3_0"/>
+                    <AbilityIndex val="6"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg3_1" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg3_1"/>
+                    <AbilityIndex val="7"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg4_0" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg4_0"/>
+                    <AbilityIndex val="8"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg4_1" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg4_1"/>
+                    <AbilityIndex val="9"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg5_0" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg5_0"/>
+                    <AbilityIndex val="10"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSeg5_1" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSeg5_1"/>
+                    <AbilityIndex val="11"/>
+                </Frame>
+
+                <Frame type="UnitStatusAbilCharge" name="WFSegmentCount" template="SCBW_SegmentedWireframeTemplates/SegmentDataHolderTemplate">
+                    <ChargeLink val="Unit/WFSegCount"/>
+                    <AbilityIndex val="12"/>
+                </Frame>
+            </Frame>
+
+            <Frame type="Label" name="UnitRace">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@UnitLink[Race]}"/>
+                <Visible val="False"/>
+
+                <Frame type="Label" name="FullName">
+                    <Anchor relative="$parent"/>
+                    <Visible val="False"/>
+                    <Text val=""/>
+                </Frame>
+
+                <StateGroup name="Race">
+                    <DefaultState val="None"/>
+                
+                    <State name="BWPr">
+                        <When type="Property" frame="$this" Text="BWPr"/>
+                        <Action type="SetProperty" frame="FullName" Text="Protoss"/>
+                    </State>
+                
+                    <State name="BWZe">
+                        <When type="Property" frame="$this" Text="BWZe"/>
+                        <Action type="SetProperty" frame="FullName" Text="Zerg"/>
+                    </State>
+
+                    <State name="BWTe">
+                        <When type="Property" frame="$this" Text="BWTe"/>
+                        <Action type="SetProperty" frame="FullName" Text="Terran"/>
+                    </State>
+
+                    <State name="Prot">
+                        <When type="Property" frame="$this" Text="Prot"/>
+                        <Action type="SetProperty" frame="FullName" Text="Protoss"/>
+                    </State>
+
+                    <State name="Zerg">
+                        <When type="Property" frame="$this" Text="Zerg"/>
+                        <Action type="SetProperty" frame="FullName" Text="Zerg"/>
+                    </State>
+
+                    <State name="Terr">
+                        <When type="Property" frame="$this" Text="Terr"/>
+                        <Action type="SetProperty" frame="FullName" Text="Terran"/>
+                    </State>
+                
+                    <State name="None">
+                        <Action type="SetProperty" frame="FullName" Text=""/>
+                    </State>
+                </StateGroup>
+            </Frame>
+            <Frame type="Label" name="UnitIcon">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@ActorUnitLink[UnitIcon]}"/>
+                <Visible val="False"/>
+            </Frame>
+            <Frame type="Label" name="LeaderAlias">
+                <Anchor relative="$parent"/>
+                <Text val="{$parent/@UnitLink[LeaderAlias]}"/>
+                <Visible val="False"/>
+            </Frame>
+            <StateGroup name="UseSegmentedWireframes">
+                <DefaultState val="False"/>
+                <State name="True">
+                    <When type="Property" frame="UnitStatusFrame" Visible="True" />
+                    <When type="Property" frame="UnitStatusFrame/WFSeg0_0" Visible="True" />
+                    <Action type="SetProperty" frame="$this" Alpha="255"/>
+                    <Action type="SetProperty" frame="$this" Alpha="255"/>
+                </State>
+                <State name="False">
+                    <Action type="SetProperty" frame="$this" Alpha="0"/>
+                    <Action type="SetProperty" frame="$this" Alpha="0"/>
+                </State>
+
+            </StateGroup>
+
+            <Frame type="MathFrame" name="HealthPercent">
+                <A val="{$parent/@CurrentHealth}"/>
+                <B val="{$parent/@MaxHealth}"/>
+                <Operator val="Divide"/>
+            </Frame>
+
+            <Frame type="MathFrame" name="HealthPercentScaled">
+                <A val="{$parent/HealthPercent/@Result}"/>
+                <B val="100"/>
+                <Operator val="Multiply"/>
+            </Frame>
+
+            <StateGroup name="IdentifierOverride">
+                <DefaultState val="Default"/>
+                <State name="MarineUpgraded">
+                    <When type="Property" frame="$this" UnitLink="MarineSCBW"/>
+                    <When type="Property" frame="UnitIcon" Text="Assets\Textures\btn-unit-terran-marine-upgraded@scbw.dds"/>
+                    <Action type="SetProperty" frame="Segment0_Data/GroupIcon" Replacement="-upgrade" index="3"/>
+                    <Action type="SetProperty" frame="Segment1_Data/GroupIcon" Replacement="-upgrade" index="3"/>
+                    <Action type="SetProperty" frame="Segment2_Data/GroupIcon" Replacement="-upgrade" index="3"/>
+                    <Action type="SetProperty" frame="Segment3_Data/GroupIcon" Replacement="-upgrade" index="3"/>
+                    <Action type="SetProperty" frame="Segment4_Data/GroupIcon" Replacement="-upgrade" index="3"/>
+                    <Action type="SetProperty" frame="Segment5_Data/GroupIcon" Replacement="-upgrade" index="3"/>
+                </State>
+                <State name="SiegeTankSCBWSieged">
+                    <When type="Property" frame="$this" UnitLink="SiegeTankSCBWSieged"/>
+                    <Action type="SetProperty" frame="Segment0_Data/GroupIcon" Replacement="Sieged" index="3"/>
+                    <Action type="SetProperty" frame="Segment1_Data/GroupIcon" Replacement="Sieged" index="3"/>
+                    <Action type="SetProperty" frame="Segment2_Data/GroupIcon" Replacement="Sieged" index="3"/>
+                    <Action type="SetProperty" frame="Segment3_Data/GroupIcon" Replacement="Sieged" index="3"/>
+                    <Action type="SetProperty" frame="Segment4_Data/GroupIcon" Replacement="Sieged" index="3"/>
+                    <Action type="SetProperty" frame="Segment5_Data/GroupIcon" Replacement="Sieged" index="3"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" frame="Segment0_Data/GroupIcon" Replacement="" index="3"/>
+                    <Action type="SetProperty" frame="Segment1_Data/GroupIcon" Replacement="" index="3"/>
+                    <Action type="SetProperty" frame="Segment2_Data/GroupIcon" Replacement="" index="3"/>
+                    <Action type="SetProperty" frame="Segment3_Data/GroupIcon" Replacement="" index="3"/>
+                    <Action type="SetProperty" frame="Segment4_Data/GroupIcon" Replacement="" index="3"/>
+                    <Action type="SetProperty" frame="Segment5_Data/GroupIcon" Replacement="" index="3"/>
+                </State>
+            </StateGroup>
+
+            <StateGroup name="SegmentCountOverrider">
+                <DefaultState val="Default"/>
+                <State name="5Segments">
+                    <When type="Property" frame="UnitStatusFrame/WFSegmentCount/ChargeFillProgress" operator="Equal" Value="5"/>
+                    <Action type="SetProperty" frame="Segment5_Data" Visible="False"/>
+                </State>
+                <State name="4Segments">
+                    <When type="Property" frame="UnitStatusFrame/WFSegmentCount/ChargeFillProgress" operator="Equal" Value="4"/>
+                    <Action type="SetProperty" frame="Segment4_Data" Visible="False"/>
+                    <Action type="SetProperty" frame="Segment5_Data" Visible="False"/>
+                </State>
+                <State name="Default">
+                    <Action type="SetProperty" frame="Segment0_Data" Visible="True"/>
+                    <Action type="SetProperty" frame="Segment1_Data" Visible="True"/>
+                    <Action type="SetProperty" frame="Segment2_Data" Visible="True"/>
+                    <Action type="SetProperty" frame="Segment3_Data" Visible="True"/>
+                    <Action type="SetProperty" frame="Segment4_Data" Visible="True"/>
+                    <Action type="SetProperty" frame="Segment5_Data" Visible="True"/>
+                </State>
+
+            </StateGroup>
+
+            <Frame type="Frame" name="Segment0_Data" template="SCBW_SegmentedWireframeTemplates/SegmentDataTemplate">
+
+                <Frame type="TextFormatFrame" name="GroupIcon">
+                    <Replacement val="1" index="2"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="YellowThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg0_0/ChargeFillProgress/@Value}"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="RedThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg0_1/ChargeFillProgress/@Value}"/>
+                </Frame>
+            </Frame>
+            <Frame type="Frame" name="Segment1_Data" template="SCBW_SegmentedWireframeTemplates/SegmentDataTemplate">
+                <Frame type="TextFormatFrame" name="GroupIcon">
+                    <Replacement val="2" index="2"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="YellowThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg1_0/ChargeFillProgress/@Value}"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="RedThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg1_1/ChargeFillProgress/@Value}"/>
+                </Frame>
+            </Frame>
+            <Frame type="Frame" name="Segment2_Data" template="SCBW_SegmentedWireframeTemplates/SegmentDataTemplate">
+                <Frame type="TextFormatFrame" name="GroupIcon">
+                    <Replacement val="3" index="2"/>
+                </Frame>
+                <Frame type="MathFrame" name="YellowThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg2_0/ChargeFillProgress/@Value}"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="RedThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg2_1/ChargeFillProgress/@Value}"/>
+                </Frame>
+            </Frame>
+            <Frame type="Frame" name="Segment3_Data" template="SCBW_SegmentedWireframeTemplates/SegmentDataTemplate">
+                <Frame type="TextFormatFrame" name="GroupIcon">
+                    <Replacement val="4" index="2"/>
+                </Frame>
+                <Frame type="MathFrame" name="YellowThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg3_0/ChargeFillProgress/@Value}"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="RedThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg3_1/ChargeFillProgress/@Value}"/>
+                </Frame>
+            </Frame>
+            <Frame type="Frame" name="Segment4_Data" template="SCBW_SegmentedWireframeTemplates/SegmentDataTemplate">
+                <Frame type="TextFormatFrame" name="GroupIcon">
+                    <Replacement val="5" index="2"/>
+                </Frame>
+                <Frame type="MathFrame" name="YellowThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg4_0/ChargeFillProgress/@Value}"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="RedThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg4_1/ChargeFillProgress/@Value}"/>
+                </Frame>
+            </Frame>
+            <Frame type="Frame" name="Segment5_Data" template="SCBW_SegmentedWireframeTemplates/SegmentDataTemplate">
+                <Frame type="TextFormatFrame" name="GroupIcon">
+                    <Replacement val="6" index="2"/>
+                </Frame>
+                <Frame type="MathFrame" name="YellowThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg5_0/ChargeFillProgress/@Value}"/>
+                </Frame>
+
+                <Frame type="MathFrame" name="RedThreshold">
+                    <B val="{$parent/$parent/UnitStatusFrame/WFSeg5_1/ChargeFillProgress/@Value}"/>
+                </Frame>
+            </Frame>
+        </Frame>
+
+        <Frame type="UnitFrame" name="InfoPanel_UnitFrameTemplate" template="SCBW_SegmentedWireframeTemplates/UnitButton_UnitFrameTemplate">
+
+            <StateGroup name="VisibilityState">
+                <State name="Shown">
+                    <When type="Property" frame="$parent" Visible="True"/>
+                    <Action type="SetProperty" frame="$this" UnitTag="{$ancestor[@type=InfoPanel]/UnitPanel/UnitWireframe/@UnitTag}"/>
+                </State>
+            </StateGroup>
+            <Frame type="UnitStatusFrame" name="UnitStatusFrame">
+                <Frame type="UnitStatusValidatorAnimElement" name="ParasiteValidator">
+                    <DescFlags val="CreationDeferred"/>
+                </Frame>
+            </Frame>
+        </Frame>
+
+</Desc>

@@ -2396,6 +2396,7 @@ void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
     order ord;
     marker mark;
     fixed cooldown;
+    fixed energy;
 
     mark = AIMarker(aiUnit, c_BWMK_QueenSCBWSpawnBroodlings);
     ord = BWQueenSpawnBroodlings(player, aiUnit, scanGroup, mark);
@@ -2423,17 +2424,24 @@ void AIThinkQueenSCBW (int player, unit aiUnit, unitgroup scanGroup) {
         return;
     }
 
-    mark = AIMarker(aiUnit, c_BWMK_QueenSCBWParasite);
-    ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
+    energy = UnitGetPropertyInt(aiUnit, c_unitPropEnergy, c_unitPropCurrent);
+
+    // Check if Ensnare exists, if it does we set a higher energy threshold to prefer Ensnare
     if (ord != null) {
-        if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
-            cooldown = 20.0;
+        if (energy >= 175) {
+            mark = AIMarker(aiUnit, c_BWMK_QueenSCBWParasite);
+            ord = BWQueenParasite(player, aiUnit, scanGroup, mark);
+            if (ord != null) {
+                if (AIIsCampaign(player) && AIPlayerDifficulty(player) < c_campAdvanced) {
+                    cooldown = 120.0;
+                }
+                else {
+                    cooldown = 60.0;
+                }
+                AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
+                return;
+            }
         }
-        else {
-            cooldown = 10.0;
-        }
-        AICastCooldown(aiUnit, ord, mark, c_castRetreat, c_BWParasiteCooldown, cooldown);
-        return;
     }
 }
 
