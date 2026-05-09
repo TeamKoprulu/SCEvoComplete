@@ -13,7 +13,7 @@ void ExtensionInit(){
     trigger t;
     int i;
 
-    Extension_BankSaveSkinPointer = Extension_BankSaveSkin;
+    Extension_BankSaveSkinPointer = Extension_BankSaveSkins;
 
     t = TriggerCreate("Extension_MapInit_Func");
     TriggerAddEventMapInit(t);
@@ -118,7 +118,7 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
             kopruluSkin = gv_KopruluSkins[k];
             if(BankKeyExists(playerBank, c_extBankSectionSkins, kopruluSkin.id)){
                 if(BankValueGetAsInt(playerBank, c_extBankSectionSkins, kopruluSkin.id) == 1){
-                    libSCEV_gf_SkinsEquipSkinOnline(true, kopruluSkin.id, tmp_player);
+                    libSCEV_gf_SkinsEquipSkin(true, kopruluSkin.id, tmp_player);
                     // KopruluSkinsToggleSkin(tmp_player, kopruluSkin, true);
                     // DialogControlSetPropertyAsBool(kopruluSkin.menuControl, c_triggerControlPropertyChecked, PlayerGroupSingle(tmp_player), true);
                 }
@@ -144,23 +144,15 @@ bool Extension_DelayedStart_Func(bool test_conds, bool run_actions) {
     return true;
 }
 
-void Extension_BankSaveSkin(int player, string key, int value){
-
+void Extension_BankSaveSkins(int player){
     bank ExtensionBank = gv_extensionBank[player];
 
     if(!BankSectionExists(ExtensionBank, c_extBankSectionOptions)){
         BankValueSetFromFixed(ExtensionBank, c_extBankSectionOptions, c_extBankKeyVersion, c_extOptionsVersion);
     }
 
-    if(value == 1){ 
-        BankValueSetFromInt(ExtensionBank, c_extBankSectionSkins, key, value);
-    }
-    else{
-        if(BankKeyExists(ExtensionBank, c_extBankSectionSkins, key)) {
-            BankKeyRemove(ExtensionBank, c_extBankSectionSkins, key);
-        }
-    }
-    
+    libSCEV_gf_SkinsStoreAllSkinsToBank(player, ExtensionBank);
+
     BankSave(ExtensionBank);
     DYB_BankBackupsClear(player, ExtensionBank, 1);
     DYB_BankBackup(player, ExtensionBank, 1);
