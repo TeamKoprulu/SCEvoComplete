@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+    <CEffectModifyUnit id="ShieldBatterySCBWMatrixHarmonics">
+        <ValidatorArray value="ShieldBatterySCBWMatrixHarmonics@Range"/>
+        <EditorCategories value="Race:Protoss"/>
+        <VitalArray index="Energy">
+            <Change value="50"/>
+        </VitalArray>
+    </CEffectModifyUnit>
+    <CValidatorLocationEnumArea id="ShieldBatterySCBWMatrixHarmonics@Range">
+        <ResultFailed value="TargetIsOutOfRange,Error/BatteryMustBeNearNexus"/>
+        <AreaArray>
+            <Compare value="GE"/>
+            <Count value="1"/>
+            <Radius value="12"/>
+            <Validator value="NexusSCBW@Is"/>
+        </AreaArray>
+        <Compare value="GE"/>
+        <Count value="1"/>
+        <SearchFilters value="Ground,Structure;Ally,Neutral,Enemy,Air,Worker,RawResource,HarvestableResource,Missile,Destructible,Dead"/>
+    </CValidatorLocationEnumArea>
+    <CButton id="ShieldBatterySCBWMatrixHarmonics" parent="SCBW_PassiveInfo">
+        <Icon value="Assets\Textures\btn-ability-protoss-resonantmatrix.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-protoss-resonantmatrix.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CButton id="ShieldBatterySCBWMatrixHarmonics@InfoNexus" parent="SCBW_PassiveInfo">
+        <Icon value="Assets\Textures\btn-ability-protoss-resonantmatrix.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-protoss-resonantmatrix.dds"/>
+        <EditorCategories value="Race:Protoss"/>
+    </CButton>
+    <CActorEventMacro id="ShieldBatterySCBWMatrixHarmonics@Macro">
+        <On Terms="ActorCreation" Target="::external.ShieldBatterySCBWMatrixHarmonics@ActorList" Send="Signal ShieldBatteryPlacementOn"/>
+        <On Terms="ActorDestruction" Target="::external.ShieldBatterySCBWMatrixHarmonics@ActorList" Send="Signal ShieldBatteryPlacementOff"/>
+        <On Terms="ActorCreation" Send="TimerSet 0.062500 MatrixHarmonicsSearch"/>
+        <On Terms="TimerExpired; TimerName MatrixHarmonicsSearch" Send="TimerSet 0.062500 MatrixHarmonicsSearch"/>
+        <On Terms="TimerExpired; TimerName MatrixHarmonicsSearch; !ValidatePosition ShieldBatterySCBWMatrixHarmonics@Range" Send="StatusSet MatrixHarmonics 0"/>
+        <On Terms="TimerExpired; TimerName MatrixHarmonicsSearch; ValidatePosition ShieldBatterySCBWMatrixHarmonics@Range" Send="StatusSet MatrixHarmonics 1"/>
+        <!--On Terms="StatusSet.*.NexusOvercharge; IsStatus MatrixHarmonics 0; !Option Model Low" Send="ModelSwap ShieldBatteryPlacement"/>
+        <On Terms="StatusSet.*.NexusOvercharge; IsStatus MatrixHarmonics 1; !Option Model Low" Send="ModelSwap ShieldBattery_Placement_Overcharged"/-->
+        <On Terms="StatusSet.*.MatrixHarmonics; IsStatus MatrixHarmonics 0" Send="ClearTintColor 0.000000 MatrixHarmonics"/>
+        <On Terms="StatusSet.*.MatrixHarmonics; IsStatus MatrixHarmonics 1" Send="SetTintColor {0,255,128 1.500000} 0.000000 OneShot MatrixHarmonics"/>
+    </CActorEventMacro>
+    <CActorRange id="ShieldBatterySCBWMatrixHarmonics@Range">
+        <Flags index="SuppressSaveLoad" value="1"/>
+        <Filter index="Ally" value="1"/>
+        <Filter index="Neutral" value="1"/>
+        <Filter index="Enemy" value="1"/>
+        <On Terms="ActorOrphan" Send="Destroy"/>
+        <On Terms="SelectionLocalUpdate.NexusSCBW.Start" Send="Create"/>
+        <On Terms="SelectionLocalUpdate.NexusSCBW.Stop" Send="Destroy"/>
+        <Range value="11.800000"/>
+        <Icon value="Assets\Textures\RadarIcon2.dds"/>
+        <IconArcLength value="1.750000"/>
+    </CActorRange>
+    <CActorList id="ShieldBatterySCBWMatrixHarmonics@ActorList">
+        <On Terms="ActorCreation" Send="ExternalFinderAdd"/>
+        <On Terms="Signal.*.NexusAddMe" Send="RefSetFromMsg ::actor.NexusToAdd ::Sender"/>
+        <On Terms="Signal.*.NexusAddMe" Send="ListAdd ::actor.NexusToAdd"/>
+        <On Terms="Signal.*.NexusAddMe; IsStatus TargetOn 1" Target="::actor.NexusToAdd" Send="Create ShieldBatterySCBWMatrixHarmonics@Range"/>
+        <On Terms="Signal.*.NexusRemoveMe" Send="RefSetFromMsg ::actor.NexusToRemove ::Sender"/>
+        <On Terms="Signal.*.NexusRemoveMe" Send="ListRemove ::actor.NexusToRemove"/>
+        <On Terms="Signal.*.ShieldBatteryPlacementOn" Target="::Contents" Send="Create ShieldBatterySCBWMatrixHarmonics@Range"/>
+        <On Terms="Signal.*.ShieldBatteryPlacementOff" Target="::Contents" Send="Signal DestroyMatrixHarmonicsRange"/>
+        <On Terms="GameInitialize" Send="Create"/>
+    </CActorList>
+    <CDataCollectionAbil id="ShieldBatterySCBWMatrixHarmonics">
+        <EditorCategories value="DataGroup:Unit,Race:Protoss,DataFamily:Melee,ObjectType:Unit"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWMatrixHarmonics@Range"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWMatrixHarmonics@ActorList"/>
+        <DataRecord Entry="Actor,ShieldBatterySCBWMatrixHarmonics@Macro"/>
+        <DataRecord Entry="Behavior,ShieldBatterySCBWMatrixHarmonics"/>
+        <DataRecord Entry="Button,ShieldBatterySCBWMatrixHarmonics"/>
+        <DataRecord Entry="Button,ShieldBatterySCBWMatrixHarmonics@InfoNexus"/>
+        <DataRecord Entry="Effect,ShieldBatterySCBWMatrixHarmonics"/>
+        <DataRecord Entry="Validator,ShieldBatterySCBWMatrixHarmonics@Range"/>
+    </CDataCollectionAbil>
+    <CBehaviorBuff id="ShieldBatterySCBWMatrixHarmonics">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <Duration value="0.01"/>
+        <ExpireEffect value="ShieldBatterySCBWMatrixHarmonics"/>
+    </CBehaviorBuff>
+</Catalog>

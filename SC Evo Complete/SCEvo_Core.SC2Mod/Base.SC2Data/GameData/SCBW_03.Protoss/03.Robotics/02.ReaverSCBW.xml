@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectApplyBehavior id="ReaverSCBWWeapon@LaunchSuccess">
+        <EditorCategories value="Race:Protoss"/>
+        <WhichUnit Value="Caster"/>
+    </CEffectApplyBehavior>
     <CEffectUserData id="ReaverSCBWHangar@ScarabCounterAdd">
         <EditorCategories value="Race:Protoss"/>
         <Key value="ScarabCounter"/>
@@ -111,6 +115,7 @@
         <ImpactUnit Value="Caster"/>
         <Weapon Weapon="ReaverSCBWWeapon@NoScan" CooldownOperation="Set"/>
         <Weapon Weapon="ReaverSCBWWeapon" CooldownOperation="Set"/>
+        <ValidatorArray value="ReaverSCBWWeapon@ChaseCanReset"/>
     </CEffectModifyUnit>
     <CEffectCancelOrder id="ReaverSCBWWeapon@CancelAttackOrders">
         <EditorCategories value="Race:Protoss"/>
@@ -307,6 +312,7 @@
         <EffectArray value="ReaverSCBWWeapon@Cancelable"/>
         <EffectArray value="ReaverSCBWWeapon@Backswing"/>
         <EffectArray value="ReaverSCBWWeapon@TargetLockedOn"/>
+        <EffectArray value="ReaverSCBWWeapon@LaunchSuccess"/>
         <ValidatorArray value="ReaverSCBWHangar@Armed"/>
         <ValidatorArray value="ReaverSCBWWeapon@ScarabNotLive"/>
     </CEffectSet>
@@ -475,6 +481,13 @@
         <CmdButtonArray index="Towards" DefaultButtonFace="ReaverSCBWWeapon@AttackTowards"/>
         <CmdButtonArray index="Barrage" DefaultButtonFace="ReaverSCBWWeapon@AttackGround"/>
     </CAbilAttack>
+    <CValidatorUnitCompareBehaviorCount id="ReaverSCBWWeapon@ChaseCanReset">
+        <WhichUnit Value="Caster"/>
+        <Behavior value="ReaverSCBWWeapon@LaunchSuccess"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitInWeaponRange id="ReaverSCBWWeapon@ChaseCancelWeaponRange">
+        <OtherUnit Effect="ReaverSCBWWeapon@ChaseTracker"/>
+    </CValidatorUnitInWeaponRange>
     <CValidatorUnitType id="ReaverSCBW@Is" parent="SCBW_Unit" x="ReaverSCBW"/>
     <CValidatorUnitType id="ReaverSCBW@Not" parent="SCBW_UnitNot" x="ReaverSCBW"/>
     <CValidatorCombine id="ReaverSCBWWeapon@TeleportTrackValidateCaster">
@@ -512,7 +525,7 @@
     <CValidatorCombine id="ReaverSCBWWeapon@ChaseCancelTest">
         <Type value="And"/>
         <CombineArray value="ReaverSCBWWeapon@ChaseCancelCliff"/>
-        <CombineArray value="ReaverSCBWWeapon@ChaseCancelRange"/>
+        <CombineArray value="ReaverSCBWWeapon@ChaseCancelWeaponRange"/>
     </CValidatorCombine>
     <CValidatorCombine id="ReaverSCBWWeapon@ChaseCancelValidate">
         <Type value="And"/>
@@ -532,6 +545,12 @@
         <Behavior value="ReaverSCBWWeapon@LaunchAttempt"/>
         <WhichUnit Value="Caster"/>
     </CValidatorUnitCompareBehaviorCount>
+    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@ChaseCancelRange">
+        <WhichLocation Effect="ReaverSCBWWeapon@ChaseTracker" Value="TargetUnitOrPoint"/>
+        <Compare value="LE"/>
+        <Range value="8.75"/>
+        <Value Value="CasterUnitOrPoint"/>
+    </CValidatorLocationCompareRange>
     <CValidatorLocationCompareRange id="ReaverSCBWWeapon@LaunchCheckPathing">
         <Compare value="LE"/>
         <Range value="13"/>
@@ -541,12 +560,6 @@
     <CValidatorLocationCompareRange id="ReaverSCBWWeapon@ChaseCancelPathing" parent="ReaverSCBWWeapon@LaunchCheckPathing">
         <WhichLocation Effect="ReaverSCBWWeapon@ChaseTracker"/>
         <Range value="12.5"/>
-    </CValidatorLocationCompareRange>
-    <CValidatorLocationCompareRange id="ReaverSCBWWeapon@ChaseCancelRange">
-        <WhichLocation Effect="ReaverSCBWWeapon@ChaseTracker"/>
-        <Compare value="LE"/>
-        <Range value="8.75"/>
-        <Value Value="CasterPoint"/>
     </CValidatorLocationCompareRange>
     <CValidatorCombine id="ReaverSCBWWeapon@LaunchCheckTest">
         <Type value="And"/>
@@ -1069,6 +1082,7 @@
     <CWeaponLegacy id="ReaverSCBWWeapon">
         <EditorCategories value="Race:Protoss"/>
         <Options index="Hidden" value="1"/>
+        <Options index="LinkedCooldown" value="0"/>
         <Icon value="Assets\Textures\btn-ability-protoss-scarabshot.dds"/>
         <DisplayEffect value="ScarabSCBWWeapon@Damage"/>
         <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
@@ -1091,6 +1105,7 @@
         <Effect value="ReaverSCBWWeapon@Launch"/>
         <DamagePoint value="0.0625"/>
         <Options index="Hidden" value="0"/>
+        <Options index="LinkedCooldown" value="1"/>
         <Options index="DisplayCooldown" value="1"/>
         <MinScanRange value="0"/>
         <Backswing value="0.5"/>
@@ -1102,7 +1117,6 @@
         <MinScanRange value="0"/>
         <Effect value=""/>
         <AcquireProvokeFilters value="-;Player,Ally,Neutral,Enemy"/>
-        <Options index="LinkedCooldown" value="0"/>
     </CWeaponLegacy>
     <CMoverMissile id="ReaverSCBWWeapon@Mover">
         <MotionPhases>
@@ -1267,6 +1281,7 @@
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@LaunchNoPath"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@Disable"/>
         <DataRecord Entry="Behavior,ReaverSCBWWeapon@NoOrders"/>
+        <DataRecord Entry="Behavior,ReaverSCBWWeapon@LaunchSuccess"/>
         <DataRecord Entry="Button,ReaverSCBWWeapon@Chase"/>
         <DataRecord Entry="Button,ReaverSCBWWeapon@Attack"/>
         <DataRecord Entry="Button,ReaverSCBWWeapon@AttackTowards"/>
@@ -1335,6 +1350,7 @@
         <DataRecord Entry="Effect,ReaverSCBWWeapon@EnumScarabsStop"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@SetCooldown"/>
         <DataRecord Entry="Effect,ReaverSCBWWeapon@TeleportTrackSet"/>
+        <DataRecord Entry="Effect,ReaverSCBWWeapon@LaunchSuccess"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@TargetWarningIndicator"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@UnloadStun"/>
         <DataRecord Entry="Model,ReaverSCBWWeapon@ImpactDud"/>
@@ -1361,6 +1377,7 @@
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabWarningFilter"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackValidator"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@UnloadStun"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelWeaponRange"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackValidateCaster"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackCheck"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabTargetNotVisible"/>
@@ -1369,10 +1386,10 @@
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelChasm"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelCliff"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelTest"/>
-        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelRange"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelValidate"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelCondition"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseTracker"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelRange"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCancelPathing"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckTest"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@LaunchCheckReachableNegate"/>
@@ -1389,6 +1406,7 @@
         <DataRecord Entry="Validator,ReaverSCBWWeapon@ScarabIsLive"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackDistanceFromScarab"/>
         <DataRecord Entry="Validator,ReaverSCBWWeapon@TeleportTrackDistance"/>
+        <DataRecord Entry="Validator,ReaverSCBWWeapon@ChaseCanReset"/>
         <DataRecord Entry="Weapon,ReaverSCBWWeapon@NoScan"/>
         <DataRecord Entry="Weapon,ReaverSCBWWeapon"/>
         <DataRecord Entry="Weapon,ReaverSCBWWeapon@Dummy"/>
@@ -1550,6 +1568,12 @@
         <AcquireLeashResetRadius value="2.5"/>
         <UserFlagArray index="User15" value="1"/>
     </CUnit>
+    <!--Match to weapon cooldown-->
+    <CBehaviorBuff id="ReaverSCBWWeapon@LaunchSuccess">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <Duration value="3.5"/>
+    </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@LaunchNoPath">
         <EditorCategories value="Race:Protoss,AbilityorEffectType:Units"/>
         <Duration value="0.0625"/>
@@ -1632,6 +1656,8 @@
             <StateFlags index="SuppressCombat" value="1"/>
             <StateFlags index="SuppressFidgeting" value="1"/>
         </Modification>
+        <PeriodCount value="1"/>
+        <PeriodicEffect value="ReaverSCBWWeapon@LaunchSuccess"/>
     </CBehaviorBuff>
     <CBehaviorBuff id="ReaverSCBWWeapon@TrackTargetPosition">
         <Alignment value="Negative"/>
