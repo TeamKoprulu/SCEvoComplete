@@ -3644,6 +3644,9 @@ void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate) {
     unitgroup auto6862E83F_g;
     int auto6862E83F_u;
     unit auto6862E83F_var;
+    unitgroup auto07C2E423_g;
+    int auto07C2E423_u;
+    unit auto07C2E423_var;
 
     // Variable Initialization
     lv_panel = c_invalidDialogControlId;
@@ -3654,6 +3657,14 @@ void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate) {
     if ((lp_activateDeactivate == true)) {
         DialogControlSetAnimationState(lv_panel, PlayerGroupAll(), "UseSegmentedWireframes", "True");
         libSCEV_gf_SegmentedWireframesInitialize(RandomInt(0, 326767));
+        auto07C2E423_g = UnitGroup(null, c_playerAny, RegionEntireMap(), libSCEV_gv_fractionalArmorFilter, 0);
+        auto07C2E423_u = UnitGroupCount(auto07C2E423_g, c_unitCountAll);
+        for (;; auto07C2E423_u -= 1) {
+            auto07C2E423_var = UnitGroupUnitFromEnd(auto07C2E423_g, auto07C2E423_u);
+            if (auto07C2E423_var == null) { break; }
+            libSCEV_gf_SegmentedWireframesStoreUnit(auto07C2E423_var);
+        }
+        TriggerEnable(libSCEV_gt_SegmentedWireframesFixUnits, true);
     }
     else {
         DialogControlSetAnimationState(lv_panel, PlayerGroupAll(), "UseSegmentedWireframes", "False");
@@ -3664,6 +3675,7 @@ void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate) {
             if (auto6862E83F_var == null) { break; }
             UnitAbilityRemove(auto6862E83F_var, "SegmentedWireframes");
         }
+        TriggerEnable(libSCEV_gt_SegmentedWireframesFixUnits, false);
     }
 }
 
@@ -3728,7 +3740,7 @@ void libSCEV_gf_SegmentedWireframesStoreUnit (unit lp_unit) {
         lv_segmentCount = lv_SEGMENT_COUNT;
     }
     lv_segmentCountMinus1 = (lv_segmentCount - 1);
-    UnitAddChargeUsed(lp_unit, "Unit/WFSegCount", (lv_SEGMENT_COUNT - lv_segmentCount));
+    UnitAbilityAddChargeUsed(lp_unit, "SegmentedWireframes", "Unit/WFSegCount", (lv_SEGMENT_COUNT - lv_segmentCount));
     lv_seed = UnitGetTag(lp_unit);
     lv_seed = lv_seed ^ (lv_seed >> 16);
     lv_seed = ModI((lv_seed + libSCEV_gv_segmentedWireframesGlobalSeed), lv_SEED_MOD);
@@ -3802,8 +3814,8 @@ void libSCEV_gf_SegmentedWireframesStoreUnit (unit lp_unit) {
     lv_redT[lv_lowestRedIndex] = 11;
     lv_index = 0;
     while ((lv_index < lv_segmentCount)) {
-        UnitAddChargeUsed(lp_unit, libSCEV_gv_segmentedWireframesDataPointers[lv_index][0], (100 - lv_yellowT[lv_index]));
-        UnitAddChargeUsed(lp_unit, libSCEV_gv_segmentedWireframesDataPointers[lv_index][1], (100 - lv_redT[lv_index]));
+        UnitAbilityAddChargeUsed(lp_unit, "SegmentedWireframes", libSCEV_gv_segmentedWireframesDataPointers[lv_index][0], (100 - lv_yellowT[lv_index]));
+        UnitAbilityAddChargeUsed(lp_unit, "SegmentedWireframes", libSCEV_gv_segmentedWireframesDataPointers[lv_index][1], (100 - lv_redT[lv_index]));
         lv_index += 1;
     }
 }
@@ -9351,6 +9363,28 @@ void libSCEV_gt_QueenInfestScoreFix_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: SegmentedWireframes:FixUnits
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_SegmentedWireframesFixUnits_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitAbilityRemove(EventPlayerEffectUsedUnit(c_effectUnitTarget), "SegmentedWireframes");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_SegmentedWireframesFixUnits_Init () {
+    libSCEV_gt_SegmentedWireframesFixUnits = TriggerCreate("libSCEV_gt_SegmentedWireframesFixUnits_Func");
+    TriggerEnable(libSCEV_gt_SegmentedWireframesFixUnits, false);
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_SegmentedWireframesFixUnits, c_playerAny, "InfestedCommandCenterSCBW@Morph");
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_SegmentedWireframesFixUnits, c_playerAny, "InfestedCommandCenterSCBW@MorphFlyer");
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: TakeCommandDetector:Init
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_TakeCommandDetectorInit_Func (bool testConds, bool runActions) {
@@ -10768,6 +10802,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MergeStatusEffectsBegin_Init();
     libSCEV_gt_MindControlStealTech_Init();
     libSCEV_gt_QueenInfestScoreFix_Init();
+    libSCEV_gt_SegmentedWireframesFixUnits_Init();
     libSCEV_gt_TakeCommandDetectorInit_Init();
     libSCEV_gt_TakeCommandDetector_Init();
     libSCEV_gt_MinimapAllyViewCameraSnap_Init();
