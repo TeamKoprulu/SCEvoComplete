@@ -9451,6 +9451,55 @@ void libSCEV_gt_ReaverPathingChase_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: ReaverPathing:Stop
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_ReaverPathingStop_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    order lv_order;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_order = EventUnitOrder();
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsSelected(EventUnit(), EventPlayer()) == true))) {
+            return false;
+        }
+
+        if (!((OrderGetFlag(lv_order, c_cmdUser) == true))) {
+            return false;
+        }
+
+        if (!((OrderGetFlag(lv_order, c_cmdAI) == false))) {
+            return false;
+        }
+
+        if (!((ValidatorExecute("ReaverSCBWWeapon@ScarabIsAlive", EventUnit(), EventUnit()) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroupSelected(EventPlayer()), c_unitCountAlive) == UnitGroupCount(UnitSubgroupSelected(EventPlayer()), c_unitCountAlive)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitCreateEffectUnit(EventUnit(), "ReaverSCBWWeapon@Stop", EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_ReaverPathingStop_Init () {
+    libSCEV_gt_ReaverPathingStop = TriggerCreate("libSCEV_gt_ReaverPathingStop_Func");
+    TriggerAddEventUnitOrder(libSCEV_gt_ReaverPathingStop, null, AbilityCommand("ReaverSCBWWeapon@Stop", 0));
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: MergeStatusEffects:Track
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_MergeStatusEffectsTrack_Func (bool testConds, bool runActions) {
@@ -11348,6 +11397,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MimicCheckSpiderMine_Init();
     libSCEV_gt_ReaverPathingCheck_Init();
     libSCEV_gt_ReaverPathingChase_Init();
+    libSCEV_gt_ReaverPathingStop_Init();
     libSCEV_gt_MergeStatusEffectsTrack_Init();
     libSCEV_gt_MergeStatusEffectsBegin_Init();
     libSCEV_gt_MindControlStealTech_Init();
