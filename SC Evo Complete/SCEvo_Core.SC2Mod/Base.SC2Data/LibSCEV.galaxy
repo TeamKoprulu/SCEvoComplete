@@ -37,6 +37,7 @@ void libSCEV_InitVariables () {
         libSCEV_gv_legacySelectionControlGroupRecallTimer[init_i] = TimerCreate();
     }
     libSCEV_gv_legacySelectionUnitGroupFrame = c_invalidDialogControlId;
+    libSCEV_gv_legacyMiningAcquireRadius = libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogValidator, "LegacyMining@MineralAcquireable", "Range", c_playerAny);
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= 1; init_j += 1) {
             libSCEV_gv_raceSupplyData[init_i][init_j].lv_ceiling = 200.0;
@@ -69,6 +70,7 @@ void libSCEV_InitVariables () {
             libSCEV_gv_segmentedWireframesDataPointers[init_i][init_j] = "";
         }
     }
+    libSCEV_gv_segmentedWireframesUIContainer = c_invalidDialogControlId;
     libSCEV_gv_takeCommandDetector = c_invalidDialogControlId;
     for (init_i = 0; init_i <= libSCEV_gv_mAX_PLAYERS; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_mAX_PLAYERS; init_j += 1) {
@@ -119,17 +121,43 @@ void libSCEV_InitVariables () {
     libSCEV_gv_skinsPreview_Panel = c_invalidDialogControlId;
     libSCEV_gv_skinsPreview_UnitModel = c_invalidDialogControlId;
     libSCEV_gv_skinsPreview_UnitLink = c_invalidDialogControlId;
-    libSCEV_gv_skinsPreview_Title = c_invalidDialogControlId;
-    libSCEV_gv_skinsPreview_Description = c_invalidDialogControlId;
     libSCEV_gv_skinsPreview_UnlockPanel = c_invalidDialogControlId;
     libSCEV_gv_skinsPreview_UnlockPanel_ProgressBar = c_invalidDialogControlId;
     libSCEV_gv_skinsPreview_EquipButton = c_invalidDialogControlId;
     libSCEV_gv_collectionsMenuButton = c_invalidDialogControlId;
+    for (init_i = 0; init_i <= libSCEV_gv_collectionsActiveCategories; init_i += 1) {
+        libSCEV_gv_collectionsCategoryLabel[init_i] = c_invalidDialogControlId;
+    }
     for (init_i = 0; init_i <= libSCEV_gv_collectionsMaxButtons; init_i += 1) {
         for (init_j = 0; init_j <= libSCEV_gv_collectionsActiveCategories; init_j += 1) {
             libSCEV_gv_collectionsSkinButton[init_i][init_j] = c_invalidDialogControlId;
         }
     }
+    for (init_i = 0; init_i <= libSCEV_gv_collectionsMaxButtons; init_i += 1) {
+        for (init_j = 0; init_j <= libSCEV_gv_collectionsActiveCategories; init_j += 1) {
+            libSCEV_gv_collectionsSkinButton_State[init_i][init_j] = libSCEV_ge_SkinsSkinState_Normal;
+        }
+    }
+    for (init_i = 0; init_i <= libSCEV_gv_collectionsMaxButtons; init_i += 1) {
+        for (init_j = 0; init_j <= libSCEV_gv_collectionsActiveCategories; init_j += 1) {
+            libSCEV_gv_collectionsSkinLabel[init_i][init_j] = c_invalidDialogControlId;
+        }
+    }
+    for (init_i = 0; init_i <= libSCEV_gv_collectionsMaxButtons; init_i += 1) {
+        for (init_j = 0; init_j <= libSCEV_gv_collectionsActiveCategories; init_j += 1) {
+            libSCEV_gv_collectionsSkinDescLabel[init_i][init_j] = c_invalidDialogControlId;
+        }
+    }
+    for (init_i = 0; init_i <= libSCEV_gv_collectionsMaxButtons; init_i += 1) {
+        for (init_j = 0; init_j <= libSCEV_gv_collectionsActiveCategories; init_j += 1) {
+            libSCEV_gv_collectionsSkinImage[init_i][init_j] = c_invalidDialogControlId;
+        }
+    }
+    libSCEV_gv_collectionsPreview_Panel = c_invalidDialogControlId;
+    libSCEV_gv_collectionsPreview_UnlockPanel = c_invalidDialogControlId;
+    libSCEV_gv_collectionsPreview_UnlockPanel_ProgressBar = c_invalidDialogControlId;
+    libSCEV_gv_collectionsPreview_EquipButton = c_invalidDialogControlId;
+    libSCEV_gv_collectionsPreview_EquipConfirmation = c_invalidDialogControlId;
 }
 
 // Custom Script
@@ -917,7 +945,7 @@ void libSCEV_gf_SCEvoActivateFeature (int lp_feature, bool lp_activateDeactivate
         TriggerEnable(libSCEV_gt_LegacyStartMovementSuppressWalk, lv_onOff);
     }
     else if ((lp_feature == libSCEV_ge_SCEvoFeatures_SegmentedWireframes)) {
-        libSCEV_gf_SegmentedWireframesActivate(lp_activateDeactivate);
+        libSCEV_gf_SegmentedWireframesActivate(lp_activateDeactivate, PlayerGroupAll());
     }
     else if (true) {
     }
@@ -1343,6 +1371,21 @@ void libSCEV_gf_LegacyIconsActivate (bool lp_activateDeactivate, playergroup lp_
         }
         DialogControlSetAnimationState(lv_panel, lp_players, "UseClassicIcons", "False");
     }
+}
+
+bool libSCEV_gf_LegacyIconsActivateForPlayer (bool lp_a, bool lp_b) {
+    // Variable Declarations
+    int lv_player;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_player = DataTableGetInt(true, libSCEV_gv_skinsFunctionRunner_Player);
+
+    // Implementation
+    DataTableValueRemove(true, libSCEV_gv_skinsFunctionRunner_Player);
+    libSCEV_gf_LegacyIconsActivate(true, PlayerGroupSingle(lv_player));
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
 }
 
 bool libSCEV_gf_LegacyCheatActivated (string lp_cheat, int lp_player) {
@@ -1896,6 +1939,35 @@ int libSCEV_gf_LegacySelectionGetControlGroupIndex (int lp_hotkey) {
     }
 }
 
+void libSCEV_gf_LegacyMiningActivate (bool lp_activateDeactivate) {
+    // Variable Declarations
+    string lv_instance;
+
+    // Automatic Variable Declarations
+    string auto25C02DD6_userType;
+    int auto25C02DD6_i;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((libSCEV_gv_legacyMiningActivated == false)) {
+        libSCEV_gv_legacyMiningActivated = true;
+        auto25C02DD6_userType = "LegacyMining@GatherAbils";
+        auto25C02DD6_i = 1;
+        for ( ; auto25C02DD6_i <= UserDataInstanceCount(auto25C02DD6_userType) ; auto25C02DD6_i += 1 ) {
+            lv_instance = UserDataInstance(auto25C02DD6_userType, auto25C02DD6_i);
+            libSCEV_gf_TriggerAddEventUnitAbility(libSCEV_gt_LegacyMiningWorkerBounce, UserDataGetAbilCmd("LegacyMining@GatherAbils", lv_instance, "Ability", 1), c_abilHarvestStageWaitAtResource, false);
+        }
+    }
+
+    if ((lp_activateDeactivate == true)) {
+        TriggerEnable(libSCEV_gt_LegacyMiningWorkerBounce, true);
+    }
+    else {
+        TriggerEnable(libSCEV_gt_LegacyMiningWorkerBounce, false);
+    }
+}
+
 void libSCEV_gf_InfiniteMoneyMapCheck () {
     // Automatic Variable Declarations
     // Implementation
@@ -2073,6 +2145,8 @@ void libSCEV_gf_RaceSupplyCatalogUpdate (int lp_player, int lp_raceGroup, bool l
     // Automatic Variable Declarations
     int autoBE7EF045_catalog;
     int autoBE7EF045_i;
+    playergroup autoBBCEF5CD_g;
+    int autoBBCEF5CD_var;
 
     // Variable Initialization
     lv_catalog = c_gameCatalogUnit;
@@ -2171,8 +2245,14 @@ void libSCEV_gf_RaceSupplyCatalogUpdate (int lp_player, int lp_raceGroup, bool l
             libNtve_gf_CatalogFieldValueSetAsReal(c_gameCatalogEffect, lv_gameLink, "DrainResourceCostFactor[" + IntToString(3) + "]", lp_player, libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogEffect, lv_gameLink, "DrainResourceCostFactor[" + IntToString(3) + "]", c_playerAny));
         }
         else {
-            libNtve_gf_CatalogFieldValueSetAsReal(c_gameCatalogEffect, lv_gameLink, "DrainResourceCostFactor[" + IntToString(2) + "]", lp_player, 0.0);
-            libNtve_gf_CatalogFieldValueSetAsReal(c_gameCatalogEffect, lv_gameLink, "DrainResourceCostFactor[" + IntToString(3) + "]", lp_player, 0.0);
+            autoBBCEF5CD_g = PlayerGroupAll();
+            autoBBCEF5CD_var = -1;
+            while (true) {
+                autoBBCEF5CD_var = PlayerGroupNextPlayer(autoBBCEF5CD_g, autoBBCEF5CD_var);
+                if (autoBBCEF5CD_var < 0) { break; }
+                libNtve_gf_CatalogFieldValueSetAsReal(c_gameCatalogEffect, lv_gameLink, "DrainResourceCostFactor[" + IntToString(2) + "]", autoBBCEF5CD_var, 0.0);
+                libNtve_gf_CatalogFieldValueSetAsReal(c_gameCatalogEffect, lv_gameLink, "DrainResourceCostFactor[" + IntToString(3) + "]", autoBBCEF5CD_var, 0.0);
+            }
         }
         lv_k += 1;
         lv_gameLink = StringWord(lv_loopLinks, lv_k);
@@ -3472,6 +3552,36 @@ void libSCEV_gf_ClassicMineralsSkinActivate (playergroup lp_playerGroup, bool lp
     }
 }
 
+bool libSCEV_gf_ClassicMineralsSkinEquipBWOre (bool lp_a, bool lp_b) {
+    // Variable Declarations
+    int lv_player;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_player = DataTableGetInt(true, libSCEV_gv_skinsFunctionRunner_Player);
+
+    // Implementation
+    DataTableValueRemove(true, libSCEV_gv_skinsFunctionRunner_Player);
+    libSCEV_gf_ClassicMineralsSkinActivate(PlayerGroupSingle(lv_player), true);
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
+bool libSCEV_gf_ClassicMineralsSkinEquipSC2Ore (bool lp_a, bool lp_b) {
+    // Variable Declarations
+    int lv_player;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_player = DataTableGetInt(true, libSCEV_gv_skinsFunctionRunner_Player);
+
+    // Implementation
+    DataTableValueRemove(true, libSCEV_gv_skinsFunctionRunner_Player);
+    libSCEV_gf_ClassicMineralsSkinActivate(PlayerGroupSingle(lv_player), false);
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
 bool libSCEV_gf_StringOnlyNumbers (string lp_string) {
     // Variable Declarations
     int lv_i;
@@ -3546,6 +3656,12 @@ bool libSCEV_gf_GameIsOnline () {
     else {
         return false;
     }
+}
+
+void libSCEV_gf_TriggerAddEventUnitAbility (trigger lp_trigger, abilcmd lp_ability, int lp_stage, bool lp_includeSharedAbilities) {
+    // Automatic Variable Declarations
+    // Implementation
+    TriggerAddEventUnitAbility(lp_trigger, null, lp_ability, lp_stage, lp_includeSharedAbilities);
 }
 
 int libSCEV_gf_UnitTagRecycle (unit lp_u) {
@@ -3636,10 +3752,7 @@ void libSCEV_gf_SegmentedWireframesInitialize (int lp_globalSeed) {
 
 }
 
-void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate) {
-    // Variable Declarations
-    int lv_panel;
-
+void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate, playergroup lp_players) {
     // Automatic Variable Declarations
     unitgroup auto6862E83F_g;
     int auto6862E83F_u;
@@ -3648,14 +3761,13 @@ void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate) {
     int auto07C2E423_u;
     unit auto07C2E423_var;
 
-    // Variable Initialization
-    lv_panel = c_invalidDialogControlId;
-
     // Implementation
-    DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer");
-    lv_panel = DialogControlLastCreated();
+    if ((libSCEV_gv_segmentedWireframesUIContainer == c_invalidDialogControlId)) {
+        DialogControlHookupStandard(c_triggerControlTypePanel, "UIContainer");
+        libSCEV_gv_segmentedWireframesUIContainer = DialogControlLastCreated();
+    }
+
     if ((lp_activateDeactivate == true)) {
-        DialogControlSetAnimationState(lv_panel, PlayerGroupAll(), "UseSegmentedWireframes", "True");
         libSCEV_gf_SegmentedWireframesInitialize(RandomInt(0, 326767));
         auto07C2E423_g = UnitGroup(null, c_playerAny, RegionEntireMap(), libSCEV_gv_fractionalArmorFilter, 0);
         auto07C2E423_u = UnitGroupCount(auto07C2E423_g, c_unitCountAll);
@@ -3667,7 +3779,7 @@ void libSCEV_gf_SegmentedWireframesActivate (bool lp_activateDeactivate) {
         TriggerEnable(libSCEV_gt_SegmentedWireframesFixUnits, true);
     }
     else {
-        DialogControlSetAnimationState(lv_panel, PlayerGroupAll(), "UseSegmentedWireframes", "False");
+        DialogControlSetAnimationState(libSCEV_gv_segmentedWireframesUIContainer, lp_players, "UseSegmentedWireframes", "False");
         auto6862E83F_g = libSCEV_gv_segmentedWireframesUnits;
         auto6862E83F_u = UnitGroupCount(auto6862E83F_g, c_unitCountAll);
         for (;; auto6862E83F_u -= 1) {
@@ -3818,6 +3930,36 @@ void libSCEV_gf_SegmentedWireframesStoreUnit (unit lp_unit) {
         UnitAbilityAddChargeUsed(lp_unit, "SegmentedWireframes", libSCEV_gv_segmentedWireframesDataPointers[lv_index][1], (100 - lv_redT[lv_index]));
         lv_index += 1;
     }
+}
+
+bool libSCEV_gf_SegmentedWireframesEquip (bool lp_a, bool lp_b) {
+    // Variable Declarations
+    int lv_player;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_player = DataTableGetInt(true, libSCEV_gv_skinsFunctionRunner_Player);
+
+    // Implementation
+    DataTableValueRemove(true, libSCEV_gv_skinsFunctionRunner_Player);
+    DialogControlSetAnimationState(libSCEV_gv_segmentedWireframesUIContainer, PlayerGroupSingle(lv_player), "UseSegmentedWireframes", "True");
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
+}
+
+bool libSCEV_gf_SegmentedWireframesUnequip (bool lp_a, bool lp_b) {
+    // Variable Declarations
+    int lv_player;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_player = DataTableGetInt(true, libSCEV_gv_skinsFunctionRunner_Player);
+
+    // Implementation
+    DataTableValueRemove(true, libSCEV_gv_skinsFunctionRunner_Player);
+    DialogControlSetAnimationState(libSCEV_gv_segmentedWireframesUIContainer, PlayerGroupSingle(lv_player), "UseSegmentedWireframes", "False");
+    TriggerDestroy(TriggerGetCurrent());
+    return true;
 }
 
 void libSCEV_gf_TakeCommandDetected (trigger t) {
@@ -3973,6 +4115,8 @@ void libSCEV_gf_CustomizeMenuDisplay (bool lp_showHide, playergroup lp_players) 
         TriggerEnable(libSCEV_gt_SkinsUnitListboxToggles, true);
         TriggerEnable(libSCEV_gt_SkinsSkinListItemButtonResponses, true);
         TriggerEnable(libSCEV_gt_SkinsEquipButtonResponses, true);
+        TriggerEnable(libSCEV_gt_CollectionsEquipButtonResponses, true);
+        TriggerEnable(libSCEV_gt_CollectionsListItemButtonResponses, true);
         if ((lv_gameIsOnline == true)) {
             UISetCommandAllowed(lp_players, c_uiCommandAllowSmartClick, false);
             UISetCommandAllowed(lp_players, c_uiCommandAllowHotkeys, false);
@@ -3982,6 +4126,7 @@ void libSCEV_gf_CustomizeMenuDisplay (bool lp_showHide, playergroup lp_players) 
         else {
             TriggerEnable(libSCEV_gt_DifficultyOptionsResponses, true);
         }
+        TriggerEnable(libSCEV_gt_CollectionsCollectionMenuToggle, true);
     }
     else {
         DialogControlSetAnimationState(libSCEV_gv_customizeMenuPanel, lp_players, "CustomizeMenuVisible", "False");
@@ -4014,6 +4159,9 @@ void libSCEV_gf_CustomizeMenuDisplay (bool lp_showHide, playergroup lp_players) 
         TriggerEnable(libSCEV_gt_SkinsSkinListItemButtonResponses, false);
         TriggerEnable(libSCEV_gt_SkinsEquipButtonResponses, false);
         TriggerEnable(libSCEV_gt_DifficultyOptionsResponses, false);
+        TriggerEnable(libSCEV_gt_CollectionsCollectionMenuToggle, false);
+        TriggerEnable(libSCEV_gt_CollectionsEquipButtonResponses, false);
+        TriggerEnable(libSCEV_gt_CollectionsListItemButtonResponses, false);
     }
 }
 
@@ -4051,6 +4199,10 @@ void libSCEV_gf_CustomizeMenuCreate () {
     int auto12758DF7_var;
     const int autoFD318405_ae = 9;
     int autoFD318405_var;
+    const int auto4AE64770_ae = 3;
+    const int auto4AE64770_ai = 1;
+    const int autoB047DE11_ae = 2;
+    int autoB047DE11_var;
     const int auto284708DD_ae = 3;
     const int auto284708DD_ai = 1;
 
@@ -4094,6 +4246,10 @@ void libSCEV_gf_CustomizeMenuCreate () {
     libSCEV_gv_customizeMenuRestoreButton = DialogControlLastCreated();
     DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "DifficultyTab");
     libSCEV_gv_difficultyOptionsMenuButton = DialogControlLastCreated();
+    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "SkinsTab");
+    libSCEV_gv_skinsMenuButton = DialogControlLastCreated();
+    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "CollectionsTab");
+    libSCEV_gv_collectionsMenuButton = DialogControlLastCreated();
     if ((lv_gameIsOnline == true)) {
         DialogControlSetEnabled(libSCEV_gv_difficultyOptionsMenuButton, PlayerGroupAll(), false);
     }
@@ -4180,8 +4336,6 @@ void libSCEV_gf_CustomizeMenuCreate () {
 
     DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypePanel, "TabContainer/CustomizePanel_Skins");
     lv_skinsMenuContainer = DialogControlLastCreated();
-    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypeButton, "SkinsTab");
-    libSCEV_gv_skinsMenuButton = DialogControlLastCreated();
     libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_SkinsSkinsMenuToggle, c_playerAny, libSCEV_gv_skinsMenuButton, c_triggerControlEventTypeClick);
     DialogControlSetEnabled(libSCEV_gv_skinsMenuButton, PlayerGroupAll(), true);
     DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, "TerranButton");
@@ -4219,8 +4373,6 @@ void libSCEV_gf_CustomizeMenuCreate () {
     libSCEV_gv_skinsPreview_Panel = DialogControlLastCreated();
     DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeEditBox, libNtve_gf_ConvertStringToUILayoutFrameName("PreviewPanel/UnitLink"));
     libSCEV_gv_skinsPreview_UnitLink = DialogControlLastCreated();
-    DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeLabel, "PreviewPanel/PreviewDescription");
-    libSCEV_gv_skinsPreview_Description = DialogControlLastCreated();
     DialogControlHookup(lv_skinsMenuContainer, c_triggerControlTypeButton, "PreviewPanel/EquipButton");
     libSCEV_gv_skinsPreview_EquipButton = DialogControlLastCreated();
     DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupAll(), false);
@@ -4229,6 +4381,35 @@ void libSCEV_gf_CustomizeMenuCreate () {
     libSCEV_gv_skinsPreview_UnlockPanel = DialogControlLastCreated();
     DialogControlHookup(libSCEV_gv_skinsPreview_UnlockPanel, c_triggerControlTypePanel, "ProgressBar");
     libSCEV_gv_skinsPreview_UnlockPanel_ProgressBar = DialogControlLastCreated();
+
+    DialogControlHookup(lv_mainOptionsPanel, c_triggerControlTypePanel, "TabContainer/CustomizePanel_Collections");
+    lv_collectionMenuContainer = DialogControlLastCreated();
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_CollectionsCollectionMenuToggle, c_playerAny, libSCEV_gv_collectionsMenuButton, c_triggerControlEventTypeClick);
+    DialogControlSetEnabled(libSCEV_gv_collectionsMenuButton, PlayerGroupAll(), true);
+    lv_indexCategory = 1;
+    for ( ; ( (auto4AE64770_ai >= 0 && lv_indexCategory <= auto4AE64770_ae) || (auto4AE64770_ai < 0 && lv_indexCategory >= auto4AE64770_ae) ) ; lv_indexCategory += auto4AE64770_ai ) {
+        DialogControlHookup(lv_collectionMenuContainer, c_triggerControlTypeLabel, libNtve_gf_ConvertStringToUILayoutFrameName(("CollectionsListboxPanel/ContainerFrame/CategoryContainer" + IntToString(lv_indexCategory) + "/CategoryHeaderLabel")));
+        libSCEV_gv_collectionsCategoryLabel[lv_indexCategory] = DialogControlLastCreated();
+        autoB047DE11_var = 1;
+        for ( ; autoB047DE11_var <= autoB047DE11_ae; autoB047DE11_var += 1 ) {
+            DialogControlHookup(lv_collectionMenuContainer, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName(("CollectionsListboxPanel/ContainerFrame/CategoryContainer" + IntToString(lv_indexCategory) + "/ListboxItem" + IntToString(autoB047DE11_var))));
+            libSCEV_gv_collectionsSkinButton[autoB047DE11_var][lv_indexCategory] = DialogControlLastCreated();
+            DialogControlHookup(libSCEV_gv_collectionsSkinButton[autoB047DE11_var][lv_indexCategory], c_triggerControlTypeLabel, libNtve_gf_ConvertStringToUILayoutFrameName("TitleLabel"));
+            libSCEV_gv_collectionsSkinLabel[autoB047DE11_var][lv_indexCategory] = DialogControlLastCreated();
+            DialogControlHookup(libSCEV_gv_collectionsSkinButton[autoB047DE11_var][lv_indexCategory], c_triggerControlTypeLabel, libNtve_gf_ConvertStringToUILayoutFrameName("DescLabel"));
+            libSCEV_gv_collectionsSkinDescLabel[autoB047DE11_var][lv_indexCategory] = DialogControlLastCreated();
+            DialogControlHookup(libSCEV_gv_collectionsSkinButton[autoB047DE11_var][lv_indexCategory], c_triggerControlTypeImage, libNtve_gf_ConvertStringToUILayoutFrameName("CollectionThumbnail"));
+            libSCEV_gv_collectionsSkinImage[autoB047DE11_var][lv_indexCategory] = DialogControlLastCreated();
+            libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_CollectionsListItemButtonResponses, c_playerAny, libSCEV_gv_collectionsSkinButton[autoB047DE11_var][lv_indexCategory], c_triggerControlEventTypeClick);
+        }
+    }
+    DialogControlHookup(lv_collectionMenuContainer, c_triggerControlTypePanel, libNtve_gf_ConvertStringToUILayoutFrameName("PreviewPanel"));
+    libSCEV_gv_collectionsPreview_Panel = DialogControlLastCreated();
+    DialogControlHookup(libSCEV_gv_collectionsPreview_Panel, c_triggerControlTypePanel, libNtve_gf_ConvertStringToUILayoutFrameName("EquipConfirmation"));
+    libSCEV_gv_collectionsPreview_EquipConfirmation = DialogControlLastCreated();
+    DialogControlHookup(libSCEV_gv_collectionsPreview_Panel, c_triggerControlTypeButton, libNtve_gf_ConvertStringToUILayoutFrameName("EquipButton"));
+    libSCEV_gv_collectionsPreview_EquipButton = DialogControlLastCreated();
+    libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_CollectionsEquipButtonResponses, c_playerAny, libSCEV_gv_collectionsPreview_EquipButton, c_triggerControlEventTypeClick);
 
     libSCEV_gf_TriggerAddEventDialogControl(libSCEV_gt_CustomizeMenuClose, c_playerAny, libSCEV_gv_customizeMenuCloseButton, c_triggerControlEventTypeClick);
     TriggerEnable(libSCEV_gt_CustomizeMenuTakeCommand, true);
@@ -4720,18 +4901,29 @@ void libSCEV_gf_SkinsEquipSkin (bool lp_equipUnequip, string lp_skin, int lp_pla
     // Variable Declarations
     string lv_function;
     string lv_skin;
+    string lv_race;
 
     // Automatic Variable Declarations
     // Variable Initialization
-    lv_function = "";
+    lv_function = UserDataGetString("SCEV_KopruluSkins", lp_skin, "Function", 1);
     lv_skin = UserDataGetGameLink("SCEV_KopruluSkins", lp_skin, "Skin", 1);
 
     // Implementation
-    lv_function = UserDataGetString("SCEV_KopruluSkins", lp_skin, "Function", 1);
     DataTableSetBool(true, ((lp_skin) + "#" + IntToString(lp_player)), lp_equipUnequip);
-    if ((lv_function != "")) {
-        DataTableSetInt(true, "KopruluSkinsFunction_Player", lp_player);
-        DataTableSetBool(true, "KopruluSkinsFunction_State", lp_equipUnequip);
+    if ((lp_equipUnequip == true) && (UserDataGetInt("SCEV_SkinCollections", UserDataGetUserInstance("SCEV_KopruluSkins", lp_skin, "Collection", 1), "EquipConfirmation", 1) == 1) && (UserDataGetInt("SCEV_KopruluSkins", lp_skin, "IsDefault", 1) == 0)) {
+        DataTableSetBool(true, ((lp_skin) + "_PreviouslyEquipped#" + IntToString(lp_player)), true);
+    }
+
+    if ((UserDataGetInt("SCEV_KopruluSkins", lp_skin, "IsDefault", 1) == 0) && (UserDataGetInt("SCEV_KopruluSkins", lp_skin, "BWExclusive", 1) == 1)) {
+        lv_race = PlayerRace(lp_player);
+        if ((!(((lv_race == "BWPr") || (lv_race == "BWTe") || (lv_race == "BWZe"))))) {
+            return ;
+        }
+
+    }
+
+    if ((lv_function != "") && (lp_equipUnequip == true)) {
+        DataTableSetInt(true, libSCEV_gv_skinsFunctionRunner_Player, lp_player);
         TriggerExecute(TriggerCreate(lv_function), false, false);
     }
     else {
@@ -5163,6 +5355,218 @@ bool libSCEV_gf_SkinsIsSkinCampaignLocked (string lp_instance) {
     }
 }
 
+void libSCEV_gf_CollectionsInitializeCollectionMenu (playergroup lp_player) {
+    // Automatic Variable Declarations
+    playergroup autoD8A337C2_g;
+    int autoD8A337C2_var;
+
+    // Implementation
+    autoD8A337C2_g = lp_player;
+    autoD8A337C2_var = -1;
+    while (true) {
+        autoD8A337C2_var = PlayerGroupNextPlayer(autoD8A337C2_g, autoD8A337C2_var);
+        if (autoD8A337C2_var < 0) { break; }
+        if ((libSCEV_gv_collectionsMenuInitialized == false)) {
+            libSCEV_gf_CollectionsUpdateCategories(autoD8A337C2_var);
+            libSCEV_gv_collectionsMenuInitialized = true;
+        }
+
+    }
+}
+
+void libSCEV_gf_CollectionsUpdateCategories (int lp_player) {
+    // Variable Declarations
+    int lv_collectionIndex;
+    string lv_indexInstance;
+    int lv_buttonIndex;
+    text lv_categoryText;
+    string lv_skinLink;
+    bool lv_categoryHasEquipped;
+
+    // Automatic Variable Declarations
+    const int auto3A2F5A9D_ae = libSCEV_gv_collectionsActiveCategories;
+    int auto3A2F5A9D_var;
+    string auto6519A1E8_userType;
+    int auto6519A1E8_i;
+    const int autoBE686F93_ae = libSCEV_gv_collectionsActiveCategories;
+    int autoBE686F93_var;
+    string auto131350B9_userType;
+    int auto131350B9_i;
+
+    // Variable Initialization
+
+    // Implementation
+    if ((libSCEV_gv_collectionsMenuInitialized == false)) {
+        auto3A2F5A9D_var = 1;
+        for ( ; auto3A2F5A9D_var <= auto3A2F5A9D_ae; auto3A2F5A9D_var += 1 ) {
+            auto6519A1E8_userType = "SCEV_SkinCollections";
+            auto6519A1E8_i = 1;
+            for ( ; auto6519A1E8_i <= UserDataInstanceCount(auto6519A1E8_userType) ; auto6519A1E8_i += 1 ) {
+                lv_indexInstance = UserDataInstance(auto6519A1E8_userType, auto6519A1E8_i);
+                if ((UserDataGetInt("SCEV_SkinCollections", lv_indexInstance, "CollectionIndex", 1) == auto3A2F5A9D_var)) {
+                    lv_categoryText = UserDataGetText("SCEV_SkinCollections", lv_indexInstance, "Name", 1);
+                    break;
+                }
+
+            }
+            libNtve_gf_SetDialogItemText(libSCEV_gv_collectionsCategoryLabel[auto3A2F5A9D_var], lv_categoryText, PlayerGroupSingle(lp_player));
+        }
+    }
+
+    autoBE686F93_var = 1;
+    for ( ; autoBE686F93_var <= autoBE686F93_ae; autoBE686F93_var += 1 ) {
+        lv_collectionIndex = 0;
+        lv_categoryHasEquipped = false;
+        auto131350B9_userType = "SCEV_KopruluSkins";
+        auto131350B9_i = 1;
+        for ( ; auto131350B9_i <= UserDataInstanceCount(auto131350B9_userType) ; auto131350B9_i += 1 ) {
+            lv_indexInstance = UserDataInstance(auto131350B9_userType, auto131350B9_i);
+            if ((UserDataGetGameLink("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1) == "") && (UserDataGetInt("SCEV_SkinCollections", UserDataGetUserInstance("SCEV_KopruluSkins", lv_indexInstance, "Collection", 1), "CollectionIndex", 1) == autoBE686F93_var)) {
+                lv_collectionIndex += 1;
+                lv_skinLink = UserDataGetGameLink("SCEV_KopruluSkins", lv_indexInstance, "Skin", 1);
+                libSCEV_gv_collectionsSkinInstance[lv_collectionIndex][autoBE686F93_var] = lv_indexInstance;
+                libNtve_gf_SetDialogItemText(libSCEV_gv_collectionsSkinLabel[lv_collectionIndex][autoBE686F93_var], StringExternal(CatalogFieldValueGet(c_gameCatalogSkin, lv_skinLink, "Name", lp_player)), PlayerGroupSingle(lp_player));
+                libNtve_gf_SetDialogItemText(libSCEV_gv_collectionsSkinDescLabel[lv_collectionIndex][autoBE686F93_var], StringExternal(CatalogFieldValueGet(c_gameCatalogSkin, lv_skinLink, "InfoText", lp_player)), PlayerGroupSingle(lp_player));
+                libNtve_gf_SetDialogItemImage(libSCEV_gv_collectionsSkinImage[lv_collectionIndex][autoBE686F93_var], (CatalogFieldValueGet(c_gameCatalogSkin, lv_skinLink, "VariationIcon", lp_player)), PlayerGroupSingle(lp_player));
+                libSCEV_gf_CollectionsSetCollectionListboxItemState(lp_player, autoBE686F93_var, lv_collectionIndex, libSCEV_ge_SkinsSkinState_Normal);
+                if ((libSCEV_gf_CollectionsSkinEquipped(lv_indexInstance, lp_player) == true)) {
+                    libSCEV_gf_CollectionsSetCollectionListboxItemState(lp_player, autoBE686F93_var, lv_collectionIndex, libSCEV_ge_SkinsSkinState_Equipped);
+                    if ((lv_collectionIndex != 1)) {
+                        lv_categoryHasEquipped = true;
+                    }
+
+                }
+
+            }
+
+            if ((lv_categoryHasEquipped == false)) {
+                libSCEV_gf_CollectionsSetCollectionListboxItemState(lp_player, autoBE686F93_var, 1, libSCEV_ge_SkinsSkinState_Equipped);
+            }
+            else {
+                libSCEV_gf_CollectionsSetCollectionListboxItemState(lp_player, autoBE686F93_var, 1, libSCEV_ge_SkinsSkinState_Normal);
+            }
+        }
+    }
+}
+
+void libSCEV_gf_CollectionsSetCollectionListboxItemState (int lp_player, int lp_categoryIndex, int lp_collectionIndex, int lp_state) {
+    // Automatic Variable Declarations
+    int autoAF739E78_val;
+
+    // Implementation
+    DialogControlSetAnimationState(libSCEV_gv_collectionsSkinButton[lp_collectionIndex][lp_categoryIndex], PlayerGroupSingle(lp_player), "EquippedState", "NotEquipped");
+    DialogControlSetAnimationState(libSCEV_gv_collectionsSkinButton[lp_collectionIndex][lp_categoryIndex], PlayerGroupSingle(lp_player), "LockedState", "NotLocked");
+    DialogControlSetAnimationState(libSCEV_gv_collectionsSkinButton[lp_collectionIndex][lp_categoryIndex], PlayerGroupSingle(lp_player), "EmptyState", "Empty");
+    autoAF739E78_val = lp_state;
+    if (autoAF739E78_val == libSCEV_ge_SkinsSkinState_Equipped) {
+        libSCEV_gv_collectionsSkinButton_State[lp_collectionIndex][lp_categoryIndex] = libSCEV_ge_SkinsSkinState_Equipped;
+        DialogControlSetAnimationState(libSCEV_gv_collectionsSkinButton[lp_collectionIndex][lp_categoryIndex], PlayerGroupSingle(lp_player), "EquippedState", "Equipped");
+    }
+    else if (autoAF739E78_val == libSCEV_ge_SkinsSkinState_Locked) {
+        libSCEV_gv_collectionsSkinButton_State[lp_collectionIndex][lp_categoryIndex] = libSCEV_ge_SkinsSkinState_Locked;
+        DialogControlSetAnimationState(libSCEV_gv_collectionsSkinButton[lp_collectionIndex][lp_categoryIndex], PlayerGroupSingle(lp_player), "LockedState", "Locked");
+    }
+    else if (autoAF739E78_val == libSCEV_ge_SkinsSkinState_Empty) {
+        libSCEV_gv_collectionsSkinButton_State[lp_collectionIndex][lp_categoryIndex] = libSCEV_ge_SkinsSkinState_Empty;
+        DialogControlSetAnimationState(libSCEV_gv_collectionsSkinButton[lp_collectionIndex][lp_categoryIndex], PlayerGroupSingle(lp_player), "EmptyState", "Empty");
+    }
+    else {
+        libSCEV_gv_collectionsSkinButton_State[lp_collectionIndex][lp_categoryIndex] = libSCEV_ge_SkinsSkinState_Normal;
+        DialogControlSetAnimationState(libSCEV_gv_collectionsSkinButton[lp_collectionIndex][lp_categoryIndex], PlayerGroupSingle(lp_player), "EmptyState", "NotEmpty");
+    }
+    libSCEV_gf_CollectionsSetCollectionPreviewPanelState(lp_collectionIndex, lp_categoryIndex, libSCEV_gv_collectionsSkinButton_State[lp_collectionIndex][lp_categoryIndex], lp_player);
+}
+
+void libSCEV_gf_CollectionsSetCollectionPreviewPanelState (int lp_buttonIndex, int lp_categoryIndex, int lp_state, int lp_player) {
+    // Variable Declarations
+    string lv_skinInstance;
+
+    // Automatic Variable Declarations
+    int autoF4D90EDC_val;
+
+    // Variable Initialization
+    lv_skinInstance = libSCEV_gv_collectionsSkinInstance[lp_buttonIndex][lp_categoryIndex];
+
+    // Implementation
+    DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "EmptyState", "NotEmpty");
+    DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "LockedState", "NotLocked");
+    DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "EquippedState", "NotEquipped");
+    DialogControlSetVisible(libSCEV_gv_collectionsPreview_EquipConfirmation, PlayerGroupSingle(lp_player), false);
+    if ((DataTableValueExists(true, ((lv_skinInstance) + "_SessionState#" + IntToString(EventPlayer()))) == true)) {
+        DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "SessionState", "NextSession");
+    }
+    else {
+        DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "SessionState", "ThisSession");
+    }
+    autoF4D90EDC_val = lp_state;
+    if (autoF4D90EDC_val == libSCEV_ge_SkinsSkinState_Empty) {
+        DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "EmptyState", "Empty");
+        DialogControlSetEnabled(libSCEV_gv_collectionsPreview_EquipButton, PlayerGroupSingle(lp_player), false);
+    }
+    else if (autoF4D90EDC_val == libSCEV_ge_SkinsSkinState_Equipped) {
+        DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "EquippedState", "Equipped");
+        DialogControlSetEnabled(libSCEV_gv_collectionsPreview_EquipButton, PlayerGroupSingle(lp_player), false);
+    }
+    else if (autoF4D90EDC_val == libSCEV_ge_SkinsSkinState_Locked) {
+        DialogControlSetAnimationState(libSCEV_gv_collectionsPreview_Panel, PlayerGroupSingle(lp_player), "LockedState", "Locked");
+        DialogControlSetEnabled(libSCEV_gv_collectionsPreview_EquipButton, PlayerGroupSingle(lp_player), false);
+    }
+    else {
+        if ((libSCEV_gv_customizeMenuEquipDisabled == false)) {
+            DialogControlSetEnabled(libSCEV_gv_collectionsPreview_EquipButton, PlayerGroupSingle(lp_player), true);
+        }
+
+        if ((UserDataGetInt("SCEV_SkinCollections", UserDataGetUserInstance("SCEV_KopruluSkins", lv_skinInstance, "Collection", 1), "EquipConfirmation", 1) == 1) && (UserDataGetInt("SCEV_KopruluSkins", lv_skinInstance, "IsDefault", 1) == 0) && (DataTableValueExists(true, ((lv_skinInstance) + "_PreviouslyEquipped#" + IntToString(lp_player))) == false)) {
+            DialogControlSetVisible(libSCEV_gv_collectionsPreview_EquipConfirmation, PlayerGroupSingle(lp_player), true);
+        }
+
+    }
+}
+
+bool libSCEV_gf_CollectionsSkinEquipped (string lp_skinInstance, int lp_player) {
+    // Automatic Variable Declarations
+    // Implementation
+    if ((UserDataGetGameLink("SCEV_KopruluSkins", lp_skinInstance, "ParentUnit", 1) != "")) {
+        return false;
+    }
+
+    if ((libSCEV_gf_SkinsIsSkinEquipped(lp_skinInstance, lp_player) == true)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool libSCEV_gf_CollectionsSkinEquippedforCollection (string lp_collection, int lp_player) {
+    // Variable Declarations
+    int lv_equipCount;
+    string lv_indexInstance;
+
+    // Automatic Variable Declarations
+    string auto815B2727_userType;
+    int auto815B2727_i;
+
+    // Variable Initialization
+
+    // Implementation
+    auto815B2727_userType = "SCEV_KopruluSkins";
+    auto815B2727_i = 1;
+    for ( ; auto815B2727_i <= UserDataInstanceCount(auto815B2727_userType) ; auto815B2727_i += 1 ) {
+        lv_indexInstance = UserDataInstance(auto815B2727_userType, auto815B2727_i);
+        if ((lp_collection == UserDataGetUserInstance("SCEV_KopruluSkins", lv_indexInstance, "Collection", 1)) && (libSCEV_gf_SkinsIsSkinEquipped(lv_indexInstance, lp_player) == true)) {
+            lv_equipCount += 1;
+        }
+
+    }
+    if ((lv_equipCount >= 1)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 // Triggers
 //--------------------------------------------------------------------------------------------------
 // Trigger: MineralWalls:Update
@@ -5275,6 +5679,10 @@ bool libSCEV_gt_SCEvoFeatureInit_Func (bool testConds, bool runActions) {
 
     if ((UserDataGetInt("SCEV_LibraryVariables", "UseClassicMinerals", "Enabled", 1) == 1)) {
         libSCEV_gf_ClassicMineralsSkinActivate(PlayerGroupAll(), true);
+    }
+
+    if ((UserDataGetInt("SCEV_LibraryVariables", "LegacyMining", "Enabled", 1) == 1)) {
+        libSCEV_gf_LegacyMiningActivate(true);
     }
 
     return true;
@@ -7751,6 +8159,63 @@ void libSCEV_gt_LegacySelectionLoadGameRestore_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: LegacyMining:WorkerBounce
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_LegacyMiningWorkerBounce_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    unitgroup lv_resources;
+
+    // Automatic Variable Declarations
+    unitgroup autoD10864EA_g;
+    int autoD10864EA_u;
+    unit autoD10864EA_var;
+
+    // Variable Initialization
+    lv_resources = UnitGroupEmpty();
+
+    // Conditions
+    if (testConds) {
+        if (!((ValidatorExecute("LegacyMining@ResourceMinerals", EventUnit(), EventUnitTargetUnit()) == 0))) {
+            return false;
+        }
+
+        if (!((ValidatorExecute("LegacyMining@HarvesterGT0", EventUnit(), EventUnitTargetUnit()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_resources = UnitGroup(null, c_playerAny, RegionCircle(UnitGetPosition(EventUnit()), libSCEV_gv_legacyMiningAcquireRadius), UnitFilter((1 << c_targetFilterHarvestableResource), 0, (1 << c_targetFilterEnemy) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    UnitGroupRemove(lv_resources, EventUnitTargetUnit());
+    autoD10864EA_g = lv_resources;
+    autoD10864EA_u = UnitGroupCount(autoD10864EA_g, c_unitCountAll);
+    for (;; autoD10864EA_u -= 1) {
+        autoD10864EA_var = UnitGroupUnitFromEnd(autoD10864EA_g, autoD10864EA_u);
+        if (autoD10864EA_var == null) { break; }
+        if (((ValidatorExecute("LegacyMining@ResourceMinerals", EventUnit(), autoD10864EA_var) != 0) || (ValidatorExecute("LegacyMining@MineralAcquireable", EventUnit(), autoD10864EA_var) != 0))) {
+            UnitGroupRemove(lv_resources, autoD10864EA_var);
+        }
+
+    }
+    if ((UnitGroupCount(lv_resources, c_unitCountAlive) > 0)) {
+        UnitCreateEffectUnit(EventUnit(), "LegacyMining@CancelCurrentOrder", EventUnit());
+        UnitIssueOrder(EventUnit(), OrderTargetingUnit(null, UnitGroupRandomUnit(lv_resources, c_unitCountAll)), c_orderQueueAddToFront);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_LegacyMiningWorkerBounce_Init () {
+    libSCEV_gt_LegacyMiningWorkerBounce = TriggerCreate("libSCEV_gt_LegacyMiningWorkerBounce_Func");
+    TriggerEnable(libSCEV_gt_LegacyMiningWorkerBounce, false);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: InfiniteMoneyMap:Trigger
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_InfiniteMoneyMapTrigger_Func (bool testConds, bool runActions) {
@@ -9741,7 +10206,9 @@ bool libSCEV_gt_CustomizeMenuEquipDisable_Func (bool testConds, bool runActions)
 
     TriggerEnable(TriggerGetCurrent(), false);
     TriggerEnable(libSCEV_gt_SkinsEquipButtonResponses, false);
+    TriggerEnable(libSCEV_gt_CollectionsEquipButtonResponses, false);
     DialogControlSetEnabled(libSCEV_gv_skinsPreview_EquipButton, PlayerGroupAll(), false);
+    DialogControlSetEnabled(libSCEV_gv_collectionsPreview_EquipButton, PlayerGroupAll(), false);
     libSCEV_gv_customizeMenuEquipDisabled = true;
     TriggerDestroy(TriggerGetCurrent());
     return true;
@@ -10602,17 +11069,23 @@ void libSCEV_gt_SkinsEquipButtonResponses_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Trigger: Collection:CollectionMenuToggle
+// Trigger: Collections:CollectionMenuToggle
 //--------------------------------------------------------------------------------------------------
-bool libSCEV_gt_CollectionCollectionMenuToggle_Func (bool testConds, bool runActions) {
+bool libSCEV_gt_CollectionsCollectionMenuToggle_Func (bool testConds, bool runActions) {
     // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_CollectionsInitializeCollectionMenu(PlayerGroupSingle(EventPlayer()));
     return true;
 }
 
 //--------------------------------------------------------------------------------------------------
-void libSCEV_gt_CollectionCollectionMenuToggle_Init () {
-    libSCEV_gt_CollectionCollectionMenuToggle = TriggerCreate("libSCEV_gt_CollectionCollectionMenuToggle_Func");
-    TriggerEnable(libSCEV_gt_CollectionCollectionMenuToggle, false);
+void libSCEV_gt_CollectionsCollectionMenuToggle_Init () {
+    libSCEV_gt_CollectionsCollectionMenuToggle = TriggerCreate("libSCEV_gt_CollectionsCollectionMenuToggle_Func");
+    TriggerEnable(libSCEV_gt_CollectionsCollectionMenuToggle, false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -10620,11 +11093,35 @@ void libSCEV_gt_CollectionCollectionMenuToggle_Init () {
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_CollectionsListItemButtonResponses_Func (bool testConds, bool runActions) {
     // Variable Declarations
-    int lv_x;
+    int lv_buttonIndex;
+    int lv_categoryIndex;
 
     // Automatic Variable Declarations
+    const int autoA0F44A2B_ae = libSCEV_gv_collectionsActiveCategories;
+    const int autoA0F44A2B_ai = 1;
+    const int auto3DED8F17_ae = libSCEV_gv_collectionsMaxButtons;
+    const int auto3DED8F17_ai = 1;
+
     // Variable Initialization
 
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_categoryIndex = 1;
+    for ( ; ( (autoA0F44A2B_ai >= 0 && lv_categoryIndex <= autoA0F44A2B_ae) || (autoA0F44A2B_ai < 0 && lv_categoryIndex >= autoA0F44A2B_ae) ) ; lv_categoryIndex += autoA0F44A2B_ai ) {
+        lv_buttonIndex = 1;
+        for ( ; ( (auto3DED8F17_ai >= 0 && lv_buttonIndex <= auto3DED8F17_ae) || (auto3DED8F17_ai < 0 && lv_buttonIndex >= auto3DED8F17_ae) ) ; lv_buttonIndex += auto3DED8F17_ai ) {
+            if ((EventDialogControl() == libSCEV_gv_collectionsSkinButton[lv_buttonIndex][lv_categoryIndex])) {
+                libSCEV_gv_collectionsUsedListboxItemIndex[EventPlayer()] = lv_buttonIndex;
+                libSCEV_gv_collectionsUsedListboxItemCategory[EventPlayer()] = lv_categoryIndex;
+                libSCEV_gf_CollectionsSetCollectionPreviewPanelState(lv_buttonIndex, lv_categoryIndex, libSCEV_gv_collectionsSkinButton_State[lv_buttonIndex][lv_categoryIndex], EventPlayer());
+                return true;
+            }
+
+        }
+    }
     return true;
 }
 
@@ -10632,6 +11129,58 @@ bool libSCEV_gt_CollectionsListItemButtonResponses_Func (bool testConds, bool ru
 void libSCEV_gt_CollectionsListItemButtonResponses_Init () {
     libSCEV_gt_CollectionsListItemButtonResponses = TriggerCreate("libSCEV_gt_CollectionsListItemButtonResponses_Func");
     TriggerEnable(libSCEV_gt_CollectionsListItemButtonResponses, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Collections:EquipButtonResponses
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_CollectionsEquipButtonResponses_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    int lv_buttonIndex;
+    int lv_usedCategory;
+    int lv_usedButton;
+    string lv_indexInstance;
+    string lv_newSkinInstance;
+    string lv_otherSkinInstance;
+    int lv_listboxResetIndex;
+
+    // Automatic Variable Declarations
+    const int autoE7D6CA7D_ae = libSCEV_gv_collectionsMaxButtons;
+    const int autoE7D6CA7D_ai = 1;
+
+    // Variable Initialization
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    lv_usedButton = libSCEV_gv_collectionsUsedListboxItemIndex[EventPlayer()];
+    lv_usedCategory = libSCEV_gv_collectionsUsedListboxItemCategory[EventPlayer()];
+    lv_newSkinInstance = libSCEV_gv_collectionsSkinInstance[lv_usedButton][lv_usedCategory];
+    lv_buttonIndex = 1;
+    for ( ; ( (autoE7D6CA7D_ai >= 0 && lv_buttonIndex <= autoE7D6CA7D_ae) || (autoE7D6CA7D_ai < 0 && lv_buttonIndex >= autoE7D6CA7D_ae) ) ; lv_buttonIndex += autoE7D6CA7D_ai ) {
+        lv_otherSkinInstance = libSCEV_gv_collectionsSkinInstance[lv_buttonIndex][lv_usedCategory];
+        if ((lv_otherSkinInstance != null)) {
+            if ((UserDataGetInt("SCEV_SkinCollections", UserDataGetUserInstance("SCEV_KopruluSkins", lv_otherSkinInstance, "Collection", 1), "EquipConfirmation", 1) == 1) && (UserDataGetInt("SCEV_KopruluSkins", lv_otherSkinInstance, "IsDefault", 1) == 1)) {
+                DataTableSetBool(true, ((lv_otherSkinInstance) + "_SessionState#" + IntToString(EventPlayer())), true);
+            }
+
+            libSCEV_gf_SkinsEquipSkin(false, lv_otherSkinInstance, EventPlayer());
+        }
+
+    }
+    libSCEV_gf_SkinsEquipSkin(true, lv_newSkinInstance, EventPlayer());
+    libSCEV_gf_CollectionsUpdateCategories(EventPlayer());
+    libSCEV_gf_CollectionsSetCollectionPreviewPanelState(lv_usedButton, lv_usedCategory, libSCEV_ge_SkinsSkinState_Equipped, EventPlayer());
+    libSCEV_gf_SkinsSkinBankSave(EventPlayer());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_CollectionsEquipButtonResponses_Init () {
+    libSCEV_gt_CollectionsEquipButtonResponses = TriggerCreate("libSCEV_gt_CollectionsEquipButtonResponses_Func");
+    TriggerEnable(libSCEV_gt_CollectionsEquipButtonResponses, false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -10775,6 +11324,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_LegacySelectionUncontrollable_Init();
     libSCEV_gt_LegacySelectionTrackUnitOrders_Init();
     libSCEV_gt_LegacySelectionLoadGameRestore_Init();
+    libSCEV_gt_LegacyMiningWorkerBounce_Init();
     libSCEV_gt_InfiniteMoneyMapTrigger_Init();
     libSCEV_gt_RaceSupplyActivateTrigger_Init();
     libSCEV_gt_RaceSupplySyncSupplies_Init();
@@ -10824,8 +11374,9 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_SkinsUnitListboxToggles_Init();
     libSCEV_gt_SkinsSkinListItemButtonResponses_Init();
     libSCEV_gt_SkinsEquipButtonResponses_Init();
-    libSCEV_gt_CollectionCollectionMenuToggle_Init();
+    libSCEV_gt_CollectionsCollectionMenuToggle_Init();
     libSCEV_gt_CollectionsListItemButtonResponses_Init();
+    libSCEV_gt_CollectionsEquipButtonResponses_Init();
     libSCEV_gt_SCEvoEvents_Init();
 }
 
