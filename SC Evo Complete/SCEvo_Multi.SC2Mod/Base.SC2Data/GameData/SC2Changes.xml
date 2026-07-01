@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectSet id="CreepTumorLaunchMissileSet">
+        <EffectArray value="CreepTumorActiveRB"/>
+        <EffectArray value="CreepTumorSelection"/>
+    </CEffectSet>
+    <CEffectModifyUnit id="CreepTumorSelection">
+        <EditorCategories value="Race:Zerg"/>
+        <SelectTransferUnit Value="Caster"/>
+        <SelectTransferFlags index="DeselectSource" value="1"/>
+        <SelectTransferFlags index="IncludeControlGroups" value="1"/>
+    </CEffectModifyUnit>
+    <CEffectCreateUnit id="KD8Charge">
+        <WhichLocation Value="TargetPoint"/>
+    </CEffectCreateUnit>
     <CEffectSet id="AssaultMode@Finish">
         <EffectArray value="SCBW_MissChance@AB"/>
     </CEffectSet>
@@ -680,10 +693,14 @@
         <EffectArray index="3" value="WorkerIssueGatherOrderGeneric"/>
         <EffectArray value="WorkerVespeneWalkRemoveBehavior"/>
     </CEffectSet>
-    <CEffectCreateUnit id="ReaperKD8Knockback">
-        <ValidatorArray value="IsNotRecallingNexus"/>
-        <ValidatorArray value="IsStrategicWarpOut"/>
-    </CEffectCreateUnit>
+    <CAbilBehavior id="GenerateCreep">
+        <CmdButtonArray index="On">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+        <CmdButtonArray index="Off">
+            <Flags index="ToSelection" value="1"/>
+        </CmdButtonArray>
+    </CAbilBehavior>
     <CAbilMorph id="FactoryLiftOff">
         <InfoArray index="0">
             <SectionArray index="Collide">
@@ -932,6 +949,18 @@
     <CRequirementNot id="WarpPrismPowerSourceFastRequirement">
         <OperandArray index="0" value="SCBW_HaveAbilityDisablerBehavior"/>
     </CRequirementNot>
+    <CActorUnit id="CreepTumor">
+        <On index="116" Send="Create CreepTumorPlaceholderModel"/>
+    </CActorUnit>
+    <CActorModel id="CreepTumorPlaceholderModel" parent="PlaceholderModel">
+        <Aliases index="0" removed="1"/>
+        <Aliases index="1" removed="1"/>
+        <Aliases index="2" removed="1"/>
+        <On index="4" Terms="Behavior.PrecursorCreepTumor.Off" Send="Destroy Immediate"/>
+        <On index="5" removed="1"/>
+        <Model value="CreepTumorPlacement"/>
+        <ModelFlags index="AllowHitTest" value="0"/>
+    </CActorModel>
     <CActorSound id="ActorSound_ParasiticBombLaunch">
         <Flags index="SuppressSaveLoad" value="1"/>
         <InheritType value="OneShot"/>
@@ -1743,6 +1772,21 @@
         <DataRecord Entry="Effect,HellionWeapon@MissOffsetSwitch"/>
         <DataRecord Entry="Validator,HellionWeapon@RadiusNormal"/>
     </CDataCollection>
+    <CUnit id="Battlecruiser">
+        <SubgroupPriority value="76"/>
+    </CUnit>
+    <CUnit id="CreepTumor">
+        <BehaviorArray Link="CreepTumorActive"/>
+    </CUnit>
+    <CUnit id="CreepTumorBurrowed">
+        <BehaviorArray Link="CreepTumorActive"/>
+    </CUnit>
+    <CUnit id="Marauder">
+        <SubgroupPriority value="78"/>
+    </CUnit>
+    <CUnit id="Marine">
+        <SubgroupPriority value="80"/>
+    </CUnit>
     <CUnit id="WarpPrismPhasing">
         <CardLayouts index="0">
             <LayoutButtons index="9" Requirements="WarpPrismPowerSourceFastRequirement"/>
@@ -1781,6 +1825,7 @@
         <CardLayouts index="0">
             <LayoutButtons index="6" Requirements="SCBW_NotDetectionSuppressed"/>
         </CardLayouts>
+        <SubgroupPriority value="77"/>
     </CUnit>
     <CUnit id="Banshee">
         <CardLayouts index="0">
