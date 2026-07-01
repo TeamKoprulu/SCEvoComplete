@@ -5013,7 +5013,7 @@ void libSCEV_gf_SkinsUpdateUnitListbox (int lp_usedItemIndex, int lp_player) {
     auto422505AB_var = 1;
     for ( ; auto422505AB_var <= auto422505AB_ae; auto422505AB_var += 1 ) {
         libNtve_gf_SetDialogItemEditorValue(libSCEV_gv_skinsUnitListboxItem_UnitFrame[auto422505AB_var], "", PlayerGroupSingle(lp_player));
-        libSCEV_gv_skinsUnitListboxItem_UnitType[lv_buttonIndex][lp_player] = null;
+        libSCEV_gv_skinsUnitListboxItem_UnitType[auto422505AB_var][lp_player] = null;
     }
     auto79758368_userType = "SCEV_KopruluSkins";
     auto79758368_i = 1;
@@ -5246,7 +5246,6 @@ int libSCEV_gf_SkinsUsedListboxItem (int lp_dialogItem) {
 
 bool libSCEV_gf_SkinsUnitAlreadyinList (string lp_unit, string lp_instance, string lp_race, int lp_player) {
     // Variable Declarations
-    int lv_usedCount;
     string lv_indexInstance;
 
     // Automatic Variable Declarations
@@ -5259,21 +5258,15 @@ bool libSCEV_gf_SkinsUnitAlreadyinList (string lp_unit, string lp_instance, stri
     autoB9ED82EF_var = 1;
     for ( ; autoB9ED82EF_var <= autoB9ED82EF_ae; autoB9ED82EF_var += 1 ) {
         if ((libSCEV_gv_skinsUnitListboxItem_UnitType[autoB9ED82EF_var][lp_player] == lp_unit) && (UserDataGetGameLink("SCEV_KopruluSkins", lp_instance, "Race", 1) == lp_race)) {
-            lv_usedCount += 1;
+            return true;
         }
 
     }
-    if ((lv_usedCount >= 1)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return false;
 }
 
 bool libSCEV_gf_SkinsSkinEquippedforUnit (string lp_unit, int lp_player) {
     // Variable Declarations
-    int lv_equipCount;
     string lv_indexInstance;
 
     // Automatic Variable Declarations
@@ -5288,16 +5281,11 @@ bool libSCEV_gf_SkinsSkinEquippedforUnit (string lp_unit, int lp_player) {
     for ( ; auto48A513A8_i <= UserDataInstanceCount(auto48A513A8_userType) ; auto48A513A8_i += 1 ) {
         lv_indexInstance = UserDataInstance(auto48A513A8_userType, auto48A513A8_i);
         if ((lp_unit == UserDataGetUnit("SCEV_KopruluSkins", lv_indexInstance, "ParentUnit", 1)) && (libSCEV_gf_SkinsIsSkinEquipped(lv_indexInstance, lp_player) == true)) {
-            lv_equipCount += 1;
+            return true;
         }
 
     }
-    if ((lv_equipCount >= 1)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return false;
 }
 
 int libSCEV_gf_SkinsUsedListboxItemIndex (int lp_dialogItem) {
@@ -9451,6 +9439,55 @@ void libSCEV_gt_ReaverPathingChase_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: ReaverPathing:Stop
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_ReaverPathingStop_Func (bool testConds, bool runActions) {
+    // Variable Declarations
+    order lv_order;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_order = EventUnitOrder();
+
+    // Conditions
+    if (testConds) {
+        if (!((UnitIsSelected(EventUnit(), EventPlayer()) == true))) {
+            return false;
+        }
+
+        if (!((OrderGetFlag(lv_order, c_cmdUser) == true))) {
+            return false;
+        }
+
+        if (!((OrderGetFlag(lv_order, c_cmdAI) == false))) {
+            return false;
+        }
+
+        if (!((ValidatorExecute("ReaverSCBWWeapon@ScarabIsAlive", EventUnit(), EventUnit()) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroupSelected(EventPlayer()), c_unitCountAlive) == UnitGroupCount(UnitSubgroupSelected(EventPlayer()), c_unitCountAlive)))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitCreateEffectUnit(EventUnit(), "ReaverSCBWWeapon@Stop", EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_ReaverPathingStop_Init () {
+    libSCEV_gt_ReaverPathingStop = TriggerCreate("libSCEV_gt_ReaverPathingStop_Func");
+    TriggerAddEventUnitOrder(libSCEV_gt_ReaverPathingStop, null, AbilityCommand("ReaverSCBWWeapon@Stop", 0));
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: MergeStatusEffects:Track
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_MergeStatusEffectsTrack_Func (bool testConds, bool runActions) {
@@ -11348,6 +11385,7 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MimicCheckSpiderMine_Init();
     libSCEV_gt_ReaverPathingCheck_Init();
     libSCEV_gt_ReaverPathingChase_Init();
+    libSCEV_gt_ReaverPathingStop_Init();
     libSCEV_gt_MergeStatusEffectsTrack_Init();
     libSCEV_gt_MergeStatusEffectsBegin_Init();
     libSCEV_gt_MindControlStealTech_Init();
