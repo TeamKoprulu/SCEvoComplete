@@ -80,6 +80,7 @@
     </CEffectApplyBehavior>
     <CEffectSet id="BroodlingEscortLaunchB">
         <EffectArray value="BroodLordHangarHallucination"/>
+        <EffectArray value="SCBW_MissChance@AB"/>
     </CEffectSet>
     <CEffectEnumArea id="MothershipStrategicRecallSearch">
         <SearchFilters value="-;Self,Neutral,Enemy,Structure,Missile,Item,Dead,Hidden,Invulnerable"/>
@@ -976,20 +977,24 @@
         <LaunchSite value="MothershipAttackLaunchSite"/>
     </CActorAction>
     <CActorSite id="MothershipAttackDamageSite" parent="GenericAttackDamageSite">
-        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
-        <On Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamMissed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="Signal BeamWhiffed"/>
+        <On Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamMissed" Send="Signal BeamWhiffed"/>
+        <On Terms="Signal.*.BeamWhiffed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On Terms="Signal.*.BeamWhiffed" Target="::Creator" Send="Create SCBW_MissChance@MissIndicator"/>
+        <Aliases value="_BeamBreakOnCargoLoad"/>
     </CActorSite>
     <CActorSite id="MothershipSecondaryAttackDamageSite" parent="MothershipAttackDamageSite">
-        <On index="1" Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamSecondaryMissed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On index="1" Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamSecondaryMissed" Send="Signal BeamWhiffed"/>
     </CActorSite>
     <CActorSite id="MothershipAttackImpactSite" parent="GenericAttackImpactSite">
-        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
-        <On Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamMissed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
-        <On Terms="ActorCreation" Send="TimerSet 2.000000 Destroy"/>
+        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="Signal BeamWhiffed"/>
+        <On Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamMissed" Send="Signal BeamWhiffed"/>
+        <On Terms="Signal.*.BeamWhiffed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On Terms="Signal.*.BeamWhiffed" Target="::Creator" Send="Create SCBW_MissChance@MissIndicator"/>
         <On Terms="TimerExpired; TimerName Destroy" Send="Destroy"/>
     </CActorSite>
     <CActorSite id="MothershipSecondaryAttackImpactSite" parent="MothershipAttackImpactSite">
-        <On index="1" Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamSecondaryMissed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On index="1" Terms="ActorCreation; ValidateCreationEffect MothershipWeapon@BeamSecondaryMissed" Send="Signal BeamWhiffed"/>
     </CActorSite>
     <CActorSite id="MothershipAttackLaunchSite" parent="GenericAttackLaunchSite">
         <On Terms="ActorCreation" Send="TimerSet 2.000000 Destroy"/>
@@ -999,15 +1004,21 @@
         <DamageSite value="SentryAttackDamageSite"/>
     </CActorAction>
     <CActorSite id="SentryAttackDamageSite" parent="GenericAttackDamageSite">
-        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
-        <On Terms="ActorCreation; ValidateCreationEffect SCBW_MissChance@WeaponMissed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="Signal BeamWhiffed"/>
+        <On Terms="ActorCreation; ValidateCreationEffect SCBW_MissChance@WeaponMissed" Send="Signal BeamWhiffed"/>
+        <On Terms="Signal.*.BeamWhiffed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On Terms="Signal.*.BeamWhiffed" Target="::Creator" Send="Create SCBW_MissChance@MissIndicator"/>
+        <Aliases value="_BeamBreakOnCargoLoad"/>
     </CActorSite>
     <CActorAction id="VoidRaySwarmAttack">
         <DamageSite value="VoidRaySwarmAttackDamageSite"/>
     </CActorAction>
     <CActorSite id="VoidRaySwarmAttackDamageSite" parent="GenericAttackDamageSite">
-        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
-        <On Terms="ActorCreation; ValidateCreationEffect SCBW_MissChance@WeaponMissed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On Terms="ActorCreation; ValidateUnit UnderDarkSwarmCombine" Send="Signal BeamWhiffed"/>
+        <On Terms="ActorCreation; ValidateCreationEffect SCBW_MissChance@WeaponMissed" Send="Signal BeamWhiffed"/>
+        <On Terms="Signal.*.BeamWhiffed" Send="HostSiteOpsSet ::Host {SOpAttachHarness SOpAttachCenter WhiffOffsetDirect SOpForwardLaunchGuide SOpShadow SOpMoveUpByDot1} 1 1"/>
+        <On Terms="Signal.*.BeamWhiffed" Target="::Creator" Send="Create SCBW_MissChance@MissIndicator"/>
+        <Aliases value="_BeamBreakOnCargoLoad"/>
     </CActorSite>
     <CActorBeamSimple id="HellionAttackBeam">
         <Remove Terms="Effect.InfernalFlameThrowerE.Start; EffectExecuteIndex 24" Send="RefSet ::HostImpact HellionAttackBeamImpactSite"/>
@@ -1138,6 +1149,7 @@
         <On Terms="ActorCreation; ScopeContains _Missed" Send="StatusSet Missed 1"/>
         <On Terms="ActorCreation; ScopeContains _Missed" Target="_Missed" Send="Destroy"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Target="_Whiff" Send="Destroy"/>
+        <On Terms="Signal.*.Impact; HasStatus Missed" Target="::Creator" Send="Create SCBW_MissChance@MissIndicator"/>
         <On Terms="Signal.*.Impact; HasStatus Missed" Send="TimerSet 1.000000 A"/>
         <On Terms="TimerExpired; TimerName A" Send="Destroy"/>
     </CActorSite>
@@ -1264,10 +1276,12 @@
         <On Terms="Effect.MarauderWeapon@MissLM.Start; At Caster; IsStatus WeaponNext 1" Send="AnimPlay AttackRight Attack,Right"/>
     </CActorUnit>
     <CActorAction id="MarauderAttackMiss" parent="MarauderAttack" effectLaunch="MarauderWeapon@MissLM">
-        <On index="5" Terms="Effect.MarauderWeapon@MissLM.Start; At Caster; !ValidateEffect PunisherGrenadesResearched"/>
+        <On Terms="Effect.MarauderWeapon@MissLM.Start; At Caster; !ValidateEffect PunisherGrenadesResearched" Send="Create"/>
+        <Remove Terms="Effect.PunisherGrenadesLM.Start; At Caster; !ValidateEffect PunisherGrenadesResearched" Send="Create"/>
     </CActorAction>
     <CActorAction id="MarauderUpgradedAttackMiss" parent="MarauderUpgradedAttack" effectLaunch="MarauderWeapon@MissLM">
-        <On index="5" Terms="Effect.MarauderWeapon@MissLM.Start; At Caster; ValidateEffect PunisherGrenadesResearched"/>
+        <On Terms="Effect.MarauderWeapon@MissLM.Start; At Caster; ValidateEffect PunisherGrenadesResearched" Send="Create"/>
+        <Remove Terms="Effect.PunisherGrenadesLM.Start; At Caster; ValidateEffect PunisherGrenadesResearched" Send="Create"/>
     </CActorAction>
     <CActorAction id="StalkerAttack">
         <ImpactSite value="GenericAttackImpactSiteWhiffMissile"/>

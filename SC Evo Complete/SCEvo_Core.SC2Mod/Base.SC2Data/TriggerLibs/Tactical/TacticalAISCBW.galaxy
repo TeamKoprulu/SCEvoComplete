@@ -3016,7 +3016,107 @@ void AIThinkInfestedTerranSCBW (int player, unit aiUnit, unitgroup scanGroup) {
 //--------------------------------------------------------------------------------------------------
 //  *** LURKER ***
 //--------------------------------------------------------------------------------------------------
+static bool LurkerBurrowDown (int player, unit aiUnit, unitgroup scanGroup) {
+    // enable if there are several things attack, or low health and something to attack
+    order ord;
+    aifilter filterAI;
+    unitgroup groundEnemies;
+    int groundCount;
+    fixed burrowRange;
+
+    ord = AICreateOrder(player, c_BWAB_LurkerBurrowDown, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+
+    // Filter out air units
+    filterAI = AIFilter(player);
+    // The range is based on the Lurker but we want to make sure we don't burrow too quickly in lower difficulties
+    if (AIPlayerDifficulty(player) < c_campAdvanced) {
+        burrowRange = 3.0; //Lurker Weapon Range -3
+    }
+    else {
+        burrowRange = 4.5; //Lurker Weapon Range -1
+    }
+
+    AISetFilterRange(filterAI, aiUnit, burrowRange);
+    AISetFilterPlane(filterAI, c_planeGround);
+    AISetFilterAlliance(filterAI, c_playerGroupEnemy);
+    groundEnemies = AIGetFilterGroup(filterAI, scanGroup);
+    groundCount = UnitGroupCount(groundEnemies, c_unitCountAlive);
+
+    if (groundCount == 0) {
+        return false; // no enemies
+    }
+
+    AICast(aiUnit, ord, c_noMarker, c_castHold);
+    return true;
+}
+
+//---------------------------------------------------------------------------------------------
 void AIThinkLurkerSCBW (int player, unit aiUnit, unitgroup scanGroup) {
+    // We only handle burrowing in campaign, we may need to test this new method for melee.
+    if(AIIsCampaign(player)) {
+        if (LurkerBurrowDown(player, aiUnit, scanGroup)) {
+            return;
+        }
+    }
+
+    //Lurker Burrow/Unburrow
+    if (AIEvalTacticalData(aiUnit, null)) {
+        return;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+//  *** LURKER BURROWED ***
+//--------------------------------------------------------------------------------------------------
+static bool LurkerBurrowUp (int player, unit aiUnit, unitgroup scanGroup) {
+    // enable if there are several things attack, or low health and something to attack
+    order ord;
+    aifilter filterAI;
+    unitgroup groundEnemies;
+    int groundCount;
+    fixed burrowRange;
+
+    Wait(0.5, c_timeAI);
+
+    ord = AICreateOrder(player, c_BWAB_LurkerBurrowUp, 0);
+    if (!UnitOrderIsValid(aiUnit, ord)) {
+        return false;
+    }
+
+    // Filter out air units
+    filterAI = AIFilter(player);
+
+    // We only unburrow once enemy units leave completely out of attack range.
+    // TBD: Value is hardcoded for now to Legacy's Weapon range, but should be based on the Lurker's attack range.
+    AISetFilterRange(filterAI, aiUnit, 6.0 + 0.5);
+    AISetFilterPlane(filterAI, c_planeGround);
+    AISetFilterAlliance(filterAI, c_playerGroupEnemy);
+    groundEnemies = AIGetFilterGroup(filterAI, scanGroup);
+    groundCount = UnitGroupCount(groundEnemies, c_unitCountAlive);
+
+    if (groundCount == 0) {
+        if (!AIControlForceToMove(aiUnit)) {
+            return false; // don't unburrow if we want to move
+        }
+        AICast(aiUnit, ord, c_noMarker, c_castHold);
+        return true; // no enemies
+    }
+    return false;
+}
+
+//---------------------------------------------------------------------------------------------
+void AIThinkLurkerSCBWBurrowed (int player, unit aiUnit, unitgroup scanGroup) {
+
+    // We only handle unburrowing in campaign, we may need to test this new method for melee.
+    if(AIIsCampaign(player)) {
+        if (LurkerBurrowUp(player, aiUnit, scanGroup)) {
+            return;
+        }
+    }
+
     //Lurker Burrow/Unburrow
     if (AIEvalTacticalData(aiUnit, null)) {
         return;
