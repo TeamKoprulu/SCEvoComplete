@@ -166,8 +166,16 @@
         <OperandArray value="MutaliskSCBW@AllowUnit"/>
     </CRequirementAnd>
     <CLight id="MutaliskSCBW@Portrait" parent="default">
-        <EditorCategories value="LightGroup:PortraitsUnitsZerg"/>
+        <EditorCategories value="LightGroup:Portraits/Units/ZergSCBW"/>
     </CLight>
+    <CActorForceSphere id="MutaliskSCBW@DeathRagdollDetonationForce" parent="DeathRagdollDetonationForce">
+        <Receiver Subject="::Main"/>
+        <Magnitude value="15.000000,7.000000"/>
+        <Radius value="1.000000,0.300000"/>
+    </CActorForceSphere>
+    <CActorModel id="MutaliskSCBW@DeathActor" parent="UnitDeathModelWithDeathMotionFlier">
+        <On Terms="ActorCreation; !Option Physics Low; ModelVariation 1" Send="Create MutaliskSCBW@DeathRagdollDetonationForce"/>
+    </CActorModel>
     <CActorSite id="MutaliskSCBWWeapon@BounceImpactSite" parent="GenericAttackImpactSite"/>
     <CActorAction id="MutaliskSCBWWeapon@Action" parent="GenericAttack" effectImpact="MutaliskSCBWWeapon@DamageSwitch" effectLaunch="MutaliskSCBWWeapon@LM">
         <LaunchAssets Sound="MutaliskSCBWWeapon@Launch"/>
@@ -191,10 +199,11 @@
         <LaunchRequest Subject="_ImpactGuide" Actor="Find"/>
         <ImpactSite value="MutaliskSCBWWeapon@BounceImpactSite"/>
     </CActorAction>
+    <CActorSound id="MutaliskSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="MutaliskSCBW"/>
     <CActorMissile id="MutaliskSCBWWeapon@Missile" parent="GenericAttackMissile" unitName="MutaliskSCBWWeapon@Missile"/>
     <CActorUnit id="MutaliskSCBW" parent="GenericUnitStandard" unitName="MutaliskSCBW">
-        <!--Macros value="PhysicsDeathsSwarmAir"/>
-        <Macros value="PhysicsDeathsVoidAir"/-->
+        <Macros value="PhysicsDeathsSwarmAir"/>
+        <Macros value="PhysicsDeathsVoidAir"/>
         <On Terms="UnitHeightUpdate.*.Land" Send="Create Mutalisk_Land"/>
         <On Terms="AbilMorph.DevourerSCBW@Morph.Finish; MorphTo MutaliskSCBW" Send="Create"/>
         <On Terms="AbilMorph.DevourerSCBW@Morph.Start; MorphFrom MutaliskSCBW" Send="Destroy"/>
@@ -205,7 +214,7 @@
         <On Terms="AbilMorph.GuardianSCBW@Morph.Finish; MorphTo MutaliskSCBW@AirStack" Send="Create"/>
         <On Terms="AbilMorph.GuardianSCBW@Morph.Start; MorphFrom MutaliskSCBW@AirStack" Send="Destroy"/>
         <On Terms="UnitBirth.MutaliskSCBW@AirStack" Send="Create"/>
-        <!--DeathCustoms>
+        <DeathCustoms>
             <ActorModel value="MutaliskDeathRagdoll"/>
             <ModelLink value="MutaliskSCBW@DeathRagdoll"/>
             <Name value="RagdollBasic"/>
@@ -224,7 +233,7 @@
         </DeathCustoms>
         <DeathCustoms Name="RagdollOverkillDPRH" InheritsFrom="RagdollBasic"/>
         <DeathCustoms Name="RagdollOverkillDOI" InheritsFrom="RagdollBasic"/>
-        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/-->
+        <DeathCustoms Name="RagdollMidair" InheritsFrom="RagdollBasic"/>
         <DeathCustoms>
             <ModelLink value="DeathVoidShadowMedium"/>
             <SoundLink value="ShadowUnit_DeathFX"/>
@@ -234,7 +243,7 @@
         <HostSiteOps Ops="SOpBankerMutalisk"/>
         <ModelFlags index="OutlineEmitter" value="1"/>
         <DeathArray index="Normal" ModelLink="MutaliskSCBW@Death" SoundLink="MutaliskSCBW@Explode"/>
-        <DeathActorModel value="UnitDeathModelWithDeathMotionFlier"/>
+        <DeathActorModel value="MutaliskSCBW@DeathActor"/>
         <PhysicsMatchKeysOrdered value="BasicAir,Basic"/>
         <PortraitModel value="MutaliskSCBW@Portrait"/>
         <WalkAnimMoveSpeed value="2"/>
@@ -262,7 +271,6 @@
         </Wireframe>
         <WireframeShieldColor value="255,0,128,0"/>
     </CActorUnit>
-    <CActorSound id="MutaliskSCBW@Death" parent="SCBW_DeathVoiceBase" unitName="MutaliskSCBW"/>
     <CModel id="MutaliskSCBWWeapon@Missile" parent="MissileFX">
         <Model value="Assets\Effects\Zerg\MutaliskMissile\MutaliskMissile.m3"/>
         <EditorCategories value="Race:Zerg"/>
@@ -280,10 +288,9 @@
     </CModel>
     <CModel id="MutaliskSCBW@Death" parent="MutaliskDeathBase">
         <Model value="Assets\Units\Zerg\MutaliskSCBW\MutaliskSCBW@Death.m3"/>
-        <VariationCount value="1"/>
     </CModel>
     <CModel id="MutaliskSCBW@DeathRagdoll" parent="MutaliskDeathRagdollBase">
-        <Model value="Assets\Units\Zerg\MutaliskDeathRagdoll\MutaliskDeathRagdoll.m3"/>
+        <Model value="Assets\Units\Zerg\MutaliskSCBW\MutaliskSCBW@DeathRagdoll.m3"/>
     </CModel>
     <CModel id="MutaliskSCBW@Portrait" parent="MutaliskPortraitBase">
         <Model value="Assets\Portraits\Zerg\MutaliskPortrait\MutaliskPortrait.m3"/>
@@ -454,13 +461,15 @@
         <DataRecord Entry="Abil,MutaliskSCBW@AirStack@Morph"/>
         <DataRecord Entry="Abil,MutaliskSCBW@Morph"/>
         <DataRecord Entry="Actor,MutaliskSCBW@Death"/>
+        <DataRecord Entry="Actor,MutaliskSCBW@DeathRagdollDetonationForce"/>
+        <DataRecord Entry="Actor,MutaliskSCBW@DeathActor"/>
         <DataRecord Entry="Behavior,MutaliskSCBW@AirStack"/>
         <DataRecord Entry="Behavior,MutaliskSCBW@AirStackUndo"/>
         <DataRecord Entry="Button,MutaliskSCBW@Passive"/>
         <DataRecord Entry="Effect,MutaliskSCBW@AirStack@Morph"/>
+        <DataRecord Entry="Effect,MutaliskSCBW@AirStack@MorphDelay"/>
         <DataRecord Entry="Effect,MutaliskSCBW@Morph"/>
         <DataRecord Entry="Effect,MutaliskSCBW@MorphDelay"/>
-        <DataRecord Entry="Effect,MutaliskSCBW@AirStack@MorphDelay"/>
         <DataRecord Entry="Model,MutaliskSCBW@DeathRagdoll"/>
         <DataRecord Entry="RequirementNode,MutaliskSCBW@Show"/>
         <DataRecord Entry="RequirementNode,MutaliskSCBW@AllowUnit"/>

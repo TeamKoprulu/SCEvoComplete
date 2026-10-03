@@ -63,6 +63,7 @@ void libSCEV_InitVariables () {
     for (init_i = 0; init_i <= 1; init_i += 1) {
         libSCEV_gv_raceSupplyLabel[init_i] = c_invalidDialogControlId;
     }
+    libSCEV_gv_movingShotGroup = UnitGroupEmpty();
     libSCEV_gv_queenInfestDuration = (libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "InitialDelay", c_playerAny) + (libNtve_gf_CatalogFieldValueGetAsReal(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "PeriodicPeriodArray[" + IntToString(0) + "]", c_playerAny) * CatalogFieldValueGetAsInt(c_gameCatalogEffect, "QueenSCBWInfestCommandCenter@CP", "PeriodCount", c_playerAny)));
     libSCEV_gv_observerIDPlayer = CatalogFieldValueGetAsInt(c_gameCatalogGameUI, "Dflt", "DefaultObservedPlayerId", c_playerAny);
     for (init_i = 0; init_i <= libSCEV_gv_segmentedWireframesMaxSegments; init_i += 1) {
@@ -3303,6 +3304,114 @@ void libSCEV_gf_MergeStatusEffectsInitialize () {
             TriggerAddEventUnitAbility(lv_trigger, null, lv_abilCmd, lv_abilStage, lv_includeSharedAbils);
         }
 
+    }
+}
+
+void libSCEV_gf_MovingShotUnitRegister (unit lp_unit) {
+    // Variable Declarations
+    point lv_pos;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+
+    // Implementation
+    if ((UnitGroupHasUnit(libSCEV_gv_movingShotGroup, lp_unit) == true) && (UnitHasBehavior2(lp_unit, "MovingShot") == true)) {
+        return ;
+    }
+
+    if ((UnitHasBehavior2(lp_unit, "MovingShot") == false)) {
+        UnitBehaviorAdd(lp_unit, "MovingShot", lp_unit, 1);
+    }
+
+    UnitGroupAdd(libSCEV_gv_movingShotGroup, lp_unit);
+    lv_pos = UnitGetPosition(lp_unit);
+    UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "posX", PointGetX(lv_pos));
+    UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "posY", PointGetY(lv_pos));
+    UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "vel", (UnitGetPropertyFixed(lp_unit, c_unitPropMovementSpeedCurrent, c_unitPropCurrent) * 0.0625));
+    UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "skid", 0.0);
+}
+
+void libSCEV_gf_MovingShotUnitModify (unit lp_unit) {
+    // Variable Declarations
+    fixed lv_unitVelocity;
+    point lv_unitPos;
+    fixed lv_unitPosX;
+    fixed lv_unitPosY;
+    fixed lv_vecX;
+    fixed lv_vecY;
+    fixed lv_oldVelocity;
+    fixed lv_invVel;
+    fixed lv_forceVelocity;
+    fixed lv_scale;
+    fixed lv_unitAngle;
+    fixed lv_unitOrderAngleDiff;
+    order lv_ord;
+    point lv_ordPos;
+
+    // Automatic Variable Declarations
+    // Variable Initialization
+    lv_unitVelocity = (UnitGetPropertyFixed(lp_unit, c_unitPropMovementSpeedCurrent, c_unitPropCurrent) * 0.0625);
+
+    // Implementation
+    if ((lv_unitVelocity == 0.0)) {
+        return ;
+    }
+
+    lv_unitPos = UnitGetPosition(lp_unit);
+    lv_unitPosX = PointGetX(lv_unitPos);
+    lv_unitPosY = PointGetY(lv_unitPos);
+    lv_vecX = (lv_unitPosX - UnitBehaviorEffectTreeUserData(lp_unit, "MovingShot", "posX"));
+    lv_vecY = (lv_unitPosY - UnitBehaviorEffectTreeUserData(lp_unit, "MovingShot", "posY"));
+    UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "posX", lv_unitPosX);
+    UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "posY", lv_unitPosY);
+    if ((UnitHasBehavior(lp_unit, "MovingShot") == false)) {
+        UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "skid", 0.0);
+        UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "vel", lv_unitVelocity);
+        return ;
+    }
+
+    lv_oldVelocity = UnitBehaviorEffectTreeUserData(lp_unit, "MovingShot", "vel");
+    lv_forceVelocity = MaxF((lv_oldVelocity - (7.5 * 0.0039)), 0.0);
+    UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "vel", lv_forceVelocity);
+    if ((lv_forceVelocity == 0.0)) {
+        UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "skid", 0.0);
+        return ;
+    }
+
+    if ((UnitBehaviorEffectTreeUserData(lp_unit, "MovingShot", "skid") < 1.0)) {
+        UnitBehaviorEffectTreeSetUserData(lp_unit, "MovingShot", "skid", 1.0);
+    }
+
+    if (((lv_oldVelocity == 0.0) || (lv_unitVelocity == lv_forceVelocity))) {
+        return ;
+    }
+
+    lv_invVel = (1.0 / lv_oldVelocity);
+    lv_scale = ((lv_forceVelocity - lv_unitVelocity) * lv_invVel);
+    UnitCreateEffectPoint(lp_unit, "MovingShot@ApplyForce", Point((lv_unitPosX + (lv_vecX * lv_scale)), (lv_unitPosY + (lv_vecY * lv_scale))));
+    lv_unitAngle = UnitGetFacing(lp_unit);
+    lv_ord = UnitOrder(lp_unit, 0);
+    if ((lv_ord != null) && (OrderGetTargetType(lv_ord) != c_orderTargetNone)) {
+        lv_ordPos = OrderGetTargetPosition(lv_ord);
+    }
+
+    if ((lv_ordPos != null)) {
+        lv_unitOrderAngleDiff = (AngleBetweenPoints(lv_unitPos, lv_ordPos) - lv_unitAngle);
+        if ((lv_unitOrderAngleDiff != 0.0)) {
+            if ((lv_unitOrderAngleDiff > 180.0)) {
+                lv_unitOrderAngleDiff -= 360.0;
+            }
+            else if ((lv_unitOrderAngleDiff < -180.0)) {
+                lv_unitOrderAngleDiff += 360.0;
+            }
+            UnitSetFacing(lp_unit, (lv_unitAngle + (lv_unitOrderAngleDiff * MinF(1.0, ((UnitGetPropertyFixed(lp_unit, c_unitPropTurnRate, c_unitPropCurrent) * 0.0625) / AbsF(lv_unitOrderAngleDiff))))), 0.0625);
+        }
+        else {
+            UnitSetFacing(lp_unit, lv_unitAngle, 0.0625);
+        }
+    }
+    else {
+        UnitSetFacing(lp_unit, lv_unitAngle, 0.0625);
     }
 }
 
@@ -9838,6 +9947,99 @@ void libSCEV_gt_MindControlStealTech_Init () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Trigger: Moving Shot Init
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MovingShotInit_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_MovingShotUnitRegister(EventPlayerEffectUsedUnit(c_effectUnitTarget));
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MovingShotInit_Init () {
+    libSCEV_gt_MovingShotInit = TriggerCreate("libSCEV_gt_MovingShotInit_Func");
+    TriggerAddEventPlayerEffectUsed(libSCEV_gt_MovingShotInit, c_playerAny, "MovingShot@Init");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Moving Shot Behavior Create
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MovingShotBehaviorCreate_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libSCEV_gf_MovingShotUnitRegister(EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MovingShotBehaviorCreate_Init () {
+    libSCEV_gt_MovingShotBehaviorCreate = TriggerCreate("libSCEV_gt_MovingShotBehaviorCreate_Func");
+    TriggerAddEventUnitBehaviorChange(libSCEV_gt_MovingShotBehaviorCreate, null, "MovingShot", c_unitBehaviorChangeCreate);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Moving Shot Behavior Destroy
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MovingShotBehaviorDestroy_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitGroupRemove(libSCEV_gv_movingShotGroup, EventUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MovingShotBehaviorDestroy_Init () {
+    libSCEV_gt_MovingShotBehaviorDestroy = TriggerCreate("libSCEV_gt_MovingShotBehaviorDestroy_Func");
+    TriggerAddEventUnitBehaviorChange(libSCEV_gt_MovingShotBehaviorDestroy, null, "MovingShot", c_unitBehaviorChangeDestroy);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Moving Shot Loop Thread
+//--------------------------------------------------------------------------------------------------
+bool libSCEV_gt_MovingShotLoopThread_Func (bool testConds, bool runActions) {
+    // Automatic Variable Declarations
+    unitgroup auto76918DA0_g;
+    int auto76918DA0_u;
+    unit auto76918DA0_var;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    while (true) {
+        auto76918DA0_g = libSCEV_gv_movingShotGroup;
+        auto76918DA0_u = UnitGroupCount(auto76918DA0_g, c_unitCountAll);
+        for (;; auto76918DA0_u -= 1) {
+            auto76918DA0_var = UnitGroupUnitFromEnd(auto76918DA0_g, auto76918DA0_u);
+            if (auto76918DA0_var == null) { break; }
+            libSCEV_gf_MovingShotUnitModify(auto76918DA0_var);
+        }
+        Wait(0.0625, c_timeGame);
+    }
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void libSCEV_gt_MovingShotLoopThread_Init () {
+    libSCEV_gt_MovingShotLoopThread = TriggerCreate("libSCEV_gt_MovingShotLoopThread_Func");
+    TriggerAddEventMapInit(libSCEV_gt_MovingShotLoopThread);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Trigger: QueenInfestScoreFix
 //--------------------------------------------------------------------------------------------------
 bool libSCEV_gt_QueenInfestScoreFix_Func (bool testConds, bool runActions) {
@@ -11416,6 +11618,10 @@ void libSCEV_InitTriggers () {
     libSCEV_gt_MergeStatusEffectsTrack_Init();
     libSCEV_gt_MergeStatusEffectsBegin_Init();
     libSCEV_gt_MindControlStealTech_Init();
+    libSCEV_gt_MovingShotInit_Init();
+    libSCEV_gt_MovingShotBehaviorCreate_Init();
+    libSCEV_gt_MovingShotBehaviorDestroy_Init();
+    libSCEV_gt_MovingShotLoopThread_Init();
     libSCEV_gt_QueenInfestScoreFix_Init();
     libSCEV_gt_SegmentedWireframesFixUnits_Init();
     libSCEV_gt_TakeCommandDetectorInit_Init();

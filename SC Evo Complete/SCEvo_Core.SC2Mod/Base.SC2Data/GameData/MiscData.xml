@@ -7,6 +7,14 @@
         <Copy value="1"/>
         <Behavior value="##x##"/>
     </CEffectTransferBehavior>
+    <CEffectCreatePersistent id="MovingShot@InitDelay">
+        <WhichLocation Value="SourceUnit"/>
+        <InitialDelay value="0.0625"/>
+        <InitialEffect value="MovingShot@Init"/>
+    </CEffectCreatePersistent>
+    <CEffectModifyUnit id="MovingShot@Init">
+        <ImpactUnit Value="Source"/>
+    </CEffectModifyUnit>
     <CEffectSet id="SCBW_CopyBuffs@Buffs1">
         <EffectArray value="SCBW_CopyBuffs@MatrixSet"/>
         <EffectArray value="SCBW_CopyBuffs@EnsnareBuffs"/>
@@ -70,6 +78,22 @@
         <LaunchLocation Value="CasterUnit"/>
         <ImpactLocation Value="CasterUnit"/>
     </CEffectDamage>
+    <CEffectApplyForce id="MovingShot@ApplyForce">
+        <WhichLocation Value="TargetPoint"/>
+        <WhichUnit Value="Caster"/>
+        <Amount value="-1"/>
+    </CEffectApplyForce>
+    <CValidatorUnitType id="SCBW_IsLiberatorAlias" parent="SCBW_UnitAlias" x="Liberator"/>
+    <CValidatorUnitOrderQueue id="MovingShot@NoSkidBypassOrders">
+        <WhichUnit Value="Source"/>
+        <AbilTechAlias value="_SkidBypass"/>
+        <Find value="0"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorCombine id="MovingShot@NoActiveIgnoreOrders">
+        <Type value="And"/>
+        <CombineArray value="MovingShot@NoActiveMoveCommand"/>
+        <CombineArray value="MovingShot@NoSkidBypassOrders"/>
+    </CValidatorCombine>
     <CValidatorUnitType id="SCBW_IsBrutalisk" parent="SCBW_UnitAlias" x="Brutalisk"/>
     <CValidatorUnitType id="SCBW_IsReaper" parent="SCBW_Unit" x="Reaper"/>
     <CValidatorUnitType id="SCBW_IsLurker" parent="SCBW_UnitAlias" x="LurkerMP"/>
@@ -253,6 +277,13 @@
     <CValidatorUnitType id="CasterIsDefilerMP" parent="SCBW_UnitCaster" x="DefilerMP"/>
     <CValidatorUnitType id="CasterIsBroodling" parent="SCBW_UnitCaster" x="Broodling"/>
     <CValidatorUnitType id="CasterIsInfestedTerran" parent="SCBW_UnitCaster" x="InfestedTerran"/>
+    <CValidatorUnitPathing id="MovingShot@IsPathing">
+        <WhichUnit Value="Source"/>
+    </CValidatorUnitPathing>
+    <CValidatorUnitCompareOrderCount id="MovingShot@HasOrders">
+        <WhichUnit Value="Source"/>
+        <Compare value="GT"/>
+    </CValidatorUnitCompareOrderCount>
     <CValidatorUnitType id="NotShieldBattery" parent="SCBW_UnitNot" x="ShieldBattery"/>
     <CValidatorCombine id="SCBWUnitSwapValidator">
         <CombineArray value="CasterIsNexus"/>
@@ -338,6 +369,21 @@
         <CombineArray value="CasterIsBroodling"/>
         <CombineArray value="CasterIsInfestedTerran"/>
     </CValidatorCombine>
+    <CValidatorUnitOrderQueue id="MovingShot@NoActiveMoveCommand">
+        <WhichUnit Value="Source"/>
+        <AbilClass value="CAbilMove"/>
+        <Find value="0"/>
+    </CValidatorUnitOrderQueue>
+    <CValidatorEffectTreeUserData id="MovingShot@UserDataSkid">
+        <Compare value="GT"/>
+        <Key value="skid"/>
+        <BehaviorScope Value="Source" Behavior="MovingShot"/>
+    </CValidatorEffectTreeUserData>
+    <CValidatorCondition id="MovingShot@Condition">
+        <IfArray Test="MovingShot@IsPathing" Return="Failure"/>
+        <IfArray Test="MovingShot@HasOrders" Return="MovingShot@NoActiveIgnoreOrders"/>
+        <Else value="MovingShot@UserDataSkid"/>
+    </CValidatorCondition>
     <CAccumulatorUserData id="SCBW_CopyBuffs@MatrixDuration">
         <Key value="DefensiveMatrixDuration"/>
         <BehaviorScope Value="Target"/>
@@ -349,6 +395,20 @@
         <CasterFilters value="-;Ally,Neutral,Enemy,Missile,Destructible,Item"/>
         <ValidatorArray value="SCBWUnitSwapValidator"/>
     </CPlayerResponseUnitBirth>
+    <CDataCollection id="MovingShot">
+        <EditorCategories value="Race:Neutral,ObjectType:Other"/>
+        <DataRecord Entry="Behavior,MovingShot"/>
+        <DataRecord Entry="Effect,MovingShot@ApplyForce"/>
+        <DataRecord Entry="Effect,MovingShot@Init"/>
+        <DataRecord Entry="Effect,MovingShot@InitDelay"/>
+        <DataRecord Entry="Validator,MovingShot@NoSkidBypassOrders"/>
+        <DataRecord Entry="Validator,MovingShot@NoActiveIgnoreOrders"/>
+        <DataRecord Entry="Validator,MovingShot@NoActiveMoveCommand"/>
+        <DataRecord Entry="Validator,MovingShot@IsPathing"/>
+        <DataRecord Entry="Validator,MovingShot@HasOrders"/>
+        <DataRecord Entry="Validator,MovingShot@UserDataSkid"/>
+        <DataRecord Entry="Validator,MovingShot@Condition"/>
+    </CDataCollection>
     <CDataCollectionAbil id="SCBW_CopyBuffs">
         <EditorCategories value="DataFamily:Melee,Race:Neutral"/>
         <DataRecord Entry="Effect,SCBW_CopyBuffs"/>
@@ -368,4 +428,8 @@
         <DataRecord Entry="Effect,SCBW_CopyBuffs@Matrix"/>
         <DataRecord Entry="Accumulator,SCBW_CopyBuffs@MatrixDuration"/>
     </CDataCollectionAbil>
+    <CBehaviorBuff id="MovingShot">
+        <DisableValidatorArray value="MovingShot@Condition"/>
+        <InfoFlags index="Hidden" value="1"/>
+    </CBehaviorBuff>
 </Catalog>

@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Catalog>
+    <CEffectApplyBehavior id="VultureSCBWWeapon@ReloadDummy">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Caster"/>
+    </CEffectApplyBehavior>
+    <CEffectIssueOrder id="VulturePlaceSpiderMineSCBW@SelfCast">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Source"/>
+        <Abil value="VulturePlaceSpiderMineSCBW"/>
+        <CmdFlags index="Preempt" value="1"/>
+        <CmdFlags index="User" value="1"/>
+        <CmdFlags index="TargetSelf" value="1"/>
+        <CmdFlags index="AutoQueued" value="1"/>
+        <Player Value="Source"/>
+        <Target Value="SourcePoint"/>
+    </CEffectIssueOrder>
+    <CEffectCancelOrder id="VulturePlaceSpiderMineSCBW@CancelOrder">
+        <EditorCategories value="Race:Terran"/>
+        <WhichUnit Value="Source"/>
+        <AbilCmd value="VulturePlaceSpiderMineSCBW,Execute"/>
+    </CEffectCancelOrder>
+    <CEffectSet id="VulturePlaceSpiderMineSCBW@FailPlacement">
+        <ValidatorArray value="VulturePlaceSpiderMineSCBW@FailPlacement"/>
+        <EditorCategories value="Race:Terran"/>
+        <EffectArray value="VulturePlaceSpiderMineSCBW@CancelOrder"/>
+        <EffectArray value="VulturePlaceSpiderMineSCBW@SelfCast"/>
+    </CEffectSet>
     <CEffectUserData id="VultureSCBWWeapon@Cooldown" parent="SCBW_WeaponCooldown">
         <EditorCategories value="Race:Terran"/>
         <Amount value="1.75"/>
@@ -101,6 +127,7 @@
         <Abil value="VulturePlaceSpiderMineSCBW"/>
         <CmdFlags index="Preempt" value="1"/>
         <CmdFlags index="User" value="1"/>
+        <CmdFlags index="TargetSelf" value="1"/>
         <CmdFlags index="AutoQueued" value="1"/>
         <Target Value="TargetPoint"/>
     </CEffectIssueOrder>
@@ -125,7 +152,7 @@
         <EditorCategories value="Race:Terran"/>
         <EffectArray value="VultureSCBWWeapon@LM"/>
         <EffectArray value="VultureSCBWWeapon@Cooldown"/>
-        <EffectArray value="VultureSCBWWeapon@StrafingApplyDisableWeapon"/>
+        <EffectArray value="VultureSCBWWeapon@ReloadDummy"/>
         <ValidatorArray value="noMarkers"/>
     </CEffectSet>
     <CEffectSet id="VulturePlaceSpiderMineSCBW@SpawnSet">
@@ -136,11 +163,14 @@
     </CEffectSet>
     <CEffectCreateUnit id="VulturePlaceSpiderMineSCBW@Spawn">
         <EditorCategories value="Race:Terran"/>
-        <WhichLocation Value="TargetPoint"/>
+        <WhichLocation Value="CasterPoint"/>
+        <CreateFlags index="Placement" value="0"/>
+        <CreateFlags index="PlacementIgnoreBlockers" value="1"/>
         <CreateFlags index="ProvideFood" value="0"/>
         <CreateFlags index="UseFood" value="0"/>
         <SpawnEffect value="VulturePlaceSpiderMineSCBW@SpawnSet"/>
         <SpawnUnit value="SpiderMineSCBW"/>
+        <TypeFallbackUnit Value="Unknown"/>
     </CEffectCreateUnit>
     <CEffectSet id="VulturePlaceSpiderMineSCBW@Set">
         <EditorCategories value="Race:Terran"/>
@@ -179,16 +209,9 @@
         </InfoArray>
         <AbilityCategories index="User1" value="1"/>
     </CAbilResearch>
-    <CAbilResearch id="VultureSCBWSpeedUpgrade" parent="SCBW_Research" race="Terran">
-        <InfoArray index="Research1" Time="87.5">
-            <Resource index="Minerals" value="100"/>
-            <Resource index="Vespene" value="100"/>
-        </InfoArray>
-        <AbilityCategories index="User1" value="1"/>
-        <Activity value="UI/Upgrading"/>
-    </CAbilResearch>
     <CAbilEffectTarget id="VulturePlaceSpiderMineSCBW">
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
+        <TechAliasArray value="_SkidBypass"/>
         <Effect index="0" value="VulturePlaceSpiderMineSCBW@Set"/>
         <Flags index="RangeUseCasterRadius" value="0"/>
         <Cost>
@@ -198,20 +221,30 @@
                 <CountUse value="1"/>
                 <Location value="Unit"/>
             </Charge>
+            <Cooldown TimeUse="0.25"/>
         </Cost>
         <Placeholder value="SpiderMineSCBW"/>
-        <Range value="0.5"/>
+        <Range value="0"/>
         <CastIntroTime value="0.2"/>
+        <CancelableArray index="Approach" value="1"/>
         <UninterruptibleArray index="Cast" value="1"/>
         <UninterruptibleArray index="Channel" value="1"/>
         <UninterruptibleArray index="Finish" value="1"/>
+        <CancelEffect index="Approach" value="VulturePlaceSpiderMineSCBW@FailPlacement"/>
         <CmdButtonArray index="Execute" DefaultButtonFace="VulturePlaceSpiderMineSCBW" Requirements="VulturePlaceSpiderMineSCBW"/>
         <PlaceUnit value="SpiderMineSCBW@Placement"/>
     </CAbilEffectTarget>
+    <CAbilResearch id="VultureSCBWSpeedUpgrade" parent="SCBW_Research" race="Terran">
+        <InfoArray index="Research1" Time="87.5">
+            <Resource index="Minerals" value="100"/>
+            <Resource index="Vespene" value="100"/>
+        </InfoArray>
+        <AbilityCategories index="User1" value="1"/>
+        <Activity value="UI/Upgrading"/>
+    </CAbilResearch>
     <CAbilEffectTarget id="VulturePlaceSpiderMineSCBW@PH">
         <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
         <DataCollection value="VulturePlaceSpiderMineSCBW"/>
-        <Effect index="0" value="VulturePlaceSpiderMineSCBW@PHRandomPoint"/>
         <Flags index="BestUnit" value="0"/>
         <Flags index="RangeUseCasterRadius" value="0"/>
         <Cost>
@@ -231,7 +264,22 @@
             <Flags index="UseDefaultButton" value="1"/>
             <Flags index="CreateDefaultButton" value="1"/>
         </CmdButtonArray>
+        <TechAliasArray value="_SkidBypass"/>
     </CAbilEffectTarget>
+    <CValidatorCombine id="VulturePlaceSpiderMineSCBW@FailPlacement">
+        <Type value="And"/>
+        <CombineArray value="VulturePlaceSpiderMineSCBW@FailPlacementRange"/>
+        <CombineArray value="VulturePlaceSpiderMineSCBW@FailPlacementCliffLevel"/>
+        <CombineArray value="TargetNotAcrossCliff"/>
+        <CombineArray value="TargetNotAcrossChasm"/>
+    </CValidatorCombine>
+    <CValidatorLocationCompareRange id="VulturePlaceSpiderMineSCBW@FailPlacementRange">
+        <Compare value="LT"/>
+        <Range value="1.5"/>
+    </CValidatorLocationCompareRange>
+    <CValidatorLocationCompareCliffLevel id="VulturePlaceSpiderMineSCBW@FailPlacementCliffLevel">
+        <OtherLocation Value="OriginUnit"/>
+    </CValidatorLocationCompareCliffLevel>
     <CValidatorUnitType id="VultureSCBW@Is" parent="SCBW_Unit" x="VultureSCBW"/>
     <CValidatorUnitType id="VultureSCBW@Not" parent="SCBW_UnitNot" x="VultureSCBW"/>
     <CValidatorUnitInWeaponRange id="VultureSCBWWeapon@StrafingInRange"/>
@@ -341,13 +389,13 @@
             <DirectionalLight index="Fill" Color="0.992157,0.819608,0.666667" ColorMultiplier="0.569000" Direction="-0.170284,0.283849,0.943628"/>
             <DirectionalLight index="Back" Color="0.086275,0.121569,0.552941" ColorMultiplier="0.871000" Direction="0.672465,0.588492,-0.448851"/>
         </ToDInfoArray>
-        <EditorCategories value="LightGroup:PortraitsUnitsTerran"/>
+        <EditorCategories value="LightGroup:Portraits/Units/TerranSCBW"/>
     </CLight>
     <CActorSound id="VultureSCBWWeapon@Reload" parent="SoundOneShot">
         <Filter index="Ally" value="1"/>
         <Filter index="Neutral" value="1"/>
         <Filter index="Enemy" value="1"/>
-        <On Terms="Behavior.VultureSCBWWeapon@StrafingDisableWeapon.Off; Selected; !ValidateUnit CasterIdleOrAttacking" Send="Create"/>
+        <On Terms="Behavior.VultureSCBWWeapon@ReloadDummy.Off; Selected; !ValidateUnit CasterIdleOrAttacking" Send="Create"/>
         <Host Subject="_Selectable"/>
     </CActorSound>
     <CActorForceSphere id="VultureSCBWWeapon@ActionDeathForce" parent="MissileAttackDeathForce">
@@ -511,18 +559,18 @@
         <DisplayEffect value="VultureSCBWWeapon@DamageConc"/>
         <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
         <Period value="1.75"/>
-        <Backswing value="0"/>
+        <Backswing value="0.875"/>
         <Effect value="VultureSCBWWeapon@Set"/>
-        <DamagePoint value="0"/>
+        <DamagePoint value="0.0625"/>
         <Options index="DisplayCooldown" value="1"/>
         <Options index="NeverMiss" value="0"/>
         <Tip value="Weapon/Tip/ConcussiveWeapon"/>
-        <LegacyOptions index="NoDeceleration" value="1"/>
         <RandomDelayMax value="0.0625"/>
         <Marker Duration="0.0625">
             <MatchFlags index="Link" value="1"/>
             <MatchFlags index="CasterUnit" value="1"/>
         </Marker>
+        <AllowedMovement value="Slowing"/>
     </CWeaponLegacy>
     <CWeaponStrafe id="VultureSCBWWeapon@StrafingWeapon">
         <EditorCategories value="Race:Terran"/>
@@ -663,13 +711,13 @@
         <DataRecord Entry="Validator,VultureSCBWSpeedUpgrade"/>
     </CDataCollectionUpgrade>
     <CDataCollectionAbil id="VultureSCBWWeapon" parent="TerranVehicleWeaponSCBW">
+        <DataRecord Entry="Actor,VultureSCBWWeapon@Reload"/>
         <DataRecord Entry="Actor,VultureSCBWWeapon@ActionDeathForce"/>
         <DataRecord Entry="Actor,VultureSCBWWeapon@Action"/>
         <DataRecord Entry="Actor,VultureSCBWWeapon@Missile"/>
-        <DataRecord Entry="Actor,VultureSCBWWeapon@Reload"/>
         <DataRecord Entry="AttachMethod,VultureSCBWWeapon@AMPattern"/>
-        <DataRecord Entry="Behavior,VultureSCBWWeapon@StrafingDisableWeapon"/>
-        <DataRecord Entry="Behavior,VultureSCBWWeapon@StrafingDisableIfNoMove"/>
+        <DataRecord Entry="Behavior,VultureSCBWWeapon@ReloadDummy"/>
+        <DataRecord Entry="Effect,VultureSCBWWeapon@ReloadDummy"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@Cooldown"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@Impact"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@DamageApply"/>
@@ -677,22 +725,15 @@
         <DataRecord Entry="Effect,VultureSCBWWeapon@LM"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@DamageConc"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@Set"/>
-        <DataRecord Entry="Effect,VultureSCBWWeapon@StrafingApplyDisableWeapon"/>
         <DataRecord Entry="Effect,VultureSCBWWeapon@SetCooldown"/>
-        <DataRecord Entry="Effect,VultureSCBWWeapon@StrafingDelay"/>
-        <DataRecord Entry="Effect,VultureSCBWWeapon@StrafingSet"/>
         <DataRecord Entry="Model,VultureSCBWWeapon@Launch"/>
         <DataRecord Entry="Model,VultureSCBWWeapon@Impact"/>
         <DataRecord Entry="Model,VultureSCBWWeapon@Missile"/>
+        <DataRecord Entry="Sound,VultureSCBWWeapon@Reload"/>
         <DataRecord Entry="Sound,VultureSCBWWeapon@Launch"/>
         <DataRecord Entry="Sound,VultureSCBWWeapon@Impact"/>
-        <DataRecord Entry="Sound,VultureSCBWWeapon@Reload"/>
         <DataRecord Entry="Unit,VultureSCBWWeapon@Missile"/>
-        <DataRecord Entry="Validator,VultureSCBWWeapon@StrafingInRange"/>
-        <DataRecord Entry="Validator,VultureSCBWWeapon@StrafingDisable"/>
-        <DataRecord Entry="Validator,VultureSCBWWeapon@StrafingSpeed"/>
         <DataRecord Entry="Weapon,VultureSCBWWeapon"/>
-        <DataRecord Entry="Weapon,VultureSCBWWeapon@StrafingWeapon"/>
         <DataRecord Entry="Accumulator,VultureSCBWWeapon@Damage"/>
         <Pattern value="SCBW_Weapon_Accumulator"/>
     </CDataCollectionAbil>
@@ -702,6 +743,9 @@
         <DataRecord Entry="Behavior,VulturePlaceSpiderMineSCBW@CasterStun"/>
         <DataRecord Entry="Behavior,VulturePlaceSpiderMineSCBW@NoMines"/>
         <DataRecord Entry="Button,VulturePlaceSpiderMineSCBW"/>
+        <DataRecord Entry="Effect,VulturePlaceSpiderMineSCBW@SelfCast"/>
+        <DataRecord Entry="Effect,VulturePlaceSpiderMineSCBW@CancelOrder"/>
+        <DataRecord Entry="Effect,VulturePlaceSpiderMineSCBW@FailPlacement"/>
         <DataRecord Entry="Effect,VulturePlaceSpiderMineSCBW@CasterIssueOrderFacing"/>
         <DataRecord Entry="Effect,VulturePlaceSpiderMineSCBW@SpawnSet"/>
         <DataRecord Entry="Effect,VulturePlaceSpiderMineSCBW@CasterIssueOrderOffset"/>
@@ -720,8 +764,11 @@
         <DataRecord Entry="Effect,VulturePlaceSpiderMineSCBW@Set"/>
         <DataRecord Entry="Requirement,VulturePlaceSpiderMineSCBW"/>
         <DataRecord Entry="RequirementNode,VulturePlaceSpiderMineSCBW"/>
+        <DataRecord Entry="Validator,VulturePlaceSpiderMineSCBW@FailPlacement"/>
         <DataRecord Entry="Validator,VulturePlaceSpiderMineSCBW@CasterHasLE1Order"/>
         <DataRecord Entry="Validator,VulturePlaceSpiderMineSCBW@CasterIssueOrder"/>
+        <DataRecord Entry="Validator,VulturePlaceSpiderMineSCBW@FailPlacementRange"/>
+        <DataRecord Entry="Validator,VulturePlaceSpiderMineSCBW@FailPlacementCliffLevel"/>
         <DataRecord Entry="Validator,VulturePlaceSpiderMineSCBW@NoMines"/>
     </CDataCollectionAbil>
     <CDataCollectionUnit id="VultureSCBW" parent="TerranVehicleSCBW">
@@ -767,7 +814,7 @@
         <LifeMax value="80"/>
         <Speed value="3.75"/>
         <Acceleration value="6.25"/>
-        <LateralAcceleration value="69.125"/>
+        <LateralAcceleration value="12"/>
         <Sight value="8"/>
         <Food value="-2"/>
         <CostResource index="Minerals" value="75"/>
@@ -779,9 +826,8 @@
         <AbilArray Link="move"/>
         <AbilArray Link="VulturePlaceSpiderMineSCBW"/>
         <AbilArray Link="VulturePlaceSpiderMineSCBW@PH"/>
-        <BehaviorArray Link="VultureSCBWWeapon@StrafingDisableIfNoMove"/>
         <BehaviorArray Link="VulturePlaceSpiderMineSCBW@NoMines"/>
-        <WeaponArray Link="VultureSCBWWeapon@StrafingWeapon"/>
+        <BehaviorArray Link="MovingShot"/>
         <WeaponArray Link="VultureSCBWWeapon"/>
         <CardLayouts>
             <LayoutButtons Face="Move" Type="AbilCmd" AbilCmd="move,Move" Row="0" Column="0"/>
@@ -815,13 +861,20 @@
         <GlossaryWeakArray value="MutaliskSCBW"/>
         <GlossaryWeakArray value="DragoonSCBW"/>
         <Attributes index="Hover" value="1"/>
-        <StationaryTurningRate value="1999.6875"/>
-        <TurningRate value="1999.6875"/>
+        <StationaryTurningRate value="1499.9414"/>
         <ScoreResult value="BuildOrder"/>
-        <Deceleration value="15"/>
+        <Deceleration value="3.5"/>
         <InnerRadius value="0.5"/>
         <UserFlagArray index="User15" value="1"/>
+        <EffectArray index="Create" value="MovingShot@InitDelay"/>
     </CUnit>
+    <CBehaviorBuff id="VultureSCBWWeapon@ReloadDummy">
+        <InfoFlags index="Hidden" value="1"/>
+        <EditorCategories value="AbilityorEffectType:Units"/>
+        <Duration value="0.0625">
+            <AccumulatorArray value="SCBW_WeaponCooldown@Final"/>
+        </Duration>
+    </CBehaviorBuff>
     <CBehaviorBuff id="VulturePlaceSpiderMineSCBW@CasterStun">
         <InfoFlags index="Hidden" value="1"/>
         <EditorCategories value="AbilityorEffectType:Units"/>
